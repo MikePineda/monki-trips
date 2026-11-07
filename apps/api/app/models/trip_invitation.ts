@@ -7,7 +7,7 @@ import Trip from '#models/trip'
 
 /** An invitation row; the plaintext token exists only in the response that created it. */
 export default class TripInvitation extends BaseModel {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

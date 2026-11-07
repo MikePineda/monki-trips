@@ -4,7 +4,7 @@ import { BaseModel, beforeCreate, column } from '@adonisjs/lucid/orm'
 
 /** A browser's Web Push subscription, owned by one account. */
 export default class PushSubscription extends BaseModel {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

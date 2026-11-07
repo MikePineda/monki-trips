@@ -63,8 +63,9 @@ export default class TripInvitationsController {
   }
 
   async destroy(ctx: HttpContext) {
+    const { id } = ctx.params as { id: string }
     const invitation = await TripInvitation.query()
-      .where('id', ctx.params.id)
+      .where('id', id)
       .where('trip_id', ctx.trip.id)
       .first()
     if (!invitation) throw new ApiException('E_ROW_NOT_FOUND')

@@ -57,8 +57,9 @@ export default class TripMembersController {
   }
 
   private async findMember(ctx: HttpContext): Promise<TripMember> {
+    const { id } = ctx.params as { id: string }
     const member = await TripMember.query()
-      .where('id', ctx.params.id)
+      .where('id', id)
       .where('trip_id', ctx.trip.id)
       .whereNull('deleted_at')
       .preload('user')

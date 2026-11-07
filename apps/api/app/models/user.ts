@@ -20,7 +20,7 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
  * person out everywhere.
  */
 export default class User extends compose(BaseModel, AuthFinder) {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

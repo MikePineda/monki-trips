@@ -6,7 +6,7 @@ import Trip from '#models/trip'
 
 /** Someone who travels; `userId` is null for a person without an account. */
 export default class Traveller extends BaseModel {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

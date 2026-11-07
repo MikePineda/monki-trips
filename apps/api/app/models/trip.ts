@@ -15,7 +15,7 @@ const bigintToNumber = (value: string | number | null) => (value === null ? null
  * model never writes them; `deletedAt` is the restorable soft delete.
  */
 export default class Trip extends BaseModel {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

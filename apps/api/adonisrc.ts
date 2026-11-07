@@ -101,7 +101,10 @@ export default defineConfig({
 
   hooks: {
     init: [
-      indexEntities(),
+      // The client manifest references adonisrc.ts and the config files, so a
+      // consumer of the registry (the web app) sees the same HttpContext
+      // augmentations (auth, validation, i18n, limiter) the API compiles with.
+      indexEntities({ manifest: { enabled: true } }),
       // The SPA fallback is not part of the typed contract.
       generateRegistry({
         routes: { except: ['spa.fallback'] },

@@ -8,7 +8,7 @@ import User from '#models/user'
 
 /** Membership of an account in a trip. Soft-deleted when removed (sync tombstone). */
 export default class TripMember extends BaseModel {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

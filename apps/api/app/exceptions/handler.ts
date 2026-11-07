@@ -13,7 +13,7 @@ import { ApiException } from '#exceptions/api_exception'
  * never leave the server.
  */
 export default class HttpExceptionHandler extends ExceptionHandler {
-  protected debug = !app.inProduction
+  protected override debug = !app.inProduction
 
   override async handle(error: unknown, ctx: HttpContext) {
     // ctx.i18n is missing when no route matched (router middleware did not run).
