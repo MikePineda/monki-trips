@@ -131,4 +131,20 @@ describe('custom service worker (public/sw.js)', () => {
     expect(source).toContain("const SHARE_INBOX_PATH = '/share'")
     expect(source).toContain('303')
   })
+
+  it('shows a push message as a notification and opens its url on tap, ahead of ngsw', () => {
+    const pushHandler = source.indexOf("addEventListener('push'")
+    const clickHandler = source.indexOf("addEventListener('notificationclick'")
+    const ngsw = source.indexOf("importScripts('ngsw-worker.js')")
+
+    expect(pushHandler).toBeGreaterThan(-1)
+    expect(clickHandler).toBeGreaterThan(-1)
+    expect(pushHandler).toBeLessThan(ngsw)
+    expect(clickHandler).toBeLessThan(ngsw)
+    expect(source).toContain('self.registration.showNotification(payload.title')
+    expect(source).toContain('data: { url: payload.url }')
+    expect(source).toContain('self.clients.openWindow(url)')
+    // Only the app's own origin is ever opened from a notification.
+    expect(source).toContain('target.origin !== self.location.origin')
+  })
 })
