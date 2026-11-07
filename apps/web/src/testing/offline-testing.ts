@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing'
 import { Dexie } from 'dexie'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { CLOCK } from '../app/core/offline/clock'
-import { MonkiTripsDb, OFFLINE_DB } from '../app/core/offline/db'
+import { MonkiTripsDb } from '../app/core/offline/db'
+import { OFFLINE_DB } from '../app/core/offline/offline-db'
 import { FakeSyncApi, SYNC_API, type SyncApi } from '../app/core/offline/sync-api'
 import { SYNC_NOTIFIER, type SyncNotifier } from '../app/core/offline/sync.service'
 
@@ -61,7 +62,7 @@ export interface OfflineTestingOptions {
 export function provideOfflineTesting(options: OfflineTestingOptions): Provider[] {
   const clock = options.clock ?? new TestClock()
   return [
-    { provide: OFFLINE_DB, useValue: options.db },
+    { provide: OFFLINE_DB, useValue: Promise.resolve(options.db) },
     { provide: CLOCK, useValue: clock.read },
     { provide: SYNC_API, useValue: options.api ?? new FakeSyncApi() },
     { provide: SYNC_NOTIFIER, useValue: options.notifier ?? new RecordingSyncNotifier() },

@@ -3,7 +3,8 @@ import { v7 as uuidv7 } from 'uuid'
 import { transition, type OutboxEvent } from '../../domain/outbox-transition'
 import { backoffMs } from '../../domain/sync-backoff'
 import { CLOCK } from './clock'
-import { OFFLINE_DB } from './db'
+import { OFFLINE_DB } from './offline-db'
+import type { MonkiTripsDb } from './db'
 import { liveSignal } from './live'
 import type { OutboxRecord } from './records'
 
@@ -20,28 +21,24 @@ export interface OutboxEntryInput {
  */
 @Injectable({ providedIn: 'root' })
 export class OutboxStore {
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly clock = inject(CLOCK)
   private readonly injector = inject(Injector)
 
   /** Entries not yet accepted nor failed (`pending` or `syncing`). */
   readonly pendingCount = liveSignal(
-    () => this.db.outbox.where('state').anyOf('pending', 'syncing').count(),
+    (db) => db.outbox.where('state').anyOf('pending', 'syncing').count(),
     0,
     { injector: this.injector }
   )
 
-  readonly failedCount = liveSignal(
-    () => this.db.outbox.where('state').equals('failed').count(),
-    0,
-    {
-      injector: this.injector,
-    }
-  )
+  readonly failedCount = liveSignal((db) => db.outbox.where('state').equals('failed').count(), 0, {
+    injector: this.injector,
+  })
 
   /** Failed entries, oldest first, for the "Pending" sheet. */
   readonly failed = liveSignal(
-    async () => fifo(await this.db.outbox.where('state').equals('failed').toArray()),
+    async (db) => fifo(await db.outbox.where('state').equals('failed').toArray()),
     [] as OutboxRecord[],
     { injector: this.injector }
   )
@@ -58,14 +55,16 @@ export class OutboxStore {
       nextAttemptAt: null,
       error: null,
     }
-    await this.db.outbox.add(record)
+    const db = await this.database
+    await db.outbox.add(record)
     return record
   }
 
   /** The oldest pending entry whose backoff has elapsed. */
   async nextToSend(): Promise<OutboxRecord | undefined> {
     const now = Date.parse(this.clock())
-    const ready = await this.db.outbox
+    const db = await this.database
+    const ready = await db.outbox
       .where('state')
       .equals('pending')
       .filter((entry) => entry.nextAttemptAt === null || Date.parse(entry.nextAttemptAt) <= now)
@@ -107,10 +106,11 @@ export class OutboxStore {
 
   /** Boot: entries left `syncing` by a crash go back to pending. */
   async resetSyncing(): Promise<void> {
-    await this.db.transaction('rw', this.db.outbox, async () => {
-      const caught = await this.db.outbox.where('state').equals('syncing').toArray()
+    const db = await this.database
+    await db.transaction('rw', db.outbox, async () => {
+      const caught = await db.outbox.where('state').equals('syncing').toArray()
       for (const entry of caught) {
-        await this.applyMove(entry, 'reset', {})
+        await this.applyMove(db, entry, 'reset', {})
       }
     })
   }
@@ -120,25 +120,32 @@ export class OutboxStore {
     event: OutboxEvent,
     changes: Partial<OutboxRecord> | ((entry: OutboxRecord) => Partial<OutboxRecord>) = {}
   ): Promise<void> {
-    await this.db.transaction('rw', this.db.outbox, async () => {
-      const entry = await this.db.outbox.get(id)
+    const db = await this.database
+    await db.transaction('rw', db.outbox, async () => {
+      const entry = await db.outbox.get(id)
       if (!entry) {
         throw new Error(`Outbox entry not found: ${id}`)
       }
-      await this.applyMove(entry, event, typeof changes === 'function' ? changes(entry) : changes)
+      await this.applyMove(
+        db,
+        entry,
+        event,
+        typeof changes === 'function' ? changes(entry) : changes
+      )
     })
   }
 
   private async applyMove(
+    db: MonkiTripsDb,
     entry: OutboxRecord,
     event: OutboxEvent,
     changes: Partial<OutboxRecord>
   ): Promise<void> {
     const next = transition(entry.state, event)
     if ('removed' in next) {
-      await this.db.outbox.delete(entry.id)
+      await db.outbox.delete(entry.id)
     } else {
-      await this.db.outbox.put({ ...entry, ...changes, state: next.state })
+      await db.outbox.put({ ...entry, ...changes, state: next.state })
     }
   }
 }

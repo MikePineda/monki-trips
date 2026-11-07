@@ -10,7 +10,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop'
 import { RouterOutlet } from '@angular/router'
 import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
-import { OFFLINE_DB } from '../../core/offline/db'
+import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { META_ACTIVE_TRIP, MetaStore } from '../../core/offline/meta.store'
 import { MkTabBarComponent, type TabItem } from '../../shared/ui/tab-bar/tab-bar.component'
 import { ShellHeaderComponent } from '../shell/shell-header.component'
@@ -49,7 +49,7 @@ export class TripShellComponent {
   /** Bound from the route parameter. */
   readonly tripId = input.required<string>()
 
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly meta = inject(MetaStore)
   private readonly transloco = inject(TranslocoService)
   /** This component's own `shell` scope, so the service loads it like the pipe does. */
@@ -84,7 +84,9 @@ export class TripShellComponent {
   constructor() {
     effect(() => {
       const tripId = this.tripId()
-      void this.db.trips.get(tripId).then((trip) => this.tripName.set(trip?.name ?? null))
+      void this.database
+        .then((db) => db.trips.get(tripId))
+        .then((trip) => this.tripName.set(trip?.name ?? null))
       void this.meta.set(META_ACTIVE_TRIP, tripId)
     })
   }

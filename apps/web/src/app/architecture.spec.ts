@@ -104,6 +104,28 @@ describe('architecture', () => {
     expect(bad).toEqual([])
   })
 
+  it('only core/offline imports dexie', () => {
+    const bad = violations(
+      (file, specifier) => !file.rel.startsWith('core/offline/') && specifier === 'dexie'
+    )
+    expect(bad).toEqual([])
+  })
+
+  it('dexie stays out of the initial bundle: only db.ts imports it statically, db.ts only by type', () => {
+    const staticValueImport = /^import\s+(?!type\b)[^'"]*?from\s+['"]([^'"]+)['"]/gm
+    const bad = sources.flatMap((file) =>
+      [...readFileSync(file.path, 'utf8').matchAll(staticValueImport)]
+        .map((match) => match[1])
+        .filter(
+          (specifier) =>
+            (specifier === 'dexie' && file.rel !== 'core/offline/db.ts') ||
+            target(file, specifier) === 'core/offline/db'
+        )
+        .map((specifier) => `${file.rel} -> ${specifier}`)
+    )
+    expect(bad).toEqual([])
+  })
+
   it('ui-kit components give the ui scope to their own view only (viewProviders)', () => {
     const leaking = /\bproviders:\s*\[[^\]]*provideUiI18n\(/
     const offenders = sources

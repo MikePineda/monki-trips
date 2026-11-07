@@ -11,9 +11,10 @@ import {
   untracked,
 } from '@angular/core'
 import { CLOCK } from './clock'
-import { OFFLINE_DB } from './db'
+import type { MonkiTripsDb } from './db'
 import { META_CURSOR, META_LAST_PULL_AT, MetaStore } from './meta.store'
 import { OnlineStore } from './online.store'
+import { OFFLINE_DB } from './offline-db'
 import { OutboxStore } from './outbox.store'
 import { SYNC_TABLES, type OutboxRecord, type SyncChange } from './records'
 import { SYNC_API, type SyncPushResult } from './sync-api'
@@ -43,7 +44,7 @@ export const PULL_INTERVAL_MS = 5 * 60 * 1000
  */
 @Injectable({ providedIn: 'root' })
 export class SyncService {
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly api = inject(SYNC_API)
   private readonly clock = inject(CLOCK)
   private readonly meta = inject(MetaStore)
@@ -104,14 +105,15 @@ export class SyncService {
       const cursor = (await this.meta.get<string>(META_CURSOR)) ?? null
       const result = await this.api.pull(cursor)
       const pulledAt = this.clock()
-      await this.db.transaction(
+      const db = await this.database
+      await db.transaction(
         'rw',
-        [...SYNC_TABLES.map((table) => this.db.table(table)), this.db.meta],
+        [...SYNC_TABLES.map((table) => db.table(table)), db.meta],
         async () => {
           for (const change of result.changes) {
-            await this.apply(change)
+            await apply(db, change)
           }
-          await this.db.meta.bulkPut([
+          await db.meta.bulkPut([
             { key: META_CURSOR, value: result.cursor },
             { key: META_LAST_PULL_AT, value: pulledAt },
           ])
@@ -174,8 +176,9 @@ export class SyncService {
     } else if (rejected) {
       await this.outbox.reject(mutation.id, rejected.message)
     } else if (conflict) {
-      await this.db.transaction('rw', this.db.table(conflict.serverRow.table), () =>
-        this.apply(conflict.serverRow)
+      const db = await this.database
+      await db.transaction('rw', db.table(conflict.serverRow.table), () =>
+        apply(db, conflict.serverRow)
       )
       await this.outbox.acknowledge(mutation.id)
       this.notifier.conflictResolved()
@@ -185,15 +188,6 @@ export class SyncService {
       return false
     }
     return true
-  }
-
-  private async apply(change: SyncChange): Promise<void> {
-    const table = this.db.table(change.table)
-    if (change.deleted) {
-      await table.delete(change.row.id)
-    } else {
-      await table.put(change.row)
-    }
   }
 
   private async track<T>(work: () => Promise<T>): Promise<T> {
@@ -219,5 +213,15 @@ export class SyncService {
 
   private visible(): boolean {
     return this.document.visibilityState === 'visible'
+  }
+}
+
+/** Writes one server change to its table: an upsert, or a delete. */
+async function apply(db: MonkiTripsDb, change: SyncChange): Promise<void> {
+  const table = db.table(change.table)
+  if (change.deleted) {
+    await table.delete(change.row.id)
+  } else {
+    await table.put(change.row)
   }
 }

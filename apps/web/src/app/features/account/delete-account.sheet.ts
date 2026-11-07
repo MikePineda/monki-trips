@@ -6,7 +6,6 @@ import { TranslocoPipe } from '@jsverse/transloco'
 import { ACCOUNT_API } from '../../core/api/account-api'
 import { ApiFailure } from '../../core/api/api-failure'
 import { fieldError } from '../../core/forms/field-error'
-import { OFFLINE_DB } from '../../core/offline/db'
 import { liveSignal } from '../../core/offline/live'
 import type { TripRecord } from '../../core/offline/records'
 import { SessionStore } from '../../core/session/session.store'
@@ -88,7 +87,6 @@ import { ACCOUNT_ERROR_CODES, provideAccountI18n } from './account-i18n'
 })
 export class DeleteAccountSheet {
   private readonly api = inject(ACCOUNT_API)
-  private readonly db = inject(OFFLINE_DB)
   private readonly session = inject(SessionStore)
   protected readonly ref = inject<DialogRef<boolean>>(DialogRef)
 
@@ -101,7 +99,7 @@ export class DeleteAccountSheet {
   protected readonly busy = signal(false)
   protected readonly failure = signal<ApiFailure | null>(null)
   private readonly blockingIds = signal<string[] | null>(null)
-  private readonly knownTrips = liveSignal<TripRecord[]>(() => this.db.trips.toArray(), [])
+  private readonly knownTrips = liveSignal<TripRecord[]>((db) => db.trips.toArray(), [])
 
   /** The trips that block the deletion, named from the device's copy when it has them. */
   protected readonly blockingTrips = computed(() => {

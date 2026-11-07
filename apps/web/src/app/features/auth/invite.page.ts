@@ -13,7 +13,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import type { TripInvitationPreview } from '@monkitrips/shared'
 import { ApiFailure } from '../../core/api/api-failure'
 import { AUTH_API } from '../../core/api/auth-api'
-import { OFFLINE_DB } from '../../core/offline/db'
+import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { toTripRecord } from '../../core/offline/trip-record'
 import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
@@ -132,7 +132,7 @@ export default class InvitePage {
   readonly token = input.required<string>()
 
   private readonly auth = inject(AUTH_API)
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly router = inject(Router)
   private readonly toasts = inject(ToastService)
   private readonly transloco = inject(TranslocoService)
@@ -183,7 +183,7 @@ export default class InvitePage {
     this.failure.set(null)
     try {
       const trip = await this.auth.acceptInvitation(this.token())
-      await this.db.trips.put(toTripRecord(trip))
+      await (await this.database).trips.put(toTripRecord(trip))
       this.toasts.show({
         message: this.transloco.translate('auth.invite.joined', { tripName: trip.name }),
       })
