@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
+import db from '@adonisjs/lucid/services/db'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as authErrors } from '@adonisjs/auth'
 import type { ApiEnvelope, Locale, UserProfile } from '@monkitrips/shared'
@@ -50,17 +51,24 @@ export default class AuthController {
     if (await User.findBy('email', body.email)) throw new ApiException('E_EMAIL_TAKEN')
 
     const now = this.clock.now()
-    const user = await User.create({
-      email: body.email,
-      password: body.password,
-      displayName: body.displayName,
-      locale: body.locale ?? (ctx.i18n.locale as Locale),
-      timezone: body.timezone ?? 'UTC',
-      emailVerifiedAt: decision.emailVerifiedByInvitation ? DateTime.fromJSDate(now) : null,
+    // One transaction: an invitation claimed by someone else meanwhile leaves no account behind.
+    const user = await db.transaction(async (trx) => {
+      const created = await User.create(
+        {
+          email: body.email,
+          password: body.password,
+          displayName: body.displayName,
+          locale: body.locale ?? (ctx.i18n.locale as Locale),
+          timezone: body.timezone ?? 'UTC',
+          emailVerifiedAt: decision.emailVerifiedByInvitation ? DateTime.fromJSDate(now) : null,
+        },
+        { client: trx }
+      )
+      if (invitation && decision.viaInvitation) {
+        await this.invitations.accept(invitation, created, trx)
+      }
+      return created
     })
-    if (invitation && decision.viaInvitation) {
-      await this.invitations.accept(invitation, user)
-    }
     await loginUser(ctx, user, now)
     if (!user.emailVerifiedAt) {
       const { token, code } = await this.tokens.issue(user, 'verify_email')
