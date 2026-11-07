@@ -10,9 +10,17 @@ import { makeUser } from '#tests/helpers/make_user'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
 import { mutation, pull, pushApplied, pushOne } from '#tests/helpers/sync'
-import { decodeSyncCursor, encodeSyncCursor } from '#domain/sync_cursor'
+import {
+  decodeSyncCursor as decodeWithKey,
+  encodeSyncCursor as encodeWithKey,
+  type SyncCursor,
+} from '#domain/sync_cursor'
 
 type Change = { entity: string; row: Record<string, unknown> }
+
+/** Cursors are signed with the app key. */
+const encodeSyncCursor = (cursor: SyncCursor) => encodeWithKey(cursor, env.get('APP_KEY').release())
+const decodeSyncCursor = (value: string) => decodeWithKey(value, env.get('APP_KEY').release())
 
 function ids(changes: Change[], entity: string): string[] {
   return changes.filter((c) => c.entity === entity).map((c) => c.row.id as string)
@@ -262,6 +270,28 @@ test.group('Sync pull', (group) => {
 
     garbage.assertStatus(410)
     limit.assertStatus(422)
+  })
+
+  test('an oversized or tampered cursor answers 410, never 500', async ({ client }) => {
+    const owner = await makeUser()
+    await makeTrip(owner)
+    const now = Date.parse('2026-11-07T10:00:00Z')
+    const genuine = encodeSyncCursor({ xid: '1', seq: '1', issuedAt: now })
+    const [, signature] = genuine.split('.')
+
+    const cursors = [
+      // Signed with the app key, but beyond what bigint holds.
+      encodeSyncCursor({ xid: '1', seq: '99999999999999999999', issuedAt: now }),
+      encodeSyncCursor({ xid: '99999999999999999999', seq: '1', issuedAt: now }),
+      // Someone else's body under our signature, and our body unsigned.
+      `${Buffer.from(`1:2:${now}`).toString('base64url')}.${signature}`,
+      Buffer.from(`1:1:${now}`).toString('base64url'),
+    ]
+    for (const cursor of cursors) {
+      const response = await pull(client, owner, { cursor })
+      response.assertStatus(410)
+      response.assertBodyContains({ code: 'E_SYNC_CURSOR_EXPIRED' })
+    }
   })
 
   test('the cursor carries the change stamp and the issue time', async ({ client, assert }) => {

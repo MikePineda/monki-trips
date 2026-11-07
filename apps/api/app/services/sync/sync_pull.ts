@@ -7,6 +7,7 @@ import {
   type SyncEntity,
   type SyncPullOutput,
 } from '@monkitrips/shared'
+import env from '#start/env'
 import type User from '#models/user'
 import { Clock } from '#services/clock'
 import { TripMembership } from '#services/trip_membership'
@@ -48,8 +49,9 @@ interface ChangePointer {
  *
  * Without a cursor the answer is a snapshot of every live row; with one,
  * everything changed after it, tombstones included. The cursor carries the
- * last stamp delivered and its issue time; one older than the purge
- * horizon answers 410 `E_SYNC_CURSOR_EXPIRED`.
+ * last stamp delivered and its issue time, signed with `APP_KEY`; one
+ * older than the purge horizon, edited, or not ours answers 410
+ * `E_SYNC_CURSOR_EXPIRED`.
  *
  * A trip whose membership row for this person is newer than the cursor
  * (joined or re-joined, role changed, trip restored: restore re-stamps the
@@ -72,7 +74,7 @@ export class SyncPull {
     const limit = Math.min(input.limit ?? SYNC_PULL_MAX_LIMIT, SYNC_PULL_MAX_LIMIT)
     let cursor: SyncCursor | null = null
     if (input.cursor !== undefined) {
-      cursor = decodeSyncCursor(input.cursor)
+      cursor = decodeSyncCursor(input.cursor, this.secret())
       if (!cursor || isCursorExpired(cursor, now, SYNC_PURGE_HORIZON_DAYS)) {
         throw new ApiException('E_SYNC_CURSOR_EXPIRED')
       }
@@ -84,7 +86,9 @@ export class SyncPull {
       return {
         changes: [],
         tripIds,
-        cursor: cursor ? input.cursor! : encodeSyncCursor({ xid: '0', seq: '0', issuedAt: now }),
+        cursor: cursor
+          ? input.cursor!
+          : encodeSyncCursor({ xid: '0', seq: '0', issuedAt: now }, this.secret()),
         hasMore: false,
       }
     }
@@ -112,7 +116,12 @@ export class SyncPull {
       next = { xid: cursor.xid, seq: cursor.seq, issuedAt: now }
     }
 
-    return { changes, tripIds, cursor: encodeSyncCursor(next), hasMore }
+    return { changes, tripIds, cursor: encodeSyncCursor(next, this.secret()), hasMore }
+  }
+
+  /** Cursors are signed with the app key: one the server did not issue answers 410. */
+  private secret(): string {
+    return env.get('APP_KEY').release()
   }
 
   /** Trips whose live membership row for `user` changed after the cursor: the client has none of their old rows. */

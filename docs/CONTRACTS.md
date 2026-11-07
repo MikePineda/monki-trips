@@ -154,9 +154,11 @@ the cursor: a trip joined or re-joined, a role change, or a trip restored
 whose cursor is past their old rows; their snapshot carries no tombstones
 and may span pages (the cursor then records where it resumes). `tripIds` is
 authoritative: the client drops any trip it holds that is not listed (a
-removed member stops receiving the trip). The cursor is opaque; it encodes
-the last change stamp delivered and its issue time, and one older than the
-purge horizon (90 days) answers 410 `E_SYNC_CURSOR_EXPIRED`: the client
+removed member stops receiving the trip). The cursor is opaque and signed
+(HMAC-SHA256 with `APP_KEY`, so rotating the key expires every cursor); it
+encodes the last change stamp delivered and its issue time, and one older
+than the purge horizon (90 days), edited, or with a stamp beyond the bigint
+range answers 410 `E_SYNC_CURSOR_EXPIRED`: the client
 clears its cache, keeps its outbox and pulls again without a cursor. Pages
 follow the global change order and never skip a row committed by a
 transaction that was still open when an earlier page was read.
