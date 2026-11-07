@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "label": "Principal",
+    "trips": "Viajes",
+    "styleguide": "Guía de estilo"
+  },
+  "trips": {
+    "title": "Viajes",
+    "emptyTitle": "Aún no hay viajes",
+    "emptyBody": "Aquí aparecerán los viajes que planees o a los que te inviten."
+  },
+  "styleguide": {
+    "title": "Guía de estilo",
+    "intro": "Tokens provisionales hasta elegir el sistema de diseño.",
+    "tokens": "Tokens de color"
+  }
+}

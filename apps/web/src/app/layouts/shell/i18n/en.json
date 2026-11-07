@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "label": "Main",
+    "trips": "Trips",
+    "styleguide": "Style guide"
+  },
+  "trips": {
+    "title": "Trips",
+    "emptyTitle": "No trips yet",
+    "emptyBody": "Trips you plan or are invited to will show up here."
+  },
+  "styleguide": {
+    "title": "Style guide",
+    "intro": "Placeholder tokens until the design system is chosen.",
+    "tokens": "Colour tokens"
+  }
+}

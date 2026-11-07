@@ -1,0 +1,122 @@
+/*
+ * Global stylesheet and the ONLY file where raw colours live (architecture
+ * spec). Plain CSS on purpose: Tailwind 4 is a PostCSS plugin and does not
+ * support Sass, so the Tailwind entry point cannot be a .scss file.
+ *
+ * Placeholder semantic tokens until the design system is chosen: light on
+ * :root, dark under [data-theme="dark"] (explicit choice) and under
+ * prefers-color-scheme when no theme is set. public/theme-boot.js sets
+ * data-theme before the first paint. Fonts are self-hosted only.
+ */
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------- tokens */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces, ink and lines */
+  --surface-0: #f7f6f2;
+  --surface-1: #ffffff;
+  --surface-2: #eceae4;
+  --ink-1: #17181a;
+  --ink-2: #4a4c50;
+  --ink-3: #6a6c70;
+  --line: #dcdad4;
+  --line-strong: #85878b;
+
+  /* Accent: interaction only (links, focus, selection), never a data fill */
+  --accent: #1f5c4a;
+
+  /* Status: always with an icon and a label */
+  --status-good: #1d7a3a;
+  --status-warning: #8a5a00;
+  --status-serious: #b0461a;
+  --status-critical: #b3261e;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --surface-0: #111214;
+  --surface-1: #1a1b1e;
+  --surface-2: #24262a;
+  --ink-1: #f1f1ee;
+  --ink-2: #c0c1c4;
+  --ink-3: #9a9ca0;
+  --line: #34363b;
+  --line-strong: #7a7c81;
+
+  --accent: #6cc4a4;
+
+  --status-good: #5cc98a;
+  --status-warning: #e6b450;
+  --status-serious: #f08a5d;
+  --status-critical: #ff8a80;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+
+    --surface-0: #111214;
+    --surface-1: #1a1b1e;
+    --surface-2: #24262a;
+    --ink-1: #f1f1ee;
+    --ink-2: #c0c1c4;
+    --ink-3: #9a9ca0;
+    --line: #34363b;
+    --line-strong: #7a7c81;
+
+    --accent: #6cc4a4;
+
+    --status-good: #5cc98a;
+    --status-warning: #e6b450;
+    --status-serious: #f08a5d;
+    --status-critical: #ff8a80;
+  }
+}
+
+/* Tailwind utilities read the tokens (bg-surface-0, text-ink-1, border-line...). */
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-serious: var(--status-serious);
+  --color-status-critical: var(--status-critical);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ------------------------------------------------------------------ base */
+
+html,
+body {
+  background-color: var(--surface-0);
+  color: var(--ink-1);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
