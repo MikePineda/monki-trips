@@ -4,14 +4,19 @@ export interface FailureMessage {
   /** Translation key inside the given scope (`auth.errors.E_INVALID_CREDENTIALS`). */
   key: string
   params: Record<string, string | number>
-  /** The server's own (localised) message, for codes the catalogue does not know. */
+  /**
+   * The server's own (localised) message, for codes the catalogue does not
+   * know; empty when the answer carried no message meant for people (a 5xx,
+   * or a body without `code`, whose text is the client's raw request line).
+   */
   fallback: string
 }
 
 /**
  * Which catalogue entry explains a failure: the error code when the scope
  * knows it, `network` with no answer, `unknown` otherwise (with the server's
- * message as fallback text). A 429 carries the minutes to wait.
+ * message as fallback text when it sent one in a `{ message, code }` body
+ * below 500). A 429 carries the minutes to wait.
  */
 export function failureMessage(
   failure: ApiFailure,
@@ -29,5 +34,10 @@ export function failureMessage(
     }
     return { key: `${scope}.errors.${code}`, params, fallback: failure.message }
   }
-  return { key: `${scope}.errors.unknown`, params: {}, fallback: failure.message }
+  const serverWorded = code !== '' && (failure.status ?? 0) < 500
+  return {
+    key: `${scope}.errors.unknown`,
+    params: {},
+    fallback: serverWorded ? failure.message : '',
+  }
 }
