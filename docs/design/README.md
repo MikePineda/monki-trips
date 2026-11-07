@@ -28,9 +28,44 @@ stamps as the reward on the trip list. The specification is
    (light) plus semantic and domain extras, then brand, colours (both
    themes and validation), type, layout, elevation, shapes, motion, one
    section per ui-kit component, charts, and do's and don'ts.
-6. **Next (rest of WP 0.7)**: tokens into `apps/web/src/styles.css`, the
-   `mk-*` ui-kit, `/styleguide`, PNGs from `styleguide.visual.spec.ts`, and
-   the `design-approved` gate.
+6. **In code (WP 0.7)**: tokens in `apps/web/src/styles.css`
+   (`core/theme/tokens.spec` keeps them equal to `tokens.json`), the `mk-*`
+   ui-kit in `apps/web/src/app/shared/ui/`, `/styleguide` with the mock
+   screens, PNGs from `e2e/tests/styleguide.visual.spec.ts` (J09) under
+   `e2e/screenshots/styleguide/`, and the `design-approved` gate (stop 2).
+
+## How to re-skin
+
+The front is built so a redesign touches three places and nothing else
+(`architecture.spec` fails when a feature carries its own styles):
+
+1. **Tokens.** Change the values in `docs/design/tokens.json`, run
+   `node scripts/check-contrast.mjs` (text 4.5:1, icons and borders 3:1 in
+   both themes), then copy the values into `apps/web/src/styles.css`
+   (light on `:root`, dark twice: `[data-theme='dark']` and
+   `prefers-color-scheme`). `apps/web/src/app/core/theme/tokens.spec.ts`
+   fails until the two files agree; the spacing scale `space-half`,
+   `space-1..8`, the radii, the elevation and the motion tokens live in the
+   same file. `public/manifest.webmanifest` takes the light `surface-0`.
+2. **Fonts.** Put the woff2 files and their licences under
+   `apps/web/public/fonts/`, list them in `tokens.json` (`type.fonts`) and
+   in the `@font-face` rules of `styles.css` (`font-display: swap`); the
+   service worker already prefetches `/fonts/**`.
+3. **Assets.** The mascot under `apps/web/public/mascot/<id>/` (`sheet.svg`
+   or `sheet.png`, `sheet.json`, `LICENSE.md`; point `active.json` at it;
+   `mascot-sheet.spec.ts` validates the contract) and the stamp artwork
+   under `apps/web/public/stamps/` (`<code>.svg`, monochrome, listed in
+   `stamps.json`).
+4. **Check.** `npm run verify:quick`, then open `/styleguide` (both themes,
+   both languages) and run J09
+   (`npm run e2e -- -- --project=mobile-chromium --grep J09`) to refresh the
+   PNGs. `src/testing/theme-alt.spec.ts` mounts the mock screens with a
+   second theme and fails on any colour, radius or shadow that does not
+   resolve through a token.
+
+Components change only in `shared/ui`; features never carry colour, radius,
+shadow or font utilities, inline styles, raw `<button>`/`<input>` or their
+own styles.
 
 ## Tokens
 
