@@ -1,0 +1,42 @@
+{
+  "title": "Activity",
+  "refresh": "Refresh",
+  "loadMore": "Load more",
+  "saved": "Showing what this device saved.",
+  "emptyTitle": "Nothing yet",
+  "emptyBody": "Every change anyone makes to this trip shows up here, with who made it and when.",
+  "someone": "Someone",
+  "you": "You",
+  "line": {
+    "created": "{{actor}} added {{entity}}",
+    "updated": "{{actor}} changed {{entity}}",
+    "deleted": "{{actor}} removed {{entity}}"
+  },
+  "fields": "Changed: {{fields}}",
+  "entity": {
+    "trip": "the trip",
+    "traveller": "a traveller",
+    "stop": "a stop",
+    "event": "an event",
+    "segment": "a leg",
+    "seat": "a seat",
+    "document": "a document",
+    "task": "a task",
+    "budget_category": "a budget category",
+    "expense": "an expense",
+    "expense_share": "an expense split",
+    "emergency": "the emergency info",
+    "phrase_card": "a phrase card",
+    "member": "a member",
+    "invitation": "an invitation",
+    "other": "something"
+  },
+  "errors": {
+    "E_ROUTE_NOT_FOUND": "This server does not serve the activity feed yet.",
+    "E_EMAIL_NOT_VERIFIED": "Verify your e-mail first.",
+    "E_TOO_MANY_REQUESTS": "Too many attempts. Try again in {{minutes}} min.",
+    "E_UNAUTHORIZED": "Your session ended. Sign in again.",
+    "network": "No connection. Showing what this device has.",
+    "unknown": "Something went wrong. Try again."
+  }
+}

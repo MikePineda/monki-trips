@@ -1,10 +1,12 @@
 import type { Provider } from '@angular/core'
 import { ACCOUNT_API } from '../app/core/api/account-api'
+import { ACTIVITY_API } from '../app/core/api/activity-api'
 import { AUTH_API } from '../app/core/api/auth-api'
 import { PUSH_API } from '../app/core/api/push-api'
 import { TRIPS_API } from '../app/core/api/trips-api'
 import { SESSION_API } from '../app/core/session/session-api'
 import { FakeAccountApi } from './fake-account-api'
+import { FakeActivityApi } from './fake-activity-api'
 import { FakeAuthApi } from './fake-auth-api'
 import { FakePushApi } from './fake-push-api'
 import { FakeSessionApi } from './fake-session-api'
@@ -16,6 +18,7 @@ export interface ApiFakes {
   trips: FakeTripsApi
   account: FakeAccountApi
   push: FakePushApi
+  activity: FakeActivityApi
 }
 
 /** One fresh fake per API, for a spec to script and inspect. */
@@ -26,6 +29,7 @@ export function apiFakes(): ApiFakes {
     trips: new FakeTripsApi(),
     account: new FakeAccountApi(),
     push: new FakePushApi(),
+    activity: new FakeActivityApi(),
   }
 }
 
@@ -40,5 +44,6 @@ export function provideApiTesting(fakes: ApiFakes = apiFakes()): Provider[] {
     { provide: TRIPS_API, useValue: fakes.trips },
     { provide: ACCOUNT_API, useValue: fakes.account },
     { provide: PUSH_API, useValue: fakes.push },
+    { provide: ACTIVITY_API, useValue: fakes.activity },
   ]
 }

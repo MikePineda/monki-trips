@@ -1,0 +1,42 @@
+{
+  "title": "Actividad",
+  "refresh": "Actualizar",
+  "loadMore": "Cargar más",
+  "saved": "Mostrando lo que guardó este dispositivo.",
+  "emptyTitle": "Nada todavía",
+  "emptyBody": "Cada cambio que alguien haga en este viaje aparece aquí, con quién lo hizo y cuándo.",
+  "someone": "Alguien",
+  "you": "Tú",
+  "line": {
+    "created": "{{actor}} añadió {{entity}}",
+    "updated": "{{actor}} cambió {{entity}}",
+    "deleted": "{{actor}} quitó {{entity}}"
+  },
+  "fields": "Cambió: {{fields}}",
+  "entity": {
+    "trip": "el viaje",
+    "traveller": "un viajero",
+    "stop": "una parada",
+    "event": "un evento",
+    "segment": "un tramo",
+    "seat": "un asiento",
+    "document": "un documento",
+    "task": "una tarea",
+    "budget_category": "una categoría del presupuesto",
+    "expense": "un gasto",
+    "expense_share": "un reparto de gasto",
+    "emergency": "la información de emergencia",
+    "phrase_card": "una tarjeta de frases",
+    "member": "un miembro",
+    "invitation": "una invitación",
+    "other": "algo"
+  },
+  "errors": {
+    "E_ROUTE_NOT_FOUND": "Este servidor aún no sirve el registro de actividad.",
+    "E_EMAIL_NOT_VERIFIED": "Verifica tu correo primero.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Vuelve a intentarlo en {{minutes}} min.",
+    "E_UNAUTHORIZED": "Tu sesión terminó. Vuelve a iniciar sesión.",
+    "network": "Sin conexión. Mostrando lo que tiene este dispositivo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "title": "Miembros",
+  "you": "tú",
+  "role": {
+    "owner": "Propietario",
+    "editor": "Editor"
+  },
+  "joined": "Se unió el {{date}}",
+  "actions": {
+    "makeOwner": "Hacer propietario a {{name}}",
+    "remove": "Quitar a {{name}}",
+    "leave": "Salir del viaje"
+  },
+  "transfer": {
+    "title": "Transferir la propiedad",
+    "body": "{{name}} pasa a ser propietario de este viaje y tú pasas a editor. Solo el propietario gestiona miembros e invitaciones.",
+    "confirm": "Hacer propietario a {{name}}",
+    "done": "{{name}} ahora es el propietario"
+  },
+  "remove": {
+    "title": "Quitar miembro",
+    "body": "{{name}} pierde el acceso a este viaje en todos sus dispositivos. Se le puede invitar de nuevo.",
+    "confirm": "Quitar",
+    "done": "{{name}} ya no está en el viaje"
+  },
+  "leave": {
+    "title": "Salir del viaje",
+    "body": "Pierdes el acceso a este viaje en este dispositivo y en los demás. Para volver necesitas una invitación nueva.",
+    "confirm": "Salir",
+    "done": "Saliste del viaje"
+  },
+  "invite": {
+    "title": "Invitar",
+    "emailBody": "Recibe un correo con un enlace que funciona una vez, durante 7 días, y se une como editor.",
+    "email": "Correo electrónico",
+    "send": "Enviar invitación",
+    "sent": "Invitación enviada a {{email}}",
+    "linkBody": "Cualquiera con el enlace puede unirse como editor. Funciona una vez, durante 7 días.",
+    "link": "Invitar con un enlace",
+    "linkTitle": "Comparte este enlace",
+    "linkShown": "Solo se muestra ahora: cópialo antes de salir.",
+    "copy": "Copiar enlace",
+    "copied": "Enlace copiado",
+    "share": "Compartir enlace",
+    "offline": "Necesitas conexión para invitar a alguien."
+  },
+  "invitations": {
+    "title": "Invitaciones pendientes",
+    "none": "No hay invitaciones pendientes.",
+    "link": "Enlace de invitación",
+    "expires": "Caduca el {{date}}",
+    "expired": "Caducada",
+    "revoke": "Revocar invitación",
+    "revokeTitle": "Revocar invitación",
+    "revokeBody": "El enlace deja de funcionar al instante. Quien ya lo tenga no podrá unirse.",
+    "revokeConfirm": "Revocar",
+    "revoked": "Invitación revocada"
+  },
+  "travellers": {
+    "title": "Viajeros",
+    "body": "Todas las personas del viaje, con o sin la app: para los asientos y, más adelante, quién pagó qué.",
+    "linked": "Tiene la app",
+    "noAccount": "Sin cuenta",
+    "pending": "Pendiente",
+    "add": "Añadir viajero",
+    "addTitle": "Añadir viajero",
+    "renameTitle": "Renombrar viajero",
+    "name": "Nombre",
+    "save": "Guardar",
+    "rename": "Renombrar a {{name}}",
+    "remove": "Quitar a {{name}}",
+    "removeTitle": "Quitar viajero",
+    "removeBody": "{{name}} desaparece de los asientos y los repartos de gastos de este viaje.",
+    "removeConfirm": "Quitar",
+    "added": "{{name}} añadido",
+    "removed": "{{name}} quitado"
+  },
+  "errors": {
+    "E_OWNER_CANNOT_LEAVE": "Transfiere antes la propiedad a otra persona.",
+    "E_TRIP_ROLE": "Solo el propietario del viaje puede hacer esto.",
+    "E_NOT_A_MEMBER": "Esa persona ya no es miembro.",
+    "E_EMAIL_NOT_VERIFIED": "Verifica tu correo primero.",
+    "E_VALIDATION_ERROR": "Revisa los campos marcados.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Vuelve a intentarlo en {{minutes}} min.",
+    "E_UNAUTHORIZED": "Tu sesión terminó. Vuelve a iniciar sesión.",
+    "E_BAD_CSRF_TOKEN": "Esta página está desactualizada. Recárgala e inténtalo de nuevo.",
+    "network": "Sin conexión. Mostrando lo que tiene este dispositivo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
+  }
+}

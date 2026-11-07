@@ -1,0 +1,90 @@
+{
+  "title": "Members",
+  "you": "you",
+  "role": {
+    "owner": "Owner",
+    "editor": "Editor"
+  },
+  "joined": "Joined {{date}}",
+  "actions": {
+    "makeOwner": "Make {{name}} the owner",
+    "remove": "Remove {{name}}",
+    "leave": "Leave the trip"
+  },
+  "transfer": {
+    "title": "Transfer ownership",
+    "body": "{{name}} becomes the owner of this trip and you become an editor. Only the owner manages members and invitations.",
+    "confirm": "Make {{name}} the owner",
+    "done": "{{name}} is now the owner"
+  },
+  "remove": {
+    "title": "Remove member",
+    "body": "{{name}} loses access to this trip on every device. They can be invited again.",
+    "confirm": "Remove",
+    "done": "{{name}} was removed"
+  },
+  "leave": {
+    "title": "Leave the trip",
+    "body": "You lose access to this trip on this device and every other. You need a new invitation to come back.",
+    "confirm": "Leave",
+    "done": "You left the trip"
+  },
+  "invite": {
+    "title": "Invite",
+    "emailBody": "They get a mail with a link that works once, for 7 days, and joins them as an editor.",
+    "email": "E-mail address",
+    "send": "Send invitation",
+    "sent": "Invitation sent to {{email}}",
+    "linkBody": "Anyone with the link can join as an editor. It works once, for 7 days.",
+    "link": "Invite by link",
+    "linkTitle": "Share this link",
+    "linkShown": "It is shown only now: copy it before leaving.",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "share": "Share link",
+    "offline": "You need a connection to invite someone."
+  },
+  "invitations": {
+    "title": "Pending invitations",
+    "none": "No pending invitations.",
+    "link": "Invitation link",
+    "expires": "Expires {{date}}",
+    "expired": "Expired",
+    "revoke": "Revoke invitation",
+    "revokeTitle": "Revoke invitation",
+    "revokeBody": "The link stops working at once. Anyone who already has it cannot join.",
+    "revokeConfirm": "Revoke",
+    "revoked": "Invitation revoked"
+  },
+  "travellers": {
+    "title": "Travellers",
+    "body": "Everyone on the trip, with or without the app: for seats and, later, who paid what.",
+    "linked": "Has the app",
+    "noAccount": "No account",
+    "pending": "Pending",
+    "add": "Add traveller",
+    "addTitle": "Add traveller",
+    "renameTitle": "Rename traveller",
+    "name": "Name",
+    "save": "Save",
+    "rename": "Rename {{name}}",
+    "remove": "Remove {{name}}",
+    "removeTitle": "Remove traveller",
+    "removeBody": "{{name}} disappears from the seats and expense splits of this trip.",
+    "removeConfirm": "Remove",
+    "added": "{{name}} added",
+    "removed": "{{name}} removed"
+  },
+  "errors": {
+    "E_OWNER_CANNOT_LEAVE": "Transfer ownership to someone else first.",
+    "E_TRIP_ROLE": "Only the trip owner can do this.",
+    "E_NOT_A_MEMBER": "That person is no longer a member.",
+    "E_EMAIL_NOT_VERIFIED": "Verify your e-mail first.",
+    "E_VALIDATION_ERROR": "Check the highlighted fields.",
+    "E_TOO_MANY_REQUESTS": "Too many attempts. Try again in {{minutes}} min.",
+    "E_UNAUTHORIZED": "Your session ended. Sign in again.",
+    "E_BAD_CSRF_TOKEN": "This page is out of date. Reload and try again.",
+    "network": "No connection. Showing what this device has.",
+    "unknown": "Something went wrong. Try again."
+  }
+}

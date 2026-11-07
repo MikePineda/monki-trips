@@ -9,6 +9,10 @@ import settingsEn from '../app/features/settings/i18n/en.json'
 import settingsEs from '../app/features/settings/i18n/es.json'
 import styleguideEn from '../app/features/styleguide/i18n/en.json'
 import styleguideEs from '../app/features/styleguide/i18n/es.json'
+import activityEn from '../app/features/trip/activity/i18n/en.json'
+import activityEs from '../app/features/trip/activity/i18n/es.json'
+import membersEn from '../app/features/trip/members/i18n/en.json'
+import membersEs from '../app/features/trip/members/i18n/es.json'
 import shellEn from '../app/layouts/shell/i18n/en.json'
 import shellEs from '../app/layouts/shell/i18n/es.json'
 import uiEn from '../app/shared/ui/i18n/en.json'
@@ -23,7 +27,9 @@ import type { AppLang } from '../app/domain/locale'
  */
 export const SCOPE_CATALOGUES = {
   account: { en: accountEn, es: accountEs },
+  activity: { en: activityEn, es: activityEs },
   auth: { en: authEn, es: authEs },
+  members: { en: membersEn, es: membersEs },
   offline: { en: offlineEn, es: offlineEs },
   settings: { en: settingsEn, es: settingsEs },
   shell: { en: shellEn, es: shellEs },

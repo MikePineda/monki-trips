@@ -77,25 +77,6 @@
       "offline": "Sin conexión",
       "members": "Miembros",
       "activity": "Actividad"
-    },
-    "members": {
-      "title": "Miembros",
-      "role": {
-        "owner": "Dueño",
-        "editor": "Editor"
-      },
-      "you": "tú",
-      "invite": "Invitar con un enlace",
-      "inviteBody": "Cualquiera con el enlace puede unirse como editor. Sirve una vez, durante 7 días.",
-      "linkTitle": "Comparte este enlace",
-      "linkBody": "Solo se muestra ahora: cópialo antes de salir.",
-      "copy": "Copiar enlace",
-      "copied": "Enlace copiado",
-      "offline": "Necesitas conexión para invitar a alguien."
-    },
-    "activity": {
-      "title": "Actividad",
-      "body": "Quién cambió qué, y cuándo, llega con la fase 2."
     }
   },
   "notFound": {
