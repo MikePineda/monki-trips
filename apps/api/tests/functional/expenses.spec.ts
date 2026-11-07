@@ -478,6 +478,61 @@ test.group('Expenses', (group) => {
     assert.equal(noSplit.status, 'applied')
   })
 
+  test('stale split does not overwrite a newer one', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const [traveller] = await db.from('travellers').where('trip_id', trip.id)
+    const friend = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'traveller', { displayName: 'Friend without the app', position: 1 })
+    )
+    const id = randomUUID()
+    const newerShares = [
+      { id: randomUUID(), travellerId: traveller.id, shareMinor: 1000 },
+      { id: randomUUID(), travellerId: friend.id, shareMinor: 2000 },
+    ]
+    await pushApplied(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        { amountMinor: 3000, currency: 'AUD', spentOn: '2027-01-22', shares: newerShares },
+        { id, changedAt: '2027-01-25T09:00:00.000Z' }
+      )
+    )
+
+    // A device that was offline split it evenly an hour earlier.
+    const stale = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        {
+          description: 'Boat tour',
+          shares: [
+            { id: randomUUID(), travellerId: traveller.id, shareMinor: 1500 },
+            { id: randomUUID(), travellerId: friend.id, shareMinor: 1500 },
+          ],
+        },
+        { id, changedAt: '2027-01-25T08:00:00.000Z' }
+      )
+    )
+
+    assert.equal(stale.status, 'partial')
+    assert.deepEqual(stale.rejectedFields, ['shares'])
+    assert.include(stale.row as object, { description: 'Boat tour' })
+    const live = await db.from('expense_shares').where('expense_id', id).whereNull('deleted_at')
+    assert.sameMembers(
+      live.map((share) => share.id),
+      newerShares.map((share) => share.id)
+    )
+    const [row] = await db.from('expenses').where('id', id)
+    assert.equal(row.field_clock.shares, Date.parse('2027-01-25T09:00:00.000Z'))
+  })
+
   test('the budget view sums converted expenses by category', async ({ client, assert }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner, {

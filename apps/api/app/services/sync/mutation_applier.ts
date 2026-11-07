@@ -229,12 +229,13 @@ export class MutationApplier {
     }
     if (!current && !spec.insertable) throw MutationRejected.code(i18n, 'E_ROW_NOT_FOUND')
 
-    // Fields that are not columns (an expense's `shares`) go to the hooks.
+    // Fields that are not columns (an expense's `shares`) go to the hooks once they win the merge.
     const writable: Record<string, unknown> = {}
+    const extras: Record<string, unknown> = {}
     for (const [field, value] of Object.entries(changes)) {
       const column = columns.get(field)
       if (column?.writable) writable[field] = value
-      else if (!column) ctx.extras[field] = value
+      else if (!column) extras[field] = value
     }
 
     const problems: { field: string; rule: string }[] = []
@@ -268,11 +269,15 @@ export class MutationApplier {
       current: current ? rowToWire(spec, current) : null,
       deleted: false,
       clock: (current?.field_clock as Record<string, number> | undefined) ?? {},
-      changes: writable,
+      // Extras have their own clock entry (`field_clock.shares`): a stale split loses like any field.
+      changes: { ...writable, ...extras },
       changedAt: ctx.changedAt,
     })
     if (merge.outcome === 'deleted') {
       throw MutationRejected.code(i18n, 'E_ROW_DELETED', rowToWire(spec, current!))
+    }
+    for (const field of Object.keys(extras)) {
+      if (field in merge.applied) ctx.extras[field] = merge.applied[field]
     }
 
     await this.checkReferences(spec, mutation.id, merge.applied, ctx, i18n)
@@ -316,7 +321,7 @@ export class MutationApplier {
     }
 
     const status: SyncResultStatus = merge.rejectedFields.length > 0 ? 'partial' : 'applied'
-    const appliedFields = [...Object.keys(merge.applied), ...Object.keys(ctx.extras)]
+    const appliedFields = Object.keys(merge.applied)
     return this.finish(
       spec,
       mutation,

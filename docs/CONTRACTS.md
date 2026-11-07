@@ -132,7 +132,9 @@ Each mutation runs in its own transaction and answers one of:
 | `rejected`  | nothing was written; `error: { code, message, errors? }`. `E_ROW_NOT_FOUND` (not a member, id of another trip, missing parent, unknown row), `E_ROW_DELETED` (tombstones always win; `row` is the tombstone), `E_TRIP_ROLE`, `E_BASE_CURRENCY_LOCKED`, `E_VALIDATION_ERROR` (with `errors`), `E_BAD_REQUEST` (an operation the entity does not allow), `E_CONFLICT` (a `mutationId` of another account, or a second live row where only one may exist: a seat per traveller and segment, a share per traveller and expense). A value the database cannot store is `E_VALIDATION_ERROR` too: one bad mutation never fails the batch. |
 
 A field applies when its `changedAt` is not older than the field's clock
-(`field_clock`); a tie goes to the last arrival. Deleting a row tombstones
+(`field_clock`); a tie goes to the last arrival. An expense's `shares` is
+one field with its own clock entry: a stale split loses as a whole
+(`partial`, `rejectedFields: ['shares']`). Deleting a row tombstones
 it (`deletedAt`) and, for an event, its segments and seats; for a segment,
 its seats; for an expense, its shares. A document tagged `print` gets one
 "print this" task (`origin: document`, `titleKey: print_document`, due the
