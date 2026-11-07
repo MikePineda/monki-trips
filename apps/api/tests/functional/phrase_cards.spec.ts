@@ -343,6 +343,27 @@ test.group('Phrase cards', (group) => {
     )
   })
 
+  test('phrase card generation is throttled per user', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const partner = await makeUser()
+    const trip = await makeTrip(owner)
+    await addMember(trip, partner)
+
+    const statuses: number[] = []
+    for (let i = 0; i < 6; i += 1) {
+      const response = await generate(client, owner, trip.id, { language: 'ja' })
+      statuses.push(response.status())
+    }
+    const blocked = await generate(client, owner, trip.id, { language: 'ko' })
+    const other = await generate(client, partner, trip.id, { language: 'ko' })
+
+    assert.deepEqual(statuses, [201, 409, 409, 409, 409, 429])
+    blocked.assertStatus(429)
+    blocked.assertBodyContains({ code: 'E_TOO_MANY_REQUESTS' })
+    other.assertStatus(201)
+    assert.lengthOf(llm.current.calls, 2, 'a throttled request never reaches the model')
+  })
+
   test('a malformed language or preference list is refused before any call', async ({
     client,
     assert,
