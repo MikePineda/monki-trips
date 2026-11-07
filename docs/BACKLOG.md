@@ -33,3 +33,7 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: Trip list rows keep only name, dates, currency and budget; `role` and `memberCount` from `GET /trips` are not stored yet (the members page asks the server).
 - 2026-11-07: Initial bundle is 427 kB after WP 0.6b (warning at 350 kB, error at 450 kB); the budget decision is still open.
 - 2026-11-07: `/settings` outside a trip now hosts the Account section too (same page as `more/settings`); confirm or drop the outside route together with the earlier backlog line.
+- 2026-11-07: Offline with no session (after a 401) the trip list still shows the device owner's cached trips to whoever holds the device, because the shell never goes to /login offline; consider hiding the list until the owner signs in again (the trip guard already refuses those trips).
+- 2026-11-07: A background `/me` refresh that resolves after `expire()` can set the old session again; give `SessionStore` a generation counter so a stale refresh is ignored.
+- 2026-11-07: `FakeSyncApi` is still the production `SYNC_API` (it accepts every push); replace it with the real `/sync/pull|push` client in WP 1.1 and move the fake to `src/testing`.
+- 2026-11-07: Initial bundle is 327 kB since Dexie loads in its own chunk behind `OFFLINE_DB` (was 427 kB); the 350 kB warning holds again.
