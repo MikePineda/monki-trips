@@ -42,11 +42,22 @@ export function partnerAccount(): E2eAccount {
  * projects on one database never see each other's trips; global-setup.ts
  * seeds one per project.
  */
-export function soloAccount(project?: string): E2eAccount {
+export function soloAccount(project?: string, journey?: SoloJourney): E2eAccount {
   const email = required('E2E_SOLO_EMAIL')
+  const tag = [project, journey].filter(Boolean).join('-')
   return {
-    email: project ? email.replace('@', `+${project}@`) : email,
+    email: tag ? email.replace('@', `+${tag}@`) : email,
     password: required('E2E_SOLO_PASSWORD'),
     displayName: 'Owner',
   }
 }
+
+/**
+ * Journeys that wipe and recreate their solo traveller's trips. Each gets
+ * its own account per project (`solo+<project>-<journey>@...`): files run
+ * in parallel, and a shared account would let one journey delete another's
+ * trip or show J01 a list that is not empty.
+ */
+export const SOLO_JOURNEYS = ['j06b', 'j15'] as const
+
+export type SoloJourney = (typeof SOLO_JOURNEYS)[number]

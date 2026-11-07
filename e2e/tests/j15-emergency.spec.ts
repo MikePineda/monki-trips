@@ -16,7 +16,7 @@ test.describe('J15 emergency info', () => {
   let tripId: string
 
   test.beforeEach(async ({}, testInfo) => {
-    solo = soloAccount(testInfo.project.name)
+    solo = soloAccount(testInfo.project.name, 'j15')
     const api = await ApiSession.signIn(solo)
     try {
       await api.deleteAllTrips()
