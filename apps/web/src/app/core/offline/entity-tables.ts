@@ -10,6 +10,7 @@ import type { SyncTable } from './records'
 export const ENTITY_TABLES: Partial<Record<SyncEntity, SyncTable>> = {
   trip: 'trips',
   member: 'members',
+  traveller: 'travellers',
   task: 'tasks',
   emergency: 'emergency',
 }
@@ -18,6 +19,7 @@ export const ENTITY_TABLES: Partial<Record<SyncEntity, SyncTable>> = {
 export const TABLE_ENTITIES: Partial<Record<SyncTable, SyncEntity>> = {
   trips: 'trip',
   members: 'member',
+  travellers: 'traveller',
   tasks: 'task',
   emergency: 'emergency',
 }

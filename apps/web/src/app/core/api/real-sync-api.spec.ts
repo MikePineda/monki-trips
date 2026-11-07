@@ -92,6 +92,49 @@ describe('RealSyncApi', () => {
     ])
   })
 
+  it('pulls travellers into the device travellers table, tombstones included', async () => {
+    const traveller = {
+      id: 'tr1',
+      tripId: 't1',
+      displayName: 'Little one',
+      userId: null,
+      position: 2,
+      deletedAt: null,
+      updatedAt: '2026-11-07T12:00:00.000Z',
+    }
+    const { loader } = clientWith({
+      pull: () => ({
+        changes: [
+          { entity: 'traveller', row: traveller },
+          {
+            entity: 'traveller',
+            row: { ...traveller, id: 'tr2', deletedAt: '2026-11-07T12:00:00.000Z' },
+          },
+        ],
+        tripIds: ['t1'],
+        cursor: 'c2',
+        hasMore: false,
+      }),
+    })
+
+    const result = await new RealSyncApi(loader).pull('c1')
+
+    expect(result.changes).toEqual([
+      {
+        table: 'travellers',
+        row: {
+          id: 'tr1',
+          tripId: 't1',
+          displayName: 'Little one',
+          userId: null,
+          position: 2,
+          updatedAt: '2026-11-07T12:00:00.000Z',
+        },
+      },
+      { table: 'travellers', row: { id: 'tr2' }, deleted: true },
+    ])
+  })
+
   it('a first pull sends no cursor', async () => {
     const { requests, loader } = clientWith({
       pull: () => ({ changes: [], tripIds: [], cursor: 'c1', hasMore: false }),
