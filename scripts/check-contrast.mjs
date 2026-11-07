@@ -1,38 +1,46 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// Contrast gate for the design proposals. Pure functions (WCAG 2.x relative
+// Contrast gate for the design tokens. Pure functions (WCAG 2.x relative
 // luminance and contrast ratio) plus a small CLI that reads every
-// `docs/design/proposals/*/palette.md`, parses the table under the
-// "## Tokens" heading and checks each token against the surfaces it names,
-// in both themes:
+// `docs/design/proposals/*/palette.md` (the table under the "## Tokens"
+// heading) and `docs/design/tokens.json` (its `color.tokens` list), and
+// checks each token against the surfaces it names, in both themes:
 //
 //   role `text`       >= 4.5:1  (body copy, labels, links, numbers)
 //   role `graphic`    >= 3:1    (icons, meaningful borders, focus rings)
 //   role `surface`    no requirement (the backgrounds themselves)
 //   role `decorative` no requirement (hairline separators; documented as such)
+//   role `series`     no requirement here (chart colours; validated by the
+//                     dataviz palette validator, see docs/design/README.md)
+//   role `overlay`    no requirement (translucent scrims, `#RRGGBBAA`)
 //
-// Table columns: | Token | Light | Dark | Role | Against |, where Against is
-// a comma-separated list of other tokens of the same table (usually
-// surfaces). Exit code 1 on any failure; the report names token, surface,
-// theme, ratio and threshold.
+// palette.md columns: | Token | Light | Dark | Role | Against |, where Against
+// is a comma-separated list of other tokens of the same table (usually
+// surfaces). tokens.json entries: `{ name, value: { light, dark } | "#hex",
+// role, against?: string[], usage? }`. Exit code 1 on any failure; the report
+// names token, surface, theme, ratio and threshold.
 //
-// Usage: node scripts/check-contrast.mjs [palette.md ...]
+// Usage: node scripts/check-contrast.mjs [palette.md | tokens.json ...]
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { globSync } from 'node:fs'
+import { extname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
+const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i
+const TOKENS_JSON = 'docs/design/tokens.json'
 
 const RATIO_BY_ROLE = Object.freeze({
   text: 4.5,
   graphic: 3,
   surface: 0,
   decorative: 0,
+  series: 0,
+  overlay: 0,
 })
 
-/** Expands `#abc` to `#aabbcc` and validates the input. */
+/** Expands `#abc` to `#aabbcc` and validates the input; `#rrggbbaa` is kept as is. */
 function normaliseHex(hex) {
   if (typeof hex !== 'string' || !HEX.test(hex.trim())) {
     throw new TypeError(`not a hex colour: ${String(hex)}`)
@@ -53,9 +61,12 @@ function channel(value) {
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
 }
 
-/** WCAG 2.x relative luminance of an sRGB hex colour, 0 (black) to 1 (white). */
+/** WCAG 2.x relative luminance of an opaque sRGB hex colour, 0 (black) to 1 (white). */
 export function relativeLuminance(hex) {
   const full = normaliseHex(hex)
+  if (full.length === 9) {
+    throw new TypeError(`translucent colour has no contrast on its own: ${full}`)
+  }
   const r = parseInt(full.slice(1, 3), 16)
   const g = parseInt(full.slice(3, 5), 16)
   const b = parseInt(full.slice(5, 7), 16)
@@ -122,6 +133,38 @@ export function parsePalette(markdown) {
 }
 
 /**
+ * Reads the `color.tokens` list of a tokens.json (the Design System shape plus
+ * `role` and `against`). Returns `[{ name, light, dark, role, against: string[] }]`.
+ */
+export function parseTokensJson(text) {
+  const data = JSON.parse(text)
+  const list = data?.color?.tokens
+  if (!Array.isArray(list) || list.length === 0) {
+    throw new Error('tokens.json has no color.tokens list')
+  }
+  return list.map((token) => {
+    if (typeof token.role !== 'string') throw new Error(`token "${token.name}" has no role`)
+    const value =
+      typeof token.value === 'string' ? { light: token.value, dark: token.value } : token.value
+    return {
+      name: token.name,
+      light: normaliseHex(value.light),
+      dark: normaliseHex(value.dark ?? value.light),
+      role: token.role,
+      against: Array.isArray(token.against) ? [...token.against] : [],
+    }
+  })
+}
+
+/** Parses a token file by its extension: `.md` (palette table) or `.json` (tokens.json). */
+export function loadTokens(file, text) {
+  const ext = extname(file).toLowerCase()
+  if (ext === '.md') return parsePalette(text)
+  if (ext === '.json') return parseTokensJson(text)
+  throw new Error(`${file}: expected a .md or .json token file`)
+}
+
+/**
  * Checks every token against each surface it names, in both themes.
  * Returns the failures: `[{ theme, token, against, ratio, required }]`.
  */
@@ -152,16 +195,23 @@ function formatRatio(ratio) {
   return `${(Math.floor(ratio * 100) / 100).toFixed(2)}:1`
 }
 
-/** CLI: checks the given palette files (default: every proposal). */
+/** Default inputs: every proposal's palette.md plus the system's tokens.json. */
+function defaultFiles() {
+  const files = globSync('docs/design/proposals/*/palette.md').sort()
+  if (existsSync(TOKENS_JSON)) files.push(TOKENS_JSON)
+  return files
+}
+
+/** CLI: checks the given token files (default: every proposal and tokens.json). */
 export function main(argv) {
-  const files = argv.length > 0 ? argv : globSync('docs/design/proposals/*/palette.md').sort()
+  const files = argv.length > 0 ? argv : defaultFiles()
   if (files.length === 0) {
-    console.error('check-contrast: no palette.md found')
+    console.error('check-contrast: no palette.md or tokens.json found')
     return 2
   }
   let failures = 0
   for (const file of files) {
-    const tokens = parsePalette(readFileSync(file, 'utf8'))
+    const tokens = loadTokens(file, readFileSync(file, 'utf8'))
     const findings = checkPalette(tokens)
     const pairs = tokens.reduce((n, t) => n + t.against.length * 2, 0)
     if (findings.length === 0) {
