@@ -6,6 +6,9 @@ import { FxRates } from '#services/fx/fx_rates'
 import { tombstoneWhere } from '#services/sync/table_writes'
 import { expenseChanges } from '#validators/sync/entities'
 
+/** The largest minor amount the wire carries exactly (the validators cap inputs the same way). */
+const MAX_MINOR = BigInt(Number.MAX_SAFE_INTEGER)
+
 interface ShareInput {
   id: string
   travellerId: string
@@ -69,8 +72,9 @@ export const expenseEntity: EntitySpec = {
 
     const shares = merged.shares as ShareInput[] | undefined
     if (shares) {
-      const sum = shares.reduce((total, share) => total + share.shareMinor, 0)
-      if (sum !== amount) problems.push({ field: 'shares', rule: 'sharesSum' })
+      // BigInt: fifty safe integers can add up past the safe range.
+      const sum = shares.reduce((total, share) => total + BigInt(share.shareMinor), 0n)
+      if (sum !== BigInt(amount)) problems.push({ field: 'shares', rule: 'sharesSum' })
       const travellers = new Set(shares.map((share) => share.travellerId))
       if (travellers.size !== shares.length) problems.push({ field: 'shares', rule: 'distinct' })
     }
@@ -104,16 +108,18 @@ export const expenseEntity: EntitySpec = {
     columns.fx_rate = rate
     columns.fx_source = source
     columns.fx_rate_date = rateDate
-    columns.base_amount_minor = rate
-      ? Number(
-          convertToBaseMinor({
-            amountMinor: amount,
-            rate,
-            fromExponent: minorUnitExponent(currency).exponent,
-            toExponent: minorUnitExponent(base).exponent,
-          })
-        )
+    const baseAmount = rate
+      ? convertToBaseMinor({
+          amountMinor: amount,
+          rate,
+          fromExponent: minorUnitExponent(currency).exponent,
+          toExponent: minorUnitExponent(base).exponent,
+        })
       : null
+    if (baseAmount !== null && (baseAmount > MAX_MINOR || baseAmount < -MAX_MINOR)) {
+      problems.push({ field: 'amountMinor', rule: 'convertedRange' })
+    }
+    columns.base_amount_minor = baseAmount === null ? null : Number(baseAmount)
     return { columns, problems }
   },
   async afterWrite(ctx) {

@@ -472,4 +472,144 @@ test.group('Sync push', (group) => {
       .where('action', 'deleted')
     assert.lengthOf(activity, 1)
   })
+
+  test('a failing mutation does not fail the batch', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const [traveller] = await db.from('travellers').where('trip_id', trip.id)
+    const friend = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'traveller', { displayName: 'Friend without the app', position: 1 })
+    )
+    const event = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'event', { kind: 'train', title: 'Night train' })
+    )
+    const segment = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'segment', {
+        eventId: event.id,
+        departsLocal: '2027-01-21T20:00',
+        departsTz: 'UTC',
+        arrivesLocal: '2027-01-22T06:00',
+        arrivesTz: 'UTC',
+      })
+    )
+    const expense = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        amountMinor: 3000,
+        currency: 'AUD',
+        spentOn: '2027-01-22',
+        shares: [
+          { id: randomUUID(), travellerId: traveller.id, shareMinor: 2000 },
+          { id: randomUUID(), travellerId: friend.id, shareMinor: 1000 },
+        ],
+      })
+    )
+    const [friendShare] = await db
+      .from('expense_shares')
+      .where({ expense_id: expense.id, traveller_id: friend.id })
+    const before = mutation(trip.id, 'stop', { name: 'Before' })
+    const after = mutation(trip.id, 'stop', { name: 'After' })
+
+    const results = await push(client, owner, [
+      before,
+      // The traveller already has a seat on this segment.
+      mutation(trip.id, 'seat', { segmentId: segment.id, travellerId: traveller.id }),
+      mutation(trip.id, 'seat', { segmentId: segment.id, travellerId: traveller.id }),
+      // The other traveller already has a share of this expense.
+      mutation(trip.id, 'expense_share', { travellerId: traveller.id }, { id: friendShare.id }),
+      after,
+    ])
+
+    assert.deepEqual(
+      results.map((r) => [r.status, r.error?.code ?? null]),
+      [
+        ['applied', null],
+        ['applied', null],
+        ['rejected', 'E_CONFLICT'],
+        ['rejected', 'E_CONFLICT'],
+        ['applied', null],
+      ]
+    )
+    assert.lengthOf(await db.from('stops').whereIn('id', [before.id, after.id]), 2)
+    const [share] = await db.from('expense_shares').where('id', friendShare.id)
+    assert.equal(share.traveller_id, friend.id)
+    assert.lengthOf(await db.from('segment_seats').where('segment_id', segment.id), 1)
+  })
+
+  test('segment reorder swaps positions without a conflict', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const event = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'event', { kind: 'flight', title: 'Two legs' })
+    )
+    const leg = (position: number, departs: string, arrives: string) =>
+      mutation(trip.id, 'segment', {
+        eventId: event.id,
+        position,
+        departsLocal: departs,
+        departsTz: 'UTC',
+        arrivesLocal: arrives,
+        arrivesTz: 'UTC',
+      })
+    // Overlapping legs, so either order gives the event a valid start and end.
+    const first = leg(0, '2027-01-21T08:00', '2027-01-21T14:00')
+    const second = leg(1, '2027-01-21T10:00', '2027-01-21T12:00')
+    await pushApplied(client, owner, first)
+    await pushApplied(client, owner, second)
+
+    const results = await push(client, owner, [
+      mutation(trip.id, 'segment', { position: 1 }, { id: first.id }),
+      mutation(trip.id, 'segment', { position: 0 }, { id: second.id }),
+    ])
+
+    assert.deepEqual(
+      results.map((r) => r.status),
+      ['applied', 'applied']
+    )
+    const positions = await db
+      .from('event_segments')
+      .where('event_id', event.id)
+      .orderBy('position')
+      .select('id', 'position')
+    assert.deepEqual(positions, [
+      { id: second.id, position: 0 },
+      { id: first.id, position: 1 },
+    ])
+    // The legs drive the event in their new order.
+    const [row] = await db.from('events').where('id', event.id)
+    assert.equal(row.starts_at.toISOString(), '2027-01-21T10:00:00.000Z')
+    assert.equal(row.ends_at.toISOString(), '2027-01-21T14:00:00.000Z')
+  })
+
+  test('invalid changed at is rejected', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const bad = mutation(trip.id, 'stop', { name: 'When?' }, { changedAt: 'yesterday' })
+    const week = mutation(trip.id, 'stop', { name: 'Week date' }, { changedAt: '2026-W45-6' })
+    const good = mutation(trip.id, 'stop', { name: 'Fine' })
+
+    const results = await push(client, owner, [bad, week, good])
+
+    assert.equal(results[0].status, 'rejected')
+    assert.equal(results[0].error?.code, 'E_VALIDATION_ERROR')
+    assert.deepEqual(
+      results[0].error?.errors?.map((e) => [e.field, e.rule]),
+      [['changedAt', 'instant']]
+    )
+    // Any ISO 8601 form the validator accepts is read the same way (2026-W45-6 = 7 Nov 2026).
+    assert.equal(results[1].status, 'applied')
+    const [row] = await db.from('stops').where('id', week.id)
+    assert.equal(row.field_clock.name, Date.parse('2026-11-07T00:00:00Z'))
+    assert.equal(results[2].status, 'applied')
+    assert.isEmpty(await db.from('stops').where('id', bad.id))
+  })
 })

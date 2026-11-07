@@ -50,6 +50,45 @@ export async function tombstoneEventChildren(
 }
 
 /**
+ * Moves a live segment from position `from` to `to` without a moment where
+ * two live legs of the event share a position (the partial unique index
+ * would refuse it): the moving row parks at -1, the leg that held `to`
+ * takes `from`, and the caller then writes `to`. A reorder sent as one
+ * mutation per leg therefore never conflicts: the first mutation swaps
+ * both legs, the second finds its leg already in place. The displaced leg's
+ * position clock advances to `changedAt` (never backwards).
+ */
+export async function swapSegmentPosition(
+  trx: TransactionClientContract,
+  segment: { id: string; eventId: string; from: number; to: number },
+  by: { userId: string; changedAt: number }
+): Promise<void> {
+  if (segment.from === segment.to) return
+  const occupant = (await trx
+    .from('event_segments')
+    .where('event_id', segment.eventId)
+    .where('position', segment.to)
+    .whereNull('deleted_at')
+    .whereNot('id', segment.id)
+    .forUpdate()
+    .select('id')
+    .first()) as { id: string } | null
+  if (!occupant) return
+  await trx.from('event_segments').where('id', segment.id).update({ position: -1 })
+  await trx
+    .from('event_segments')
+    .where('id', occupant.id)
+    .update({
+      position: segment.from,
+      updated_by: by.userId,
+      field_clock: trx.raw(
+        `field_clock || jsonb_build_object('position', greatest(coalesce((field_clock->>'position')::bigint, 0), ?::bigint))`,
+        [by.changedAt]
+      ),
+    })
+}
+
+/**
  * When an event has live segments they drive its start and end: the first
  * departure and the last arrival, zones included. Without segments the
  * event keeps whatever it has.

@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon'
+import { parseIsoInstant } from '#domain/iso_instant'
 
 /**
  * How a database value becomes a wire value and back. Postgres (through
@@ -68,7 +69,7 @@ export function toColumnValue(type: ColumnType, value: unknown): unknown {
     case 'json':
       return JSON.stringify(value)
     case 'instant':
-      return new Date(String(value))
+      return parseIsoInstant(String(value))
     default:
       return value
   }

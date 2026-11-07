@@ -115,4 +115,20 @@ test.group('Today', (group) => {
     assert.equal(later.body().data.date, '2027-02-01')
     bad.assertStatus(422)
   })
+
+  test('the at parameter is read like any ISO instant the validator accepts', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    // An ISO week date: Monday of week 5 of 2027 is 1 February.
+    const week = await actingAs(client.get(`/api/v1/trips/${trip.id}/today`), owner).qs({
+      at: '2027-W05-1T12:00',
+    })
+
+    week.assertStatus(200)
+    assert.equal(week.body().data.at, '2027-02-01T12:00:00.000Z')
+  })
 })

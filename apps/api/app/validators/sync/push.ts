@@ -1,11 +1,11 @@
 import vine from '@vinejs/vine'
 import { SYNC_OPS, SYNC_PUSH_ENTITIES, SYNC_PUSH_MAX_MUTATIONS } from '@monkitrips/shared'
-import { instantField } from '#validators/sync/fields'
 
 /**
  * The envelope of `POST /sync/push`. Each mutation's `changes` are validated
  * per entity by the applier, so a bad field rejects that mutation alone and
- * the rest of the batch still applies. `tripId`, `id` and `mutationId` are
+ * the rest of the batch still applies; so does a `changedAt` that is not an
+ * ISO instant. `tripId`, `id` and `mutationId` are
  * client UUIDs; tenancy is checked per mutation (never 403).
  */
 export const syncPushValidator = vine.compile(
@@ -19,7 +19,8 @@ export const syncPushValidator = vine.compile(
           op: vine.enum(SYNC_OPS),
           id: vine.string().uuid(),
           changes: vine.object({}).allowUnknownProperties().optional(),
-          changedAt: instantField,
+          // Read per mutation by the applier: a bad instant rejects that mutation alone.
+          changedAt: vine.string().trim().maxLength(64),
         })
       )
       .maxLength(SYNC_PUSH_MAX_MUTATIONS),
