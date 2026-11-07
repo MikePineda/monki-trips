@@ -11,7 +11,9 @@ let sequence = 0
  * unique `userN@example.com`; pass `emailVerifiedAt: null` for an unverified
  * one. Overrides are plain model attributes.
  */
-export async function makeUser(overrides: Partial<Record<keyof User, unknown>> = {}): Promise<User> {
+export async function makeUser(
+  overrides: Partial<Record<keyof User, unknown>> = {}
+): Promise<User> {
   sequence += 1
   return User.create({
     email: `user${sequence}@example.com`,

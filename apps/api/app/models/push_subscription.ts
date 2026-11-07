@@ -15,7 +15,8 @@ export default class PushSubscription extends BaseModel {
   @column()
   declare endpoint: string
 
-  @column({ serializeAs: null })
+  // The naming strategy would snake-case this to p_256_dh.
+  @column({ columnName: 'p256dh', serializeAs: null })
   declare p256dh: string
 
   @column({ serializeAs: null })
