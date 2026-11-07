@@ -333,6 +333,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trips_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'sync.pull': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/sync/pull'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/sync/push').syncPullValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sync_controller').default['pull']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sync_controller').default['pull']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/sync_controller').default['pull']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'sync.push': {
+    methods: ["POST"]
+    pattern: '/api/v1/sync/push'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/sync/push').syncPushValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/sync/push').syncPushValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sync_controller').default['push']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sync_controller').default['push']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/sync_controller').default['push']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'fx.rates': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/fx/rates'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/fx_controller').default['rates']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/fx_controller').default['rates']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/fx_controller').default['rates']>>>
+    }
+  }
   'trips.snapshot': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/snapshot'
@@ -344,6 +383,71 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/trips_controller').default['snapshot']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trips_controller').default['snapshot']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trips_controller').default['snapshot']>>>
+    }
+  }
+  'trips.nights': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/nights'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['nights']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['nights']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['nights']>>>
+    }
+  }
+  'trips.budget': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/budget'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['budget']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['budget']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['budget']>>>
+    }
+  }
+  'trips.today': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/today'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
+    }
+  }
+  'trips.documents.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/documents'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/document').uploadDocumentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/document').uploadDocumentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'trips.documents.file': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/documents/:id/file'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['file']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['file']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['file']>>>
     }
   }
   'trips.members.index': {

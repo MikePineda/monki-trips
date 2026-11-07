@@ -1,0 +1,15 @@
+meta {
+  name: Download a document
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/documents/{{documentId}}/file
+  body: none
+  auth: none
+}
+
+docs {
+  302 to a signed URL valid for 300 s; images and PDFs open inline, the rest download.
+}

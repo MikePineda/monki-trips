@@ -6,14 +6,18 @@
 export const controllers = {
   Auth: () => import('#controllers/auth_controller'),
   Config: () => import('#controllers/config_controller'),
+  Documents: () => import('#controllers/documents_controller'),
   EmailVerification: () => import('#controllers/email_verification_controller'),
+  Fx: () => import('#controllers/fx_controller'),
   HealthChecks: () => import('#controllers/health_checks_controller'),
   Invitations: () => import('#controllers/invitations_controller'),
   PasswordReset: () => import('#controllers/password_reset_controller'),
   Profile: () => import('#controllers/profile_controller'),
   PushSubscriptions: () => import('#controllers/push_subscriptions_controller'),
   Spa: () => import('#controllers/spa_controller'),
+  Sync: () => import('#controllers/sync_controller'),
   TripInvitations: () => import('#controllers/trip_invitations_controller'),
   TripMembers: () => import('#controllers/trip_members_controller'),
+  TripViews: () => import('#controllers/trip_views_controller'),
   Trips: () => import('#controllers/trips_controller'),
 }

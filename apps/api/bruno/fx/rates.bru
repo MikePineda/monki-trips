@@ -1,0 +1,17 @@
+meta {
+  name: Exchange rates
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{baseUrl}}/api/v1/fx/rates?base=AUD&symbols=THB,JPY&date=2027-01-22
+  body: none
+  auth: none
+}
+
+params:query {
+  base: AUD
+  symbols: THB,JPY
+  date: 2027-01-22
+}

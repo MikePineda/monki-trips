@@ -1,0 +1,22 @@
+meta {
+  name: Sync pull
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{baseUrl}}/api/v1/sync/pull?cursor=&limit=500
+  body: none
+  auth: none
+}
+
+params:query {
+  cursor: 
+  limit: 500
+}
+
+docs {
+  Without a cursor: a snapshot of every live row of every trip the account
+  belongs to. With one: everything changed since, tombstones included.
+  A cursor older than the purge horizon answers 410 E_SYNC_CURSOR_EXPIRED.
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Upload a document
+  type: http
+  seq: 46
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/documents
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:multipart-form {
+  title: Rail voucher
+  tags[]: print
+  file: @file(fixtures/voucher.pdf)
+}
+
+docs {
+  Multipart, 25 MB at most, PDF or image (decided from the bytes).
+  413 E_FILE_TOO_LARGE, 415 E_UNSUPPORTED_FILE.
+}

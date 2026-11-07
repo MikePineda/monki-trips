@@ -92,11 +92,32 @@ router
             router.get('trips', [controllers.Trips, 'index']).as('trips.index')
             router.post('trips', [controllers.Trips, 'store']).as('trips.store')
 
+            // Sync spans every trip of the account; tenancy is checked per row and per mutation.
+            router.get('sync/pull', [controllers.Sync, 'pull']).as('sync.pull')
+            router.post('sync/push', [controllers.Sync, 'push']).as('sync.push')
+
+            router.get('fx/rates', [controllers.Fx, 'rates']).as('fx.rates')
+
             router
               .group(() => {
                 router
                   .get('trips/:tripId/snapshot', [controllers.Trips, 'snapshot'])
                   .as('trips.snapshot')
+                router
+                  .get('trips/:tripId/nights', [controllers.TripViews, 'nights'])
+                  .as('trips.nights')
+                router
+                  .get('trips/:tripId/budget', [controllers.TripViews, 'budget'])
+                  .as('trips.budget')
+                router
+                  .get('trips/:tripId/today', [controllers.TripViews, 'today'])
+                  .as('trips.today')
+                router
+                  .post('trips/:tripId/documents', [controllers.Documents, 'store'])
+                  .as('trips.documents.store')
+                router
+                  .get('trips/:tripId/documents/:id/file', [controllers.Documents, 'file'])
+                  .as('trips.documents.file')
                 router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')
