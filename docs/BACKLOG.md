@@ -37,3 +37,4 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: A background `/me` refresh that resolves after `expire()` can set the old session again; give `SessionStore` a generation counter so a stale refresh is ignored.
 - 2026-11-07: `FakeSyncApi` is still the production `SYNC_API` (it accepts every push); replace it with the real `/sync/pull|push` client in WP 1.1 and move the fake to `src/testing`.
 - 2026-11-07: Initial bundle is 327 kB since Dexie loads in its own chunk behind `OFFLINE_DB` (was 427 kB); the 350 kB warning holds again.
+- 2026-11-08 · design round 2 (more personality: stamps, ticket textures, motion) after the first trip.

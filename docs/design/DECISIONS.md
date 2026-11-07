@@ -95,3 +95,72 @@ Facts fixed by the design system:
   filled control on Today.
 - Weather sits beside "Left today" (same row, after it in reading order) so
   Today fits one 390 × 844 screen above the FAB.
+
+## 2026-11-08 · Stop 1.5: design system approved for v1 by the owner
+
+Stop 1.5: design system approved for v1 by the owner (noted as generic; a
+visual round 2 is planned after the first trip, see BACKLOG) · the front is
+built token/ui-kit-only so a re-skin touches tokens, `shared/ui` and assets.
+
+## 2026-11-08 · Design system in code
+
+Work package 0.7 (`feat(web): final tokens, fonts, mascot and the
+styleguide`, the stop-2 pull request). What was implemented:
+
+- **Tokens.** `apps/web/src/styles.css` holds exactly the light and dark
+  values of `docs/design/tokens.json` (light on `:root`, dark under
+  `[data-theme="dark"]` and `prefers-color-scheme`), plus the spacing scale
+  `space-half` and `space-1..8` (now mirrored in `tokens.json`), the radii,
+  the elevation and the motion tokens; `core/theme/tokens.spec` fails on any
+  drift. The manifest colours follow `surface-0`.
+- **Fonts.** IBM Plex Sans 400/500/600 and IBM Plex Mono 400/500 self-hosted
+  under `public/fonts/` with their OFL licences, `font-display: swap`,
+  prefetched by the service worker; tabular figures on every type style.
+- **ui-kit.** Every `mk-*` component styles itself from the semantic tokens
+  and exposes its variants through inputs (`variant`, `size`, `tone`):
+  button, chip, field (`mkInput`), list and event rows, the ticket with its
+  SVG-mask perforation, segmented control, route chip, stat tile, banner
+  (incl. the full-width print band), progress, FAB, tab bar, top bar, sheet,
+  toast, connection status, empty state, skeleton, keypad, steps, swatch and
+  device frame; the layout primitives `mk-page`, `mk-section`, `mk-stack`,
+  `mk-row` and the typography component `mk-text`.
+- **Mascot.** `public/mascot/kiko/sheet.svg` + `sheet.json` (64 × 64 frames,
+  six states, 2–3 frames each, 2–6 fps) drawn from the concept sheet,
+  `active.json` → `kiko`, original artwork under AGPL-3.0-only; `mk-mascot`
+  animates with a CSS `steps()` run driven by custom properties and shows the
+  still frame under reduced motion.
+- **Stamps.** `public/stamps/XA.svg`, `XB.svg` (two synthetic countries) and
+  `stamps.json`; `mk-stamp` paints the artwork through a CSS mask in
+  `stamp-ink` and generates the rings for places without artwork.
+- **Modularity.** Features compose only `mk-*` components and the layout
+  primitives: `architecture.spec` rejects raw `<button>`/`<input>`, inline
+  styles, Tailwind colour/radius/shadow/font utilities and component styles
+  outside `shared/ui`. A test-only theme (`src/testing/theme-alt.css`) mounts
+  the mock screens and proves every colour, radius and shadow resolves
+  through a token. Copy goes through Transloco, icons through `mk-icon`,
+  money and dates through `domain/money.ts` and `domain/day-date.ts`.
+- **`/styleguide`.** Tokens with live contrast ratios, the type scale, every
+  component in every state, Kiko in six states at three sizes with a
+  still-frames toggle, the stamps, a language and a theme switch, and the
+  mock screens Today, trip list, itinerary day and quick expense; J09
+  (`e2e/tests/styleguide.visual.spec.ts`) captures them at 390 × 844 in both
+  themes into `e2e/screenshots/styleguide/`.
+
+### Decisions the brief did not cover
+
+- The spacing scale gained `space-5` (40), `space-7` (56) and `space-8` (64)
+  so `--space-1..8` is a full 8 px scale; `tokens.json` carries them.
+- A state's frames sit side by side on one row of the sheet (the asset
+  contract allows any `[col, row]`): one CSS `steps()` run needs contiguous
+  frames; `mascot-sheet.spec` enforces it.
+- Stamp artwork is monochrome and painted through a CSS mask, so it takes
+  `stamp-ink` in both themes without hex in the SVG; the name, code and date
+  are HTML text over it, in mono.
+- The style guide shows one theme at a time (the switch), not the two side
+  by side: side by side does not fit 390 px.
+- The ticket keeps the 358 × 172 aspect ratio so the SVG mask scales
+  uniformly on wider screens.
+- Pending in the connection status is an 8 px dot, not an icon (DESIGN.md);
+  failed uses `circle-x` and stale `clock`.
+- The segmented control is a radiogroup for settings and a tablist for views
+  (`role` input).

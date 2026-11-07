@@ -10,7 +10,6 @@ import { MkFabComponent } from '../../../shared/ui/fab/fab.component'
 import { MkIconComponent } from '../../../shared/ui/icon/icon.component'
 import { MkPageComponent } from '../../../shared/ui/layout/page.component'
 import { MkRowComponent } from '../../../shared/ui/layout/row.component'
-import { MkSectionComponent } from '../../../shared/ui/layout/section.component'
 import { MkStackComponent } from '../../../shared/ui/layout/stack.component'
 import { MkEventRowComponent } from '../../../shared/ui/list/event-row.component'
 import { MkListComponent } from '../../../shared/ui/list/list.component'
@@ -40,7 +39,6 @@ import { mockTabs } from './mock-tabs'
     MkPageComponent,
     MkStackComponent,
     MkRowComponent,
-    MkSectionComponent,
     MkTextComponent,
     MkSegmentedComponent,
     MkRouteChipComponent,

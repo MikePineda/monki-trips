@@ -65,6 +65,9 @@ a dated one-liner (what, where: laptop/cloud/CI, what changed).
   it. Extra type: `security`. Linear history, rebase merges only.
 - **No PR without `npm run verify` green.** Never skip, delete or loosen a
   test to get there.
+- **Features never style:** only `mk-*` components, layout primitives and
+  semantic tokens; a redesign touches tokens, `shared/ui` and assets only
+  (`architecture.spec` enforces it).
 
 ## How to run
 
