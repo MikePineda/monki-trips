@@ -50,9 +50,9 @@ UUIDs (anything else is a route miss, 404 `E_ROUTE_NOT_FOUND`).
 | `GET /trips`                             | `trips.index`                  | verified | `TripListItem[]` (live trips, `role`, `memberCount`).                                                                                                                                                                                               |
 | `POST /trips`                            | `trips.store`                  | verified | 201 `Trip`; owner membership + traveller. Client `id` makes it idempotent (200 on repeat; someone else's id → 404).                                                                                                                                 |
 | `GET /trips/:tripId/snapshot`            | `trips.snapshot`               | member   | `TripContentSnapshot`: `trip`, `members`, `travellers` and every live content row (`stops`, `events`, `segments`, `seats`, `documents`, `tasks`, `budgetCategories`, `expenses`, `expenseShares`, `emergency`, `phraseCards`).                      |
-| `GET /trips/:tripId/nights`              | `trips.nights`                 | member   | `NightsView`: one entry per night (`startsOn` to the day before `endsOn`) with what covers it; `uncoveredCount` is the "where do we sleep?" alert.                                                                                                  |
-| `GET /trips/:tripId/budget`              | `trips.budget`                 | member   | `BudgetStatus` in base minor units: spent, remaining, today's allowance and what is left of it, `pendingFxCount`, committed event costs, per category.                                                                                              |
-| `GET /trips/:tripId/today?at=`           | `trips.today`                  | member   | `TodayView` for the instant `at` (ISO, default now): the zone and date Today follows, the next event or segment with `leaveAt`, today's events and documents, where we sleep, `leftTodayMinor`, open tasks by urgency.                              |
+| `GET /trips/:tripId/nights`              | `trips.nights`                 | member   | `TripNightsView`: one entry per night (`startsOn` to the day before `endsOn`) with what covers it; `uncoveredCount` is the "where do we sleep?" alert.                                                                                              |
+| `GET /trips/:tripId/budget`              | `trips.budget`                 | member   | `TripBudgetView` in base minor units: spent, remaining, today's allowance and what is left of it, `pendingFxCount`, committed event costs, per category.                                                                                            |
+| `GET /trips/:tripId/today?at=`           | `trips.today`                  | member   | `TripTodayView` for the instant `at` (ISO 8601, default now): the zone and date Today follows, the next event or segment with `leaveAt`, today's events and documents, where we sleep, `leftTodayMinor`, open tasks by urgency.                     |
 | `POST /trips/:tripId/documents`          | `trips.documents.store`        | member   | 201 `TripDocument`. Multipart: `file` (≤ 25 MB, PDF or image decided from the bytes), `title`, `tags[]`, `eventId`, `availableOffline`, client `id` (200 on repeat). 413 `E_FILE_TOO_LARGE`, 415 `E_UNSUPPORTED_FILE`, 503 `E_STORAGE_UNAVAILABLE`. |
 | `GET /trips/:tripId/documents/:id/file`  | `trips.documents.file`         | member   | 302 to a signed URL valid for 300 s (`Cache-Control: no-store`); images and PDFs open inline, anything else is `attachment`. A link document answers 404.                                                                                           |
 | `GET /fx/rates?base=&symbols=&date=`     | `fx.rates`                     | verified | `FxRate[]`: units of each symbol per 1 `base` on `date` (default today), decimal strings, from the `fx_rates` cache or the provider; unknown symbols are left out. 503 `E_FX_UNAVAILABLE` when neither can answer.                                  |
@@ -70,10 +70,11 @@ UUIDs (anything else is a route miss, 404 `E_ROUTE_NOT_FOUND`).
 
 Shapes live in `@monkitrips/shared` (`UserProfile`, `Trip`, `TripListItem`,
 `TripMember`, `Traveller`, `TripInvitation`, `IssuedTripInvitation`,
-`TripInvitationPreview`, `TripSnapshot`, `TripContentSnapshot`, `Stop`,
-`TripEvent`, `EventSegment`, `SegmentSeat`, `TripDocument`, `Task`,
-`BudgetCategory`, `Expense`, `ExpenseShare`, `FxRate`, `EmergencyInfo`,
-`PhraseCards`, `NightsView`, `BudgetStatus`, `TodayView`, the `Sync*` types,
+`TripInvitationPreview`, `TripSnapshot`, `TripContentSnapshot`, the stored
+rows `TripStopRow`, `TripEventRow`, `EventSegmentRow`, `SegmentSeat`,
+`TripDocumentRow`, `TripTaskRow`, `BudgetCategory`, `Expense`,
+`ExpenseShare`, `FxRate`, `EmergencyInfo`, `PhraseCards`, the views
+`TripNightsView`, `TripBudgetView`, `TripTodayView`, the `Sync*` types,
 `TripJsonV1`, `AccountExport`, `PushSubscription`, `PushTestResult`,
 `PushPayload`, `AppConfig`,
 `ApiEnvelope`, `ApiErrorBody`, `ValidationErrorBody`, `ERROR_CODES`). Enums
@@ -142,7 +143,12 @@ applied mutation leaves a `trip_activity` row with the field names only.
 the account is a live member of. Entities are the push ones plus the
 read-only `member` (with `displayName`) and `phrase_card`. Without a cursor
 the answer is a snapshot of every live row; with one, every row changed
-after it, tombstones included (`deletedAt` set). `tripIds` is
+after it, tombstones included (`deletedAt` set), plus a snapshot of every
+live row of each trip whose membership row for the account changed after
+the cursor: a trip joined or re-joined, a role change, or a trip restored
+(restore re-stamps its memberships). Those trips are new to the client,
+whose cursor is past their old rows; their snapshot carries no tombstones
+and may span pages (the cursor then records where it resumes). `tripIds` is
 authoritative: the client drops any trip it holds that is not listed (a
 removed member stops receiving the trip). The cursor is opaque; it encodes
 the last change stamp delivered and its issue time, and one older than the

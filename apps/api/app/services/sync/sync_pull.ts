@@ -50,6 +50,15 @@ interface ChangePointer {
  * everything changed after it, tombstones included. The cursor carries the
  * last stamp delivered and its issue time; one older than the purge
  * horizon answers 410 `E_SYNC_CURSOR_EXPIRED`.
+ *
+ * A trip whose membership row for this person is newer than the cursor
+ * (joined or re-joined, role changed, trip restored: restore re-stamps the
+ * memberships) is new to the client, whose cursor is already past that
+ * trip's old rows. Its live rows come as a snapshot inside the same change
+ * order: they sort by their own stamps, before the cursor, so a page that
+ * ends inside that snapshot keeps the cursor and records where the
+ * snapshot resumes (`snapshotAfter`). Once the membership row itself is
+ * delivered the trip is incremental again.
  */
 @inject()
 export class SyncPull {
@@ -80,7 +89,8 @@ export class SyncPull {
       }
     }
 
-    const { pointers, xmin } = await this.pointers(tripIds, cursor, limit + 1)
+    const fresh = cursor ? await this.tripsJoinedAfter(user, tripIds, cursor) : []
+    const { pointers, xmin } = await this.pointers(tripIds, fresh, cursor, limit + 1)
     const hasMore = pointers.length > limit
     const page = hasMore ? pointers.slice(0, limit) : pointers
     const changes = await this.rows(page, tripIds)
@@ -88,21 +98,47 @@ export class SyncPull {
     const last = page.at(-1)
     const horizon: SyncCursor = { xid: String(BigInt(xmin) - 1n), seq: MAX_SEQ, issuedAt: now }
     let next: SyncCursor
-    if (hasMore && last) {
+    if (hasMore && last && cursor && compareStamps(last, cursor) <= 0) {
+      // The page ended inside the snapshot of a newly joined trip.
+      next = { xid: cursor.xid, seq: cursor.seq, issuedAt: now, snapshotAfter: last }
+    } else if (hasMore && last) {
       next = { xid: last.xid, seq: last.seq, issuedAt: now }
     } else if (last && compareStamps(last, horizon) > 0) {
       next = { xid: last.xid, seq: last.seq, issuedAt: now }
     } else {
       next = horizon
     }
-    if (cursor && compareStamps(next, cursor) < 0) next = { ...cursor, issuedAt: now }
+    if (cursor && compareStamps(next, cursor) < 0) {
+      next = { xid: cursor.xid, seq: cursor.seq, issuedAt: now }
+    }
 
     return { changes, tripIds, cursor: encodeSyncCursor(next), hasMore }
   }
 
-  /** The next `limit` change stamps across every syncable table of the trips, in order. */
+  /** Trips whose live membership row for `user` changed after the cursor: the client has none of their old rows. */
+  private async tripsJoinedAfter(
+    user: User,
+    tripIds: string[],
+    cursor: SyncCursor
+  ): Promise<string[]> {
+    const rows = (await db
+      .from('trip_members')
+      .where('user_id', user.id)
+      .whereIn('trip_id', tripIds)
+      .whereNull('deleted_at')
+      .whereRaw('(change_xid, change_seq) > (?::xid8, ?::bigint)', [cursor.xid, cursor.seq])
+      .select('trip_id')) as { trip_id: string }[]
+    return rows.map((row) => String(row.trip_id))
+  }
+
+  /**
+   * The next `limit` change stamps across every syncable table of the trips,
+   * in order: everything after the cursor, plus every live row of the
+   * `fresh` trips whatever its stamp.
+   */
   private async pointers(
     tripIds: string[],
+    fresh: string[],
     cursor: SyncCursor | null,
     limit: number
   ): Promise<{ pointers: ChangePointer[]; xmin: string }> {
@@ -111,7 +147,8 @@ export class SyncPull {
     const bindings: unknown[] = []
     for (const [entity, spec] of Object.entries(PULL_ENTITIES)) {
       parts.push(
-        `select '${entity}'::text as entity, ${spec.idColumn}::text as id, change_xid, change_seq, deleted_at
+        `select '${entity}'::text as entity, ${spec.idColumn}::text as id, ${spec.tripColumn}::text as trip_id,
+                change_xid, change_seq, deleted_at
          from ${spec.table} where ${spec.tripColumn} in (${tripList})`
       )
       bindings.push(...tripIds)
@@ -119,7 +156,15 @@ export class SyncPull {
     const conditions = [
       `(c.change_xid < h.xmin or c.change_xid = pg_current_xact_id_if_assigned())`,
     ]
-    if (cursor) {
+    if (cursor && fresh.length > 0) {
+      const after = cursor.snapshotAfter ?? { xid: '0', seq: '0' }
+      conditions.push(
+        `((c.change_xid, c.change_seq) > (?::xid8, ?::bigint)
+          or (c.trip_id in (${fresh.map(() => '?').join(', ')}) and c.deleted_at is null
+              and (c.change_xid, c.change_seq) > (?::xid8, ?::bigint)))`
+      )
+      bindings.push(cursor.xid, cursor.seq, ...fresh, after.xid, after.seq)
+    } else if (cursor) {
       conditions.push(`(c.change_xid, c.change_seq) > (?::xid8, ?::bigint)`)
       bindings.push(cursor.xid, cursor.seq)
     } else {

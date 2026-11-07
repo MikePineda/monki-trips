@@ -103,11 +103,26 @@ export default class TripsController {
     return ctx.response.noContent()
   }
 
+  /**
+   * Brings the trip back. Its live memberships are re-stamped in the same
+   * transaction: their clients dropped the trip while it was deleted, and a
+   * membership newer than a pull cursor makes the next pull deliver the
+   * whole trip again (see `SyncPull`).
+   */
   async restore(ctx: HttpContext): Promise<ApiEnvelope<TripWire>> {
-    ctx.trip.deletedAt = null
-    ctx.trip.purgeAfter = null
-    ctx.trip.updatedBy = ctx.membership.userId
-    await ctx.trip.save()
+    await db.transaction(async (trx) => {
+      ctx.trip.useTransaction(trx)
+      ctx.trip.deletedAt = null
+      ctx.trip.purgeAfter = null
+      ctx.trip.updatedBy = ctx.membership.userId
+      await ctx.trip.save()
+      // A no-op assignment still fires the `sync_stamp()` trigger.
+      await trx
+        .from('trip_members')
+        .where('trip_id', ctx.trip.id)
+        .whereNull('deleted_at')
+        .update({ joined_at: trx.raw('joined_at') })
+    })
     return { data: toTripWire(ctx.trip) }
   }
 
