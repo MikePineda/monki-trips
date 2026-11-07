@@ -489,6 +489,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['file']>>>
     }
   }
+  'trips.tasks.fromTemplate': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/tasks/from-template'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/tasks_controller').default['fromTemplate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/tasks_controller').default['fromTemplate']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/tasks_controller').default['fromTemplate']>>>
+    }
+  }
   'trips.members.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/members'

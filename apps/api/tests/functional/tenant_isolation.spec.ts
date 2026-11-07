@@ -92,6 +92,9 @@ const CASES: Record<string, IsolationCase> = {
     request: (c, v, a) =>
       actingAs(c.get(`/api/v1/trips/${v.trip.id}/documents/${v.content.document}/file`), a),
   },
+  'trips.tasks.fromTemplate': {
+    request: (c, v, a) => actingAs(c.post(`/api/v1/trips/${v.trip.id}/tasks/from-template`), a),
+  },
   'trips.destroy': {
     request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}`), a),
   },

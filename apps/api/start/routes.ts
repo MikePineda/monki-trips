@@ -127,6 +127,9 @@ router
                   .get('trips/:tripId/documents/:id/file', [controllers.Documents, 'file'])
                   .as('trips.documents.file')
                 router
+                  .post('trips/:tripId/tasks/from-template', [controllers.Tasks, 'fromTemplate'])
+                  .as('trips.tasks.fromTemplate')
+                router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')
                 router

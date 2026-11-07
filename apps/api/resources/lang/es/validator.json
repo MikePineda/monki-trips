@@ -35,6 +35,7 @@
       "positive": "{field} debe ser mayor que cero",
       "convertedRange": "{field} es demasiado grande al convertirlo a la moneda base",
       "storable": "{field} tiene un valor que el servidor no puede guardar",
+      "templateOnly": "{field} solo se admite en una tarea de la plantilla",
       "schema": "{field} no cumple el esquema trip JSON v1",
       "unresolvedRef": "{field} apunta a una ref que no está en el archivo",
       "duplicateRef": "{field} repite una ref ya usada en el archivo"
@@ -125,6 +126,9 @@
       "dueOn": "la fecha límite",
       "priority": "la prioridad",
       "doneAt": "la fecha de finalización",
+      "origin": "el origen",
+      "titleKey": "la clave del título",
+      "templateItemKey": "el elemento de la plantilla",
       "key": "la clave",
       "budgetMinor": "el presupuesto",
       "categoryId": "la categoría",

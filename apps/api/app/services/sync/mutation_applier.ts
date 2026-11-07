@@ -290,6 +290,17 @@ export class MutationApplier {
       throw MutationRejected.code(i18n, 'E_ROW_DELETED', rowToWire(spec, current))
     }
     if (!current && !spec.insertable) throw MutationRejected.code(i18n, 'E_ROW_NOT_FOUND')
+    if (!current && spec.duplicateOf) {
+      // The row already exists under another id: the client adopts the server's row.
+      const existing = await spec.duplicateOf(changes, ctx)
+      if (existing) {
+        return {
+          mutationId: mutation.mutationId,
+          status: 'duplicate',
+          row: rowToWire(spec, existing) as unknown as SyncMutationResult['row'],
+        }
+      }
+    }
 
     // Fields that are not columns (an expense's `shares`) go to the hooks once they win the merge.
     const writable: Record<string, unknown> = {}

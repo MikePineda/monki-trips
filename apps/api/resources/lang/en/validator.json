@@ -35,6 +35,7 @@
       "positive": "{field} must be greater than zero",
       "convertedRange": "{field} is too large once converted to the base currency",
       "storable": "{field} holds a value the server cannot store",
+      "templateOnly": "{field} is only allowed on a task from the template",
       "schema": "{field} does not match the trip JSON v1 schema",
       "unresolvedRef": "{field} names a ref that is not in the file",
       "duplicateRef": "{field} repeats a ref already used in the file"
@@ -125,6 +126,9 @@
       "dueOn": "due date",
       "priority": "priority",
       "doneAt": "done at",
+      "origin": "origin",
+      "titleKey": "title key",
+      "templateItemKey": "template item",
       "key": "key",
       "budgetMinor": "budget",
       "categoryId": "category",

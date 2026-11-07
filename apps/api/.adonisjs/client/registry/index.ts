@@ -230,6 +230,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"documents"],[1,"id"],[0,"file"]],
     types: placeholder as Registry['trips.documents.file']['types'],
   },
+  'trips.tasks.fromTemplate': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/tasks/from-template',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"tasks"],[0,"from-template"]],
+    types: placeholder as Registry['trips.tasks.fromTemplate']['types'],
+  },
   'trips.members.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/trips/:tripId/members',

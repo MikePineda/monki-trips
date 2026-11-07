@@ -53,6 +53,8 @@ export interface DbRow {
   base_amount_minor?: unknown
   done_by?: unknown
   origin?: unknown
+  title_key?: unknown
+  template_item_key?: unknown
   schema_version?: unknown
 }
 
@@ -91,6 +93,9 @@ export type MergedRow = Record<string, unknown> &
       | 'shares'
       | 'doneAt'
       | 'doneBy'
+      | 'origin'
+      | 'titleKey'
+      | 'templateItemKey'
       | 'baseCurrency',
       unknown
     >
@@ -177,6 +182,13 @@ export interface EntitySpec {
    * names) and reports problems with it that one field alone cannot show.
    */
   derive?: (merged: MergedRow, ctx: DeriveContext) => Promise<DeriveResult>
+  /**
+   * A live row of the trip that an insert with these validated `changes`
+   * would duplicate (a checklist item the trip already has): the mutation
+   * answers `duplicate` with that row and writes nothing, so a row made
+   * offline reconciles with the one another device made first.
+   */
+  duplicateOf?: (changes: Record<string, unknown>, ctx: DeriveContext) => Promise<DbRow | null>
   /**
    * Slow lookups the write will need (an exchange rate from the provider),
    * run before the transaction so no lock is held across a network call.
