@@ -17,6 +17,8 @@
   "devDependencies": {
     "@playwright/test": "1.65.0",
     "@types/node": "~24.19.2",
-    "typescript": "~6.0.3"
+    "@types/web-push": "^3.6.4",
+    "typescript": "~6.0.3",
+    "web-push": "^4.0.0"
   }
 }
