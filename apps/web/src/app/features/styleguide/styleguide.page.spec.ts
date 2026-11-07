@@ -20,7 +20,7 @@ describe('StyleguidePage', () => {
   it('every listed token is defined in styles.css for light and dark', () => {
     const styles = readFileSync(join(process.cwd(), 'src/styles.css'), 'utf8')
     // Split at the dark rule itself (line start), not at mentions in comments.
-    const blocks = styles.split(/^\[data-theme="dark"\]\s*\{/m)
+    const blocks = styles.split(/^\[data-theme=['"]dark['"]\]\s*\{/m)
 
     expect(blocks).toHaveLength(2)
     for (const token of COLOR_TOKENS) {
