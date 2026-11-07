@@ -8,6 +8,7 @@
 | names that CDN) with the address under attack, so one person guessing
 | cannot lock a shared office out. Login adds a per-address cap that ignores
 | the IP, so a botnet cannot spread one address's guesses across IPs.
+|| Routes that call the LLM are throttled per account (`throttleLlm`).
 |
 */
 
@@ -66,3 +67,29 @@ export function loginAttempts(ctx: HttpContext) {
     { key: `login-email:${email}`, requests: 10, duration: '15 mins', blockDuration: '15 mins' },
   ])
 }
+
+/**
+ * The signed-in account (the auth middleware has run: paid routes sit
+ * behind it), else the client address as a fallback.
+ */
+function accountKey(ctx: HttpContext): string {
+  const user = ctx.auth.use('web').user
+  return user ? `user:${user.id}` : `ip:${clientIp(ctx)}`
+}
+
+/** Paid model calls: 5 per minute per account (bursts). */
+export const throttleLlmPerMinute = limiter.define('llm_minute', (ctx) =>
+  limiter.allowRequests(5).every('1 min').usingKey(accountKey(ctx))
+)
+
+/** Paid model calls: 30 per day per account (sustained use). */
+export const throttleLlmPerDay = limiter.define('llm_day', (ctx) =>
+  limiter.allowRequests(30).every('1 day').usingKey(accountKey(ctx))
+)
+
+/**
+ * Every route that can call the LLM uses both: the monthly token cap bounds
+ * cost, these bound how fast one account can spend it (and the provider's
+ * rate limit, which every account shares).
+ */
+export const throttleLlm = [throttleLlmPerMinute, throttleLlmPerDay]
