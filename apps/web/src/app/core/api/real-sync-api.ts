@@ -11,6 +11,7 @@ import {
   type SyncPushResult,
 } from '../offline/sync-api'
 import { toTaskRecord } from '../offline/task-record'
+import { toTravellerRecord } from '../offline/traveller-record'
 import { toTripRecord } from '../offline/trip-record'
 import type { ApiClientLoader } from './api'
 import { ApiFailure, apiCall } from './api-failure'
@@ -123,6 +124,10 @@ export function toDeviceChange(change: WireChange): SyncChange[] {
       return change.row.deletedAt
         ? [{ table: 'members', row: { id: change.row.id }, deleted: true }]
         : [{ table: 'members', row: toMemberRecord(change.row) }]
+    case 'traveller':
+      return change.row.deletedAt
+        ? [{ table: 'travellers', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'travellers', row: toTravellerRecord(change.row) }]
     case 'task':
       return change.row.deletedAt
         ? [{ table: 'tasks', row: { id: change.row.id }, deleted: true }]
