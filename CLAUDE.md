@@ -110,8 +110,10 @@ This repo works the same from a laptop and from a Claude Code cloud session.
 Details, environment variables and the first-session smoke: `docs/CLOUD.md`.
 
 - A SessionStart hook (`scripts/cloud-setup.sh`, cloud only) puts Node from
-  `/opt/node24` on PATH, installs dependencies the CI way when the lockfile
-  changed, creates `apps/api/.env`, starts Postgres and prints status lines.
+  `/opt/node24` on PATH, pins the repo-scope git identity to the GitHub
+  no-reply address from `gh api user`, installs dependencies the CI way when
+  the lockfile changed, creates `apps/api/.env`, starts Postgres and prints
+  status lines.
   Read them; a `WARN` line needs fixing first (`.claude/cloud-setup.log`).
 - E2E uses Chrome for Testing from `CHROME_PATH`; never run
   `playwright install` in the VM. WebKit runs in CI only.
