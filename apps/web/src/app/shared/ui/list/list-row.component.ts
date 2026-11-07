@@ -47,7 +47,9 @@ export interface RowStatus {
       color: var(--icon);
     }
     .mk-row__text {
+      display: flex;
       flex: 1 1 0;
+      flex-direction: column;
       min-width: 0;
     }
     .mk-row__title {

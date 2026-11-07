@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common'
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
 import { MkIconComponent } from '../icon/icon.component'
 import type { IconName } from '../icon/icon-names'
@@ -20,7 +21,7 @@ export type ChipTone = 'neutral' | 'good' | 'warning' | 'serious' | 'critical'
  */
 @Component({
   selector: 'mk-chip',
-  imports: [MkIconComponent],
+  imports: [NgTemplateOutlet, MkIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'class': 'mk-chip',
@@ -88,6 +89,13 @@ export type ChipTone = 'neutral' | 'good' | 'warning' | 'serious' | 'critical'
     }
   `,
   template: `
+    <!-- One ng-content, rendered in whichever branch is live: projected content cannot sit inside @if twice. -->
+    <ng-template #body>
+      @if (icon(); as icon) {
+        <mk-icon [name]="icon" [size]="16" />
+      }
+      <span class="mk-chip__label"><ng-content /></span>
+    </ng-template>
     @if (selectable()) {
       <button
         type="button"
@@ -96,17 +104,11 @@ export type ChipTone = 'neutral' | 'good' | 'warning' | 'serious' | 'critical'
         [disabled]="disabled()"
         (click)="toggle()"
       >
-        @if (icon(); as icon) {
-          <mk-icon [name]="icon" [size]="16" />
-        }
-        <span class="mk-chip__label"><ng-content /></span>
+        <ng-container *ngTemplateOutlet="body" />
       </button>
     } @else {
       <span class="mk-chip__body mk-type-label">
-        @if (icon(); as icon) {
-          <mk-icon [name]="icon" [size]="16" />
-        }
-        <span class="mk-chip__label"><ng-content /></span>
+        <ng-container *ngTemplateOutlet="body" />
       </span>
     }
   `,

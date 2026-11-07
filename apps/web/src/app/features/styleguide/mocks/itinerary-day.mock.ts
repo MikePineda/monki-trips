@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core'
+import { TranslocoPipe } from '@jsverse/transloco'
 import { formatDayDate } from '../../../domain/day-date'
 import { provideShellI18n } from '../../../layouts/shell/shell-i18n'
 import { MkButtonComponent } from '../../../shared/ui/button/button.component'
@@ -20,7 +20,7 @@ import { MkTextComponent } from '../../../shared/ui/text/text.component'
 import { MkTopBarComponent } from '../../../shared/ui/top-bar/top-bar.component'
 import { DEMO_TRIP } from '../demo-trip'
 import { provideStyleguideI18n } from '../styleguide-i18n'
-import { mockLocale } from './mock-locale'
+import { mockLocale, scopedLabels } from './mock-locale'
 import { mockTabs } from './mock-tabs'
 
 /**
@@ -149,15 +149,15 @@ export class MockItineraryDayComponent {
   protected readonly view = signal('days')
 
   private readonly i18n = mockLocale()
-  private readonly transloco = inject(TranslocoService)
+  private readonly viewLabels = scopedLabels('styleguide', [
+    'sample.segmentDays',
+    'sample.segmentStays',
+  ])
 
   protected readonly tabs = computed(() => mockTabs(this.i18n.tabLabels(), 'plan'))
   protected readonly dayHeading = computed(() => formatDayDate('2027-05-12', this.i18n.locale()))
-  protected readonly views = computed(() => {
-    this.i18n.locale()
-    return [
-      { id: 'days', label: this.transloco.translate('styleguide.sample.segmentDays') },
-      { id: 'stays', label: this.transloco.translate('styleguide.sample.segmentStays') },
-    ]
-  })
+  protected readonly views = computed(() => [
+    { id: 'days', label: this.viewLabels()[0] ?? '' },
+    { id: 'stays', label: this.viewLabels()[1] ?? '' },
+  ])
 }

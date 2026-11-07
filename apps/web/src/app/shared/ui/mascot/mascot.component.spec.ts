@@ -93,6 +93,8 @@ describe('mk-mascot', () => {
       `url("mascot/${ACTIVE_MASCOT.id}/${ACTIVE_MASCOT.sheet}")`
     )
     expect(mascot.style.getPropertyValue('--mk-mascot-frames')).toBe(String(excited.frames.length))
+    expect(mascot.style.getPropertyValue('--mk-mascot-cols')).toBe(String(ACTIVE_MASCOT.columns))
+    expect(mascot.style.getPropertyValue('--mk-mascot-rows')).toBe(String(ACTIVE_MASCOT.rows))
     expect(mascot.style.getPropertyValue('--mk-mascot-x')).toBe(`${-col * 48}px`)
     expect(mascot.style.getPropertyValue('--mk-mascot-end-x')).toBe(
       `${-(col + excited.frames.length) * 48}px`

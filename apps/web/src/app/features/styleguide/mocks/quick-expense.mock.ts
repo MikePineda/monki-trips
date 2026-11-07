@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core'
+import { TranslocoPipe } from '@jsverse/transloco'
 import { formatMoney } from '../../../domain/money'
 import { provideShellI18n } from '../../../layouts/shell/shell-i18n'
 import { MkButtonComponent } from '../../../shared/ui/button/button.component'
@@ -108,7 +108,6 @@ export class MockQuickExpenseComponent {
   protected readonly digits = signal<string>(DEMO_TRIP.expense.digits)
 
   private readonly i18n = mockLocale()
-  private readonly transloco = inject(TranslocoService)
 
   protected readonly tabs = computed(() => mockTabs(this.i18n.tabLabels(), 'money'))
   protected readonly amount = computed(() => {
@@ -118,9 +117,4 @@ export class MockQuickExpenseComponent {
   protected readonly base = computed(() =>
     formatMoney(DEMO_TRIP.expense.baseMinor, DEMO_TRIP.baseCurrency, this.i18n.locale())
   )
-
-  constructor() {
-    // Keeps the mock honest in both languages: the active language drives every label.
-    this.transloco.getActiveLang()
-  }
 }
