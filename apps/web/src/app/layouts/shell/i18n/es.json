@@ -73,6 +73,9 @@
     },
     "more": {
       "title": "Más",
+      "tasks": "Tareas",
+      "checklist": "Lista previa al viaje",
+      "emergency": "Emergencias",
       "settings": "Ajustes",
       "offline": "Sin conexión",
       "members": "Miembros",

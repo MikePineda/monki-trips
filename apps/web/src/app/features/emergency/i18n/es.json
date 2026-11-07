@@ -1,0 +1,51 @@
+{
+  "title": "Emergencias",
+  "empty": {
+    "title": "Aún no hay nada guardado",
+    "body": "Aseguradora, línea de asistencia, embajada, hospital más cercano y números de emergencia locales, a un toque incluso sin conexión.",
+    "add": "Añadir información de emergencia"
+  },
+  "read": {
+    "edit": "Editar",
+    "insurance": "Seguro",
+    "policy": "Póliza {{number}}",
+    "embassy": "Embajada o consulado",
+    "numbers": "Números",
+    "medical": "Notas médicas",
+    "notes": "Notas",
+    "savedOffline": "Guardado en este dispositivo: funciona sin conexión."
+  },
+  "form": {
+    "title": "Información de emergencia",
+    "insurance": "Seguro",
+    "insurer": "Aseguradora",
+    "policyNumber": "Número de póliza",
+    "assistancePhone": "Teléfono de asistencia",
+    "embassy": "Embajada o consulado",
+    "embassyName": "Nombre",
+    "embassyPhone": "Teléfono",
+    "embassyAddress": "Dirección",
+    "numbers": "Números",
+    "hospital": "Hospital más cercano",
+    "hospitalPhone": "Teléfono del hospital",
+    "localEmergency": "Número de emergencia local",
+    "localEmergencyPhone": "Número (p. ej. 112)",
+    "other": "Otro contacto",
+    "otherName": "Nombre",
+    "otherPhone": "Teléfono",
+    "medical": "Notas médicas",
+    "medicalHint": "Alergias, medicación, grupo sanguíneo: lo que un médico debería saber.",
+    "notes": "Notas",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
+  "defaults": {
+    "hospital": "Hospital más cercano",
+    "localEmergency": "Número de emergencia local",
+    "other": "Contacto"
+  },
+  "toast": {
+    "saved": "Información de emergencia guardada",
+    "unchanged": "No hay cambios"
+  }
+}

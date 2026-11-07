@@ -1,0 +1,86 @@
+{
+  "title": "Tareas",
+  "add": {
+    "title": "Nueva tarea",
+    "titlePlaceholder": "¿Qué hay que hacer?",
+    "dueOn": "Vence",
+    "priority": "Prioridad",
+    "event": "Evento",
+    "noEvent": "Sin evento",
+    "submit": "Añadir"
+  },
+  "priority": {
+    "low": "Baja",
+    "normal": "Normal",
+    "high": "Alta"
+  },
+  "group": {
+    "overdue": "Atrasadas",
+    "today": "Hoy",
+    "this_week": "Esta semana",
+    "later": "Más adelante",
+    "no_date": "Sin fecha",
+    "done": "Hechas"
+  },
+  "row": {
+    "due": "Vence {{date}}",
+    "edit": "Editar tarea",
+    "openDocument": "Abrir el documento para imprimir",
+    "noDate": "Sin fecha"
+  },
+  "showDone": "Mostrar hechas",
+  "empty": {
+    "title": "Nada pendiente",
+    "body": "Añade una tarea arriba o empieza por la lista previa al viaje."
+  },
+  "toast": {
+    "done": "Tarea hecha",
+    "reopened": "Tarea reabierta",
+    "deleted": "Tarea eliminada",
+    "saved": "Tarea guardada",
+    "templateAdded": "{{count}} puntos de la lista añadidos",
+    "templateComplete": "La lista ya está completa"
+  },
+  "edit": {
+    "title": "Editar tarea",
+    "name": "Título",
+    "notes": "Notas",
+    "dueOn": "Vence",
+    "priority": "Prioridad",
+    "event": "Evento",
+    "noEvent": "Sin evento",
+    "save": "Guardar",
+    "delete": "Eliminar tarea"
+  },
+  "titleKey": {
+    "print_document": "Imprimir {{title}}"
+  },
+  "checklist": {
+    "title": "Lista previa al viaje",
+    "progress": "Listos para salir",
+    "emptyTitle": "Aún no hay lista",
+    "emptyBody": "Pasaporte, visado, seguro, eSIM, adaptador, efectivo y qué imprimir: una sola lista, marcable sin conexión.",
+    "add": "Añadir la lista previa al viaje",
+    "addMissing": "Añadir los puntos que faltan",
+    "category": {
+      "documents": "Documentos",
+      "gear": "Equipo",
+      "before_leaving": "Antes de salir"
+    }
+  },
+  "template": {
+    "documents": {
+      "passport": "Comprobar que el pasaporte vale 6+ meses tras el viaje",
+      "visa": "Revisar los requisitos de visado",
+      "insurance": "Contratar el seguro de viaje"
+    },
+    "gear": {
+      "esim": "Conseguir una eSIM o SIM local",
+      "adapter": "Meter un adaptador de corriente",
+      "cash": "Conseguir algo de efectivo local"
+    },
+    "before_leaving": {
+      "print": "Imprimir los documentos"
+    }
+  }
+}

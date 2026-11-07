@@ -7,7 +7,7 @@ import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 
 interface MoreItem {
-  id: 'members' | 'activity' | 'settings' | 'offline'
+  id: 'tasks' | 'checklist' | 'emergency' | 'members' | 'activity' | 'settings' | 'offline'
   icon: IconName
 }
 
@@ -34,6 +34,9 @@ interface MoreItem {
 })
 export default class MorePage {
   protected readonly items: readonly MoreItem[] = [
+    { id: 'tasks', icon: 'list-checks' },
+    { id: 'checklist', icon: 'clipboard-check' },
+    { id: 'emergency', icon: 'siren' },
     { id: 'members', icon: 'users' },
     { id: 'activity', icon: 'activity' },
     { id: 'settings', icon: 'settings' },
