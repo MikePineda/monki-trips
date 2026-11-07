@@ -36,10 +36,16 @@ export function partnerAccount(): E2eAccount {
   }
 }
 
-/** Travels alone: J01 relies on an empty list, so nothing else touches this account. */
-export function soloAccount(): E2eAccount {
+/**
+ * Travels alone: J01 starts from an empty list. With a Playwright project
+ * name, the account is that project's own (`solo+<project>@...`), so two
+ * projects on one database never see each other's trips; global-setup.ts
+ * seeds one per project.
+ */
+export function soloAccount(project?: string): E2eAccount {
+  const email = required('E2E_SOLO_EMAIL')
   return {
-    email: required('E2E_SOLO_EMAIL'),
+    email: project ? email.replace('@', `+${project}@`) : email,
     password: required('E2E_SOLO_PASSWORD'),
     displayName: 'Owner',
   }
