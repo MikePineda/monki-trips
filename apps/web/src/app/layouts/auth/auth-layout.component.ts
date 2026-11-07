@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
+import { MkPageComponent } from '../../shared/ui/layout/page.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { provideShellI18n } from '../shell/shell-i18n'
 
 /**
@@ -9,18 +12,20 @@ import { provideShellI18n } from '../shell/shell-i18n'
  */
 @Component({
   selector: 'app-auth-layout',
-  imports: [RouterOutlet, TranslocoPipe],
+  imports: [RouterOutlet, TranslocoPipe, MkPageComponent, MkStackComponent, MkTextComponent],
   providers: [provideShellI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto flex min-h-dvh max-w-md flex-col px-4 py-10">
-      <p class="text-center font-semibold text-ink-1" data-testid="shell.name">
-        {{ 'app.name' | transloco }}
-      </p>
-      <main class="mt-10 flex-1">
-        <router-outlet />
-      </main>
-    </div>
+    <mk-page>
+      <mk-stack gap="6">
+        <p mk-text variant="body-strong" align="center" data-testid="shell.name">
+          {{ 'app.name' | transloco }}
+        </p>
+        <main>
+          <router-outlet />
+        </main>
+      </mk-stack>
+    </mk-page>
   `,
 })
 export class AuthLayoutComponent {}

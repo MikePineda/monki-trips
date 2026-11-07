@@ -6,17 +6,34 @@ import { dirname, join, relative, resolve, sep } from 'node:path'
  * - domain/ is pure TypeScript: no Angular, no RxJS, nothing outside domain/
  *   except the pure packages in DOMAIN_PACKAGES;
  * - only core/api/ talks to Tuyau (@tuyau/core and the API registry);
- * - colours are tokens: no hex literal anywhere but src/styles.css and the
- *   web manifest;
- * - fonts are self-hosted: no Google Fonts host anywhere.
+ * - colours are tokens: no hex literal anywhere but src/styles.css, the
+ *   web manifest, the mascot artwork (its colours are its own) and the
+ *   test-only alternative theme;
+ * - fonts are self-hosted: no Google Fonts host anywhere;
+ * - features never style: outside shared/ui a template composes mk-*
+ *   components and the layout primitives only (no raw button/input, no
+ *   inline style, no Tailwind utility, no component styles), so a redesign
+ *   touches tokens, shared/ui and the asset folders only.
  */
 const webRoot = process.cwd()
 const appRoot = join(webRoot, 'src/app')
 
 const DOMAIN_PACKAGES = ['@monkitrips/shared']
 
-/** Files that may hold raw colours. */
-const HEX_ALLOWED = ['src/styles.css', 'public/manifest.webmanifest']
+/** Files (or folders, with a trailing slash) that may hold raw colours. */
+const HEX_ALLOWED = [
+  'src/styles.css',
+  'public/manifest.webmanifest',
+  'public/mascot/',
+  'src/testing/theme-alt.css',
+]
+
+/** Where a template may carry only mk-* components and layout primitives. */
+const FEATURE_LAYERS = ['features/', 'layouts/', 'app.ts']
+
+/** Tailwind utilities that carry a colour, a radius, a shadow, a border or a font. */
+const STYLE_UTILITY =
+  /^(?:bg|text|border|divide|ring|outline|fill|stroke|shadow|rounded|font|tracking|leading|decoration|accent|caret|placeholder)(?:-|$)/
 
 interface SourceFile {
   path: string
@@ -65,6 +82,41 @@ function webFiles(): string[] {
   return [...walk(join(webRoot, 'src')), ...walk(join(webRoot, 'public'))]
     .filter((path) => /\.(ts|html|css|scss|js|json|webmanifest|svg)$/.test(path))
     .filter((path) => !path.endsWith('.spec.ts'))
+}
+
+interface Template {
+  rel: string
+  text: string
+}
+
+/** Every template outside shared/ui: inline `template:` strings and .html files. */
+function appTemplates(): Template[] {
+  return walk(appRoot)
+    .filter((path) => !path.endsWith('.spec.ts'))
+    .filter((path) => !relative(appRoot, path).split(sep).join('/').startsWith('shared/ui/'))
+    .flatMap((path) => {
+      const rel = relative(appRoot, path).split(sep).join('/')
+      const source = readFileSync(path, 'utf8')
+      if (path.endsWith('.html')) {
+        return [{ rel, text: source }]
+      }
+      if (!path.endsWith('.ts')) {
+        return []
+      }
+      return [...source.matchAll(/template:\s*`([\s\S]*?)`/g)].map((match) => ({
+        rel,
+        text: match[1],
+      }))
+    })
+}
+
+/** Static class tokens of a template (`class="a b"`) plus the names of `[class.x]` bindings. */
+function classTokens(text: string): string[] {
+  const statics = [...text.matchAll(/\sclass="([^"]*)"/g)].flatMap((match) =>
+    match[1].split(/\s+/).filter(Boolean)
+  )
+  const bindings = [...text.matchAll(/\[class\.([^\]]+)\]/g)].map((match) => match[1])
+  return [...statics, ...bindings]
 }
 
 describe('architecture', () => {
@@ -163,7 +215,7 @@ describe('architecture', () => {
     const hex = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b/
     const offenders = webFiles()
       .map((path) => relative(webRoot, path).split(sep).join('/'))
-      .filter((rel) => !HEX_ALLOWED.includes(rel))
+      .filter((rel) => !HEX_ALLOWED.some((allowed) => rel === allowed || rel.startsWith(allowed)))
       .filter((rel) => hex.test(readFileSync(join(webRoot, rel), 'utf8')))
     expect(offenders).toEqual([])
   })
@@ -172,6 +224,51 @@ describe('architecture', () => {
     const offenders = webFiles()
       .filter((path) => /fonts\.(googleapis|gstatic)\.com/.test(readFileSync(path, 'utf8')))
       .map((path) => relative(webRoot, path))
+    expect(offenders).toEqual([])
+  })
+
+  it('feature templates use only mk components and layout primitives', () => {
+    const offenders: string[] = []
+    for (const { rel, text } of appTemplates()) {
+      if (!FEATURE_LAYERS.some((layer) => rel.startsWith(layer))) {
+        continue
+      }
+      for (const match of text.matchAll(/<button\b([^>]*)>/g)) {
+        if (!/\bmk-(?:button|icon-button|fab)\b/.test(match[1])) {
+          offenders.push(`${rel}: raw <button>`)
+        }
+      }
+      for (const match of text.matchAll(/<(input|select|textarea)\b([^>]*)>/g)) {
+        if (!/\bmkInput\b/.test(match[2])) {
+          offenders.push(`${rel}: raw <${match[1]}>`)
+        }
+      }
+      if (/\sstyle="|\[style/.test(text)) {
+        offenders.push(`${rel}: inline style`)
+      }
+      for (const token of classTokens(text)) {
+        if (!token.startsWith('mk-')) {
+          offenders.push(`${rel}: class ${token}`)
+        }
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+
+  it('features and layouts carry no component styles', () => {
+    const offenders = sources
+      .filter((file) => FEATURE_LAYERS.some((layer) => file.rel.startsWith(layer)))
+      .filter((file) => /\b(?:styles|styleUrl|styleUrls)\s*:/.test(readFileSync(file.path, 'utf8')))
+      .map((file) => file.rel)
+    expect(offenders).toEqual([])
+  })
+
+  it('no colour or radius utilities outside shared/ui', () => {
+    const offenders = appTemplates().flatMap(({ rel, text }) =>
+      classTokens(text)
+        .filter((token) => STYLE_UTILITY.test(token))
+        .map((token) => `${rel}: ${token}`)
+    )
     expect(offenders).toEqual([])
   })
 })

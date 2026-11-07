@@ -138,30 +138,28 @@ test.describe('J01 shell', () => {
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
   })
 
-  test('the style guide is public, shows both themes and is not indexed', async ({ page }) => {
+  test('the style guide is public, switches theme and language, and is not indexed', async ({
+    page,
+  }) => {
     await page.goto('/styleguide')
 
     await expect(page.getByTestId('styleguide.tokens')).toBeVisible()
-    await expect(page.getByTestId('styleguide.theme-panel.light')).toHaveAttribute(
-      'data-theme',
-      'light'
-    )
-    await expect(page.getByTestId('styleguide.theme-panel.dark')).toHaveAttribute(
-      'data-theme',
-      'dark'
-    )
-    await expect(page.getByTestId('styleguide.mascot')).toBeVisible()
+    await expect(page.getByTestId('styleguide.mascot').locator('mk-mascot').first()).toBeVisible()
+    await expect(page.getByTestId('styleguide.mock.today').locator('mk-ticket')).toBeVisible()
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex')
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
 
-    // Every component is rendered once per theme panel: drive the light one.
-    const light = page.getByTestId('styleguide.theme-panel.light')
-    await light.getByTestId('styleguide.open-sheet').click()
+    await page.getByTestId('styleguide.theme.dark').click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await page.getByTestId('styleguide.theme.light').click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+    await page.getByTestId('styleguide.open-sheet').click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog')).toHaveCount(0)
 
-    await light.getByTestId('styleguide.show-toast').click()
+    await page.getByTestId('styleguide.show-toast').click()
     await expect(page.getByTestId('ui.toast')).toContainText('Expense saved')
   })
 

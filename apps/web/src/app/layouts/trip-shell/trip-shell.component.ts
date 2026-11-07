@@ -12,6 +12,7 @@ import { RouterOutlet } from '@angular/router'
 import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { META_ACTIVE_TRIP, MetaStore } from '../../core/offline/meta.store'
+import { MkPageComponent } from '../../shared/ui/layout/page.component'
 import { MkTabBarComponent, type TabItem } from '../../shared/ui/tab-bar/tab-bar.component'
 import { ShellHeaderComponent } from '../shell/shell-header.component'
 import { provideShellI18n } from '../shell/shell-i18n'
@@ -34,14 +35,14 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
  */
 @Component({
   selector: 'app-trip-shell',
-  imports: [RouterOutlet, TranslocoPipe, ShellHeaderComponent, MkTabBarComponent],
+  imports: [RouterOutlet, TranslocoPipe, ShellHeaderComponent, MkTabBarComponent, MkPageComponent],
   providers: [provideShellI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-shell-header [title]="title()" backLink="/trips" />
-    <main class="mx-auto max-w-2xl px-4 py-6 pb-24">
+    <mk-page [tabBar]="true">
       <router-outlet />
-    </main>
+    </mk-page>
     <mk-tab-bar [tabs]="tabs()" [label]="'shell.tabs.label' | transloco" />
   `,
 })

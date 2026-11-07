@@ -45,13 +45,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
       display: block;
       width: 14px;
       height: 10px;
-      border-radius: 1px;
       background: currentColor;
     }
     .mk-frame__cells i:last-child {
       width: 24px;
       height: 11px;
-      border-radius: 3px;
+      border-radius: var(--radius-sm);
     }
     .mk-frame__screen {
       flex: 1 1 0;
@@ -60,6 +59,19 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
       flex-direction: column;
       overflow: hidden;
     }
+    .mk-frame__scroll {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .mk-frame__fab {
+      position: absolute;
+      right: var(--space-2);
+      bottom: calc(34px + var(--tab-bar-height) + var(--space-2));
+    }
+    .mk-frame__fab:empty {
+      display: none;
+    }
     .mk-frame__home {
       position: absolute;
       left: 50%;
@@ -67,7 +79,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
       width: 134px;
       height: 5px;
       margin-left: -67px;
-      border-radius: 3px;
+      border-radius: var(--radius-full);
       background: var(--ink-2);
       pointer-events: none;
     }
@@ -94,7 +106,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
       <span>9:41</span>
       <span class="mk-frame__cells"><i></i><i></i><i></i></span>
     </div>
-    <div class="mk-frame__screen"><ng-content /></div>
+    <div class="mk-frame__screen">
+      <ng-content select="[mkFrameTop]" />
+      <div class="mk-frame__scroll"><ng-content /></div>
+      <ng-content select="[mkFrameBottom]" />
+    </div>
+    <div class="mk-frame__fab"><ng-content select="[mkFrameFab]" /></div>
     <div class="mk-frame__scrim" [attr.data-open]="sheet() ? '' : null">
       <div class="mk-frame__sheet"><ng-content select="[mkFrameSheet]" /></div>
     </div>

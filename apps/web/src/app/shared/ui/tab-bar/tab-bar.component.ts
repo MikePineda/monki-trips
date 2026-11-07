@@ -9,6 +9,8 @@ export interface TabItem {
   label: string
   icon: IconName
   link: string | readonly string[]
+  /** Forces the active look (mock screens); the router decides otherwise. */
+  active?: boolean
 }
 
 /** fixed: the real shell. static: in flow (the style guide's mock screens). */
@@ -70,6 +72,8 @@ export type TabBarPlacement = 'fixed' | 'static'
           [routerLink]="tab.link"
           routerLinkActive="mk-tab--active"
           ariaCurrentWhenActive="page"
+          [class.mk-tab--active]="tab.active"
+          [attr.aria-current]="tab.active ? 'page' : null"
           [attr.data-testid]="'shell.tab.' + tab.id"
         >
           <mk-icon [name]="tab.icon" [size]="24" />

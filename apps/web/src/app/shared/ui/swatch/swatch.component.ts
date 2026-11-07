@@ -31,6 +31,7 @@ export interface SwatchContrast {
       display: flex;
       align-items: center;
       gap: var(--space-1);
+      min-width: 160px;
       min-height: var(--space-6);
       color: var(--ink-1);
     }
