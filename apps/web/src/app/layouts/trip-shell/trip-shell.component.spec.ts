@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing'
-import { provideRouter } from '@angular/router'
+import { Router, provideRouter } from '@angular/router'
 import { TranslocoService } from '@jsverse/transloco'
 import { i18nTesting } from '../../../testing/i18n-testing'
 import { providePwaTesting } from '../../../testing/pwa-testing'
@@ -19,7 +19,11 @@ describe('TripShellComponent', () => {
     db = freshOfflineDb()
     TestBed.configureTestingModule({
       imports: [TripShellComponent, i18nTesting()],
-      providers: [...provideOfflineTesting({ db }), providePwaTesting(), provideRouter([])],
+      providers: [
+        ...provideOfflineTesting({ db }),
+        providePwaTesting(),
+        provideRouter([{ path: '**', children: [] }]),
+      ],
     })
   })
 
@@ -89,5 +93,25 @@ describe('TripShellComponent', () => {
     const { host } = await render('unknown')
 
     expect(host.querySelector('[data-testid="shell.name"]')?.textContent?.trim()).toBe('Trip')
+  })
+
+  it('floats the add expense button to the quick expense, except in settings and on the plan', async () => {
+    const router = TestBed.inject(Router)
+    const { fixture, host } = await render()
+    const fab = () => host.querySelector('[data-testid="shell.fab"]')
+
+    expect(fab()?.getAttribute('href')).toBe('/t/trip-1/add')
+    expect(fab()?.textContent).toContain('Add expense')
+
+    for (const [url, shown] of [
+      ['/t/trip-1/more/settings', false],
+      ['/t/trip-1/plan', false],
+      ['/t/trip-1/add', false],
+      ['/t/trip-1/money', true],
+    ] as const) {
+      await router.navigateByUrl(url)
+      fixture.detectChanges()
+      expect(fab() !== null, url).toBe(shown)
+    }
   })
 })

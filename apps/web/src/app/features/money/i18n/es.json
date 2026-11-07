@@ -1,0 +1,116 @@
+{
+  "title": "Dinero",
+  "stats": {
+    "spent": "Gastado",
+    "remaining": "Queda",
+    "perDay": "Por día",
+    "noBudget": "Sin presupuesto",
+    "setBudget": "Define un presupuesto para ver lo que queda",
+    "ofBudget": "de {{amount}}",
+    "overBudget": "por encima del presupuesto",
+    "waitingOne": "1 espera tipo de cambio",
+    "waitingOther": "{{count}} esperan tipo de cambio",
+    "leftToday": "quedan {{amount}} hoy",
+    "overDaysOne": "durante 1 día",
+    "overDaysOther": "durante {{count}} días",
+    "tripEnded": "El viaje terminó"
+  },
+  "views": {
+    "label": "Vistas de dinero",
+    "budget": "Presupuesto",
+    "expenses": "Gastos"
+  },
+  "budget": {
+    "viewLabel": "Gráfica o tabla",
+    "chart": "Gráfica",
+    "table": "Tabla",
+    "caption": "Gastado por categoría",
+    "of": "de {{amount}}",
+    "noBudget": "Sin presupuesto",
+    "over": "Por encima del presupuesto",
+    "uncategorised": "Sin categoría",
+    "edit": "Editar presupuesto",
+    "columns": {
+      "category": "Categoría",
+      "spent": "Gastado",
+      "budget": "Presupuesto",
+      "left": "Queda"
+    },
+    "empty": {
+      "title": "Aún no hay categorías",
+      "body": "Las categorías del presupuesto llegan con la próxima sincronización."
+    }
+  },
+  "category": {
+    "accommodation": "Alojamiento",
+    "transport": "Transporte",
+    "food": "Comida",
+    "activities": "Actividades",
+    "shopping": "Compras",
+    "other": "Otros"
+  },
+  "phase": {
+    "before": "Antes",
+    "during": "Durante",
+    "after": "Después"
+  },
+  "expenses": {
+    "filters": "Filtros",
+    "empty": {
+      "title": "Aún no hay gastos",
+      "body": "Toca Añadir gasto: monto, categoría, guardar."
+    },
+    "noMatch": {
+      "title": "Nada coincide",
+      "body": "Quita un filtro para ver más gastos."
+    },
+    "row": {
+      "waiting": "esperando tipo de cambio",
+      "needsDetails": "faltan detalles",
+      "pending": "pendiente",
+      "edit": "Editar gasto"
+    }
+  },
+  "quick": {
+    "title": "Añadir gasto",
+    "amount": "Monto",
+    "currency": "Moneda",
+    "category": "Categoría",
+    "save": "Guardar",
+    "noTrip": "Este viaje aún no está en este dispositivo."
+  },
+  "toast": {
+    "saved": "Gasto guardado",
+    "savedOffline": "Gasto guardado · se sincronizará con conexión",
+    "updated": "Gasto actualizado",
+    "deleted": "Gasto eliminado",
+    "budgetSaved": "Presupuesto guardado"
+  },
+  "edit": {
+    "title": "Editar gasto",
+    "amount": "Monto",
+    "currency": "Moneda",
+    "rate": "Tipo de cambio",
+    "rateStored": "Guardado: {{rate}} {{currency}} por 1 {{base}} el {{date}}",
+    "rateWaiting": "Esperando el tipo de cambio del día; escribe uno para fijarlo.",
+    "rateBase": "Moneda base: no hace falta tipo de cambio.",
+    "date": "Fecha",
+    "description": "Descripción",
+    "category": "Categoría",
+    "noCategory": "Sin categoría",
+    "event": "Evento",
+    "noEvent": "Sin evento",
+    "receipt": "Recibo",
+    "receiptSoon": "Las fotos de recibos llegan en una versión posterior.",
+    "save": "Guardar",
+    "delete": "Eliminar gasto"
+  },
+  "budgetEdit": {
+    "title": "Editar presupuesto",
+    "total": "Presupuesto del viaje",
+    "totalHint": "En {{currency}}; déjalo vacío para no tener presupuesto.",
+    "ownerOnly": "Solo quien creó el viaje puede cambiar esto.",
+    "categories": "Por categoría",
+    "save": "Guardar"
+  }
+}

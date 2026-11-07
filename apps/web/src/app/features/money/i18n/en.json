@@ -1,0 +1,116 @@
+{
+  "title": "Money",
+  "stats": {
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "perDay": "Per day",
+    "noBudget": "No budget",
+    "setBudget": "Set a budget to see what is left",
+    "ofBudget": "of {{amount}}",
+    "overBudget": "over budget",
+    "waitingOne": "1 waiting for a rate",
+    "waitingOther": "{{count}} waiting for a rate",
+    "leftToday": "{{amount}} left today",
+    "overDaysOne": "over 1 day",
+    "overDaysOther": "over {{count}} days",
+    "tripEnded": "The trip has ended"
+  },
+  "views": {
+    "label": "Money views",
+    "budget": "Budget",
+    "expenses": "Expenses"
+  },
+  "budget": {
+    "viewLabel": "Chart or table",
+    "chart": "Chart",
+    "table": "Table",
+    "caption": "Spent by category",
+    "of": "of {{amount}}",
+    "noBudget": "No budget",
+    "over": "Over budget",
+    "uncategorised": "No category",
+    "edit": "Edit budget",
+    "columns": {
+      "category": "Category",
+      "spent": "Spent",
+      "budget": "Budget",
+      "left": "Left"
+    },
+    "empty": {
+      "title": "No categories yet",
+      "body": "Budget categories arrive with the next sync."
+    }
+  },
+  "category": {
+    "accommodation": "Accommodation",
+    "transport": "Transport",
+    "food": "Food",
+    "activities": "Activities",
+    "shopping": "Shopping",
+    "other": "Other"
+  },
+  "phase": {
+    "before": "Before",
+    "during": "During",
+    "after": "After"
+  },
+  "expenses": {
+    "filters": "Filters",
+    "empty": {
+      "title": "No expenses yet",
+      "body": "Tap Add expense: amount, category, save."
+    },
+    "noMatch": {
+      "title": "Nothing matches",
+      "body": "Clear a filter to see more expenses."
+    },
+    "row": {
+      "waiting": "waiting for rate",
+      "needsDetails": "add details",
+      "pending": "pending",
+      "edit": "Edit expense"
+    }
+  },
+  "quick": {
+    "title": "Add expense",
+    "amount": "Amount",
+    "currency": "Currency",
+    "category": "Category",
+    "save": "Save",
+    "noTrip": "This trip is not on this device yet."
+  },
+  "toast": {
+    "saved": "Expense saved",
+    "savedOffline": "Expense saved · will sync when online",
+    "updated": "Expense updated",
+    "deleted": "Expense deleted",
+    "budgetSaved": "Budget saved"
+  },
+  "edit": {
+    "title": "Edit expense",
+    "amount": "Amount",
+    "currency": "Currency",
+    "rate": "Rate",
+    "rateStored": "Stored: {{rate}} {{currency}} per 1 {{base}} on {{date}}",
+    "rateWaiting": "Waiting for the rate of the day; type one to fix it.",
+    "rateBase": "Base currency: no rate needed.",
+    "date": "Date",
+    "description": "Description",
+    "category": "Category",
+    "noCategory": "No category",
+    "event": "Event",
+    "noEvent": "No event",
+    "receipt": "Receipt",
+    "receiptSoon": "Receipt photos arrive in a later version.",
+    "save": "Save",
+    "delete": "Delete expense"
+  },
+  "budgetEdit": {
+    "title": "Edit budget",
+    "total": "Trip budget",
+    "totalHint": "In {{currency}}; leave empty for no budget.",
+    "ownerOnly": "Only the trip owner can change this.",
+    "categories": "By category",
+    "save": "Save"
+  }
+}

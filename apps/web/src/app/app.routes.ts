@@ -87,7 +87,9 @@ export const routes: Routes = [
           },
         ],
       },
-      ...(['today', 'docs', 'money', 'add'] as const).map((section) => ({
+      { path: 'money', loadComponent: () => import('./features/money/money.page') },
+      { path: 'add', loadComponent: () => import('./features/money/quick-expense.page') },
+      ...(['today', 'docs'] as const).map((section) => ({
         path: section,
         loadComponent: () => import('./features/trip/trip-placeholder.page'),
         data: { section },
