@@ -39,6 +39,21 @@ export class FxRates {
     }
   }
 
+  /**
+   * The rate from the cache only, never the provider: what a write inside a
+   * transaction may ask without holding its locks across a network call.
+   */
+  async findCached(
+    base: string,
+    quote: string,
+    date: string,
+    client: QueryClientContract | TransactionClientContract = db.connection()
+  ): Promise<KnownRate | null> {
+    if (base === quote) return { rate: '1', source: 'identity' }
+    const cached = await this.cached(base, [quote], date, client)
+    return cached[quote] ?? null
+  }
+
   /** Rates for several symbols (`GET /fx/rates`); throws `FxUnavailableError` when a missing one cannot be fetched. */
   async rates(base: string, symbols: string[], date: string): Promise<FxRate[]> {
     const wanted = [...new Set(symbols.filter((symbol) => symbol !== base))]

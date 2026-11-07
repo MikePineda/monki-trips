@@ -45,6 +45,8 @@ export interface DbRow {
   end_tz?: unknown
   ends_at?: unknown
   created_by?: unknown
+  currency?: unknown
+  spent_on?: unknown
   fx_rate?: unknown
   fx_source?: unknown
   fx_rate_date?: unknown
@@ -145,6 +147,15 @@ export interface AfterWriteContext extends DeriveContext {
   op: 'upsert' | 'delete'
 }
 
+/** What the applier hands a `prepare` hook, before the mutation's transaction opens. */
+export interface PrepareContext {
+  tripId: string
+  /** The mutation's row id. */
+  id: string
+  /** The raw, not yet validated `changes`: a hook must treat them as untrusted hints. */
+  changes: Record<string, unknown>
+}
+
 export interface EntitySpec {
   entity: SyncEntity
   table: string
@@ -166,6 +177,13 @@ export interface EntitySpec {
    * names) and reports problems with it that one field alone cannot show.
    */
   derive?: (merged: MergedRow, ctx: DeriveContext) => Promise<DeriveResult>
+  /**
+   * Slow lookups the write will need (an exchange rate from the provider),
+   * run before the transaction so no lock is held across a network call.
+   * Best effort: it never rejects the mutation, and the transaction reads
+   * only what it left behind (the rate cache).
+   */
+  prepare?: (ctx: PrepareContext) => Promise<void>
   /** Side effects after the row is written (recompute a parent, print tasks, cascades). */
   afterWrite?: (ctx: AfterWriteContext) => Promise<void>
 }

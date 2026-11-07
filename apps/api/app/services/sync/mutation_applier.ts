@@ -64,6 +64,7 @@ export class MutationApplier {
         now.getTime(),
         SYNC_CHANGED_AT_WINDOW_DAYS
       )
+      await this.prepare(user, mutation)
       return await db.transaction((trx) =>
         this.applyInTransaction(trx, user, mutation, i18n, now, changedAt)
       )
@@ -83,6 +84,33 @@ export class MutationApplier {
         error: rejection.error,
         ...(rejection.row ? { row: rejection.row as unknown as SyncMutationResult['row'] } : {}),
       }
+    }
+  }
+
+  /**
+   * Runs the entity's `prepare` hook for a live member, outside any
+   * transaction (see `EntitySpec.prepare`). A failure there only means the
+   * transaction finds less in the caches.
+   */
+  private async prepare(user: User, mutation: SyncMutation): Promise<void> {
+    const spec = PUSH_ENTITIES[mutation.entity]
+    if (!spec.prepare || mutation.op !== 'upsert') return
+    const member = await db
+      .from('trip_members')
+      .where('trip_id', mutation.tripId)
+      .where('user_id', user.id)
+      .whereNull('deleted_at')
+      .select('id')
+      .first()
+    if (!member) return
+    try {
+      await spec.prepare({
+        tripId: mutation.tripId,
+        id: mutation.id,
+        changes: mutation.changes ?? {},
+      })
+    } catch {
+      // Best effort by contract: the transaction decides with what it finds.
     }
   }
 

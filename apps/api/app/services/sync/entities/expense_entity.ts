@@ -1,10 +1,25 @@
 import app from '@adonisjs/core/services/app'
+import db from '@adonisjs/lucid/services/db'
 import { minorUnitExponent } from '@monkitrips/shared'
 import type { DbRow, DeriveContext, EntitySpec, FieldProblem } from '#services/sync/entity_spec'
 import { convertToBaseMinor } from '#domain/convert_to_base'
 import { FxRates } from '#services/fx/fx_rates'
+import { toWireValue } from '#services/sync/column_types'
 import { tombstoneWhere } from '#services/sync/table_writes'
 import { expenseChanges } from '#validators/sync/entities'
+
+const CURRENCY = /^[A-Za-z]{3}$/
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
+/** A raw `changes` value that looks like `pattern`, normalised, or null. */
+function hint(
+  value: unknown,
+  pattern: RegExp,
+  normalise: (value: string) => string = (v) => v
+): string | null {
+  if (typeof value !== 'string' || !pattern.test(value.trim())) return null
+  return normalise(value.trim())
+}
 
 /** The largest minor amount the wire carries exactly (the validators cap inputs the same way). */
 const MAX_MINOR = BigInt(Number.MAX_SAFE_INTEGER)
@@ -40,7 +55,9 @@ interface ShareInput {
  * Expenses in the currency paid. The client may fix a rate (`fxRate`,
  * typed by hand or fixed at booking); otherwise the server looks the rate
  * of `spentOn` up, from the cache or the provider, and leaves the expense
- * waiting (`baseAmountMinor` null) when nobody can tell. `baseAmountMinor`
+ * waiting (`baseAmountMinor` null) when nobody can tell. The provider is
+ * asked in `prepare`, before the transaction locks the trip row; inside
+ * it, `derive` reads the cache only. `baseAmountMinor`
  * is always derived here. An optional `shares` array replaces the whole
  * split atomically and must sum to the amount.
  */
@@ -84,6 +101,30 @@ export const expenseEntity: EntitySpec = {
     { field: 'deletedAt', column: 'deleted_at', type: 'instant', writable: false },
     { field: 'updatedAt', column: 'updated_at', type: 'instant', writable: false },
   ],
+  async prepare({ tripId, id, changes }) {
+    const trip = (await db
+      .from('trips')
+      .where('id', tripId)
+      .whereNull('deleted_at')
+      .select('base_currency')
+      .first()) as DbRow | null
+    if (!trip) return
+    const stored = (await db
+      .from('expenses')
+      .where('id', id)
+      .where('trip_id', tripId)
+      .select('currency', 'spent_on', 'fx_rate')
+      .first()) as DbRow | null
+    const currency = hint(changes['currency'], CURRENCY, (value) => value.toUpperCase())
+    const spentOn = hint(changes['spentOn'], ISO_DATE)
+    const rate = 'fxRate' in changes ? changes['fxRate'] : stored?.fx_rate
+    const quote = currency ?? (stored ? String(stored.currency) : null)
+    const day = spentOn ?? (stored ? toWireValue('date', stored.spent_on) : null)
+    const base = String(trip.base_currency)
+    if (!quote || typeof day !== 'string' || quote === base || rate) return
+    const fxRates = await app.container.make(FxRates)
+    await fxRates.find(base, quote, day)
+  },
   async derive(merged, ctx) {
     const problems: FieldProblem[] = []
     const columns: DbRow = {}
@@ -118,8 +159,9 @@ export const expenseEntity: EntitySpec = {
       source ??= 'manual'
       rateDate ??= spentOn
     } else {
+      // Cache only: `prepare` asked the provider before the trip row was locked.
       const fxRates = await app.container.make(FxRates)
-      const known = await fxRates.find(base, currency, spentOn, ctx.trx)
+      const known = await fxRates.findCached(base, currency, spentOn, ctx.trx)
       if (known) {
         rate = known.rate
         source = known.source

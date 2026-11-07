@@ -143,6 +143,39 @@ test.group('Expenses', (group) => {
     assert.equal(Number(cached.rate), 22.5)
   })
 
+  test('fx lookup happens outside the trip lock', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    // Every mutation transaction locks the trip row; record what the provider saw by then.
+    const seen: { begin: number; end: number }[] = []
+    const original = db.transaction.bind(db)
+    const spy = (async (...args: Parameters<typeof db.transaction>) => {
+      const entry = { begin: fx.calls.length, end: -1 }
+      seen.push(entry)
+      try {
+        return await (original as (...a: unknown[]) => Promise<unknown>)(...args)
+      } finally {
+        entry.end = fx.calls.length
+      }
+    }) as typeof db.transaction
+    db.transaction = spy
+
+    let expense: Expense
+    try {
+      expense = await pushApplied<Expense>(
+        client,
+        owner,
+        mutation(trip.id, 'expense', { amountMinor: 45000, currency: 'THB', spentOn: '2027-01-22' })
+      )
+    } finally {
+      db.transaction = original
+    }
+
+    assert.include(expense, { fxRate: '22.5', fxSource: 'frankfurter', baseAmountMinor: 2000 })
+    assert.lengthOf(fx.calls, 1)
+    assert.deepEqual(seen, [{ begin: 1, end: 1 }], 'the provider is asked before the lock is taken')
+  })
+
   test('an expense in the base currency has the identity rate', async ({ client, assert }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner)
