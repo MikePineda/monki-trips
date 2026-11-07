@@ -1,6 +1,8 @@
 import type { Translation } from '@jsverse/transloco'
 import shellEn from '../app/layouts/shell/i18n/en.json'
 import shellEs from '../app/layouts/shell/i18n/es.json'
+import uiEn from '../app/shared/ui/i18n/en.json'
+import uiEs from '../app/shared/ui/i18n/es.json'
 import type { AppLang } from '../app/domain/locale'
 
 /**
@@ -11,6 +13,7 @@ import type { AppLang } from '../app/domain/locale'
  */
 export const SCOPE_CATALOGUES = {
   shell: { en: shellEn, es: shellEs },
+  ui: { en: uiEn, es: uiEs },
 } satisfies Record<string, Record<AppLang, Translation>>
 
 /** Every scope catalogue keyed like a Transloco path (`'shell/es'`). */

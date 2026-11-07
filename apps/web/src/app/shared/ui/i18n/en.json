@@ -1,0 +1,38 @@
+{
+  "button": {
+    "loading": "Loading"
+  },
+  "sheet": {
+    "close": "Close"
+  },
+  "toast": {
+    "dismiss": "Dismiss",
+    "undo": "Undo"
+  },
+  "skeleton": {
+    "loading": "Loading…"
+  },
+  "field": {
+    "required": "required"
+  },
+  "fieldErrors": {
+    "required": "This field is required",
+    "minLength": "Use at least {{min}} characters",
+    "maxLength": "Use at most {{max}} characters",
+    "min": "The minimum is {{min}}",
+    "max": "The maximum is {{max}}",
+    "email": "Enter a valid e-mail address",
+    "pattern": "This value is not in the expected format",
+    "invalid": "This value is not valid"
+  },
+  "connection": {
+    "failedOne": "1 change needs attention",
+    "failedOther": "{{count}} changes need attention",
+    "offline": "Offline · everything saved",
+    "syncing": "Syncing {{count}}…",
+    "pendingOne": "1 pending",
+    "pendingOther": "{{count}} pending",
+    "staleOne": "Data from 1 day ago",
+    "staleOther": "Data from {{count}} days ago"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "button": {
+    "loading": "Cargando"
+  },
+  "sheet": {
+    "close": "Cerrar"
+  },
+  "toast": {
+    "dismiss": "Descartar",
+    "undo": "Deshacer"
+  },
+  "skeleton": {
+    "loading": "Cargando…"
+  },
+  "field": {
+    "required": "obligatorio"
+  },
+  "fieldErrors": {
+    "required": "Este campo es obligatorio",
+    "minLength": "Usa al menos {{min}} caracteres",
+    "maxLength": "Usa como máximo {{max}} caracteres",
+    "min": "El mínimo es {{min}}",
+    "max": "El máximo es {{max}}",
+    "email": "Escribe un correo electrónico válido",
+    "pattern": "Este valor no tiene el formato esperado",
+    "invalid": "Este valor no es válido"
+  },
+  "connection": {
+    "failedOne": "1 cambio necesita atención",
+    "failedOther": "{{count}} cambios necesitan atención",
+    "offline": "Sin conexión · todo guardado",
+    "syncing": "Sincronizando {{count}}…",
+    "pendingOne": "1 pendiente",
+    "pendingOther": "{{count}} pendientes",
+    "staleOne": "Datos de hace 1 día",
+    "staleOther": "Datos de hace {{count}} días"
+  }
+}
