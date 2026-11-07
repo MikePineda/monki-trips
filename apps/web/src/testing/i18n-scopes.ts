@@ -7,6 +7,8 @@ import offlineEn from '../app/features/offline/i18n/en.json'
 import offlineEs from '../app/features/offline/i18n/es.json'
 import settingsEn from '../app/features/settings/i18n/en.json'
 import settingsEs from '../app/features/settings/i18n/es.json'
+import styleguideEn from '../app/features/styleguide/i18n/en.json'
+import styleguideEs from '../app/features/styleguide/i18n/es.json'
 import shellEn from '../app/layouts/shell/i18n/en.json'
 import shellEs from '../app/layouts/shell/i18n/es.json'
 import uiEn from '../app/shared/ui/i18n/en.json'
@@ -25,6 +27,7 @@ export const SCOPE_CATALOGUES = {
   offline: { en: offlineEn, es: offlineEs },
   settings: { en: settingsEn, es: settingsEs },
   shell: { en: shellEn, es: shellEs },
+  styleguide: { en: styleguideEn, es: styleguideEs },
   ui: { en: uiEn, es: uiEs },
 } satisfies Record<string, Record<AppLang, Translation>>
 

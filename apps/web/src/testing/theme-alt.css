@@ -1,0 +1,86 @@
+/*
+ * A second, test-only theme: every semantic token of src/styles.css with
+ * different surfaces, ink, accent and radii. theme-alt.spec.ts mounts the
+ * style guide's mock screens with it and proves that the ui-kit resolves
+ * every colour, radius and shadow through a custom property declared here,
+ * so a re-skin never needs a change outside the tokens, shared/ui and the
+ * asset folders. Never shipped: not under src/app, not in the build.
+ */
+:root {
+  color-scheme: light;
+
+  --surface-0: #fff6e8;
+  --surface-1: #fffdf8;
+  --surface-2: #f3e7d3;
+  --ink-1: #2b1d0e;
+  --ink-2: #5e4a32;
+  --ink-3: #7a6650;
+  --line: #e4d6c0;
+  --line-strong: #8f7a5e;
+  --icon: #5e4a32;
+
+  --accent: #1f5c4a;
+  --accent-ink: #fff6e8;
+  --accent-soft: #dcefe6;
+  --focus: #1f5c4a;
+
+  --status-good: #2e6b3f;
+  --status-warning: #845600;
+  --status-serious: #7e3418;
+  --status-critical: #a01c1c;
+
+  --print-warning: #dde9f7;
+  --on-print-warning: #2b1d0e;
+  --on-print-warning-2: #5e4a32;
+  --offline: #5e4a32;
+  --stamp-ink: #6b2d5c;
+  --scrim: #2b1d0e4d;
+
+  --gridline: #ece2d1;
+  --baseline: #b3a38b;
+  --mark-neutral: #6b5a44;
+  --mark-muted: #cfc2ad;
+  --series-1: #2a78d6;
+  --series-2: #1baf7a;
+  --series-3: #eda100;
+  --series-4: #9b3f8f;
+  --series-5: #008300;
+  --series-6: #e87ba4;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --neutral-100: #b3a38b;
+  --neutral-200: #9c8b72;
+  --neutral-300: #85745c;
+  --neutral-400: #6b5a44;
+  --neutral-500: #52422e;
+
+  --elevation-1: 0 1px 2px #2b1d0e14, 0 6px 16px #2b1d0e1f;
+  --focus-ring: 0 0 0 2px #fff6e8, 0 0 0 4px #1f5c4a;
+
+  --space-half: 4px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-sheet: 8px;
+  --radius-full: 9999px;
+
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+
+  --font-sans: Georgia, serif;
+  --font-mono: 'Courier New', monospace;
+  --container-max: 480px;
+  --row-height: var(--space-7);
+  --tap-target: 44px;
+  --tab-bar-height: var(--space-7);
+}

@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
 import { RouterLink, RouterOutlet } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
+import { MkIconButtonComponent } from '../../shared/ui/icon-button/icon-button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
+import { MkPageComponent } from '../../shared/ui/layout/page.component'
 import { ShellHeaderComponent } from './shell-header.component'
 import { provideShellI18n } from './shell-i18n'
 
@@ -12,23 +14,32 @@ import { provideShellI18n } from './shell-i18n'
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, TranslocoPipe, ShellHeaderComponent, MkIconComponent],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    TranslocoPipe,
+    ShellHeaderComponent,
+    MkIconComponent,
+    MkIconButtonComponent,
+    MkPageComponent,
+  ],
   providers: [provideShellI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-shell-header [title]="'app.name' | transloco">
       <a
+        mkTopBarActions
+        mk-icon-button
         routerLink="/settings"
-        class="-mr-2 inline-flex size-10 items-center justify-center rounded-full text-ink-2"
         [attr.aria-label]="'shell.nav.settings' | transloco"
         data-testid="shell.nav.settings"
       >
         <mk-icon name="settings" />
       </a>
     </app-shell-header>
-    <main class="mx-auto max-w-2xl px-4 py-6">
+    <mk-page>
       <router-outlet />
-    </main>
+    </mk-page>
   `,
 })
 export class ShellComponent {}

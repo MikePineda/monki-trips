@@ -106,7 +106,8 @@ describe('tokens.css are in sync with tokens.json', () => {
     for (const font of fonts) {
       const face = faces.find(
         (candidate) =>
-          candidate.includes(`'${font.family}'`) && candidate.includes(`font-weight: ${font.weight}`)
+          candidate.includes(`'${font.family}'`) &&
+          candidate.includes(`font-weight: ${font.weight}`)
       )
       expect(face, `${font.family} ${font.weight}`).toBeDefined()
       expect(face).toContain('font-display: swap')

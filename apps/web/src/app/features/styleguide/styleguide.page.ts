@@ -1,23 +1,66 @@
-import { NgTemplateOutlet } from '@angular/common'
-import { DOCUMENT, ChangeDetectionStrategy, Component, inject, signal } from '@angular/core'
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DOCUMENT,
+  computed,
+  inject,
+  signal,
+} from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { formatDayDate } from '../../domain/day-date'
 import { APP_LANGS, type AppLang } from '../../domain/locale'
+import { formatMoney } from '../../domain/money'
 import type { ConnectionStatus } from '../../domain/connection-status'
 import { LangStore } from '../../core/i18n/lang.store'
 import { ThemeStore, type ThemePreference } from '../../core/theme/theme.store'
-import { provideShellI18n } from '../../layouts/shell/shell-i18n'
+import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkChipComponent } from '../../shared/ui/chip/chip.component'
 import { MkConnectionStatusComponent } from '../../shared/ui/connection-status/connection-status.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
+import { MkFabComponent } from '../../shared/ui/fab/fab.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkIconButtonComponent } from '../../shared/ui/icon-button/icon-button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
 import { ICON_NAMES } from '../../shared/ui/icon/icon-names'
+import { MkKeypadComponent } from '../../shared/ui/keypad/keypad.component'
+import { MkPageComponent } from '../../shared/ui/layout/page.component'
+import { MkRowComponent } from '../../shared/ui/layout/row.component'
+import { MkSectionComponent } from '../../shared/ui/layout/section.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkEventRowComponent } from '../../shared/ui/list/event-row.component'
+import { MkListRowComponent } from '../../shared/ui/list/list-row.component'
+import { MkListComponent } from '../../shared/ui/list/list.component'
+import { MASCOT_STATES } from '../../shared/ui/mascot/mascot-sheet'
+import { MkMascotComponent, type MascotSize } from '../../shared/ui/mascot/mascot.component'
+import { MkProgressComponent } from '../../shared/ui/progress/progress.component'
+import { MkRouteChipComponent } from '../../shared/ui/route-chip/route-chip.component'
+import {
+  MkSegmentedComponent,
+  type SegmentOption,
+} from '../../shared/ui/segmented/segmented.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
+import { MkStampComponent } from '../../shared/ui/stamp/stamp.component'
+import { MkStatTileComponent } from '../../shared/ui/stat-tile/stat-tile.component'
+import { MkSwatchComponent } from '../../shared/ui/swatch/swatch.component'
+import { MkTabBarComponent } from '../../shared/ui/tab-bar/tab-bar.component'
+import { MkTextComponent, TEXT_VARIANTS } from '../../shared/ui/text/text.component'
+import { MkTicketComponent } from '../../shared/ui/ticket/ticket.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
-import { COLOR_TOKENS } from './design-tokens'
+import { DEMO_TRIP } from './demo-trip'
+import { TOKEN_GROUPS } from './design-tokens'
+import { MockItineraryDayComponent } from './mocks/itinerary-day.mock'
+import { MockQuickExpenseComponent } from './mocks/quick-expense.mock'
+import { MockTodayComponent } from './mocks/today.mock'
+import { MockTripsComponent } from './mocks/trips.mock'
+import { mockTabs } from './mocks/mock-tabs'
+import { mockLocale } from './mocks/mock-locale'
 import { SampleSheet } from './sample.sheet'
+import { provideStyleguideI18n } from './styleguide-i18n'
+import { provideShellI18n } from '../../layouts/shell/shell-i18n'
 
 const CONNECTION_SAMPLES: readonly ConnectionStatus[] = [
   { state: 'failed', count: 1 },
@@ -27,259 +70,759 @@ const CONNECTION_SAMPLES: readonly ConnectionStatus[] = [
   { state: 'stale', count: 2 },
 ]
 
+const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
+const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
+
 /**
- * The style guide: tokens, every ui-kit component in every state, both
- * themes side by side and a language switch, plus the slot where the
- * mascot lands in WP 0.7. Public and in production for phone review, but
- * `noindex`. Synthetic copy only.
+ * The style guide: the design system in code so the owner can approve it
+ * from a phone before any product screen is built. Tokens with live
+ * contrast ratios, the type scale, every ui-kit component in every state,
+ * Kiko in six states at three sizes, the sample stamps and four mock
+ * screens built with the real components. Public and in production, but
+ * `noindex`. Synthetic data only; copy through Transloco only.
  */
 @Component({
   selector: 'app-styleguide-page',
   imports: [
-    NgTemplateOutlet,
     TranslocoPipe,
+    MkPageComponent,
+    MkStackComponent,
+    MkRowComponent,
+    MkSectionComponent,
+    MkTextComponent,
+    MkSegmentedComponent,
+    MkSwatchComponent,
     MkButtonComponent,
+    MkIconButtonComponent,
+    MkIconComponent,
     MkChipComponent,
+    MkRouteChipComponent,
+    MkFieldComponent,
+    MkInputDirective,
+    MkListComponent,
+    MkListRowComponent,
+    MkEventRowComponent,
+    MkTicketComponent,
+    MkStatTileComponent,
+    MkBannerComponent,
+    MkProgressComponent,
+    MkTabBarComponent,
+    MkFabComponent,
     MkConnectionStatusComponent,
     MkEmptyStateComponent,
-    MkFieldComponent,
-    MkIconComponent,
     MkSkeletonComponent,
+    MkKeypadComponent,
+    MkMascotComponent,
+    MkStampComponent,
+    MockTodayComponent,
+    MockTripsComponent,
+    MockItineraryDayComponent,
+    MockQuickExpenseComponent,
   ],
-  providers: [provideShellI18n()],
+  providers: [provideStyleguideI18n(), provideShellI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-5xl px-4 py-6">
-      <header class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 class="text-xl font-semibold text-ink-1">
-            {{ 'shell.styleguide.title' | transloco }}
-          </h1>
-          <p class="mt-1 text-sm text-ink-2">{{ 'shell.styleguide.intro' | transloco }}</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <div
-            class="inline-flex rounded-lg border border-line-strong p-0.5"
-            role="radiogroup"
-            [attr.aria-label]="'shell.styleguide.languages' | transloco"
-          >
-            @for (lang of langs; track lang) {
-              <button
-                type="button"
-                role="radio"
-                class="min-h-10 rounded-md px-3 text-sm text-ink-2 aria-checked:bg-surface-2 aria-checked:font-medium aria-checked:text-ink-1"
-                [attr.aria-checked]="langStore.lang() === lang"
-                [attr.data-testid]="'styleguide.lang.' + lang"
-                (click)="langStore.use(lang)"
-              >
-                {{ lang }}
-              </button>
+    <mk-page>
+      <mk-stack gap="3">
+        <mk-stack gap="2">
+          <h1 mk-text variant="title">{{ 'styleguide.title' | transloco }}</h1>
+          <p mk-text tone="ink-2">{{ 'styleguide.intro' | transloco }}</p>
+          <mk-row gap="1" [wrap]="true">
+            <mk-segmented
+              [options]="langOptions"
+              [value]="langStore.lang()"
+              (valueChange)="useLang($event)"
+              [label]="'styleguide.languages' | transloco"
+              [optionLang]="true"
+              testId="styleguide.lang"
+            />
+            <mk-segmented
+              [options]="themeOptions()"
+              [value]="themeStore.preference()"
+              (valueChange)="useTheme($event)"
+              [label]="'styleguide.themes' | transloco"
+              testId="styleguide.theme"
+            />
+          </mk-row>
+        </mk-stack>
+
+        <!-- Tokens -->
+        <mk-section
+          [title]="'styleguide.sections.tokens' | transloco"
+          data-testid="styleguide.tokens"
+        >
+          <mk-stack gap="2">
+            <p mk-text variant="caption" tone="ink-2">
+              {{ 'styleguide.sections.tokensIntro' | transloco }}
+            </p>
+            @for (group of tokenGroups; track group.id) {
+              <mk-stack gap="half">
+                <p mk-text variant="eyebrow" tone="ink-3">
+                  {{ 'styleguide.roles.' + group.id | transloco }}
+                </p>
+                <mk-row gap="2" align="start" [wrap]="true">
+                  @for (token of group.tokens; track token.name) {
+                    <mk-swatch [token]="token.name" [against]="token.against" />
+                  }
+                </mk-row>
+              </mk-stack>
             }
-          </div>
-          <div
-            class="inline-flex rounded-lg border border-line-strong p-0.5"
-            role="radiogroup"
-            [attr.aria-label]="'shell.styleguide.themes' | transloco"
-          >
-            @for (theme of themes; track theme) {
-              <button
-                type="button"
-                role="radio"
-                class="min-h-10 rounded-md px-3 text-sm text-ink-2 aria-checked:bg-surface-2 aria-checked:font-medium aria-checked:text-ink-1"
-                [attr.aria-checked]="themeStore.preference() === theme"
-                [attr.data-testid]="'styleguide.theme.' + theme"
-                (click)="themeStore.set(theme)"
-              >
-                {{ theme }}
-              </button>
+          </mk-stack>
+        </mk-section>
+
+        <!-- Typography -->
+        <mk-section
+          [title]="'styleguide.sections.typography' | transloco"
+          data-testid="styleguide.typography"
+        >
+          <mk-stack gap="2">
+            @for (variant of textVariants; track variant) {
+              <mk-stack gap="0">
+                <p mk-text [variant]="variant" [attr.data-variant]="variant">
+                  {{ sampleFor(variant) }}
+                </p>
+                <p mk-text variant="caption" tone="ink-3">
+                  {{ 'styleguide.type.' + variant | transloco }}
+                </p>
+              </mk-stack>
             }
-          </div>
-        </div>
-      </header>
+          </mk-stack>
+        </mk-section>
 
-      <h2 class="mt-8 font-medium text-ink-1">{{ 'shell.styleguide.tokens' | transloco }}</h2>
-      <ul
-        class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
-        data-testid="styleguide.tokens"
-      >
-        @for (token of tokens; track token) {
-          <li class="flex items-center gap-3" [attr.data-token]="token">
-            <span
-              class="size-8 shrink-0 rounded border border-line-strong"
-              [style.background-color]="'var(--' + token + ')'"
-            ></span>
-            <code class="text-xs text-ink-2">--{{ token }}</code>
-          </li>
-        }
-      </ul>
-
-      <h2 class="mt-10 font-medium text-ink-1">{{ 'shell.styleguide.themes' | transloco }}</h2>
-      <div class="mt-3 grid gap-4 md:grid-cols-2" data-testid="styleguide.themes">
-        @for (theme of ['light', 'dark']; track theme) {
-          <section
-            [attr.data-theme]="theme"
-            class="rounded-lg border border-line bg-surface-0 p-4 text-ink-1"
-            [attr.data-testid]="'styleguide.theme-panel.' + theme"
-          >
-            <h3 class="text-sm font-medium text-ink-2">
-              {{ 'shell.styleguide.' + theme | transloco }}
-            </h3>
-            <ng-container *ngTemplateOutlet="components" />
-          </section>
-        }
-      </div>
-
-      <h2 class="mt-10 font-medium text-ink-1">{{ 'shell.styleguide.mascot' | transloco }}</h2>
-      <div
-        class="mt-3 flex h-40 items-center justify-center rounded-lg border border-dashed border-line-strong text-sm text-ink-3"
-        data-testid="styleguide.mascot"
-      >
-        {{ 'shell.styleguide.mascotBody' | transloco }}
-      </div>
-    </div>
-
-    <ng-template #components>
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.buttons' | transloco }}
-      </h4>
-      <div class="mt-2 flex flex-wrap gap-2" data-testid="styleguide.buttons">
-        <button mk-button type="button">{{ 'shell.styleguide.sample.primary' | transloco }}</button>
-        <button mk-button variant="secondary" type="button">
-          {{ 'shell.styleguide.sample.secondary' | transloco }}
-        </button>
-        <button mk-button variant="ghost" type="button">
-          {{ 'shell.styleguide.sample.ghost' | transloco }}
-        </button>
-        <button mk-button type="button" [loading]="true">
-          {{ 'shell.styleguide.sample.loading' | transloco }}
-        </button>
-        <button mk-button variant="secondary" type="button" [disabled]="true">
-          {{ 'shell.styleguide.sample.disabled' | transloco }}
-        </button>
-      </div>
-
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.chips' | transloco }}
-      </h4>
-      <div class="mt-2 flex flex-wrap gap-2" data-testid="styleguide.chips">
-        <mk-chip icon="plane">{{ 'shell.styleguide.sample.chipRoute' | transloco }}</mk-chip>
-        <mk-chip [selectable]="true">{{ 'shell.styleguide.sample.chip' | transloco }}</mk-chip>
-        <mk-chip [selectable]="true" [selected]="true">{{
-          'shell.styleguide.sample.chipSelected' | transloco
-        }}</mk-chip>
-        <mk-chip [selectable]="true" [disabled]="true">{{
-          'shell.styleguide.sample.disabled' | transloco
-        }}</mk-chip>
-      </div>
-
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.fields' | transloco }}
-      </h4>
-      <div class="mt-2 grid gap-3 sm:grid-cols-2" data-testid="styleguide.fields">
-        <mk-field
-          [label]="'shell.styleguide.sample.fieldLabel' | transloco"
-          [hint]="'shell.styleguide.sample.fieldHint' | transloco"
-          [required]="true"
+        <!-- Components -->
+        <mk-section
+          [title]="'styleguide.sections.components' | transloco"
+          data-testid="styleguide.components"
         >
-          <input type="text" />
-        </mk-field>
-        <mk-field
-          [label]="'shell.styleguide.sample.fieldInvalid' | transloco"
-          [error]="{ kind: 'minLength', min: 3 }"
+          <mk-stack gap="3">
+            <mk-section
+              [eyebrow]="'styleguide.components.buttons' | transloco"
+              data-testid="styleguide.buttons"
+            >
+              <mk-stack gap="1" align="start">
+                <mk-row gap="1" [wrap]="true">
+                  <button mk-button type="button">
+                    {{ 'styleguide.sample.primary' | transloco }}
+                  </button>
+                  <button mk-button variant="secondary" type="button">
+                    <mk-icon name="navigation" [size]="16" />
+                    {{ 'styleguide.sample.secondary' | transloco }}
+                  </button>
+                  <button mk-button variant="ghost" type="button">
+                    {{ 'styleguide.sample.ghost' | transloco }}
+                  </button>
+                  <button mk-button variant="destructive" type="button">
+                    {{ 'styleguide.sample.destructive' | transloco }}
+                  </button>
+                </mk-row>
+                <mk-row gap="1" [wrap]="true">
+                  <button mk-button type="button" [loading]="true">
+                    {{ 'styleguide.sample.loading' | transloco }}
+                  </button>
+                  <button mk-button variant="secondary" type="button" [disabled]="true">
+                    {{ 'styleguide.sample.disabled' | transloco }}
+                  </button>
+                  <button mk-button variant="secondary" size="sm" type="button">
+                    {{ 'styleguide.sample.small' | transloco }}
+                  </button>
+                </mk-row>
+                <button mk-button size="block" type="button">
+                  {{ 'styleguide.sample.block' | transloco }}
+                </button>
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.iconButtons' | transloco"
+              data-testid="styleguide.icon-buttons"
+            >
+              <mk-row gap="1">
+                <button
+                  mk-icon-button
+                  type="button"
+                  [attr.aria-label]="'styleguide.today.copyAddress' | transloco"
+                >
+                  <mk-icon name="copy" />
+                </button>
+                <button
+                  mk-icon-button
+                  tone="accent"
+                  type="button"
+                  [attr.aria-label]="'styleguide.today.copyAddress' | transloco"
+                >
+                  <mk-icon name="copy" />
+                </button>
+                <button
+                  mk-icon-button
+                  size="sm"
+                  type="button"
+                  [attr.aria-label]="'ui.sheet.close' | transloco"
+                >
+                  <mk-icon name="x" [size]="16" />
+                </button>
+              </mk-row>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.chips' | transloco"
+              data-testid="styleguide.chips"
+            >
+              <mk-row gap="1" [wrap]="true">
+                <mk-chip [selectable]="true">{{ 'styleguide.sample.chip' | transloco }}</mk-chip>
+                <mk-chip [selectable]="true" [selected]="true">{{
+                  'styleguide.sample.chipSelected' | transloco
+                }}</mk-chip>
+                <mk-chip [selectable]="true" [disabled]="true">{{
+                  'styleguide.sample.disabled' | transloco
+                }}</mk-chip>
+                <mk-chip variant="status" tone="good" icon="circle-check">{{
+                  'styleguide.sample.chipStatus' | transloco
+                }}</mk-chip>
+                <mk-chip variant="status" tone="warning" icon="alert-triangle">{{
+                  'styleguide.sample.chipStatusWarning' | transloco
+                }}</mk-chip>
+                <mk-chip variant="tag" icon="ticket">{{
+                  'styleguide.sample.chipTag' | transloco
+                }}</mk-chip>
+              </mk-row>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.routeChips' | transloco"
+              data-testid="styleguide.route-chips"
+            >
+              <mk-row gap="1" [wrap]="true">
+                <mk-route-chip [stops]="trip.nextEvent.route" />
+                <mk-route-chip [stops]="trip.stops" />
+                <mk-route-chip [stops]="trip.nextEvent.route" size="display" />
+              </mk-row>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.fields' | transloco"
+              data-testid="styleguide.fields"
+            >
+              <mk-stack gap="2">
+                <mk-field
+                  [label]="'styleguide.sample.fieldLabel' | transloco"
+                  [hint]="'styleguide.sample.fieldHint' | transloco"
+                  [required]="true"
+                >
+                  <input mkInput type="text" />
+                </mk-field>
+                <mk-field [label]="'styleguide.sample.fieldCode' | transloco">
+                  <input mkInput variant="code" type="text" [value]="trip.nextEvent.reference" />
+                </mk-field>
+                <mk-field
+                  [label]="'styleguide.sample.fieldInvalid' | transloco"
+                  [error]="{ kind: 'minLength', minLength: 3 }"
+                >
+                  <input mkInput type="text" value="ab" />
+                </mk-field>
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.rows' | transloco"
+              data-testid="styleguide.rows"
+            >
+              <mk-list>
+                <mk-list-row
+                  icon="file-text"
+                  [title]="'styleguide.sample.rowTitle' | transloco"
+                  [meta]="
+                    trip.nextEvent.reference + ' · ' + ('styleguide.sample.rowMeta' | transloco)
+                  "
+                  [monoMeta]="true"
+                  [status]="{
+                    tone: 'good',
+                    icon: 'circle-check',
+                    label: 'styleguide.sample.rowStatus' | transloco,
+                  }"
+                />
+                <mk-list-row
+                  icon="settings"
+                  [title]="'styleguide.sample.rowLink' | transloco"
+                  [link]="['/styleguide']"
+                />
+                <mk-list-row
+                  icon="utensils"
+                  [title]="'styleguide.sample.rowValue' | transloco"
+                  [value]="lunch()"
+                  [chevron]="true"
+                />
+              </mk-list>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.eventRows' | transloco"
+              data-testid="styleguide.event-rows"
+            >
+              <mk-list>
+                <mk-event-row
+                  [time]="trip.nextEvent.time"
+                  [zone]="trip.nextEvent.zone"
+                  icon="train-front"
+                  [title]="'styleguide.sample.eventTitle' | transloco"
+                  [meta]="'styleguide.sample.eventMeta' | transloco"
+                >
+                  <button mkRowAction mk-button variant="ghost" size="sm" type="button">
+                    <mk-icon name="navigation" [size]="16" />
+                    {{ 'styleguide.today.directions' | transloco }}
+                  </button>
+                </mk-event-row>
+                <mk-event-row
+                  [time]="'styleguide.sample.allDay' | transloco"
+                  icon="bed-double"
+                  [title]="'styleguide.sample.lodging' | transloco"
+                  [meta]="'styleguide.sample.lodgingMeta' | transloco"
+                />
+              </mk-list>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.ticket' | transloco"
+              data-testid="styleguide.ticket"
+            >
+              <mk-ticket
+                [title]="trip.nextEvent.title"
+                [time]="trip.nextEvent.time"
+                [zone]="trip.nextEvent.zone"
+                [countdown]="
+                  'styleguide.today.countdown'
+                    | transloco
+                      : {
+                          hours: trip.nextEvent.countdown.hours,
+                          minutes: trip.nextEvent.countdown.minutes,
+                        }
+                "
+                [leaveAt]="trip.nextEvent.leaveAt"
+                [route]="trip.nextEvent.route"
+                [reference]="trip.nextEvent.reference"
+              >
+                <button mkTicketAction mk-button variant="secondary" size="sm" type="button">
+                  <mk-icon name="navigation" [size]="16" />
+                  {{ 'styleguide.today.directions' | transloco }}
+                </button>
+              </mk-ticket>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.segmented' | transloco"
+              data-testid="styleguide.segmented"
+            >
+              <mk-segmented
+                role="tablist"
+                [options]="viewOptions()"
+                [(value)]="view"
+                [label]="'styleguide.components.segmented' | transloco"
+              />
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.stats' | transloco"
+              data-testid="styleguide.stats"
+            >
+              <mk-row align="stretch" gap="0">
+                <mk-stat-tile
+                  [eyebrow]="'styleguide.sample.statLeft' | transloco"
+                  [value]="leftToday()"
+                  [sub]="leftTodayBase()"
+                />
+                <mk-stat-tile
+                  [eyebrow]="'styleguide.sample.statSpent' | transloco"
+                  [value]="yesterday()"
+                  [sub]="'styleguide.sample.statSpentSub' | transloco"
+                />
+                <mk-stat-tile
+                  [eyebrow]="'styleguide.sample.statPending' | transloco"
+                  [value]="'1'"
+                />
+              </mk-row>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.banners' | transloco"
+              data-testid="styleguide.banners"
+            >
+              <mk-stack gap="1">
+                <mk-banner
+                  tone="print"
+                  icon="printer"
+                  [title]="'styleguide.sample.bannerPrint' | transloco"
+                  [body]="'styleguide.sample.bannerPrintBody' | transloco"
+                >
+                  <button mkBannerAction mk-button variant="ghost" size="sm" type="button">
+                    {{ 'styleguide.sample.bannerPrinted' | transloco }}
+                  </button>
+                </mk-banner>
+                <mk-banner
+                  tone="saved"
+                  icon="wifi-off"
+                  [title]="'styleguide.sample.bannerSaved' | transloco"
+                  [body]="'styleguide.sample.bannerSavedBody' | transloco"
+                />
+                <mk-banner
+                  tone="critical"
+                  role="alert"
+                  icon="circle-x"
+                  [title]="'styleguide.sample.bannerCritical' | transloco"
+                >
+                  <button mkBannerAction mk-button variant="ghost" size="sm" type="button">
+                    {{ 'styleguide.sample.bannerCriticalAction' | transloco }}
+                  </button>
+                </mk-banner>
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.progress' | transloco"
+              data-testid="styleguide.progress"
+            >
+              <mk-stack gap="2">
+                <mk-progress
+                  [label]="'styleguide.sample.progressDocs' | transloco"
+                  [value]="12"
+                  [max]="18"
+                />
+                <mk-progress
+                  variant="steps"
+                  [label]="'styleguide.sample.progressReady' | transloco"
+                  [value]="5"
+                  [max]="7"
+                />
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.feedback' | transloco"
+              data-testid="styleguide.feedback"
+            >
+              <mk-row gap="1" [wrap]="true">
+                <button
+                  mk-button
+                  variant="secondary"
+                  type="button"
+                  data-testid="styleguide.open-sheet"
+                  (click)="openSheet()"
+                >
+                  {{ 'styleguide.sample.openSheet' | transloco }}
+                </button>
+                <button
+                  mk-button
+                  variant="secondary"
+                  type="button"
+                  data-testid="styleguide.show-toast"
+                  (click)="showToast()"
+                >
+                  {{ 'styleguide.sample.showToast' | transloco }}
+                </button>
+              </mk-row>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.tabBar' | transloco"
+              data-testid="styleguide.tab-bar"
+            >
+              <mk-tab-bar
+                placement="static"
+                [tabs]="tabs()"
+                [label]="'shell.tabs.label' | transloco"
+              />
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.fab' | transloco"
+              data-testid="styleguide.fab"
+            >
+              <button mk-fab placement="static" type="button">
+                <mk-icon name="plus" />
+                {{ 'styleguide.sample.fab' | transloco }}
+              </button>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.connection' | transloco"
+              data-testid="styleguide.connection"
+            >
+              <mk-stack gap="1" align="start">
+                @for (sample of connectionSamples; track sample.state) {
+                  <mk-connection-status [status]="sample" />
+                }
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.empty' | transloco"
+              data-testid="styleguide.empty"
+            >
+              <mk-stack gap="2">
+                <mk-empty-state
+                  mascot="excited"
+                  [title]="'styleguide.sample.emptyTitle' | transloco"
+                  [body]="'styleguide.sample.emptyBody' | transloco"
+                >
+                  <button mkEmptyAction mk-button type="button">
+                    {{ 'styleguide.sample.emptyAction' | transloco }}
+                  </button>
+                </mk-empty-state>
+                <mk-empty-state
+                  icon="inbox"
+                  [title]="'styleguide.sample.emptyIconTitle' | transloco"
+                  [body]="'styleguide.sample.emptyIconBody' | transloco"
+                />
+                <mk-empty-state
+                  layout="compact"
+                  mascot="thinking"
+                  [title]="'styleguide.sample.emptyDayTitle' | transloco"
+                  [body]="'styleguide.sample.emptyDayBody' | transloco"
+                >
+                  <button mkEmptyAction mk-button variant="secondary" size="sm" type="button">
+                    {{ 'styleguide.sample.emptyDayAction' | transloco }}
+                  </button>
+                </mk-empty-state>
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.skeleton' | transloco"
+              data-testid="styleguide.skeleton"
+            >
+              <mk-skeleton [rows]="3" />
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.keypad' | transloco"
+              data-testid="styleguide.keypad"
+            >
+              <mk-stack gap="1">
+                <p mk-text variant="display">{{ keypadAmount() }}</p>
+                <mk-keypad [(value)]="keypadDigits" />
+              </mk-stack>
+            </mk-section>
+
+            <mk-section
+              [eyebrow]="'styleguide.components.icons' | transloco"
+              data-testid="styleguide.icons"
+            >
+              <mk-row gap="2" [wrap]="true">
+                @for (icon of icons; track icon) {
+                  <mk-icon [name]="icon" [label]="icon" />
+                }
+              </mk-row>
+            </mk-section>
+          </mk-stack>
+        </mk-section>
+
+        <!-- Mascot -->
+        <mk-section
+          [title]="'styleguide.sections.mascot' | transloco"
+          data-testid="styleguide.mascot"
         >
-          <input type="text" value="ab" />
-        </mk-field>
-      </div>
+          <mk-stack gap="2">
+            <p mk-text variant="caption" tone="ink-2">
+              {{ 'styleguide.sections.mascotIntro' | transloco }}
+            </p>
+            <mk-chip [selectable]="true" [(selected)]="still" data-testid="styleguide.mascot.still">
+              {{ 'styleguide.motion.still' | transloco }}
+            </mk-chip>
+            @for (state of mascotStates; track state) {
+              <mk-row
+                gap="2"
+                align="end"
+                [wrap]="true"
+                [attr.data-testid]="'styleguide.mascot.' + state"
+              >
+                @for (size of mascotSizes; track size) {
+                  <mk-mascot
+                    [state]="state"
+                    [size]="size"
+                    [motion]="motion()"
+                    [label]="'styleguide.mascotStates.' + state | transloco"
+                  />
+                }
+                <p mk-text variant="eyebrow" tone="ink-3">
+                  {{ 'styleguide.mascotStates.' + state | transloco }}
+                </p>
+              </mk-row>
+            }
+          </mk-stack>
+        </mk-section>
 
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.connection' | transloco }}
-      </h4>
-      <ul class="mt-2 space-y-1" data-testid="styleguide.connection">
-        @for (sample of connectionSamples; track sample.state) {
-          <li><mk-connection-status [status]="sample" /></li>
-        }
-      </ul>
-
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.feedback' | transloco }}
-      </h4>
-      <div class="mt-2 flex flex-wrap gap-2" data-testid="styleguide.feedback">
-        <button
-          mk-button
-          variant="secondary"
-          type="button"
-          data-testid="styleguide.open-sheet"
-          (click)="openSheet()"
+        <!-- Stamps -->
+        <mk-section
+          [title]="'styleguide.sections.stamps' | transloco"
+          data-testid="styleguide.stamps"
         >
-          {{ 'shell.styleguide.openSheet' | transloco }}
-        </button>
-        <button
-          mk-button
-          variant="secondary"
-          type="button"
-          data-testid="styleguide.show-toast"
-          (click)="showToast()"
+          <mk-stack gap="2">
+            <p mk-text variant="caption" tone="ink-2">
+              {{ 'styleguide.sections.stampsIntro' | transloco }}
+            </p>
+            <mk-row gap="2" [wrap]="true">
+              @for (stamp of trip.stamps; track stamp.code) {
+                <mk-stamp [code]="stamp.code" [name]="stamp.name" [date]="stampDate(stamp.date)" />
+              }
+              <mk-stamp code="ZZ" [name]="trip.city" [date]="stampDate(trip.startDate)" />
+              <mk-stamp code="XB" [name]="trip.stamps[1].name" [reached]="false" />
+            </mk-row>
+          </mk-stack>
+        </mk-section>
+
+        <!-- Screens -->
+        <mk-section
+          [title]="'styleguide.sections.screens' | transloco"
+          data-testid="styleguide.screens"
         >
-          {{ 'shell.styleguide.showToast' | transloco }}
-        </button>
-      </div>
-
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.skeleton' | transloco }}
-      </h4>
-      <mk-skeleton class="mt-2" [rows]="3" />
-
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">
-        {{ 'shell.styleguide.empty' | transloco }}
-      </h4>
-      <mk-empty-state
-        class="mt-2 rounded-lg border border-line bg-surface-1"
-        icon="inbox"
-        [title]="'shell.styleguide.sample.emptyTitle' | transloco"
-        [body]="'shell.styleguide.sample.emptyBody' | transloco"
-      >
-        <button mkEmptyAction mk-button variant="secondary" type="button">
-          {{ 'shell.styleguide.sample.emptyAction' | transloco }}
-        </button>
-      </mk-empty-state>
-
-      <h4 class="mt-4 text-xs font-medium uppercase tracking-wide text-ink-3">Icons</h4>
-      <ul class="mt-2 flex flex-wrap gap-3 text-ink-2" data-testid="styleguide.icons">
-        @for (icon of icons; track icon) {
-          <li><mk-icon [name]="icon" [label]="icon" /></li>
-        }
-      </ul>
-    </ng-template>
+          <mk-stack gap="3">
+            <p mk-text variant="caption" tone="ink-2">
+              {{ 'styleguide.sections.screensIntro' | transloco }}
+            </p>
+            <mk-stack gap="1" data-testid="styleguide.mock.today">
+              <p mk-text variant="eyebrow" tone="ink-3">
+                {{ 'styleguide.screens.today' | transloco }}
+              </p>
+              <app-mock-today [motion]="motion()" />
+            </mk-stack>
+            <mk-stack gap="1" data-testid="styleguide.mock.trips">
+              <p mk-text variant="eyebrow" tone="ink-3">
+                {{ 'styleguide.screens.trips' | transloco }}
+              </p>
+              <app-mock-trips />
+            </mk-stack>
+            <mk-stack gap="1" data-testid="styleguide.mock.day">
+              <p mk-text variant="eyebrow" tone="ink-3">
+                {{ 'styleguide.screens.day' | transloco }}
+              </p>
+              <app-mock-itinerary-day />
+            </mk-stack>
+            <mk-stack gap="1" data-testid="styleguide.mock.expense">
+              <p mk-text variant="eyebrow" tone="ink-3">
+                {{ 'styleguide.screens.expense' | transloco }}
+              </p>
+              <app-mock-quick-expense />
+            </mk-stack>
+          </mk-stack>
+        </mk-section>
+      </mk-stack>
+    </mk-page>
   `,
 })
 export default class StyleguidePage {
-  protected readonly tokens = COLOR_TOKENS
+  protected readonly trip = DEMO_TRIP
+  protected readonly tokenGroups = TOKEN_GROUPS
+  protected readonly textVariants = TEXT_VARIANTS
   protected readonly icons = ICON_NAMES
-  protected readonly langs: readonly AppLang[] = APP_LANGS
-  protected readonly themes: readonly ThemePreference[] = ['system', 'light', 'dark']
+  protected readonly mascotStates = MASCOT_STATES
+  protected readonly mascotSizes = MASCOT_SIZES
   protected readonly connectionSamples = CONNECTION_SAMPLES
   protected readonly langStore = inject(LangStore)
   protected readonly themeStore = inject(ThemeStore)
-  protected readonly undone = signal(false)
+  protected readonly still = signal(false)
+  protected readonly view = signal('days')
+  protected readonly keypadDigits = signal(DEMO_TRIP.expense.digits)
+
+  protected readonly langOptions: readonly SegmentOption[] = APP_LANGS.map((lang: AppLang) => ({
+    id: lang,
+    label: lang.toUpperCase(),
+  }))
 
   private readonly sheets = inject(SheetService)
   private readonly toasts = inject(ToastService)
   private readonly transloco = inject(TranslocoService)
   private readonly document = inject(DOCUMENT)
+  private readonly i18n = mockLocale()
+  private readonly scope = inject(TRANSLOCO_SCOPE)
+
+  /** Re-evaluates the translated option labels when the language changes. */
+  private readonly themeLabels = toSignal(
+    this.transloco.selectTranslate<string[]>(
+      THEMES.map((theme) => `theme.${theme}`),
+      {},
+      (Array.isArray(this.scope) ? this.scope : [this.scope]).find(
+        (scope) => typeof scope === 'object' && scope?.scope === 'styleguide'
+      )
+    ),
+    { initialValue: [] as string[] }
+  )
+
+  protected readonly motion = computed(() => (this.still() ? 'still' : 'auto'))
+  protected readonly themeOptions = computed<SegmentOption[]>(() =>
+    THEMES.map((theme, index) => ({ id: theme, label: this.themeLabels()[index] ?? theme }))
+  )
+  protected readonly viewOptions = computed<SegmentOption[]>(() => {
+    this.i18n.locale()
+    return [
+      { id: 'days', label: this.transloco.translate('styleguide.sample.segmentDays') },
+      { id: 'stays', label: this.transloco.translate('styleguide.sample.segmentStays') },
+    ]
+  })
+  protected readonly tabs = computed(() => mockTabs(this.i18n.tabLabels(), 'today'))
+  protected readonly leftToday = computed(() =>
+    formatMoney(DEMO_TRIP.money.leftTodayMinor, DEMO_TRIP.localCurrency, this.i18n.locale())
+  )
+  protected readonly leftTodayBase = computed(() =>
+    formatMoney(DEMO_TRIP.money.leftTodayBaseMinor, DEMO_TRIP.baseCurrency, this.i18n.locale())
+  )
+  protected readonly yesterday = computed(() =>
+    formatMoney(DEMO_TRIP.money.yesterdayOverMinor, DEMO_TRIP.localCurrency, this.i18n.locale())
+  )
+  protected readonly lunch = computed(() =>
+    formatMoney(1800, DEMO_TRIP.localCurrency, this.i18n.locale())
+  )
+  protected readonly keypadAmount = computed(() =>
+    formatMoney(
+      Math.round(Number(this.keypadDigits() || '0') * 100),
+      DEMO_TRIP.expense.currency,
+      this.i18n.locale()
+    )
+  )
 
   constructor() {
     this.noindex()
   }
 
+  protected sampleFor(variant: string): string {
+    const samples: Record<string, string> = {
+      'display': this.leftToday(),
+      'title': `${DEMO_TRIP.day} / ${DEMO_TRIP.totalDays}`,
+      'heading': DEMO_TRIP.nextEvent.title,
+      'body': DEMO_TRIP.tonight.address,
+      'body-strong': `${DEMO_TRIP.nextEvent.leaveAt}`,
+      'label': DEMO_TRIP.tonight.name,
+      'caption': DEMO_TRIP.city,
+      'code-display': `${DEMO_TRIP.nextEvent.route[0]} → ${DEMO_TRIP.nextEvent.route[1]}`,
+      'code': `${DEMO_TRIP.nextEvent.time} ${DEMO_TRIP.nextEvent.zone}`,
+      'code-label': DEMO_TRIP.nextEvent.reference,
+      'eyebrow': DEMO_TRIP.nextEvent.zone,
+    }
+    return samples[variant] ?? variant
+  }
+
+  protected stampDate(isoDate: string): string {
+    return formatDayDate(isoDate, this.i18n.locale(), false)
+  }
+
+  protected useLang(lang: string | undefined): void {
+    if (lang) {
+      this.langStore.use(lang as AppLang)
+    }
+  }
+
+  protected useTheme(theme: string | undefined): void {
+    if (theme) {
+      this.themeStore.set(theme as ThemePreference)
+    }
+  }
+
   protected openSheet(): void {
     this.sheets.open(SampleSheet, {
-      label: this.transloco.translate('shell.styleguide.sample.sheetTitle'),
+      label: this.transloco.translate('styleguide.sample.sheetTitle'),
     })
   }
 
   protected showToast(): void {
-    this.toasts.showUndo(this.transloco.translate('shell.styleguide.toastMessage'), () =>
-      this.toasts.show({ message: this.transloco.translate('shell.styleguide.undone') })
+    this.toasts.showUndo(this.transloco.translate('styleguide.sample.toastMessage'), () =>
+      this.toasts.show({ message: this.transloco.translate('styleguide.sample.undone') })
     )
   }
 

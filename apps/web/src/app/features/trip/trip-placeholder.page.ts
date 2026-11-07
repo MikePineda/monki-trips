@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 
 export type TripSection = 'today' | 'plan' | 'docs' | 'money' | 'add'
 
@@ -9,16 +11,15 @@ export type TripSection = 'today' | 'plan' | 'docs' | 'money' | 'add'
  */
 @Component({
   selector: 'app-trip-placeholder-page',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, MkStackComponent, MkTextComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1
-      class="text-xl font-semibold text-ink-1"
-      [attr.data-testid]="'trip.' + section() + '.title'"
-    >
-      {{ 'shell.trip.' + section() + '.title' | transloco }}
-    </h1>
-    <p class="mt-3 text-sm text-ink-2">{{ 'shell.trip.' + section() + '.body' | transloco }}</p>
+    <mk-stack gap="2">
+      <h1 mk-text variant="title" [attr.data-testid]="'trip.' + section() + '.title'">
+        {{ 'shell.trip.' + section() + '.title' | transloco }}
+      </h1>
+      <p mk-text tone="ink-2">{{ 'shell.trip.' + section() + '.body' | transloco }}</p>
+    </mk-stack>
   `,
 })
 export default class TripPlaceholderPage {
