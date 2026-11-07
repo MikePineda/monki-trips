@@ -1,3 +1,6 @@
 # Personal Bruno environments (real credentials, production URL). The
 # committed ones (local, e2e) read secrets from process.env only.
 bruno/environments/*.local.bru
+
+# Local document storage of the fs drive (tests, development).
+tmp/

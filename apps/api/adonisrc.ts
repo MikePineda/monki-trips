@@ -40,6 +40,7 @@ export default defineConfig({
     () => import('@adonisjs/session/session_provider'),
     () => import('@adonisjs/shield/shield_provider'),
     () => import('@adonisjs/lucid/database_provider'),
+    () => import('@adonisjs/drive/drive_provider'),
     () => import('@adonisjs/cors/cors_provider'),
     () => import('@adonisjs/static/static_provider'),
     () => import('@adonisjs/i18n/i18n_provider'),
@@ -47,6 +48,7 @@ export default defineConfig({
     () => import('@adonisjs/limiter/limiter_provider'),
     () => import('#providers/mail_provider'),
     () => import('#providers/push_provider'),
+    () => import('#providers/fx_provider'),
     () => import('#providers/deferred_tasks_provider'),
     () => import('#providers/scheduler_provider'),
   ],
@@ -110,7 +112,8 @@ export default defineConfig({
       indexEntities({ manifest: { enabled: true } }),
       // The SPA fallback is not part of the typed contract.
       generateRegistry({
-        routes: { except: ['spa.fallback'] },
+        // Neither the SPA fallback nor drive's signed file route is part of the typed contract.
+        routes: { except: ['spa.fallback', 'drive.fs.serve'] },
       }),
     ],
   },
