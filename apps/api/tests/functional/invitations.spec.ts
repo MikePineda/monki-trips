@@ -1,6 +1,8 @@
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 import TripInvitation from '#models/trip_invitation'
+import TripMember from '#models/trip_member'
+import Traveller from '#models/traveller'
 import { hashToken } from '#domain/secure_token'
 import { actingAs } from '#tests/helpers/acting_as'
 import { expectStatus } from '#tests/helpers/expect_status'
@@ -204,6 +206,34 @@ test.group('Invitations: invitee side', (group) => {
     again.assertStatus(410)
     again.assertBodyContains({ code: 'E_INVITATION_EXPIRED' })
     await db.assertMissing('trip_members', { trip_id: trip.id, user_id: second.id })
+  })
+
+  test('two concurrent accepts of one link invitation admit exactly one member', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const first = await makeUser()
+    const second = await makeUser()
+    const trip = await makeTrip(owner)
+    const { invitation, token } = await makeInvitation(trip, owner)
+    const accept = (user: typeof first) =>
+      actingAs(client.post(`/api/v1/invitations/${token}/accept`), user).catch((e) => e)
+
+    const responses = await Promise.all([accept(first), accept(second)])
+
+    const statuses = responses.map((response) => response.status()).sort()
+    assert.deepEqual(statuses, [201, 410])
+    const joined = await TripMember.query()
+      .where('trip_id', trip.id)
+      .whereIn('user_id', [first.id, second.id])
+    assert.lengthOf(joined, 1)
+    const travellers = await Traveller.query()
+      .where('trip_id', trip.id)
+      .whereIn('user_id', [first.id, second.id])
+    assert.lengthOf(travellers, 1)
+    await invitation.refresh()
+    assert.equal(invitation.acceptedBy, joined[0].userId)
   })
 
   test('expired invitation answers 410', async ({ client }) => {

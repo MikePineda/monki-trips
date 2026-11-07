@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import Trip from '#models/trip'
 import TripInvitation from '#models/trip_invitation'
 import TripMember from '#models/trip_member'
@@ -14,7 +15,8 @@ import { invitationState } from '#domain/invitation_state'
 /**
  * Looks invitations up by their plaintext token and turns an accepted one
  * into a membership plus a traveller, in one transaction. Single use: the
- * row is stamped `acceptedAt`/`acceptedBy` and answers 410 afterwards.
+ * row is claimed (`acceptedAt`/`acceptedBy`) atomically and answers 410
+ * afterwards.
  */
 @inject()
 export class InvitationAcceptance {
@@ -48,13 +50,32 @@ export class InvitationAcceptance {
    * Joins `user` to the invitation's trip. An address-bound invitation must
    * match the account's e-mail (403). Someone who is already a member keeps
    * their row; the invitation is consumed either way.
+   *
+   * The claim is one conditional UPDATE inside the transaction, so of two
+   * concurrent accepts exactly one wins; the other answers 410 and writes
+   * nothing. Pass `client` to join a caller's transaction (signup).
    */
-  async accept(invitation: TripInvitation, user: User): Promise<Trip> {
+  async accept(
+    invitation: TripInvitation,
+    user: User,
+    client?: TransactionClientContract
+  ): Promise<Trip> {
     if (invitation.email && invitation.email !== user.email) {
       throw new ApiException('E_INVITATION_EMAIL_MISMATCH')
     }
     const now = DateTime.fromJSDate(this.clock.now())
-    await db.transaction(async (trx) => {
+    const join = async (trx: TransactionClientContract) => {
+      const claimed = await trx
+        .from('trip_invitations')
+        .where('id', invitation.id)
+        .whereNull('accepted_at')
+        .whereNull('revoked_at')
+        .where('expires_at', '>', now.toJSDate())
+        .update({ accepted_at: now.toJSDate(), accepted_by: user.id, updated_at: now.toJSDate() }, [
+          'id',
+        ])
+      if (claimed.length === 0) throw new ApiException('E_INVITATION_EXPIRED')
+
       const existing = await TripMember.query({ client: trx })
         .where('trip_id', invitation.tripId)
         .where('user_id', user.id)
@@ -96,11 +117,10 @@ export class InvitationAcceptance {
           { client: trx }
         )
       }
-      invitation.useTransaction(trx)
-      invitation.acceptedAt = now
-      invitation.acceptedBy = user.id
-      await invitation.save()
-    })
+    }
+    await (client ? join(client) : db.transaction(join))
+    invitation.acceptedAt = now
+    invitation.acceptedBy = user.id
     return invitation.trip
   }
 }
