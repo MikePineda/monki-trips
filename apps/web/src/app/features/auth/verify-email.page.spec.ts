@@ -116,6 +116,36 @@ describe('VerifyEmailPage', () => {
     expect(input('verify.resend').textContent).toContain('60 s')
   })
 
+  it('a throttled resend also starts a cooldown, as long as the server asked', async () => {
+    const { click, input } = await render()
+    fakes.auth.failWith = new ApiFailure({
+      kind: 'http',
+      status: 429,
+      code: 'E_TOO_MANY_REQUESTS',
+      message: 'slow down',
+      retryAfterSeconds: 90,
+    })
+
+    await click('verify.resend')
+
+    expect(input('verify.resend').hasAttribute('disabled')).toBe(true)
+    expect(input('verify.resend').textContent).toContain('90 s')
+  })
+
+  it('a throttled resend without Retry-After waits the usual minute', async () => {
+    const { click, input } = await render()
+    fakes.auth.failWith = new ApiFailure({
+      kind: 'http',
+      status: 429,
+      code: 'E_TOO_MANY_REQUESTS',
+      message: 'slow down',
+    })
+
+    await click('verify.resend')
+
+    expect(input('verify.resend').textContent).toContain('60 s')
+  })
+
   it('a link token is redeemed at once', async () => {
     const { has } = await render({ token: 'verify-token-0123456789abcdef' })
 
