@@ -1,0 +1,25 @@
+{
+  "title": "Shared with monki trips",
+  "empty": {
+    "title": "Nothing shared yet",
+    "body": "Share a PDF or a photo from another app to monki trips and it lands here."
+  },
+  "storeError": "The shared file could not be kept on this device. Share it again.",
+  "items": "Received",
+  "link": "Shared link",
+  "trip": "Trip",
+  "noTrips": "Create a trip first, then share the file again.",
+  "tags": "Tags",
+  "submit": "Add to the trip",
+  "discard": "Discard",
+  "added": "{{count}} added to the trip",
+  "offline": "You need a connection to upload shared files.",
+  "failed": "Some files could not be uploaded. They stay here.",
+  "tooLarge": "Larger than 20 MB: it cannot be added.",
+  "unsupported": "Not a PDF or an image: it cannot be added.",
+  "tagNames": {
+    "print": "Print",
+    "show_on_phone": "Show on phone",
+    "requires_passport": "Needs passport"
+  }
+}

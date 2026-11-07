@@ -12,6 +12,8 @@ import {
 } from '../../../../testing/offline-testing'
 import { settle } from '../../../../testing/settle'
 import type { MonkiTripsDb } from '../../../core/offline/db'
+import { toDocumentRecord } from '../../../core/offline/document-record'
+import { documentRow } from '../../../../testing/fake-documents-api'
 import { EventDetailSheet, type EventDetailData } from './event-detail.sheet'
 
 const INN = placedEvent('2027-01-20T15:00', 'Asia/Bangkok', {
@@ -82,6 +84,26 @@ describe('EventDetailSheet', () => {
     )
     expect(host.querySelector('[data-testid="events.detail.cost"]')?.textContent).toContain('1,260')
     expect(host.querySelector('[data-testid="events.detail.documents"]')).not.toBeNull()
+  })
+
+  it('lists the documents linked to the event, each opening in the docs tab', async () => {
+    await db.docs.bulkPut([
+      toDocumentRecord(
+        documentRow({ id: 'voucher', tripId: DEMO_TRIP_ID, eventId: 'inn', title: 'Inn voucher' })
+      ),
+      toDocumentRecord(
+        documentRow({ id: 'other', tripId: DEMO_TRIP_ID, eventId: null, title: 'Visa' })
+      ),
+    ])
+    const { fixture, host } = await render('Mozilla/5.0 (Linux; Android 14) Chrome/130')
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelectorAll('[data-testid="events.detail.document"]')).toHaveLength(1)
+    })
+    const link = host.querySelector('[data-testid="events.detail.document"]')
+    expect(link?.textContent).toContain('Inn voucher')
+    expect(link?.getAttribute('href')).toBe(`/t/${DEMO_TRIP_ID}/docs/voucher`)
   })
 
   it('directions link follows the platform', async () => {

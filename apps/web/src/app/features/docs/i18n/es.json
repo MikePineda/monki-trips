@@ -1,0 +1,97 @@
+{
+  "title": "Documentos",
+  "add": "Agregar documento",
+  "filters": {
+    "label": "Filtrar por etiqueta",
+    "all": "Todos"
+  },
+  "tags": {
+    "print": "Imprimir",
+    "show_on_phone": "Mostrar en el celular",
+    "requires_passport": "Requiere pasaporte"
+  },
+  "group": {
+    "today": "Hoy",
+    "upcoming": "Próximos",
+    "other": "Otros documentos"
+  },
+  "row": {
+    "link": "Enlace",
+    "wholeTrip": "Todo el viaje",
+    "pending": "Pendiente",
+    "failed": "Requiere atención"
+  },
+  "offline": {
+    "saved": "Guardado sin conexión",
+    "not_saved": "Sin guardar",
+    "saving": "Guardando…",
+    "mismatch": "El hash no coincide",
+    "link": "Se abre en línea"
+  },
+  "print": {
+    "title": "Llévalo impreso",
+    "one": "{{title}}",
+    "many": "{{count}} documentos para imprimir: {{titles}}",
+    "open": "Abrir"
+  },
+  "empty": {
+    "title": "Sube primero tu pasaporte",
+    "body": "Boletos, vouchers y visas viven aquí, guardados para usarlos sin conexión.",
+    "action": "Agregar documento"
+  },
+  "emptyFilter": "Ningún documento tiene esta etiqueta todavía.",
+  "upload": {
+    "title": "Agregar documento",
+    "kind": "Tipo",
+    "kindFile": "Archivo",
+    "kindLink": "Enlace",
+    "file": "Archivo",
+    "fileHint": "PDF o imagen, hasta 20 MB",
+    "url": "Dirección",
+    "urlHint": "https://…",
+    "name": "Título",
+    "event": "Evento",
+    "noEvent": "Todo el viaje",
+    "tags": "Etiquetas",
+    "submit": "Agregar documento",
+    "tooLarge": "Este archivo pesa más de 20 MB.",
+    "unsupported": "Solo se pueden agregar PDF e imágenes.",
+    "fileRequired": "Elige un archivo.",
+    "urlInvalid": "Escribe una dirección que empiece con https://",
+    "offline": "Necesitas conexión para subir un archivo. Los enlaces funcionan sin conexión.",
+    "failed": "No se pudo subir el archivo. Inténtalo de nuevo."
+  },
+  "detail": {
+    "title": "Documento",
+    "event": "Evento",
+    "size": "Tamaño",
+    "type": "Tipo",
+    "tags": "Etiquetas",
+    "view": "Vista rápida",
+    "openLink": "Abrir enlace",
+    "download": "Descargar",
+    "share": "Compartir",
+    "saveOffline": "Guardar sin conexión",
+    "offlineState": "Copia sin conexión",
+    "mismatchBody": "La copia guardada no coincide con el archivo del servidor. Guárdala de nuevo.",
+    "resave": "Guardar de nuevo",
+    "needsConnection": "Guárdalo sin conexión primero: necesitas conexión para abrirlo ahora.",
+    "storage": "{{used}} usados de {{free}} libres en este dispositivo",
+    "storageWarning": "Los documentos guardados ocupan más de la mitad del espacio libre. El navegador podría borrarlos.",
+    "storageUnknown": "Este navegador no dice cuánto espacio queda.",
+    "delete": "Eliminar documento",
+    "gone": "Este documento ya no está en el viaje.",
+    "editTitle": "Título",
+    "save": "Guardar"
+  },
+  "toast": {
+    "uploaded": "Documento agregado",
+    "saved": "Guardado sin conexión y verificado",
+    "mismatch": "Guardado, pero la copia no coincide con el archivo del servidor",
+    "saveFailed": "No se pudo guardar sin conexión. Revisa la conexión e inténtalo de nuevo.",
+    "removedCopy": "Copia sin conexión eliminada",
+    "deleted": "Documento eliminado",
+    "updated": "Documento actualizado",
+    "shareFailed": "No se pudo compartir el archivo"
+  }
+}

@@ -37,7 +37,7 @@
     "seats": "Seats",
     "seat": "{{name}}: {{seat}}",
     "documents": "Documents",
-    "noDocuments": "No documents linked yet. Documents arrive with the next package.",
+    "noDocuments": "No documents linked yet. Add one in the Docs tab.",
     "coversNight": "Counts as a night's stay",
     "coversNightAuto": "Auto",
     "coversNightYes": "Yes",

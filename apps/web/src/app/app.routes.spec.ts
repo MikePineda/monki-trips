@@ -152,7 +152,7 @@ describe('app routes', () => {
   })
 
   it('the share inbox and settings are reachable outside a trip', async () => {
-    expect((await navigate('/share')).has('share.placeholder')).toBe(true)
+    expect((await navigate('/share')).has('share.title')).toBe(true)
     expect((await navigate('/settings')).has('settings.lang.en')).toBe(true)
   })
 

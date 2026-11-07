@@ -15,7 +15,9 @@ export interface RowStatus {
  * A 56 px list row: optional leading Lucide icon in `icon`, title in body
  * at 500 (ellipsis), meta in caption / ink-3, and at the end a tabular
  * value, a status (icon + word) or a chevron. With `link` the whole row is
- * one navigation target. Extra content: `[mkRowLeading]`, `[mkRowTrailing]`.
+ * one navigation target. Extra content: `[mkRowLeading]`, `[mkRowTrailing]`,
+ * and `[mkRowExtra]` under the meta line (a row of chips), which lets the
+ * row grow past 56 px.
  */
 @Component({
   selector: 'mk-list-row',
@@ -62,6 +64,13 @@ export interface RowStatus {
     .mk-row__meta {
       margin: 0;
       color: var(--ink-3);
+    }
+    .mk-row__extra {
+      display: block;
+      margin-top: var(--space-half);
+    }
+    .mk-row__extra:empty {
+      display: none;
     }
     .mk-row__value {
       color: var(--ink-1);
@@ -113,6 +122,7 @@ export interface RowStatus {
             meta
           }}</span>
         }
+        <span class="mk-row__extra"><ng-content select="[mkRowExtra]" /></span>
       </span>
       @if (value(); as value) {
         <span class="mk-row__value mk-type-body">{{ value }}</span>

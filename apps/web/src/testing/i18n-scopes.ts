@@ -3,12 +3,16 @@ import accountEn from '../app/features/account/i18n/en.json'
 import accountEs from '../app/features/account/i18n/es.json'
 import authEn from '../app/features/auth/i18n/en.json'
 import authEs from '../app/features/auth/i18n/es.json'
+import docsEn from '../app/features/docs/i18n/en.json'
+import docsEs from '../app/features/docs/i18n/es.json'
 import emergencyEn from '../app/features/emergency/i18n/en.json'
 import emergencyEs from '../app/features/emergency/i18n/es.json'
 import moneyEn from '../app/features/money/i18n/en.json'
 import moneyEs from '../app/features/money/i18n/es.json'
 import offlineEn from '../app/features/offline/i18n/en.json'
 import offlineEs from '../app/features/offline/i18n/es.json'
+import shareEn from '../app/features/share/i18n/en.json'
+import shareEs from '../app/features/share/i18n/es.json'
 import settingsEn from '../app/features/settings/i18n/en.json'
 import settingsEs from '../app/features/settings/i18n/es.json'
 import styleguideEn from '../app/features/styleguide/i18n/en.json'
@@ -41,6 +45,7 @@ export const SCOPE_CATALOGUES = {
   account: { en: accountEn, es: accountEs },
   activity: { en: activityEn, es: activityEs },
   auth: { en: authEn, es: authEs },
+  docs: { en: docsEn, es: docsEs },
   emergency: { en: emergencyEn, es: emergencyEs },
   events: { en: eventsEn, es: eventsEs },
   members: { en: membersEn, es: membersEs },
@@ -48,6 +53,7 @@ export const SCOPE_CATALOGUES = {
   offline: { en: offlineEn, es: offlineEs },
   plan: { en: planEn, es: planEs },
   settings: { en: settingsEn, es: settingsEs },
+  share: { en: shareEn, es: shareEs },
   shell: { en: shellEn, es: shellEs },
   styleguide: { en: styleguideEn, es: styleguideEs },
   tasks: { en: tasksEn, es: tasksEs },

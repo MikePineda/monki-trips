@@ -53,5 +53,9 @@
   },
   "checkRow": {
     "pending": "pendiente"
+  },
+  "preview": {
+    "loading": "Abriendo…",
+    "none": "Este archivo no tiene vista previa. Descárgalo para abrirlo."
   }
 }

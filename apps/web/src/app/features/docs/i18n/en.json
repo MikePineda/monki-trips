@@ -1,0 +1,97 @@
+{
+  "title": "Documents",
+  "add": "Add document",
+  "filters": {
+    "label": "Filter by tag",
+    "all": "All"
+  },
+  "tags": {
+    "print": "Print",
+    "show_on_phone": "Show on phone",
+    "requires_passport": "Needs passport"
+  },
+  "group": {
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "other": "Other documents"
+  },
+  "row": {
+    "link": "Link",
+    "wholeTrip": "Whole trip",
+    "pending": "Pending",
+    "failed": "Needs attention"
+  },
+  "offline": {
+    "saved": "Saved offline",
+    "not_saved": "Not saved",
+    "saving": "Saving…",
+    "mismatch": "Hash mismatch",
+    "link": "Opens online"
+  },
+  "print": {
+    "title": "Bring this printed",
+    "one": "{{title}}",
+    "many": "{{count}} documents to print: {{titles}}",
+    "open": "Open"
+  },
+  "empty": {
+    "title": "Upload your passport first",
+    "body": "Tickets, vouchers and visas live here, saved for offline use.",
+    "action": "Add document"
+  },
+  "emptyFilter": "No document has this tag yet.",
+  "upload": {
+    "title": "Add document",
+    "kind": "Type",
+    "kindFile": "File",
+    "kindLink": "Link",
+    "file": "File",
+    "fileHint": "PDF or image, up to 20 MB",
+    "url": "Address",
+    "urlHint": "https://…",
+    "name": "Title",
+    "event": "Event",
+    "noEvent": "Whole trip",
+    "tags": "Tags",
+    "submit": "Add document",
+    "tooLarge": "This file is larger than 20 MB.",
+    "unsupported": "Only PDFs and images can be added.",
+    "fileRequired": "Pick a file.",
+    "urlInvalid": "Enter an address that starts with https://",
+    "offline": "You need a connection to upload a file. Links work offline.",
+    "failed": "The file could not be uploaded. Try again."
+  },
+  "detail": {
+    "title": "Document",
+    "event": "Event",
+    "size": "Size",
+    "type": "Type",
+    "tags": "Tags",
+    "view": "Quick view",
+    "openLink": "Open link",
+    "download": "Download",
+    "share": "Share",
+    "saveOffline": "Save offline",
+    "offlineState": "Offline copy",
+    "mismatchBody": "The saved copy differs from the file on the server. Save it again.",
+    "resave": "Save again",
+    "needsConnection": "Save it offline first: you need a connection to open it now.",
+    "storage": "{{used}} used of {{free}} free on this device",
+    "storageWarning": "Saved documents take more than half of the free space left. The browser may delete them.",
+    "storageUnknown": "This browser does not say how much space is left.",
+    "delete": "Delete document",
+    "gone": "This document is no longer on this trip.",
+    "editTitle": "Title",
+    "save": "Save"
+  },
+  "toast": {
+    "uploaded": "Document added",
+    "saved": "Saved offline and verified",
+    "mismatch": "Saved, but the copy does not match the server's file",
+    "saveFailed": "Could not save it offline. Check the connection and try again.",
+    "removedCopy": "Offline copy removed",
+    "deleted": "Document deleted",
+    "updated": "Document updated",
+    "shareFailed": "Could not share the file"
+  }
+}
