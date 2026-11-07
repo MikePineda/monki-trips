@@ -15,15 +15,16 @@ export default tseslint.config(
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      // `app` for the application, `mk` for the ui-kit (shared/ui).
       '@angular-eslint/directive-selector': [
         'error',
-        { type: 'attribute', prefix: 'app', style: 'camelCase' },
+        { type: 'attribute', prefix: ['app', 'mk'], style: 'camelCase' },
       ],
       '@angular-eslint/component-selector': [
         'error',
         [
-          { type: 'element', prefix: 'app', style: 'kebab-case' },
-          { type: 'attribute', prefix: 'app', style: 'camelCase' },
+          { type: 'element', prefix: ['app', 'mk'], style: 'kebab-case' },
+          { type: 'attribute', prefix: ['app', 'mk'], style: 'kebab-case' },
         ],
       ],
       '@angular-eslint/prefer-standalone': 'error',

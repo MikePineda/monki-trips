@@ -120,3 +120,26 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------- overlays */
+
+/* Bottom sheets (SheetService on the CDK Dialog): panel and backdrop. */
+.mk-sheet-panel {
+  max-height: 85dvh;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  background: var(--surface-1);
+  color: var(--ink-1);
+  animation: mk-sheet-in 200ms ease-out;
+}
+
+.mk-sheet-backdrop {
+  background: color-mix(in srgb, var(--ink-1) 40%, transparent);
+}
+
+@keyframes mk-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
