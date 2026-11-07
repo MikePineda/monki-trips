@@ -8,7 +8,7 @@ import {
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router'
-import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { TranslocoPipe } from '@jsverse/transloco'
 import { addDays } from '@monkitrips/shared'
 import { filter, map, startWith } from 'rxjs'
 import {
@@ -28,8 +28,10 @@ import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSegmentedComponent } from '../../shared/ui/segmented/segmented.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
+import { scopedLabels } from '../../core/i18n/scoped-labels'
 import { DaysComponent } from './days.component'
 import { EventFormSheet, type EventFormData, type EventPrefill } from './events/event-form.sheet'
+import { provideEventsI18n } from './events/events-i18n'
 import { NightsComponent } from './nights.component'
 import { providePlanI18n } from './plan-i18n'
 
@@ -55,7 +57,8 @@ type PlanView = 'days' | 'nights'
     DaysComponent,
     NightsComponent,
   ],
-  providers: [providePlanI18n()],
+  // The events scope loads with the tab, so the sheets open with their words even offline.
+  providers: [providePlanI18n(), provideEventsI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-stack gap="2">
@@ -92,8 +95,6 @@ export default class PlanPage {
 
   private readonly router = inject(Router)
   private readonly sheets = inject(SheetService)
-  private readonly transloco = inject(TranslocoService)
-  private readonly scope = inject(TRANSLOCO_SCOPE)
   private readonly document = inject(DOCUMENT)
 
   private readonly trip = tripRecord(this.tripId)
@@ -114,10 +115,7 @@ export default class PlanPage {
     /\/plan\/nights(?:[/?#]|$)/.test(this.url()) ? 'nights' : 'days'
   )
 
-  private readonly viewLabels = toSignal(
-    this.transloco.selectTranslate<string[]>(['segments.days', 'segments.nights'], {}, this.scope),
-    { initialValue: [] as string[] }
-  )
+  private readonly viewLabels = scopedLabels('plan', ['segments.days', 'segments.nights'])
   protected readonly views = computed(() => [
     { id: 'days', label: this.viewLabels()[0] ?? '' },
     { id: 'nights', label: this.viewLabels()[1] ?? '' },
