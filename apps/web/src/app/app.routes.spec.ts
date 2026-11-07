@@ -73,7 +73,7 @@ describe('app routes', () => {
     fakes.session.user = null
     const { has } = await navigate('/login')
 
-    expect(has('login.email')).toBe(true)
+    expect(has('auth.login.email')).toBe(true)
     expect(has('shell.nav.settings')).toBe(false)
   })
 
@@ -88,11 +88,11 @@ describe('app routes', () => {
   it('the public account screens live in the auth layout', async () => {
     fakes.session.user = null
     const screens: [string, string][] = [
-      ['/signup', 'signup.submit'],
-      ['/invite/invitation-token-0123456789abcdef', 'invite.preview'],
-      ['/verify-email', 'verify.anonymous'],
-      ['/forgot-password', 'forgot.email'],
-      ['/reset-password?token=reset-token-0123456789', 'reset.password'],
+      ['/signup', 'auth.signup.submit'],
+      ['/invite/invitation-token-0123456789abcdef', 'auth.invite.preview'],
+      ['/verify-email', 'auth.verify.anonymous'],
+      ['/forgot-password', 'auth.forgot.email'],
+      ['/reset-password?token=reset-token-0123456789', 'auth.reset.password'],
     ]
     for (const [path, testId] of screens) {
       const page = await navigate(path)

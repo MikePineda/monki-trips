@@ -58,7 +58,7 @@ describe('InvitePage', () => {
     fakes.auth.invitation = { tripName: 'Winter escape', role: 'editor', requiresEmail: false }
     const { text } = await render()
 
-    expect(text('invite.preview')).toBe('Join Winter escape as editor.')
+    expect(text('auth.invite.preview')).toBe('Join Winter escape as editor.')
     expect(fakes.auth.calls).toContain(`invitationPreview:${TOKEN}`)
   })
 
@@ -66,8 +66,8 @@ describe('InvitePage', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true)
     const { has, click } = await render()
 
-    expect(has('invite.accept')).toBe(true)
-    await click('invite.accept')
+    expect(has('auth.invite.accept')).toBe(true)
+    await click('auth.invite.accept')
 
     expect(fakes.auth.calls).toContain(`acceptInvitation:${TOKEN}`)
     // The invitation link leaves the history: back does not land on a used token.
@@ -81,10 +81,12 @@ describe('InvitePage', () => {
     fakes.session.user = null
     const { has, href } = await render()
 
-    expect(has('invite.accept')).toBe(false)
-    expect(href('invite.signup')).toBe(`/signup?invitation=${TOKEN}`)
+    expect(has('auth.invite.accept')).toBe(false)
+    expect(href('auth.invite.signup')).toBe(`/signup?invitation=${TOKEN}`)
     // The token travels once, inside the return url.
-    expect(href('invite.login')).toBe(`/login?returnUrl=${encodeURIComponent(`/invite/${TOKEN}`)}`)
+    expect(href('auth.invite.login')).toBe(
+      `/login?returnUrl=${encodeURIComponent(`/invite/${TOKEN}`)}`
+    )
   })
 
   it('an unknown token is not found', async () => {
@@ -96,7 +98,7 @@ describe('InvitePage', () => {
     })
     const { text } = await render()
 
-    expect(text('invite.notFound')).toContain(SCOPE_CATALOGUES.auth.en.invite.notFoundTitle)
+    expect(text('auth.invite.notFound')).toContain(SCOPE_CATALOGUES.auth.en.invite.notFoundTitle)
   })
 
   it('a used or expired invitation says so', async () => {
@@ -108,7 +110,7 @@ describe('InvitePage', () => {
     })
     const { text } = await render()
 
-    expect(text('invite.expired')).toContain(SCOPE_CATALOGUES.auth.en.invite.expiredTitle)
+    expect(text('auth.invite.expired')).toContain(SCOPE_CATALOGUES.auth.en.invite.expiredTitle)
   })
 
   it('a refused acceptance is explained next to the button', async () => {
@@ -120,8 +122,10 @@ describe('InvitePage', () => {
       message: 'mismatch',
     })
 
-    await click('invite.accept')
+    await click('auth.invite.accept')
 
-    expect(text('invite.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_INVITATION_EMAIL_MISMATCH)
+    expect(text('auth.invite.error')).toBe(
+      SCOPE_CATALOGUES.auth.en.errors.E_INVITATION_EMAIL_MISMATCH
+    )
   })
 })

@@ -54,7 +54,7 @@ const INVITE_RETURN_URL = /^\/invite\/([^/?#]+)$/
           inputmode="email"
           autocapitalize="none"
           [formField]="form.email"
-          data-testid="login.email"
+          data-testid="auth.login.email"
         />
       </mk-field>
       <mk-field
@@ -66,16 +66,25 @@ const INVITE_RETURN_URL = /^\/invite\/([^/?#]+)$/
           type="password"
           autocomplete="current-password"
           [formField]="form.password"
-          data-testid="login.password"
+          data-testid="auth.login.password"
         />
       </mk-field>
-      <mk-api-error [failure]="failure()" scope="auth" [knownCodes]="codes" testId="login.error" />
-      <button mk-button type="submit" [loading]="busy()" data-testid="login.submit">
+      <mk-api-error
+        [failure]="failure()"
+        scope="auth"
+        [knownCodes]="codes"
+        testId="auth.login.error"
+      />
+      <button mk-button type="submit" [loading]="busy()" data-testid="auth.login.submit">
         {{ 'auth.login.submit' | transloco }}
       </button>
     </form>
     <p class="mt-6 text-sm">
-      <a routerLink="/forgot-password" class="font-medium text-accent" data-testid="login.forgot">
+      <a
+        routerLink="/forgot-password"
+        class="font-medium text-accent"
+        data-testid="auth.login.forgot"
+      >
         {{ 'auth.login.forgot' | transloco }}
       </a>
     </p>
@@ -85,7 +94,7 @@ const INVITE_RETURN_URL = /^\/invite\/([^/?#]+)$/
         routerLink="/signup"
         [queryParams]="signupParams()"
         class="font-medium text-accent"
-        data-testid="login.signup"
+        data-testid="auth.login.signup"
       >
         {{ 'auth.login.signup' | transloco }}
       </a>

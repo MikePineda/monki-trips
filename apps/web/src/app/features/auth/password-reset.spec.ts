@@ -44,11 +44,11 @@ describe('password reset screens', () => {
     it('always confirms that a link may be on its way', async () => {
       const { type, submit, text } = await render(ForgotPasswordPage)
 
-      type('forgot.email', 'someone@example.com')
+      type('auth.forgot.email', 'someone@example.com')
       await submit()
 
       expect(fakes.auth.calls).toEqual(['forgotPassword:someone@example.com'])
-      expect(text('forgot.sent')).toContain('someone@example.com')
+      expect(text('auth.forgot.sent')).toContain('someone@example.com')
     })
 
     it('a throttle is explained instead of pretending the mail went out', async () => {
@@ -61,11 +61,11 @@ describe('password reset screens', () => {
         retryAfterSeconds: 120,
       })
 
-      type('forgot.email', 'someone@example.com')
+      type('auth.forgot.email', 'someone@example.com')
       await submit()
 
-      expect(has('forgot.sent')).toBe(false)
-      expect(text('forgot.error')).toBe('Too many attempts. Try again in 2 min.')
+      expect(has('auth.forgot.sent')).toBe(false)
+      expect(text('auth.forgot.error')).toBe('Too many attempts. Try again in 2 min.')
     })
   })
 
@@ -73,8 +73,8 @@ describe('password reset screens', () => {
     it('without a token it asks for the link from the e-mail', async () => {
       const { has } = await render(ResetPasswordPage)
 
-      expect(has('reset.missingToken')).toBe(true)
-      expect(has('reset.password')).toBe(false)
+      expect(has('auth.reset.missingToken')).toBe(true)
+      expect(has('auth.reset.password')).toBe(false)
     })
 
     it('a new password against the token signs every session out and goes to sign in', async () => {
@@ -82,11 +82,11 @@ describe('password reset screens', () => {
         token: 'reset-token-0123456789',
       })
 
-      type('reset.password', 'a brand new password')
+      type('auth.reset.password', 'a brand new password')
       await submit()
 
       expect(fakes.auth.calls).toEqual(['resetPassword:reset-token-0123456789'])
-      expect(text('reset.done')).toContain(SCOPE_CATALOGUES.auth.en.reset.doneTitle)
+      expect(text('auth.reset.done')).toContain(SCOPE_CATALOGUES.auth.en.reset.doneTitle)
     })
 
     it('the reset token leaves the address bar and history as soon as the page holds it', async () => {
@@ -99,9 +99,9 @@ describe('password reset screens', () => {
       // The router drops the query parameter: the page still holds the token.
       fixture.componentRef.setInput('token', undefined)
       await settle(fixture)
-      expect(has('reset.password')).toBe(true)
+      expect(has('auth.reset.password')).toBe(true)
 
-      type('reset.password', 'a brand new password')
+      type('auth.reset.password', 'a brand new password')
       await submit()
 
       expect(fakes.auth.calls).toEqual(['resetPassword:reset-token-0123456789'])
@@ -110,7 +110,7 @@ describe('password reset screens', () => {
     it('a short password never reaches the server', async () => {
       const { type, submit } = await render(ResetPasswordPage, { token: 'reset-token-0123456789' })
 
-      type('reset.password', 'short')
+      type('auth.reset.password', 'short')
       await submit()
 
       expect(fakes.auth.calls).toEqual([])
@@ -127,11 +127,11 @@ describe('password reset screens', () => {
         message: 'gone',
       })
 
-      type('reset.password', 'a brand new password')
+      type('auth.reset.password', 'a brand new password')
       await submit()
 
-      expect(has('reset.expired')).toBe(true)
-      expect(has('reset.request')).toBe(true)
+      expect(has('auth.reset.expired')).toBe(true)
+      expect(has('auth.reset.request')).toBe(true)
     })
   })
 })

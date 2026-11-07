@@ -13,9 +13,9 @@ export async function signIn(page: Page, account: E2eAccount, destination = /\/t
   if (!/\/login(\?|$)/.test(page.url())) {
     await page.goto('/login')
   }
-  await page.getByTestId('login.email').fill(account.email)
-  await page.getByTestId('login.password').fill(account.password)
-  await page.getByTestId('login.submit').click()
+  await page.getByTestId('auth.login.email').fill(account.email)
+  await page.getByTestId('auth.login.password').fill(account.password)
+  await page.getByTestId('auth.login.submit').click()
   await expect(page).toHaveURL(destination)
 }
 

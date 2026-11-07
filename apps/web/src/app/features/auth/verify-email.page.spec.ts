@@ -62,13 +62,13 @@ describe('VerifyEmailPage', () => {
   it('shows the code form to a signed-in person whose address is unverified', async () => {
     const { has, host } = await render()
 
-    expect(has('verify.code')).toBe(true)
+    expect(has('auth.verify.code')).toBe(true)
     expect(host.textContent).toContain(FAKE_SESSION_USER.email)
   })
 
   it('verify code form limits to six digits', async () => {
     const { input, fixture } = await render()
-    const code = input('verify.code')
+    const code = input('auth.verify.code')
 
     typeInto(code, '12 34-567x89')
     fixture.detectChanges()
@@ -81,11 +81,11 @@ describe('VerifyEmailPage', () => {
   it('a right code verifies the session and offers to continue', async () => {
     const { input, submit, has } = await render()
 
-    typeInto(input('verify.code'), '123456')
+    typeInto(input('auth.verify.code'), '123456')
     await submit()
 
     expect(fakes.auth.calls).toContain('verifyCode:123456')
-    expect(has('verify.done')).toBe(true)
+    expect(has('auth.verify.done')).toBe(true)
     expect(TestBed.inject(SessionStore).emailVerified()).toBe(true)
   })
 
@@ -98,22 +98,22 @@ describe('VerifyEmailPage', () => {
       message: 'wrong',
     })
 
-    typeInto(input('verify.code'), '000000')
+    typeInto(input('auth.verify.code'), '000000')
     await submit()
 
-    expect(text('verify.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_INVALID_CODE)
-    expect(has('verify.code')).toBe(true)
+    expect(text('auth.verify.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_INVALID_CODE)
+    expect(has('auth.verify.code')).toBe(true)
   })
 
   it('resending starts a cooldown that disables the button', async () => {
     const { click, has, input } = await render()
 
-    await click('verify.resend')
+    await click('auth.verify.resend')
 
     expect(fakes.auth.calls).toContain('resendVerification')
-    expect(has('verify.sent')).toBe(true)
-    expect(input('verify.resend').hasAttribute('disabled')).toBe(true)
-    expect(input('verify.resend').textContent).toContain('60 s')
+    expect(has('auth.verify.sent')).toBe(true)
+    expect(input('auth.verify.resend').hasAttribute('disabled')).toBe(true)
+    expect(input('auth.verify.resend').textContent).toContain('60 s')
   })
 
   it('a throttled resend also starts a cooldown, as long as the server asked', async () => {
@@ -126,10 +126,10 @@ describe('VerifyEmailPage', () => {
       retryAfterSeconds: 90,
     })
 
-    await click('verify.resend')
+    await click('auth.verify.resend')
 
-    expect(input('verify.resend').hasAttribute('disabled')).toBe(true)
-    expect(input('verify.resend').textContent).toContain('90 s')
+    expect(input('auth.verify.resend').hasAttribute('disabled')).toBe(true)
+    expect(input('auth.verify.resend').textContent).toContain('90 s')
   })
 
   it('a throttled resend without Retry-After waits the usual minute', async () => {
@@ -141,16 +141,16 @@ describe('VerifyEmailPage', () => {
       message: 'slow down',
     })
 
-    await click('verify.resend')
+    await click('auth.verify.resend')
 
-    expect(input('verify.resend').textContent).toContain('60 s')
+    expect(input('auth.verify.resend').textContent).toContain('60 s')
   })
 
   it('a link token is redeemed at once', async () => {
     const { has } = await render({ token: 'verify-token-0123456789abcdef' })
 
     expect(fakes.auth.calls).toContain('verifyEmail:verify-token-0123456789abcdef')
-    expect(has('verify.done')).toBe(true)
+    expect(has('auth.verify.done')).toBe(true)
   })
 
   it('a redeemed link leaves the address bar and the history without its token', async () => {
@@ -158,7 +158,7 @@ describe('VerifyEmailPage', () => {
     const { has } = await render({ token: 'verify-token-0123456789abcdef' })
 
     expect(navigate).toHaveBeenCalledWith(['/verify-email'], { replaceUrl: true })
-    expect(has('verify.done')).toBe(true)
+    expect(has('auth.verify.done')).toBe(true)
   })
 
   it('an expired link keeps saying so once its token left the address bar', async () => {
@@ -175,7 +175,7 @@ describe('VerifyEmailPage', () => {
     fixture.componentRef.setInput('token', undefined)
     await settle(fixture)
 
-    expect(text('verify.expired')).toContain(SCOPE_CATALOGUES.auth.en.verify.linkExpiredTitle)
+    expect(text('auth.verify.expired')).toContain(SCOPE_CATALOGUES.auth.en.verify.linkExpiredTitle)
     expect(fakes.auth.calls.filter((call) => call.startsWith('verifyEmail'))).toHaveLength(1)
   })
 
@@ -188,15 +188,15 @@ describe('VerifyEmailPage', () => {
     })
     const { text } = await render({ token: 'verify-token-0123456789abcdef' })
 
-    expect(text('verify.expired')).toContain(SCOPE_CATALOGUES.auth.en.verify.linkExpiredTitle)
+    expect(text('auth.verify.expired')).toContain(SCOPE_CATALOGUES.auth.en.verify.linkExpiredTitle)
   })
 
   it('an anonymous visitor without a token is sent to sign in first', async () => {
     fakes.session.user = null
     const { has, host } = await render()
 
-    expect(has('verify.anonymous')).toBe(true)
-    expect(host.querySelector('[data-testid="verify.login"]')?.getAttribute('href')).toBe(
+    expect(has('auth.verify.anonymous')).toBe(true)
+    expect(host.querySelector('[data-testid="auth.verify.login"]')?.getAttribute('href')).toBe(
       '/login?returnUrl=%2Fverify-email'
     )
   })

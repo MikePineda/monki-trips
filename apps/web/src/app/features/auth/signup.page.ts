@@ -57,7 +57,7 @@ export const PASSWORD_MIN_LENGTH = 10
   template: `
     <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.signup.title' | transloco }}</h1>
     @if (loading()) {
-      <mk-skeleton class="mt-6" [rows]="4" data-testid="signup.loading" />
+      <mk-skeleton class="mt-6" [rows]="4" data-testid="auth.signup.loading" />
     } @else if (loadFailure(); as failure) {
       <mk-api-error class="mt-6" [failure]="failure" scope="auth" [knownCodes]="codes" />
       <button mk-button variant="secondary" class="mt-4" type="button" (click)="load()">
@@ -69,21 +69,21 @@ export const PASSWORD_MIN_LENGTH = 10
         icon="info"
         [title]="'auth.signup.closedTitle' | transloco"
         [body]="'auth.signup.closedBody' | transloco"
-        data-testid="signup.closed"
+        data-testid="auth.signup.closed"
       >
         <a
           mkEmptyAction
           mk-button
           variant="secondary"
           routerLink="/login"
-          data-testid="signup.login"
+          data-testid="auth.signup.login"
         >
           {{ 'auth.signup.login' | transloco }}
         </a>
       </mk-empty-state>
     } @else {
       @if (preview(); as preview) {
-        <p class="mt-3 text-sm text-ink-2" data-testid="signup.invited">
+        <p class="mt-3 text-sm text-ink-2" data-testid="auth.signup.invited">
           {{
             'auth.signup.invited'
               | transloco
@@ -105,7 +105,7 @@ export const PASSWORD_MIN_LENGTH = 10
             type="text"
             autocomplete="name"
             [formField]="form.displayName"
-            data-testid="signup.displayName"
+            data-testid="auth.signup.displayName"
           />
         </mk-field>
         <mk-field
@@ -119,7 +119,7 @@ export const PASSWORD_MIN_LENGTH = 10
             inputmode="email"
             autocapitalize="none"
             [formField]="form.email"
-            data-testid="signup.email"
+            data-testid="auth.signup.email"
           />
         </mk-field>
         <mk-field
@@ -132,22 +132,22 @@ export const PASSWORD_MIN_LENGTH = 10
             type="password"
             autocomplete="new-password"
             [formField]="form.password"
-            data-testid="signup.password"
+            data-testid="auth.signup.password"
           />
         </mk-field>
         <mk-api-error
           [failure]="failure()"
           scope="auth"
           [knownCodes]="codes"
-          testId="signup.error"
+          testId="auth.signup.error"
         />
-        <button mk-button type="submit" [loading]="busy()" data-testid="signup.submit">
+        <button mk-button type="submit" [loading]="busy()" data-testid="auth.signup.submit">
           {{ 'auth.signup.submit' | transloco }}
         </button>
       </form>
       <p class="mt-6 text-sm text-ink-2">
         {{ 'auth.signup.haveAccount' | transloco }}
-        <a routerLink="/login" class="font-medium text-accent" data-testid="signup.login">
+        <a routerLink="/login" class="font-medium text-accent" data-testid="auth.signup.login">
           {{ 'auth.signup.login' | transloco }}
         </a>
       </p>

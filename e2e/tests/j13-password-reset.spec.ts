@@ -12,33 +12,33 @@ import { expect, test } from '../fixtures.ts'
 test.describe('J13 forgot and reset password', () => {
   test('asking for a reset link always confirms, whatever the address', async ({ page }) => {
     await page.goto('/login')
-    await page.getByTestId('login.forgot').click()
+    await page.getByTestId('auth.login.forgot').click()
     await expect(page).toHaveURL(/\/forgot-password$/)
 
-    await page.getByTestId('forgot.email').fill(soloAccount().email)
-    await page.getByTestId('forgot.submit').click()
-    await expect(page.getByTestId('forgot.sent')).toContainText(soloAccount().email)
+    await page.getByTestId('auth.forgot.email').fill(soloAccount().email)
+    await page.getByTestId('auth.forgot.submit').click()
+    await expect(page.getByTestId('auth.forgot.sent')).toContainText(soloAccount().email)
 
     await page.goto('/forgot-password')
-    await page.getByTestId('forgot.email').fill('nobody-here@example.com')
-    await page.getByTestId('forgot.submit').click()
-    await expect(page.getByTestId('forgot.sent')).toContainText('nobody-here@example.com')
+    await page.getByTestId('auth.forgot.email').fill('nobody-here@example.com')
+    await page.getByTestId('auth.forgot.submit').click()
+    await expect(page.getByTestId('auth.forgot.sent')).toContainText('nobody-here@example.com')
   })
 
   test('the reset screen needs the link and rejects a link the server does not know', async ({
     page,
   }) => {
     await page.goto('/reset-password')
-    await expect(page.getByTestId('reset.missingToken')).toBeVisible()
+    await expect(page.getByTestId('auth.reset.missingToken')).toBeVisible()
 
     await page.goto('/reset-password?token=not-a-real-token-0123456789abcdef')
     // The single-use token leaves the address bar (and the history) at once.
     await expect(page).toHaveURL(/\/reset-password$/)
-    await page.getByTestId('reset.password').fill('a brand new password')
-    await page.getByTestId('reset.submit').click()
+    await page.getByTestId('auth.reset.password').fill('a brand new password')
+    await page.getByTestId('auth.reset.submit').click()
 
-    await expect(page.getByTestId('reset.expired')).toContainText('no longer valid')
-    await page.getByTestId('reset.request').click()
+    await expect(page.getByTestId('auth.reset.expired')).toContainText('no longer valid')
+    await page.getByTestId('auth.reset.request').click()
     await expect(page).toHaveURL(/\/forgot-password$/)
   })
 })

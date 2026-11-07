@@ -64,7 +64,7 @@ type VerifyState =
     @switch (state()) {
       @case ('checking-link') {
         <p class="text-sm text-ink-2">{{ 'auth.verify.checkingLink' | transloco }}</p>
-        <mk-skeleton class="mt-4" [rows]="2" data-testid="verify.loading" />
+        <mk-skeleton class="mt-4" [rows]="2" data-testid="auth.verify.loading" />
       }
       @case ('verified') {
         <mk-empty-state
@@ -72,9 +72,14 @@ type VerifyState =
           icon="circle-check"
           [title]="'auth.verify.verifiedTitle' | transloco"
           [body]="'auth.verify.verifiedBody' | transloco"
-          data-testid="verify.done"
+          data-testid="auth.verify.done"
         >
-          <a mkEmptyAction mk-button [routerLink]="continueUrl()" data-testid="verify.continue">
+          <a
+            mkEmptyAction
+            mk-button
+            [routerLink]="continueUrl()"
+            data-testid="auth.verify.continue"
+          >
             {{ 'auth.verify.continue' | transloco }}
           </a>
         </mk-empty-state>
@@ -84,9 +89,14 @@ type VerifyState =
           class="rounded-lg border border-line bg-surface-1"
           icon="circle-check"
           [title]="'auth.verify.alreadyVerified' | transloco"
-          data-testid="verify.already"
+          data-testid="auth.verify.already"
         >
-          <a mkEmptyAction mk-button [routerLink]="continueUrl()" data-testid="verify.continue">
+          <a
+            mkEmptyAction
+            mk-button
+            [routerLink]="continueUrl()"
+            data-testid="auth.verify.continue"
+          >
             {{ 'auth.verify.continue' | transloco }}
           </a>
         </mk-empty-state>
@@ -97,7 +107,7 @@ type VerifyState =
           icon="circle-alert"
           [title]="'auth.verify.linkExpiredTitle' | transloco"
           [body]="'auth.verify.linkExpiredBody' | transloco"
-          data-testid="verify.expired"
+          data-testid="auth.verify.expired"
         >
           <a mkEmptyAction mk-button variant="secondary" routerLink="/verify-email">
             {{ 'auth.verify.title' | transloco }}
@@ -116,14 +126,14 @@ type VerifyState =
           icon="info"
           [title]="'auth.verify.title' | transloco"
           [body]="'auth.verify.signInFirst' | transloco"
-          data-testid="verify.anonymous"
+          data-testid="auth.verify.anonymous"
         >
           <a
             mkEmptyAction
             mk-button
             routerLink="/login"
             [queryParams]="{ returnUrl: '/verify-email' }"
-            data-testid="verify.login"
+            data-testid="auth.verify.login"
           >
             {{ 'auth.login.title' | transloco }}
           </a>
@@ -148,16 +158,16 @@ type VerifyState =
               class="font-mono tracking-widest tabular-nums"
               [formField]="form.code"
               (input)="keepDigits($event)"
-              data-testid="verify.code"
+              data-testid="auth.verify.code"
             />
           </mk-field>
           <mk-api-error
             [failure]="failure()"
             scope="auth"
             [knownCodes]="codes"
-            testId="verify.error"
+            testId="auth.verify.error"
           />
-          <button mk-button type="submit" [loading]="busy()" data-testid="verify.submit">
+          <button mk-button type="submit" [loading]="busy()" data-testid="auth.verify.submit">
             {{ 'auth.verify.submit' | transloco }}
           </button>
           <button
@@ -165,7 +175,7 @@ type VerifyState =
             variant="ghost"
             type="button"
             [disabled]="cooldown() > 0"
-            data-testid="verify.resend"
+            data-testid="auth.verify.resend"
             (click)="resend()"
           >
             @if (cooldown() > 0) {
@@ -175,7 +185,7 @@ type VerifyState =
             }
           </button>
           @if (resent()) {
-            <p class="text-sm text-ink-2" role="status" data-testid="verify.sent">
+            <p class="text-sm text-ink-2" role="status" data-testid="auth.verify.sent">
               {{ 'auth.verify.sent' | transloco }}
             </p>
           }

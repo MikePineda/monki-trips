@@ -36,14 +36,14 @@ import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
         icon="inbox"
         [title]="'auth.forgot.sentTitle' | transloco"
         [body]="'auth.forgot.sentBody' | transloco: { email: sentTo }"
-        data-testid="forgot.sent"
+        data-testid="auth.forgot.sent"
       >
         <a
           mkEmptyAction
           mk-button
           variant="secondary"
           routerLink="/login"
-          data-testid="forgot.back"
+          data-testid="auth.forgot.back"
         >
           {{ 'auth.forgot.back' | transloco }}
         </a>
@@ -63,21 +63,21 @@ import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
             inputmode="email"
             autocapitalize="none"
             [formField]="form.email"
-            data-testid="forgot.email"
+            data-testid="auth.forgot.email"
           />
         </mk-field>
         <mk-api-error
           [failure]="failure()"
           scope="auth"
           [knownCodes]="codes"
-          testId="forgot.error"
+          testId="auth.forgot.error"
         />
-        <button mk-button type="submit" [loading]="busy()" data-testid="forgot.submit">
+        <button mk-button type="submit" [loading]="busy()" data-testid="auth.forgot.submit">
           {{ 'auth.forgot.submit' | transloco }}
         </button>
       </form>
       <p class="mt-6 text-sm">
-        <a routerLink="/login" class="font-medium text-accent" data-testid="forgot.back">
+        <a routerLink="/login" class="font-medium text-accent" data-testid="auth.forgot.back">
           {{ 'auth.forgot.back' | transloco }}
         </a>
       </p>

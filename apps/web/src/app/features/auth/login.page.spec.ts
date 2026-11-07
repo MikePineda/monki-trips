@@ -61,7 +61,7 @@ describe('LoginPage', () => {
     const { host } = await render()
 
     expect(host.querySelector('h1')?.textContent).toBe('Sign in')
-    expect(host.querySelector('[data-testid="login.forgot"]')?.getAttribute('href')).toBe(
+    expect(host.querySelector('[data-testid="auth.login.forgot"]')?.getAttribute('href')).toBe(
       '/forgot-password'
     )
   })
@@ -84,11 +84,11 @@ describe('LoginPage', () => {
       message: 'server words',
     })
 
-    type('login.email', 'owner@example.com')
-    type('login.password', 'not the password')
+    type('auth.login.email', 'owner@example.com')
+    type('auth.login.password', 'not the password')
     await submit()
 
-    expect(text('login.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_INVALID_CREDENTIALS)
+    expect(text('auth.login.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_INVALID_CREDENTIALS)
   })
 
   it('a throttle says how many minutes to wait', async () => {
@@ -101,32 +101,32 @@ describe('LoginPage', () => {
       retryAfterSeconds: 600,
     })
 
-    type('login.email', 'owner@example.com')
-    type('login.password', 'not the password')
+    type('auth.login.email', 'owner@example.com')
+    type('auth.login.password', 'not the password')
     await submit()
 
-    expect(text('login.error')).toBe('Too many attempts. Try again in 10 min.')
+    expect(text('auth.login.error')).toBe('Too many attempts. Try again in 10 min.')
   })
 
   it('the error follows a language switch', async () => {
     const { fixture, type, submit, text } = await render()
     fakes.session.failWith = new ApiFailure({ kind: 'network', message: 'offline' })
-    type('login.email', 'owner@example.com')
-    type('login.password', 'whatever it is')
+    type('auth.login.email', 'owner@example.com')
+    type('auth.login.password', 'whatever it is')
     await submit()
 
     TestBed.inject(TranslocoService).setActiveLang('es')
     fixture.detectChanges()
 
-    expect(text('login.error')).toBe(SCOPE_CATALOGUES.auth.es.errors.network)
+    expect(text('auth.login.error')).toBe(SCOPE_CATALOGUES.auth.es.errors.network)
   })
 
   it('signs in and goes to the return url inside the app', async () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
     const { type, submit } = await render({ returnUrl: '/t/trip-1/money' })
 
-    type('login.email', 'owner@example.com')
-    type('login.password', 'correct horse battery')
+    type('auth.login.email', 'owner@example.com')
+    type('auth.login.password', 'correct horse battery')
     await submit()
 
     expect(fakes.session.calls).toContain('login:owner@example.com')
@@ -137,8 +137,8 @@ describe('LoginPage', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
     const { type, submit } = await render({ returnUrl: 'https://example.com/evil' })
 
-    type('login.email', 'owner@example.com')
-    type('login.password', 'correct horse battery')
+    type('auth.login.email', 'owner@example.com')
+    type('auth.login.password', 'correct horse battery')
     await submit()
 
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/trips'))
@@ -147,7 +147,7 @@ describe('LoginPage', () => {
   it('an invitation return url hands its token to the signup link', async () => {
     const { host } = await render({ returnUrl: '/invite/invitation-token-0123456789abcdef' })
 
-    expect(host.querySelector('[data-testid="login.signup"]')?.getAttribute('href')).toBe(
+    expect(host.querySelector('[data-testid="auth.login.signup"]')?.getAttribute('href')).toBe(
       '/signup?invitation=invitation-token-0123456789abcdef'
     )
   })
@@ -155,7 +155,7 @@ describe('LoginPage', () => {
   it('keeps the invitation token on the signup link', async () => {
     const { host } = await render({ invitation: 'invitation-token-0123456789abcdef' })
 
-    expect(host.querySelector('[data-testid="login.signup"]')?.getAttribute('href')).toBe(
+    expect(host.querySelector('[data-testid="auth.login.signup"]')?.getAttribute('href')).toBe(
       '/signup?invitation=invitation-token-0123456789abcdef'
     )
   })
@@ -192,8 +192,8 @@ describe('LoginPage', () => {
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
       const { fixture, type, submit } = await render()
 
-      type('login.email', 'partner@example.com')
-      type('login.password', 'correct horse battery')
+      type('auth.login.email', 'partner@example.com')
+      type('auth.login.password', 'correct horse battery')
       await submit()
 
       await vi.waitFor(() =>
@@ -214,8 +214,8 @@ describe('LoginPage', () => {
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
       const { fixture, type, submit } = await render()
 
-      type('login.email', 'partner@example.com')
-      type('login.password', 'correct horse battery')
+      type('auth.login.email', 'partner@example.com')
+      type('auth.login.password', 'correct horse battery')
       await submit()
       await vi.waitFor(() => expect(overlay('auth.foreignChanges.keep')).not.toBeNull())
       overlay('auth.foreignChanges.keep')!.click()
