@@ -43,3 +43,7 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: `budget_status.committedMinor` converts priced events with caller-supplied `rates`; the API should pass the day's `fx_rates` so `/budget` and the device agree.
 - 2026-11-07: `night_coverage` decision to confirm with the owner: a layover between two segments is not a night on board even when the whole event spans 01:00–05:00; a `covers_night` override still forces it.
 - 2026-11-07: `lww_merge` reports `rejectedReasons` (older, derived, deleted) besides `rejectedFields`; decide whether the `/sync/push` response exposes the reason or only the field list.
+- 2026-11-07: WP 2.7b reminders over the push infrastructure: "leave at" (from `today_view.leave_at`), tasks due today, check-out morning, flight changes; one scheduler job each (`reminders:*`, minute slots) reading the synced trip content once `/sync` lands, with a per-user quiet-hours and per-kind opt-out (`notification_settings` table from the plan).
+- 2026-11-07: `push:prune` is a no-op: make it delete subscriptions with `failures` above a threshold or unused for weeks, and surface "a device stopped receiving" in Settings.
+- 2026-11-07: Settings shows only this device's notification state; a list of the account's devices (label, last used) needs `GET /me/push-subscriptions`.
+- 2026-11-07: Add `mk-switch` to `/styleguide` (components section) for the phone review.
