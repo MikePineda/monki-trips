@@ -4,19 +4,26 @@
 |--------------------------------------------------------------------------
 |
 | Counters live in Postgres (config/limiter.ts). Keys combine the client IP
-| (behind the CDN: `clientIp`) with the address under attack, so one person
-| guessing cannot lock a shared office out and a botnet cannot spread one
-| address's attempts across IPs for free.
+| (`clientIp`: the socket, or the CDN's header only when `TRUSTED_PROXY`
+| names that CDN) with the address under attack, so one person guessing
+| cannot lock a shared office out. Login adds a per-address cap that ignores
+| the IP, so a botnet cannot spread one address's guesses across IPs.
 |
 */
 
 import limiter from '@adonisjs/limiter/services/main'
 import type { HttpContext } from '@adonisjs/core/http'
+import env from '#start/env'
 import { normalizeEmail } from '#domain/normalize_email'
+import { resolveClientIp } from '#domain/client_address'
 
-/** The client address: the CDN's header when present (trusted proxies only), else the socket. */
+/** The client address: the CDN's header only behind a trusted CDN, else the socket. */
 export function clientIp(ctx: HttpContext): string {
-  return ctx.request.header('cf-connecting-ip') ?? ctx.request.ip()
+  return resolveClientIp({
+    trustedProxy: env.get('TRUSTED_PROXY') ?? 'none',
+    socketIp: ctx.request.ip(),
+    cfConnectingIp: ctx.request.header('cf-connecting-ip'),
+  })
 }
 
 function emailOf(ctx: HttpContext): string {
@@ -43,13 +50,19 @@ export const throttleVerify = limiter.define('verify', (ctx) =>
 )
 
 /**
- * Login counts failures only (`penalize`): five wrong passwords for an
- * address from one IP block it for 15 minutes; a success clears the count.
+ * Login counts failures only (`penalize`) on two keys at once: five wrong
+ * passwords for an address from one IP, or ten for an address from any
+ * mix of IPs, block it for 15 minutes. A success clears both counts.
  */
-export function loginAttempts() {
-  return limiter.use({ requests: 5, duration: '15 mins', blockDuration: '15 mins' })
-}
-
-export function loginKey(ctx: HttpContext): string {
-  return `login:${clientIp(ctx)}:${emailOf(ctx)}`
+export function loginAttempts(ctx: HttpContext) {
+  const email = emailOf(ctx)
+  return limiter.multi([
+    {
+      key: `login:${clientIp(ctx)}:${email}`,
+      requests: 5,
+      duration: '15 mins',
+      blockDuration: '15 mins',
+    },
+    { key: `login-email:${email}`, requests: 10, duration: '15 mins', blockDuration: '15 mins' },
+  ])
 }

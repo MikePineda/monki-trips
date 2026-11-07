@@ -17,6 +17,7 @@
 */
 
 import { Env } from '@adonisjs/core/env'
+import { TRUSTED_PROXIES } from '#domain/client_address'
 
 export const envSchema = {
   // Node / HTTP
@@ -34,6 +35,7 @@ export const envSchema = {
   GIT_SHA: Env.schema.string.optional(),
   REGISTRATION_OPEN: Env.schema.boolean(),
   APP_DEFAULT_LOCALE: Env.schema.enum.optional(['en', 'es'] as const),
+  TRUSTED_PROXY: Env.schema.enum.optional(TRUSTED_PROXIES),
 
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory'] as const),

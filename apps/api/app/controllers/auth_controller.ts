@@ -10,7 +10,7 @@ import { UserTokens } from '#services/user_tokens'
 import { RegistrationPolicy } from '#services/registration_policy'
 import { InvitationAcceptance } from '#services/invitation_acceptance'
 import { loginUser, stampSessionVersion } from '#services/session_login'
-import { loginAttempts, loginKey } from '#start/limiter'
+import { loginAttempts } from '#start/limiter'
 import { ApiException } from '#exceptions/api_exception'
 import { signupGate } from '#domain/signup_gate'
 import { toUserProfile } from '#transformers/user_profile'
@@ -70,10 +70,13 @@ export default class AuthController {
     return { data: toUserProfile(user) }
   }
 
-  /** Five wrong passwords for an address from one IP block it for 15 minutes. */
+  /**
+   * Five wrong passwords for an address from one IP, or ten from anywhere,
+   * block it for 15 minutes.
+   */
   async login(ctx: HttpContext): Promise<ApiEnvelope<UserProfile>> {
     const body = await ctx.request.validateUsing(loginValidator)
-    const [throttled, user] = await loginAttempts().penalize(loginKey(ctx), async () => {
+    const [throttled, user] = await loginAttempts(ctx).penalize(async () => {
       try {
         return await User.verifyCredentials(body.email, body.password)
       } catch (error) {
