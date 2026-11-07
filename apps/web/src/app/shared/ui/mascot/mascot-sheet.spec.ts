@@ -51,6 +51,7 @@ describe('mascot sheets', () => {
         expect(['smooth', 'pixelated']).toContain(sheet.render)
         expect(['sheet.svg', 'sheet.png']).toContain(sheet.sheet)
         expect(existsSync(join(dir, sheet.sheet))).toBe(true)
+        expect([sheet.columns, sheet.rows]).toEqual(sheetSize(dir, sheet.sheet, sheet.frame))
       })
 
       it('ships every required state with frames inside the sheet, fps 1–12 and a still frame', () => {

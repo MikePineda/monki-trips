@@ -152,7 +152,9 @@ styleguide`, the stop-2 pull request). What was implemented:
   so `--space-1..8` is a full 8 px scale; `tokens.json` carries them.
 - A state's frames sit side by side on one row of the sheet (the asset
   contract allows any `[col, row]`): one CSS `steps()` run needs contiguous
-  frames; `mascot-sheet.spec` enforces it.
+  frames; `mascot-sheet.spec` enforces it. `sheet.json` also states the
+  grid (`columns`, `rows`) so `mk-mascot` scales the sheet without guessing
+  it from the frames; the spec checks it against the image.
 - Stamp artwork is monochrome and painted through a CSS mask, so it takes
   `stamp-ink` in both themes without hex in the SVG; the name, code and date
   are HTML text over it, in mono.

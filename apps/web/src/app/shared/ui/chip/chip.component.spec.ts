@@ -58,6 +58,7 @@ describe('mk-chip', () => {
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement
 
     expect(button.getAttribute('aria-pressed')).toBe('false')
+    expect(button.textContent?.trim()).toBe('Food')
     button.click()
     fixture.detectChanges()
 

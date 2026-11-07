@@ -5,7 +5,9 @@
   <circle cx="56" cy="56" r="54" fill="none" stroke="black" stroke-width="2"/>
   <circle cx="56" cy="56" r="48" fill="none" stroke="black" stroke-width="1"/>
   <!-- Two mountains and a sun -->
+  <g transform="translate(0 -8)">
   <path d="M30 68l16-26 10 16 8-11 18 21z" fill="black"/>
   <circle cx="74" cy="36" r="6" fill="none" stroke="black" stroke-width="2"/>
   <path d="M74 26v-3M74 49v-3M84 36h3M61 36h3" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>
+  </g>
 </svg>

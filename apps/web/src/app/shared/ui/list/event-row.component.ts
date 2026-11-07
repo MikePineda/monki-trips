@@ -40,7 +40,9 @@ import type { IconName } from '../icon/icon-names'
       margin-top: 2px;
     }
     .mk-event__text {
+      display: flex;
       flex: 1 1 0;
+      flex-direction: column;
       min-width: 0;
     }
     .mk-event__title {

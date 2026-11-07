@@ -6,8 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { formatDayDate } from '../../domain/day-date'
 import { APP_LANGS, type AppLang } from '../../domain/locale'
 import { formatMoney } from '../../domain/money'
@@ -57,7 +56,7 @@ import { MockQuickExpenseComponent } from './mocks/quick-expense.mock'
 import { MockTodayComponent } from './mocks/today.mock'
 import { MockTripsComponent } from './mocks/trips.mock'
 import { mockTabs } from './mocks/mock-tabs'
-import { mockLocale } from './mocks/mock-locale'
+import { mockLocale, scopedLabels } from './mocks/mock-locale'
 import { SampleSheet } from './sample.sheet'
 import { provideStyleguideI18n } from './styleguide-i18n'
 import { provideShellI18n } from '../../layouts/shell/shell-i18n'
@@ -731,31 +730,24 @@ export default class StyleguidePage {
   private readonly transloco = inject(TranslocoService)
   private readonly document = inject(DOCUMENT)
   private readonly i18n = mockLocale()
-  private readonly scope = inject(TRANSLOCO_SCOPE)
 
-  /** Re-evaluates the translated option labels when the language changes. */
-  private readonly themeLabels = toSignal(
-    this.transloco.selectTranslate<string[]>(
-      THEMES.map((theme) => `theme.${theme}`),
-      {},
-      (Array.isArray(this.scope) ? this.scope : [this.scope]).find(
-        (scope) => typeof scope === 'object' && scope?.scope === 'styleguide'
-      )
-    ),
-    { initialValue: [] as string[] }
+  private readonly themeLabels = scopedLabels(
+    'styleguide',
+    THEMES.map((theme) => `theme.${theme}`)
   )
+  private readonly viewLabels = scopedLabels('styleguide', [
+    'sample.segmentDays',
+    'sample.segmentStays',
+  ])
 
   protected readonly motion = computed(() => (this.still() ? 'still' : 'auto'))
   protected readonly themeOptions = computed<SegmentOption[]>(() =>
     THEMES.map((theme, index) => ({ id: theme, label: this.themeLabels()[index] ?? theme }))
   )
-  protected readonly viewOptions = computed<SegmentOption[]>(() => {
-    this.i18n.locale()
-    return [
-      { id: 'days', label: this.transloco.translate('styleguide.sample.segmentDays') },
-      { id: 'stays', label: this.transloco.translate('styleguide.sample.segmentStays') },
-    ]
-  })
+  protected readonly viewOptions = computed<SegmentOption[]>(() => [
+    { id: 'days', label: this.viewLabels()[0] ?? '' },
+    { id: 'stays', label: this.viewLabels()[1] ?? '' },
+  ])
   protected readonly tabs = computed(() => mockTabs(this.i18n.tabLabels(), 'today'))
   protected readonly leftToday = computed(() =>
     formatMoney(DEMO_TRIP.money.leftTodayMinor, DEMO_TRIP.localCurrency, this.i18n.locale())

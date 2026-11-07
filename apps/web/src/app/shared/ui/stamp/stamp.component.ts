@@ -59,14 +59,14 @@ import { stampArtworkUrl, stampRotation } from './stamp-artwork'
       align-items: center;
       justify-content: flex-end;
       gap: 1px;
-      padding-bottom: 18px;
+      padding-bottom: 14px;
       box-sizing: border-box;
       text-align: center;
       text-transform: uppercase;
       pointer-events: none;
     }
     .mk-stamp__name {
-      max-width: 84px;
+      max-width: 90px;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;

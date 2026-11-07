@@ -17,7 +17,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
       flex-direction: column;
       width: 390px;
       height: 844px;
-      max-width: 100%;
+      max-width: calc(100% + 2 * var(--page-gutter, 0px));
+      margin-inline: calc(-1 * var(--page-gutter, 0px));
       box-sizing: border-box;
       overflow: hidden;
       border: 1px solid var(--line-strong);

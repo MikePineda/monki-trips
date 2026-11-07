@@ -31,6 +31,9 @@ export interface MascotSheet {
   render: 'smooth' | 'pixelated'
   /** File name of the sheet image next to the json. */
   sheet: string
+  /** Size of the sheet image in frames; mk-mascot scales the background from it. */
+  columns: number
+  rows: number
   states: Record<MascotState, MascotStateSheet>
 }
 

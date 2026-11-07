@@ -91,12 +91,8 @@ export class MkMascotComponent {
   protected readonly px = computed(() => SIZE_PX[this.size()])
   protected readonly image = computed(() => `url("${mascotSheetUrl(this.sheet)}")`)
   protected readonly frames = computed(() => this.sheet.states[this.state()].frames)
-  protected readonly columns = computed(() =>
-    Math.max(...Object.values(this.sheet.states).flatMap((s) => s.frames.map(([col]) => col + 1)))
-  )
-  protected readonly rows = computed(() =>
-    Math.max(...Object.values(this.sheet.states).flatMap((s) => s.frames.map(([, row]) => row + 1)))
-  )
+  protected readonly columns = computed(() => this.sheet.columns)
+  protected readonly rows = computed(() => this.sheet.rows)
   protected readonly still = computed(() => this.motion() === 'still' || this.reducedMotion())
   protected readonly startX = computed(() => `${-this.frames()[0][0] * this.px()}px`)
   protected readonly endX = computed(
