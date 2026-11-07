@@ -155,9 +155,13 @@ describe('VerifyEmailPage', () => {
 
   it('a redeemed link leaves the address bar and the history without its token', async () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true)
-    const { has } = await render({ token: 'verify-token-0123456789abcdef' })
+    const { fixture, has } = await render({ token: 'verify-token-0123456789abcdef' })
 
-    expect(navigate).toHaveBeenCalledWith(['/verify-email'], { replaceUrl: true })
+    // The redeem and the token-stripping navigate run after the first render: wait for them.
+    await vi.waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith(['/verify-email'], { replaceUrl: true })
+    })
+    fixture.detectChanges()
     expect(has('auth.verify.done')).toBe(true)
   })
 
