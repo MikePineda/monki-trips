@@ -48,6 +48,13 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # The runtime image follows the Node LTS major in .nvmrc (24): bump by hand.
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
+      # Postgres majors need a dump/restore on the production host: bump by hand.
+      - dependency-name: postgres
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: build
     groups:
