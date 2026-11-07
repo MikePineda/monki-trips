@@ -35,7 +35,9 @@ if (isEnabled('SEED_USERS')) {
   // TODO(WP 0.5): run the idempotent production bootstrap seeder here
   // (`ace db:seed --files=./database/seeders/production_bootstrap_seeder.js`)
   // once the users table exists. Until then there is nothing to seed.
-  console.warn('entrypoint: SEED_USERS is on but the bootstrap seeder arrives with WP 0.5; skipping')
+  console.warn(
+    'entrypoint: SEED_USERS is on but the bootstrap seeder arrives with WP 0.5; skipping'
+  )
 }
 
 await import('./bin/server.js')
