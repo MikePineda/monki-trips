@@ -83,6 +83,42 @@ export const envSchema = {
 type EnvSchema = typeof envSchema
 
 /**
+ * Variables that become required once a driver needs them. While the driver
+ * is off (`DRIVE_DISK=fs`, `MAIL_DRIVER=log`, `LLM_PROVIDER=fake`) they may be
+ * present and empty, which is how a deployment ships them before the owner
+ * fills them in.
+ */
+const REQUIRED_BY_DRIVER: { when: [string, string]; require: string[] }[] = [
+  {
+    when: ['DRIVE_DISK', 's3'],
+    require: ['S3_ENDPOINT', 'S3_REGION', 'S3_BUCKET', 'S3_KEY', 'S3_SECRET'],
+  },
+  { when: ['MAIL_DRIVER', 'resend'], require: ['RESEND_API_KEY', 'MAIL_FROM'] },
+  { when: ['LLM_PROVIDER', 'anthropic'], require: ['LLM_API_KEY', 'LLM_MODEL'] },
+]
+
+/**
+ * Problems with variables a chosen driver needs, one line per variable.
+ * Names only: a value (possibly a secret) is never part of the message.
+ */
+export function dependentVariableProblems(values: Record<string, unknown>): string[] {
+  const isBlank = (value: unknown) => {
+    const raw =
+      typeof value === 'object' && value !== null && 'release' in value
+        ? (value as { release(): unknown }).release()
+        : value
+    return raw === undefined || raw === null || String(raw).trim() === ''
+  }
+  return REQUIRED_BY_DRIVER.flatMap(({ when: [driver, choice], require }) =>
+    values[driver] === choice
+      ? require
+          .filter((name) => isBlank(values[name]))
+          .map((name) => `- ${name} is required when ${driver}=${choice}`)
+      : []
+  )
+}
+
+/**
  * Validates exactly the given raw values against the schema (the same rules
  * `Env.create` applies at boot) and throws one error naming every missing or
  * invalid variable. Unlike `Env.rules().validate()`, it never falls back to
@@ -99,6 +135,9 @@ export function validateEnv(values: Record<string, string | undefined>): {
     } catch (error) {
       problems.push(`- ${(error as Error).message}`)
     }
+  }
+  if (problems.length === 0) {
+    problems.push(...dependentVariableProblems(validated))
   }
   if (problems.length > 0) {
     throw new Error(`Invalid environment variables:\n${problems.join('\n')}`)

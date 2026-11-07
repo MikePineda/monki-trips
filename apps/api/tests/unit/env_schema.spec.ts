@@ -85,4 +85,65 @@ test.group('Environment schema', () => {
 
     assert.deepEqual(structured, [])
   })
+
+  test('empty s3 variables are accepted when drive disk is fs', ({ assert }) => {
+    const env = validateEnv({
+      ...REQUIRED,
+      DRIVE_DISK: 'fs',
+      S3_ENDPOINT: '',
+      S3_REGION: '',
+      S3_BUCKET: '',
+      S3_KEY: '',
+      S3_SECRET: '',
+    })
+
+    assert.equal(env.DRIVE_DISK, 'fs')
+  })
+
+  test('s3 endpoint is required when drive disk is s3', ({ assert }) => {
+    const s3 = {
+      ...REQUIRED,
+      DRIVE_DISK: 's3',
+      S3_ENDPOINT: 'http://127.0.0.1:9030',
+      S3_REGION: 'auto',
+      S3_BUCKET: 'monkitrips',
+      S3_KEY: 'fake-key',
+      S3_SECRET: 'fake-secret',
+    }
+
+    assert.equal(validateEnv(s3).DRIVE_DISK, 's3')
+    assert.throws(() => validateEnv({ ...s3, S3_ENDPOINT: '' }), /S3_ENDPOINT/)
+    assert.throws(() => validateEnv({ ...s3, S3_KEY: '', S3_SECRET: '' }), /S3_KEY[\s\S]*S3_SECRET/)
+  })
+
+  test('the resend key may stay empty while mail only goes to the log', ({ assert }) => {
+    assert.equal(
+      validateEnv({ ...REQUIRED, MAIL_DRIVER: 'log', RESEND_API_KEY: '' }).MAIL_DRIVER,
+      'log'
+    )
+    assert.throws(
+      () => validateEnv({ ...REQUIRED, MAIL_DRIVER: 'resend', RESEND_API_KEY: '' }),
+      /RESEND_API_KEY/
+    )
+  })
+
+  test('the llm key may stay empty with the fake provider', ({ assert }) => {
+    assert.equal(
+      validateEnv({ ...REQUIRED, LLM_PROVIDER: 'fake', LLM_API_KEY: '' }).LLM_PROVIDER,
+      'fake'
+    )
+    assert.throws(
+      () => validateEnv({ ...REQUIRED, LLM_PROVIDER: 'anthropic', LLM_API_KEY: '' }),
+      /LLM_API_KEY/
+    )
+  })
+
+  test('a dependent-variable error never echoes a secret value', ({ assert }) => {
+    try {
+      validateEnv({ ...REQUIRED, DRIVE_DISK: 's3', S3_KEY: 'very-secret-key-value' })
+      assert.fail('should have thrown')
+    } catch (error) {
+      assert.notInclude((error as Error).message, 'very-secret-key-value')
+    }
+  })
 })
