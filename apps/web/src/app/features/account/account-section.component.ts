@@ -167,6 +167,12 @@ export const EXPORT_FILE_NAME = 'monki-trips-export.json'
             <mk-icon name="log-out" [size]="18" />
             {{ 'account.signOut.action' | transloco }}
           </button>
+          <mk-api-error
+            [failure]="signOutFailure()"
+            scope="account"
+            [knownCodes]="codes"
+            testId="account.signOut.error"
+          />
           <button
             mk-button
             variant="ghost"
@@ -209,6 +215,8 @@ export class AccountSectionComponent {
   protected readonly exporting = signal(false)
   protected readonly signingOut = signal(false)
   protected readonly actionFailure = signal<ApiFailure | null>(null)
+  /** Why the last sign-out did not happen; the button stays for another try. */
+  protected readonly signOutFailure = signal<ApiFailure | null>(null)
 
   protected async saveName(event: Event): Promise<void> {
     event.preventDefault()
@@ -279,10 +287,14 @@ export class AccountSectionComponent {
         return
       }
     }
-    await this.runAction(this.signingOut, async () => {
-      await this.session.signOut()
-      await this.router.navigateByUrl('/login')
-    })
+    await this.runAction(
+      this.signingOut,
+      async () => {
+        await this.session.signOut()
+        await this.router.navigateByUrl('/login')
+      },
+      this.signOutFailure
+    )
   }
 
   private async leaveAfterDeletion(): Promise<void> {
@@ -294,16 +306,17 @@ export class AccountSectionComponent {
 
   private async runAction(
     busy: ReturnType<typeof signal<boolean>>,
-    action: () => Promise<void>
+    action: () => Promise<void>,
+    failed: ReturnType<typeof signal<ApiFailure | null>> = this.actionFailure
   ): Promise<void> {
     busy.set(true)
-    this.actionFailure.set(null)
+    failed.set(null)
     try {
       await action()
     } catch (error) {
       const failure = toFailure(error)
       if (!(await this.session.handleUnauthorized(failure))) {
-        this.actionFailure.set(failure)
+        failed.set(failure)
       }
     } finally {
       busy.set(false)

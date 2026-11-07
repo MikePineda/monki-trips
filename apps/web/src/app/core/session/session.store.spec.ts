@@ -195,6 +195,58 @@ describe('SessionStore', () => {
     expect(store.signedIn()).toBe(true)
   })
 
+  it('sign-out keeps the session when the server fails', async () => {
+    await TestBed.inject(MetaStore).set(META_SESSION, CACHED)
+    await db.trips.put(SOLO_TRIP)
+    const store = TestBed.inject(SessionStore)
+    await store.restore()
+    fakes.session.failWith = new ApiFailure({
+      kind: 'http',
+      status: 502,
+      message: 'Request failed with status code 502',
+    })
+
+    await expect(store.signOut()).rejects.toMatchObject({ status: 502 })
+
+    expect(store.signedIn()).toBe(true)
+    expect(await db.trips.count()).toBe(1)
+    expect(await TestBed.inject(MetaStore).get(META_SESSION)).toEqual(CACHED)
+  })
+
+  it('a session the server already ended (401) still signs out on the device', async () => {
+    await TestBed.inject(MetaStore).set(META_SESSION, CACHED)
+    const store = TestBed.inject(SessionStore)
+    await store.restore()
+    fakes.session.failWith = new ApiFailure({
+      kind: 'http',
+      status: 401,
+      code: 'E_UNAUTHORIZED',
+      message: 'x',
+    })
+
+    await store.signOut()
+
+    expect(store.state()).toBe('anonymous')
+  })
+
+  it('a stale CSRF token is refreshed and the sign-out sent once more', async () => {
+    await TestBed.inject(MetaStore).set(META_SESSION, CACHED)
+    const store = TestBed.inject(SessionStore)
+    await store.restore()
+    await vi.waitFor(() => expect(fakes.session.calls).toEqual(['me']))
+    fakes.session.failWith = new ApiFailure({
+      kind: 'http',
+      status: 403,
+      code: 'E_BAD_CSRF_TOKEN',
+      message: 'x',
+    })
+
+    await store.signOut()
+
+    expect(fakes.session.calls).toEqual(['me', 'logout', 'me', 'logout'])
+    expect(store.state()).toBe('anonymous')
+  })
+
   it('401 online clears the session and goes to sign in with the return url', async () => {
     await TestBed.inject(MetaStore).set(META_SESSION, CACHED)
     const store = TestBed.inject(SessionStore)
