@@ -1,6 +1,12 @@
 import { request, type APIRequestContext, type APIResponse } from '@playwright/test'
 import type { E2eAccount } from './accounts.ts'
 
+/** The parts of the snapshot the journeys read (the full shape lives in @monkitrips/shared). */
+export interface TripContentSnapshotLike {
+  tasks: { id: string; title: string; doneAt: string | null; origin: string }[]
+  emergency: { content: Record<string, unknown> } | null
+}
+
 /**
  * A signed-in session against the API under test, without a browser: for
  * arranging and cleaning data around a journey. It follows the contract
@@ -31,6 +37,26 @@ export class ApiSession {
     await this.expectOk(response, 'GET /trips')
     const body = (await response.json()) as { data: { id: string }[] }
     return body.data.map((trip) => trip.id)
+  }
+
+  /** Creates a trip for the account and answers its id. */
+  async createTrip(input: {
+    name: string
+    startsOn: string
+    endsOn: string
+    baseCurrency: string
+  }): Promise<string> {
+    const response = await this.write('post', '/api/v1/trips', input)
+    const body = (await response.json()) as { data: { id: string } }
+    return body.data.id
+  }
+
+  /** The trip's live content as the API sees it (tasks, emergency information...). */
+  async snapshot(tripId: string): Promise<TripContentSnapshotLike> {
+    const response = await this.context.get(`/api/v1/trips/${tripId}/snapshot`)
+    await this.expectOk(response, 'GET /trips/:tripId/snapshot')
+    const body = (await response.json()) as { data: TripContentSnapshotLike }
+    return body.data
   }
 
   /** Soft-deletes every trip the account owns, so a journey starts from an empty list. */
