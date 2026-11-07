@@ -6,6 +6,7 @@ import { CLOCK } from './clock'
 import { OFFLINE_DB } from './offline-db'
 import type { MonkiTripsDb } from './db'
 import { liveSignal } from './live'
+import { mutationKind, outboxMutation, type OutboxMutation } from './mutation'
 import type { OutboxRecord } from './records'
 
 export interface OutboxEntryInput {
@@ -54,6 +55,16 @@ export class OutboxStore {
   }
 
   async enqueue(input: OutboxEntryInput): Promise<OutboxRecord> {
+    const db = await this.database
+    return this.enqueueIn(db, input)
+  }
+
+  /**
+   * Adds an entry inside a transaction the caller already opened on
+   * `outbox` (and the row's table), so the optimistic row and its mutation
+   * land together or not at all.
+   */
+  async enqueueIn(db: MonkiTripsDb, input: OutboxEntryInput): Promise<OutboxRecord> {
     const record: OutboxRecord = {
       id: uuidv7(),
       tripId: input.tripId,
@@ -65,9 +76,41 @@ export class OutboxStore {
       nextAttemptAt: null,
       error: null,
     }
-    const db = await this.database
     await db.outbox.add(record)
     return record
+  }
+
+  /** Queues a sync mutation (inside the caller's transaction on `outbox`). */
+  enqueueMutation(
+    db: MonkiTripsDb,
+    tripId: string,
+    mutation: OutboxMutation
+  ): Promise<OutboxRecord> {
+    return this.enqueueIn(db, { tripId, kind: mutationKind(mutation), payload: mutation })
+  }
+
+  /**
+   * Rows with a mutation still on its way (pending or syncing), with the
+   * fields those mutations change; a delete lists every field (`*`).
+   */
+  async pendingFieldsByRow(db: MonkiTripsDb): Promise<Map<string, Set<string>>> {
+    const entries = await db.outbox.where('state').anyOf('pending', 'syncing').toArray()
+    const byRow = new Map<string, Set<string>>()
+    for (const entry of entries) {
+      const mutation = outboxMutation(entry)
+      if (!mutation) {
+        continue
+      }
+      const fields = byRow.get(mutation.id) ?? new Set<string>()
+      if (mutation.op === 'delete') {
+        fields.add('*')
+      }
+      for (const field of Object.keys(mutation.changes)) {
+        fields.add(field)
+      }
+      byRow.set(mutation.id, fields)
+    }
+    return byRow
   }
 
   /** The oldest pending entry whose backoff has elapsed. */

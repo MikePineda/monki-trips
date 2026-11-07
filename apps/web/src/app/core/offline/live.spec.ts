@@ -61,7 +61,23 @@ describe('liveSignal', () => {
     await vi.waitFor(() => expect(count()).toBe(0))
 
     ;(child as Injector & { destroy(): void }).destroy()
-    await db.tasks.put({ id: 'k1', tripId: 't1', title: 'x', done: false, updatedAt: 'x' })
+    await db.meta.put({ key: 'k1', value: 'x' })
+    await db.tasks.put({
+      id: 'k1',
+      tripId: 't1',
+      eventId: null,
+      title: 'x',
+      titleKey: null,
+      notes: null,
+      dueOn: null,
+      priority: 'normal',
+      doneAt: null,
+      doneBy: null,
+      origin: 'manual',
+      sourceDocumentId: null,
+      templateItemKey: null,
+      updatedAt: 'x',
+    })
     await new Promise((resolve) => setTimeout(resolve, 50))
 
     expect(count()).toBe(0)

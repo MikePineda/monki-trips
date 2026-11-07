@@ -4,6 +4,7 @@ import type {
   ChecklistRecord,
   DocBlobRecord,
   DocRecord,
+  EmergencyRecord,
   EventRecord,
   ExpenseRecord,
   MemberRecord,
@@ -40,6 +41,7 @@ export class MonkiTripsDb extends Dexie {
   declare members: Table<MemberRecord, string>
   declare travellers: Table<TravellerRecord, string>
   declare activity: Table<ActivityRecord, string>
+  declare emergency: Table<EmergencyRecord, string>
   declare meta: Table<MetaRecord, string>
   declare outbox: Table<OutboxRecord, string>
 
@@ -63,6 +65,10 @@ export class MonkiTripsDb extends Dexie {
     this.version(2).stores({
       travellers: 'id, tripId, updatedAt',
       activity: 'id, tripId, [tripId+createdAt]',
+    })
+    // WP 1.6: emergency information, one row per trip (`id` = `tripId`).
+    this.version(3).stores({
+      emergency: 'id, tripId, updatedAt',
     })
   }
 }

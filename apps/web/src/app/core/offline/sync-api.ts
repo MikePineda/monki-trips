@@ -1,10 +1,16 @@
-import { InjectionToken } from '@angular/core'
+import { inject, InjectionToken } from '@angular/core'
+import { API } from '../api/api'
+import { RealSyncApi } from '../api/real-sync-api'
 import type { OutboxRecord, SyncChange } from './records'
 
 export interface SyncPullResult {
   /** Opaque position to send back on the next pull. */
   cursor: string
   changes: SyncChange[]
+  /** Every trip the account belongs to; the device drops any other. Absent = unknown. */
+  tripIds?: string[]
+  /** More pages follow from `cursor`. */
+  hasMore?: boolean
 }
 
 export interface SyncPushResult {
@@ -17,100 +23,27 @@ export interface SyncPushResult {
 }
 
 /**
+ * The server no longer knows the cursor (410): the device clears its copy,
+ * keeps the outbox and pulls everything again.
+ */
+export class SyncCursorExpired extends Error {
+  constructor() {
+    super('The sync cursor has expired')
+    this.name = 'SyncCursorExpired'
+  }
+}
+
+/**
  * The server side of sync. A thrown error means "no answer" (network error
- * or 5xx): the mutation is retried with backoff.
+ * or 5xx): the mutation is retried with backoff. A pull may throw
+ * `SyncCursorExpired`.
  */
 export interface SyncApi {
   pull(cursor: string | null): Promise<SyncPullResult>
   push(mutations: OutboxRecord[]): Promise<SyncPushResult>
 }
 
-export type SyncApiCall = { kind: 'pull'; cursor: string | null } | { kind: 'push'; ids: string[] }
-
-/**
- * In-memory server until the real `/sync/pull|push` client lands (WP 1.1
- * only replaces the SYNC_API factory). Pull answers the queued changes
- * (none by default) with cursor `fake-<n>`; push accepts everything except
- * what the knobs say.
- */
-export class FakeSyncApi implements SyncApi {
-  readonly calls: SyncApiCall[] = []
-  private pulls = 0
-  private pullError: unknown = null
-  private pushError: unknown = null
-  private pendingChanges: SyncChange[] = []
-  private readonly rejections = new Map<string, string>()
-  private readonly conflicts = new Map<string, SyncChange>()
-
-  /** The next pull answers these changes. */
-  queuePullChanges(...changes: SyncChange[]): void {
-    this.pendingChanges.push(...changes)
-  }
-
-  /** The next pull throws `error`, as a network failure would. */
-  failNextPullWith(error: unknown): void {
-    this.pullError = error
-  }
-
-  /** The next push throws `error`, as a network failure or a 5xx would. */
-  failNextPushWith(error: unknown): void {
-    this.pushError = error
-  }
-
-  /** The next push of mutation `id` is rejected with `message`. */
-  rejectNext(id: string, message: string): void {
-    this.rejections.set(id, message)
-  }
-
-  /** The next push of mutation `id` conflicts; the server answers `serverRow`. */
-  conflictNext(id: string, serverRow: SyncChange): void {
-    this.conflicts.set(id, serverRow)
-  }
-
-  /** Ids of every pushed mutation, in order. */
-  pushedIds(): string[] {
-    return this.calls.flatMap((call) => (call.kind === 'push' ? call.ids : []))
-  }
-
-  async pull(cursor: string | null): Promise<SyncPullResult> {
-    this.calls.push({ kind: 'pull', cursor })
-    if (this.pullError !== null) {
-      const error = this.pullError
-      this.pullError = null
-      throw error
-    }
-    this.pulls += 1
-    const changes = this.pendingChanges
-    this.pendingChanges = []
-    return { cursor: `fake-${this.pulls}`, changes }
-  }
-
-  async push(mutations: OutboxRecord[]): Promise<SyncPushResult> {
-    this.calls.push({ kind: 'push', ids: mutations.map((mutation) => mutation.id) })
-    if (this.pushError !== null) {
-      const error = this.pushError
-      this.pushError = null
-      throw error
-    }
-    const result: SyncPushResult = { accepted: [], rejected: [], conflicts: [] }
-    for (const { id } of mutations) {
-      const message = this.rejections.get(id)
-      const serverRow = this.conflicts.get(id)
-      if (message !== undefined) {
-        this.rejections.delete(id)
-        result.rejected.push({ id, message })
-      } else if (serverRow) {
-        this.conflicts.delete(id)
-        result.conflicts.push({ id, serverRow })
-      } else {
-        result.accepted.push(id)
-      }
-    }
-    return result
-  }
-}
-
 export const SYNC_API = new InjectionToken<SyncApi>('SYNC_API', {
   providedIn: 'root',
-  factory: () => new FakeSyncApi(),
+  factory: () => new RealSyncApi(inject(API)),
 })

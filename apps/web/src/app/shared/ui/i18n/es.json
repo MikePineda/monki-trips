@@ -50,5 +50,8 @@
   },
   "stamp": {
     "notYet": "Aún no"
+  },
+  "checkRow": {
+    "pending": "pendiente"
   }
 }

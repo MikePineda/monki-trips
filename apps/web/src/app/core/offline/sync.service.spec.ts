@@ -10,8 +10,9 @@ import {
 import type { MonkiTripsDb } from './db'
 import { META_CURSOR, META_LAST_PULL_AT, MetaStore } from './meta.store'
 import { OutboxStore } from './outbox.store'
-import type { ExpenseRecord } from './records'
-import { FakeSyncApi } from './sync-api'
+import type { EmergencyRecord, ExpenseRecord, TaskRecord } from './records'
+import { SyncCursorExpired } from './sync-api'
+import { FakeSyncApi } from '../../../testing/fake-sync-api'
 import { SyncService } from './sync.service'
 
 const EXPENSE: ExpenseRecord = {
@@ -23,6 +24,23 @@ const EXPENSE: ExpenseRecord = {
   currency: 'EUR',
   updatedAt: '2026-11-07T11:00:00.000Z',
   syncState: 'pending',
+}
+
+const TASK: TaskRecord = {
+  id: 'k1',
+  tripId: 't1',
+  eventId: null,
+  title: 'Synthetic task',
+  titleKey: null,
+  notes: null,
+  dueOn: '2027-01-10',
+  priority: 'normal',
+  doneAt: null,
+  doneBy: null,
+  origin: 'manual',
+  sourceDocumentId: null,
+  templateItemKey: null,
+  updatedAt: '2026-11-07T11:00:00.000Z',
 }
 
 const SERVER_EXPENSE: ExpenseRecord = {
@@ -98,10 +116,10 @@ describe('SyncService', () => {
 
   it('a pull upserts changed rows and applies deletes', async () => {
     await db.expenses.put(EXPENSE)
-    await db.tasks.put({ id: 'k1', tripId: 't1', title: 'Old', done: false, updatedAt: 'x' })
+    await db.tasks.put({ ...TASK, title: 'Old', updatedAt: 'x' })
     api.queuePullChanges(
       { table: 'expenses', row: EXPENSE, deleted: true },
-      { table: 'tasks', row: { id: 'k1', tripId: 't1', title: 'New', done: true, updatedAt: 'y' } },
+      { table: 'tasks', row: { ...TASK, title: 'New', doneAt: '2026-11-07T11:00:00.000Z' } },
       {
         table: 'events',
         row: { id: 'e1', tripId: 't1', day: '2027-01-15', title: 'Fly', updatedAt: 'y' },
@@ -111,7 +129,10 @@ describe('SyncService', () => {
     await sync.pull()
 
     expect(await db.expenses.get('x1')).toBeUndefined()
-    expect(await db.tasks.get('k1')).toMatchObject({ title: 'New', done: true })
+    expect(await db.tasks.get('k1')).toMatchObject({
+      title: 'New',
+      doneAt: '2026-11-07T11:00:00.000Z',
+    })
     expect(await db.events.get('e1')).toMatchObject({ title: 'Fly' })
   })
 
@@ -228,6 +249,134 @@ describe('SyncService', () => {
     vi.advanceTimersByTime(5 * 60 * 1000)
     await new Promise((resolve) => setTimeout(resolve, 20))
     expect(api.calls.length).toBe(2)
+  })
+
+  it('a pulled row keeps the fields a pending mutation still carries', async () => {
+    await db.tasks.put({ ...TASK, doneAt: '2026-11-07T12:00:00.000Z', syncState: 'pending' })
+    await outbox.enqueue({
+      tripId: 't1',
+      kind: 'task.upsert',
+      payload: {
+        entity: 'task',
+        op: 'upsert',
+        id: 'k1',
+        changes: { doneAt: '2026-11-07T12:00:00.000Z' },
+        changedAt: '2026-11-07T12:00:00.000Z',
+      },
+    })
+    api.queuePullChanges({
+      table: 'tasks',
+      row: { ...TASK, title: 'Renamed by a partner', updatedAt: '2026-11-07T12:00:01.000Z' },
+    })
+
+    await sync.pull()
+
+    expect(await db.tasks.get('k1')).toMatchObject({
+      title: 'Renamed by a partner',
+      doneAt: '2026-11-07T12:00:00.000Z',
+      syncState: 'pending',
+    })
+  })
+
+  it('emergency fields merge per key while one key is pending', async () => {
+    const local: EmergencyRecord = {
+      id: 't1',
+      tripId: 't1',
+      content: { insurance: { provider: 'Demo Assure', policyNumber: 'DEMO-1', phone: null } },
+      schemaVersion: 1,
+      updatedAt: '2026-11-07T12:00:00.000Z',
+      syncState: 'pending',
+    }
+    await db.emergency.put(local)
+    await outbox.enqueue({
+      tripId: 't1',
+      kind: 'emergency.upsert',
+      payload: {
+        entity: 'emergency',
+        op: 'upsert',
+        id: 't1',
+        changes: { insurance: local.content.insurance },
+        changedAt: '2026-11-07T12:00:00.000Z',
+      },
+    })
+    api.queuePullChanges({
+      table: 'emergency',
+      row: {
+        ...local,
+        syncState: undefined,
+        content: {
+          insurance: { provider: 'Older insurer', policyNumber: null, phone: null },
+          embassy: { name: 'Consulate of Demo', phone: '+1 555 0100', address: null },
+        },
+        updatedAt: '2026-11-07T12:00:01.000Z',
+      },
+    })
+
+    await sync.pull()
+
+    expect((await db.emergency.get('t1'))?.content).toEqual({
+      insurance: { provider: 'Demo Assure', policyNumber: 'DEMO-1', phone: null },
+      embassy: { name: 'Consulate of Demo', phone: '+1 555 0100', address: null },
+    })
+  })
+
+  it('a row whose deletion is pending is not brought back by a pull', async () => {
+    await outbox.enqueue({
+      tripId: 't1',
+      kind: 'task.delete',
+      payload: { entity: 'task', op: 'delete', id: 'k1', changes: {}, changedAt: TASK.updatedAt },
+    })
+    api.queuePullChanges({ table: 'tasks', row: TASK })
+
+    await sync.pull()
+
+    expect(await db.tasks.get('k1')).toBeUndefined()
+  })
+
+  it('drops the trips the server no longer lists, with their rows', async () => {
+    await db.trips.bulkPut([
+      {
+        id: 't1',
+        name: 'Kept',
+        startDate: '2027-01-01',
+        endDate: '2027-01-02',
+        baseCurrency: 'EUR',
+        updatedAt: 'x',
+      },
+      {
+        id: 't2',
+        name: 'Left',
+        startDate: '2027-01-01',
+        endDate: '2027-01-02',
+        baseCurrency: 'EUR',
+        updatedAt: 'x',
+      },
+    ])
+    await db.tasks.bulkPut([TASK, { ...TASK, id: 'k2', tripId: 't2' }])
+    api.queuePullTripIds(['t1'])
+
+    await sync.pull()
+
+    expect((await db.trips.toArray()).map((trip) => trip.id)).toEqual(['t1'])
+    expect((await db.tasks.toArray()).map((task) => task.id)).toEqual(['k1'])
+  })
+
+  it('an expired cursor clears the copy, keeps the outbox and pulls from scratch', async () => {
+    await meta.set(META_CURSOR, 'stale')
+    await db.tasks.put(TASK)
+    const queued = await outbox.enqueue({ tripId: 't1', kind: 'task.upsert', payload: {} })
+    api.failNextPullWith(new SyncCursorExpired())
+    api.queuePullChanges({ table: 'tasks', row: { ...TASK, id: 'k9' } })
+
+    await sync.pull()
+
+    expect(api.calls).toEqual([
+      { kind: 'pull', cursor: 'stale' },
+      { kind: 'pull', cursor: null },
+    ])
+    expect((await db.tasks.toArray()).map((task) => task.id)).toEqual(['k9'])
+    expect(await db.outbox.get(queued.id)).toBeDefined()
+    expect(await meta.get(META_CURSOR)).toBe('fake-1')
   })
 
   it('stays quiet while offline', async () => {

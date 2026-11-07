@@ -5,7 +5,8 @@ import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { CLOCK } from '../app/core/offline/clock'
 import { MonkiTripsDb } from '../app/core/offline/db'
 import { OFFLINE_DB } from '../app/core/offline/offline-db'
-import { FakeSyncApi, SYNC_API, type SyncApi } from '../app/core/offline/sync-api'
+import { SYNC_API, type SyncApi } from '../app/core/offline/sync-api'
+import { FakeSyncApi } from './fake-sync-api'
 import { SYNC_NOTIFIER, type SyncNotifier } from '../app/core/offline/sync.service'
 
 /** The instant specs run at unless they move the clock. */

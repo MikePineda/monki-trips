@@ -9,7 +9,7 @@ import {
 import { IllegalOutboxTransition } from '../../domain/outbox-transition'
 import type { MonkiTripsDb } from './db'
 import { OutboxStore } from './outbox.store'
-import { FakeSyncApi } from './sync-api'
+import { FakeSyncApi } from '../../../testing/fake-sync-api'
 import { SyncService } from './sync.service'
 
 const EXPENSE = { tripId: 't1', kind: 'expense.create', payload: { amountMinor: 1250 } }

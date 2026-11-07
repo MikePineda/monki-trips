@@ -15,14 +15,14 @@ describe('MonkiTripsDb', () => {
     await db.delete()
   })
 
-  it('is called monki-trips and opens at version 2', async () => {
+  it('is called monki-trips and opens at version 3 (emergency info since WP 1.6)', async () => {
     await db.open()
 
     expect(db.name).toBe('monki-trips')
-    expect(db.verno).toBe(2)
+    expect(db.verno).toBe(3)
   })
 
-  it('holds exactly the offline tables of the plan plus travellers and the activity cache', async () => {
+  it('holds exactly the offline tables of the plan plus travellers, the activity cache and emergency info', async () => {
     await db.open()
 
     expect(db.tables.map((table) => table.name).sort()).toEqual(
@@ -31,6 +31,7 @@ describe('MonkiTripsDb', () => {
         'checklist',
         'docBlobs',
         'docs',
+        'emergency',
         'events',
         'expenses',
         'members',
@@ -44,7 +45,7 @@ describe('MonkiTripsDb', () => {
     )
   })
 
-  it('a version 1 database keeps its rows when the app opens it at version 2', async () => {
+  it('a version 1 database keeps its rows when the app opens it at the current version', async () => {
     const indexedDB = new IDBFactory()
     const v1 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
     v1.version(1).stores({ trips: 'id, updatedAt', meta: 'key', outbox: 'id, state, createdAt' })
@@ -54,9 +55,37 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(2)
+    expect(upgraded.verno).toBe(3)
     expect((await upgraded.trips.get('t1'))?.name).toBe('Kept')
     expect(await upgraded.travellers.count()).toBe(0)
+    expect(await upgraded.emergency.count()).toBe(0)
+    upgraded.close()
+  })
+
+  it('a version 2 database keeps its travellers when the app opens it at version 3', async () => {
+    const indexedDB = new IDBFactory()
+    const v2 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
+    v2.version(1).stores({ trips: 'id, updatedAt', meta: 'key', outbox: 'id, state, createdAt' })
+    v2.version(2).stores({
+      travellers: 'id, tripId, updatedAt',
+      activity: 'id, tripId, [tripId+createdAt]',
+    })
+    await v2.table('travellers').put({
+      id: 'tr1',
+      tripId: 't1',
+      displayName: 'Kept',
+      userId: null,
+      position: 0,
+      updatedAt: 'x',
+    })
+    v2.close()
+
+    const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
+    await upgraded.open()
+
+    expect(upgraded.verno).toBe(3)
+    expect((await upgraded.travellers.get('tr1'))?.displayName).toBe('Kept')
+    expect(await upgraded.emergency.count()).toBe(0)
     upgraded.close()
   })
 
@@ -78,6 +107,7 @@ describe('MonkiTripsDb', () => {
     expect(schema('members')).toEqual(['id', 'tripId', 'userId', '[tripId+userId]'])
     expect(schema('travellers')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('activity')).toEqual(['id', 'tripId', '[tripId+createdAt]'])
+    expect(schema('emergency')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('meta')).toEqual(['key'])
     expect(schema('outbox')).toEqual(['id', 'state', 'createdAt'])
   })
