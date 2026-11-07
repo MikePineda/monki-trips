@@ -3,7 +3,7 @@ import type { E2eAccount } from './accounts.ts'
 
 /** Raw Transloco keys would look like `shell.trips.title` or `auth.login.submit`. */
 export const RAW_KEY =
-  /\b(?:shell|settings|offline|styleguide|ui|app|update|sync|auth|account)\.[a-zA-Z]+\.[a-zA-Z.]+/
+  /\b(?:shell|settings|offline|styleguide|ui|app|update|sync|auth|account|members|activity)\.[a-zA-Z]+\.[a-zA-Z.]+/
 
 /**
  * Signs the account in through the real form and waits for the destination:
