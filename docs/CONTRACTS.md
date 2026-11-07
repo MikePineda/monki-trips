@@ -351,8 +351,10 @@ answers 503 until written, `fake` answers from `tests/fixtures/llm/<purpose>/<ca
 - **The `<data>` rule.** Text that a person typed or a document contained
   (addresses, preferences, PDF or web text) reaches the model only inside
   `<data label="…">…</data>` in a user turn, never in the system prompt; the
-  system prompt says such text is untrusted content, never instructions; a
-  `<data` or `</data` inside it is escaped. Names never reach the model:
+  system prompt says such text is untrusted content, never instructions; it
+  is NFKC-normalised, stripped of invisible format characters (`\p{Cf}`) and
+  every `<` and `>` in it becomes `&lt;` / `&gt;`, so no tag can be formed
+  inside it. Names never reach the model:
   cards use the `{name}` placeholder.
 - **Structured output.** An answer meant as JSON is parsed (code fences and
   prose around it tolerated), validated with a VineJS schema and the
