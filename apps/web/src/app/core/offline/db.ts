@@ -1,6 +1,7 @@
 import { Dexie, type DexieOptions, type Table } from 'dexie'
 import type {
   ActivityRecord,
+  BudgetCategoryRecord,
   ChecklistRecord,
   DocBlobRecord,
   DocRecord,
@@ -44,6 +45,7 @@ export class MonkiTripsDb extends Dexie {
   declare tasks: Table<TaskRecord, string>
   declare checklist: Table<ChecklistRecord, string>
   declare expenses: Table<ExpenseRecord, string>
+  declare budgetCategories: Table<BudgetCategoryRecord, string>
   declare members: Table<MemberRecord, string>
   declare travellers: Table<TravellerRecord, string>
   declare activity: Table<ActivityRecord, string>
@@ -84,5 +86,14 @@ export class MonkiTripsDb extends Dexie {
       segments: 'id, tripId, eventId, updatedAt',
       seats: 'id, tripId, segmentId, updatedAt',
     })
+    // WP 2.2: money. Expenses take the wire row (indexed by the day they were
+    // spent) next to the trip's budget categories. The pull skipped both
+    // until now, so the cursor goes: the next pull is a full snapshot.
+    this.version(5)
+      .stores({
+        expenses: 'id, tripId, [tripId+spentOn], updatedAt',
+        budgetCategories: 'id, tripId, updatedAt',
+      })
+      .upgrade((tx) => tx.table('meta').delete('sync.cursor'))
   }
 }

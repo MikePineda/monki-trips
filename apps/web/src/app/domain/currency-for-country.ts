@@ -107,3 +107,8 @@ export function currencyForCountry(countryCode: string | null | undefined): stri
   }
   return CURRENCY_BY_COUNTRY[countryCode.trim().toUpperCase()] ?? null
 }
+
+/** Every currency the table knows, sorted, for the currency pickers. */
+export const KNOWN_CURRENCIES: readonly string[] = [
+  ...new Set(Object.values(CURRENCY_BY_COUNTRY)),
+].sort()

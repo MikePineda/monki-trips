@@ -62,4 +62,42 @@ describe('mk-keypad', () => {
     tap('7')
     expect(value()).toBe('7')
   })
+
+  it('a zero-decimal currency gets no separator and a hardware keyboard types too', () => {
+    TestBed.configureTestingModule({ imports: [ZeroDecimalHost, i18nTesting()] })
+    const fixture = TestBed.createComponent(ZeroDecimalHost)
+    fixture.detectChanges()
+    const keypad = (fixture.nativeElement as HTMLElement).querySelector('mk-keypad')!
+    const press = (key: string) => {
+      keypad.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }))
+      fixture.detectChanges()
+    }
+
+    press('1')
+    press('5')
+    press('.')
+    press('0')
+    press('0')
+    press('Backspace')
+    expect(fixture.componentInstance.value()).toBe('150')
+  })
+
+  it('autofocus puts the focus on the first key once rendered', async () => {
+    TestBed.configureTestingModule({ imports: [ZeroDecimalHost, i18nTesting()] })
+    const fixture = TestBed.createComponent(ZeroDecimalHost)
+    document.body.appendChild(fixture.nativeElement)
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    expect(document.activeElement?.getAttribute('data-testid')).toBe('ui.keypad.1')
+    fixture.nativeElement.remove()
+  })
 })
+
+@Component({
+  imports: [MkKeypadComponent],
+  template: `<mk-keypad [(value)]="value" [decimals]="0" [autofocus]="true" />`,
+})
+class ZeroDecimalHost {
+  readonly value = signal('')
+}

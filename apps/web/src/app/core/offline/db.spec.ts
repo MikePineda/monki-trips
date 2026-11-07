@@ -16,11 +16,11 @@ describe('MonkiTripsDb', () => {
     await db.delete()
   })
 
-  it('is called monki-trips and opens at version 3 (emergency info since WP 1.6)', async () => {
+  it('is called monki-trips and opens at version 5 (money since WP 2.2)', async () => {
     await db.open()
 
     expect(db.name).toBe('monki-trips')
-    expect(db.verno).toBe(4)
+    expect(db.verno).toBe(5)
   })
 
   it('holds exactly the offline tables of the plan plus travellers, the activity cache and emergency info', async () => {
@@ -29,6 +29,7 @@ describe('MonkiTripsDb', () => {
     expect(db.tables.map((table) => table.name).sort()).toEqual(
       [
         'activity',
+        'budgetCategories',
         'checklist',
         'docBlobs',
         'docs',
@@ -59,7 +60,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(4)
+    expect(upgraded.verno).toBe(5)
     expect((await upgraded.trips.get('t1'))?.name).toBe('Kept')
     expect(await upgraded.travellers.count()).toBe(0)
     expect(await upgraded.emergency.count()).toBe(0)
@@ -87,7 +88,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(4)
+    expect(upgraded.verno).toBe(5)
     expect((await upgraded.travellers.get('tr1'))?.displayName).toBe('Kept')
     expect(await upgraded.emergency.count()).toBe(0)
     upgraded.close()
@@ -110,7 +111,8 @@ describe('MonkiTripsDb', () => {
     expect(schema('docBlobs')).toEqual(['docId'])
     expect(schema('tasks')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('checklist')).toEqual(['id', 'tripId', 'updatedAt'])
-    expect(schema('expenses')).toEqual(['id', 'tripId', '[tripId+date]', 'updatedAt'])
+    expect(schema('expenses')).toEqual(['id', 'tripId', '[tripId+spentOn]', 'updatedAt'])
+    expect(schema('budgetCategories')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('members')).toEqual(['id', 'tripId', 'userId', '[tripId+userId]'])
     expect(schema('travellers')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('activity')).toEqual(['id', 'tripId', '[tripId+createdAt]'])
@@ -129,6 +131,24 @@ describe('MonkiTripsDb', () => {
     const day = await db.events.where('[tripId+startsOn]').equals(['t1', '2027-01-15']).toArray()
 
     expect(day.map((event) => event.id)).toEqual(['e1'])
+  })
+
+  it('opening a version 4 database drops the sync cursor so the next pull brings the money rows', async () => {
+    const indexedDB = new IDBFactory()
+    const v4 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
+    v4.version(4).stores({ trips: 'id, updatedAt', meta: 'key', outbox: 'id, state, createdAt' })
+    await v4.table('meta').bulkPut([
+      { key: 'sync.cursor', value: 'old-cursor' },
+      { key: 'trip.active', value: 't1' },
+    ])
+    v4.close()
+
+    const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
+    await upgraded.open()
+
+    expect(await upgraded.meta.get('sync.cursor')).toBeUndefined()
+    expect(await upgraded.meta.get('trip.active')).toEqual({ key: 'trip.active', value: 't1' })
+    upgraded.close()
   })
 
   it('stores a document blob next to its hash', async () => {
