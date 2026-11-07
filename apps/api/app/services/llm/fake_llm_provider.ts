@@ -28,6 +28,8 @@ export interface FakeLlmResponse {
   usage?: { inputTokens: number; outputTokens: number }
   /** Fail this call instead of answering. */
   error?: string
+  /** With `error`: fail like a provider that did the work and then broke (charged the input estimate). */
+  processed?: boolean
 }
 
 /**
@@ -65,14 +67,18 @@ export class FakeLlmProvider extends LlmProvider {
   async complete(request: LlmRequest): Promise<LlmCompletion> {
     this.calls.push(request)
     const { fixture, response } = await this.next(request.purpose)
-    if (response.error) throw new LlmUnavailableError(response.error)
+    if (response.error) {
+      throw new LlmUnavailableError(response.error, undefined, response.processed === true)
+    }
     return this.completionOf(fixture, response)
   }
 
   async *stream(request: LlmRequest, options: LlmStreamOptions = {}): AsyncIterable<LlmDelta> {
     this.calls.push(request)
     const { fixture, response } = await this.next(request.purpose)
-    if (response.error) throw new LlmUnavailableError(response.error)
+    if (response.error) {
+      throw new LlmUnavailableError(response.error, undefined, response.processed === true)
+    }
     const completion = this.completionOf(fixture, response)
     // Like a real provider, the input is known when the answer starts.
     options.onUsage?.(
