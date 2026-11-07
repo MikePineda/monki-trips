@@ -53,3 +53,12 @@ relevant ones:
 - **Scheduler:** the `app` logs show `scheduler started` with the job list
   on boot and `scheduled job failed` with the job name when one throws;
   `scheduler_runs` keeps one row per job and slot (`done` / `failed`).
+- **Load a trip from a file:** dry run first, then import, from your machine
+  as your own account, never from a cloud session. With the app running
+  locally against your database: `node ace trip:import <file> --user <your e-mail> --dry-run`
+  (prints counts and warnings, writes nothing), then the same without
+  `--dry-run`. Against production use the app's import (or
+  `POST /api/v1/trips/import?dryRun=true`, then `dryRun=false`) signed in as
+  yourself; the file is yours, so it never goes through a cloud VM, a prompt
+  or a repository. `node ace trip:export <tripId> <file>` writes a backup of
+  one trip; `GET /api/v1/me/export` takes every trip of an account.
