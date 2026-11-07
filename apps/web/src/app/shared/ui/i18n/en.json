@@ -36,7 +36,8 @@
     "staleOther": "Data from {{count}} days ago"
   },
   "actions": {
-    "retry": "Try again"
+    "retry": "Try again",
+    "cancel": "Cancel"
   },
   "ticket": {
     "leaveAt": "Leave at {{time}}"
