@@ -1,0 +1,25 @@
+{
+  "title": "Compartido con monki trips",
+  "empty": {
+    "title": "Nada compartido todavía",
+    "body": "Comparte un PDF o una foto desde otra app con monki trips y llegará aquí."
+  },
+  "storeError": "No se pudo guardar el archivo compartido en este dispositivo. Compártelo de nuevo.",
+  "items": "Recibido",
+  "link": "Enlace compartido",
+  "trip": "Viaje",
+  "noTrips": "Primero crea un viaje y vuelve a compartir el archivo.",
+  "tags": "Etiquetas",
+  "submit": "Agregar al viaje",
+  "discard": "Descartar",
+  "added": "{{count}} agregados al viaje",
+  "offline": "Necesitas conexión para subir los archivos compartidos.",
+  "failed": "Algunos archivos no se pudieron subir. Se quedan aquí.",
+  "tooLarge": "Pesa más de 20 MB: no se puede agregar.",
+  "unsupported": "No es un PDF ni una imagen: no se puede agregar.",
+  "tagNames": {
+    "print": "Imprimir",
+    "show_on_phone": "Mostrar en el celular",
+    "requires_passport": "Requiere pasaporte"
+  }
+}

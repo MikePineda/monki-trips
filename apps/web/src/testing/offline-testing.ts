@@ -11,6 +11,8 @@ import { DOCUMENTS_API, type DocumentsApi } from '../app/core/api/documents-api'
 import { DEVICE_STORAGE, type DeviceStorage } from '../app/core/offline/device-storage'
 import { FakeDocumentsApi } from './fake-documents-api'
 import { FakeDeviceStorage } from './fake-device-storage'
+import { SHARE_INBOX, type ShareInbox } from '../app/core/offline/share-inbox'
+import { FakeShareInbox } from './fake-share-inbox'
 import { SYNC_NOTIFIER, type SyncNotifier } from '../app/core/offline/sync.service'
 
 /** The instant specs run at unless they move the clock. */
@@ -59,12 +61,13 @@ export interface OfflineTestingOptions {
   notifier?: SyncNotifier
   documents?: DocumentsApi
   storage?: DeviceStorage
+  shareInbox?: ShareInbox
 }
 
 /**
  * Providers for a spec that touches the offline core: the given fresh db,
  * a fixed clock (TEST_NOW unless given), the fake sync and documents APIs,
- * a fake storage manager and a no-op notifier unless given.
+ * a fake storage manager, an empty share inbox and a no-op notifier unless given.
  */
 export function provideOfflineTesting(options: OfflineTestingOptions): Provider[] {
   const clock = options.clock ?? new TestClock()
@@ -75,6 +78,7 @@ export function provideOfflineTesting(options: OfflineTestingOptions): Provider[
     { provide: SYNC_NOTIFIER, useValue: options.notifier ?? new RecordingSyncNotifier() },
     { provide: DOCUMENTS_API, useValue: options.documents ?? new FakeDocumentsApi() },
     { provide: DEVICE_STORAGE, useValue: options.storage ?? new FakeDeviceStorage() },
+    { provide: SHARE_INBOX, useValue: options.shareInbox ?? new FakeShareInbox() },
   ]
 }
 

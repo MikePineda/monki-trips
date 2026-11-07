@@ -14,7 +14,12 @@ import { TIME_ZONE } from '../../../core/offline/time-zone'
 import { liveSignalFor } from '../../../core/offline/live'
 import type { EventRecord, SeatRecord, SegmentRecord } from '../../../core/offline/records'
 import { TripContentStore } from '../../../core/offline/trip-content.store'
-import { tripRecord, tripStops, tripTravellers } from '../../../core/offline/trip-queries'
+import {
+  tripDocuments,
+  tripRecord,
+  tripStops,
+  tripTravellers,
+} from '../../../core/offline/trip-queries'
 import { formatDayDate } from '../../../domain/day-date'
 import { directionsUrl } from '../../../domain/directions-link'
 import { formatMoney } from '../../../domain/money'
@@ -52,8 +57,8 @@ interface DetailRow {
 /**
  * Everything about one event, live from the device: when (local time with
  * the zone when it differs from the device's), where, provider and booking
- * code, cost, notes, the legs with their seats, the linked documents (a
- * placeholder until the documents package), the night override, and the
+ * code, cost, notes, the legs with their seats, the linked documents
+ * (each opens in the Docs tab), the night override, and the
  * actions: Directions (Apple Maps on iOS, Google Maps elsewhere), edit,
  * delete with undo.
  */
@@ -158,9 +163,24 @@ interface DetailRow {
           }
 
           <mk-section [eyebrow]="'events.detail.documents' | transloco">
-            <p mk-text variant="caption" tone="ink-3" data-testid="events.detail.documents">
-              {{ 'events.detail.noDocuments' | transloco }}
-            </p>
+            <div data-testid="events.detail.documents">
+              @if (documents().length > 0) {
+                <mk-list>
+                  @for (document of documents(); track document.id) {
+                    <mk-list-row
+                      [title]="document.title"
+                      [icon]="document.kind === 'link' ? 'link' : 'file-text'"
+                      [link]="['/t', data.tripId, 'docs', document.id]"
+                      testId="events.detail.document"
+                    />
+                  }
+                </mk-list>
+              } @else {
+                <p mk-text variant="caption" tone="ink-3">
+                  {{ 'events.detail.noDocuments' | transloco }}
+                </p>
+              }
+            </div>
           </mk-section>
 
           <mk-section [eyebrow]="'events.detail.coversNight' | transloco">
@@ -221,7 +241,7 @@ interface DetailRow {
   `,
 })
 export class EventDetailSheet {
-  private readonly data = inject<EventDetailData>(DIALOG_DATA)
+  protected readonly data = inject<EventDetailData>(DIALOG_DATA)
   private readonly ref = inject<DialogRef<void>>(DialogRef)
   private readonly content = inject(TripContentStore)
   private readonly sheets = inject(SheetService)
@@ -256,6 +276,11 @@ export class EventDetailSheet {
     this.tripId,
     (db, id) => db.seats.where('tripId').equals(id).toArray(),
     [] as SeatRecord[]
+  )
+
+  private readonly tripDocuments = tripDocuments(this.tripId)
+  protected readonly documents = computed(() =>
+    this.tripDocuments().filter((document) => document.eventId === this.data.eventId)
   )
 
   protected readonly statusTone = computed(() => {

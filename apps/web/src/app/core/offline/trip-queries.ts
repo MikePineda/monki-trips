@@ -80,3 +80,14 @@ export function tripDocuments(tripId: Signal<string>): Signal<DocRecord[]> {
     []
   )
 }
+
+/** One document, live; `null` until the first answer, then `{ document }` (null when gone). */
+export function documentRecord(
+  docId: Signal<string>
+): Signal<{ document: DocRecord | null } | null> {
+  return liveSignalFor(
+    docId,
+    async (db, id) => ({ document: (await db.docs.get(id)) ?? null }),
+    null
+  )
+}

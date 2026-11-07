@@ -95,7 +95,17 @@ export const routes: Routes = [
         path: 'add',
         loadComponent: () => import('./features/money/money-pages').then((m) => m.QuickExpensePage),
       },
-      ...(['today', 'docs'] as const).map((section) => ({
+      {
+        path: 'docs',
+        loadComponent: () => import('./features/docs/docs.page'),
+        children: [
+          {
+            path: ':docId',
+            loadComponent: () => import('./features/docs/document-detail.outlet'),
+          },
+        ],
+      },
+      ...(['today'] as const).map((section) => ({
         path: section,
         loadComponent: () => import('./features/trip/trip-placeholder.page'),
         data: { section },

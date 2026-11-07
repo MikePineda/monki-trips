@@ -91,6 +91,15 @@ export class DocumentCopiesStore {
     }
   }
 
+  /**
+   * The bytes to show or share: the saved copy when there is one (works
+   * offline), else a fresh download that is not kept.
+   */
+  async open(document: Pick<DocRecord, 'id' | 'tripId'>): Promise<Blob> {
+    const copy = await this.get(document.id)
+    return copy ? copy.blob : this.api.download(document.tripId, document.id)
+  }
+
   async remove(docId: string): Promise<void> {
     const db = await this.database
     await db.docBlobs.delete(docId)

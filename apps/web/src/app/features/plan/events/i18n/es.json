@@ -37,7 +37,7 @@
     "seats": "Asientos",
     "seat": "{{name}}: {{seat}}",
     "documents": "Documentos",
-    "noDocuments": "Aún no hay documentos vinculados. Los documentos llegan con el siguiente paquete.",
+    "noDocuments": "Aún no hay documentos vinculados. Agrega uno en la pestaña Documentos.",
     "coversNight": "Cuenta como noche",
     "coversNightAuto": "Auto",
     "coversNightYes": "Sí",

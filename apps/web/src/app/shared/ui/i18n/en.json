@@ -53,5 +53,9 @@
   },
   "checkRow": {
     "pending": "pending"
+  },
+  "preview": {
+    "loading": "Opening…",
+    "none": "No preview for this file. Download it to open it."
   }
 }

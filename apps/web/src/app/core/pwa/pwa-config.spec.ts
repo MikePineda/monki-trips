@@ -93,6 +93,11 @@ describe('service worker config', () => {
     expect(config.navigationUrls).toContain('!/share-target')
   })
 
+  it('prefetches every script, so the lazy pdf.js renderer and its worker open a quick view offline', () => {
+    expect(app?.resources.files).toContain('/*.js')
+    expect(app?.resources.files).toContain('!/sw.js')
+  })
+
   it('prefetches the shell, the manifest, the catalogues, the sprite, fonts and the mascot', () => {
     expect(app?.installMode).toBe('prefetch')
     expect(app?.resources.files).toEqual(
