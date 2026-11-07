@@ -31,7 +31,10 @@
       "boolean": "{field} must be true or false",
       "array": "{field} must be a list",
       "date": "{field} must be a date",
-      "timezone": "{field} must be a known time zone"
+      "timezone": "{field} must be a known time zone",
+      "positive": "{field} must be greater than zero",
+      "convertedRange": "{field} is too large once converted to the base currency",
+      "storable": "{field} holds a value the server cannot store"
     },
     "fields": {
       "email": "e-mail",

@@ -12,7 +12,9 @@ import {
 import type User from '#models/user'
 import { Clock } from '#services/clock'
 import { clampChangedAt, lwwMerge } from '#domain/lww_merge'
+import { parseIsoInstant } from '#domain/iso_instant'
 import { isUniqueViolation } from '#exceptions/unique_violation'
+import { dataRejection } from '#services/sync/data_rejection'
 import { PUSH_ENTITIES } from '#services/sync/entity_registry'
 import {
   columnsByField,
@@ -46,35 +48,41 @@ export class MutationApplier {
 
   async apply(user: User, mutation: SyncMutation, i18n: I18n): Promise<SyncMutationResult> {
     const now = this.clock.now()
-    const changedAt = clampChangedAt(
-      Date.parse(mutation.changedAt),
-      now.getTime(),
-      SYNC_CHANGED_AT_WINDOW_DAYS
-    )
 
     const replay = await this.replayOf(user, mutation, i18n)
     if (replay) return replay
 
     try {
+      const changedAtDate = parseIsoInstant(mutation.changedAt)
+      if (!changedAtDate) {
+        throw MutationRejected.validation(i18n, [
+          problemMessage(i18n, { field: 'changedAt', rule: 'instant' }),
+        ])
+      }
+      const changedAt = clampChangedAt(
+        changedAtDate.getTime(),
+        now.getTime(),
+        SYNC_CHANGED_AT_WINDOW_DAYS
+      )
       return await db.transaction((trx) =>
         this.applyInTransaction(trx, user, mutation, i18n, now, changedAt)
       )
     } catch (error) {
-      if (error instanceof MutationRejected) {
-        // Rejections are not stored: a retry is re-evaluated against the current state.
-        return {
-          mutationId: mutation.mutationId,
-          status: 'rejected',
-          error: error.error,
-          ...(error.row ? { row: error.row as unknown as SyncMutationResult['row'] } : {}),
-        }
-      }
       if (isUniqueViolation(error, 'sync_mutations_pkey')) {
         // The same mutation arrived twice at once: the loser answers like a replay.
         const stored = await this.replayOf(user, mutation, i18n)
         if (stored) return stored
       }
-      throw error
+      // One bad mutation never fails the batch: its data answers a rejection, the rest go on.
+      const rejection = error instanceof MutationRejected ? error : dataRejection(error, i18n)
+      if (!rejection) throw error
+      // Rejections are not stored: a retry is re-evaluated against the current state.
+      return {
+        mutationId: mutation.mutationId,
+        status: 'rejected',
+        error: rejection.error,
+        ...(rejection.row ? { row: rejection.row as unknown as SyncMutationResult['row'] } : {}),
+      }
     }
   }
 

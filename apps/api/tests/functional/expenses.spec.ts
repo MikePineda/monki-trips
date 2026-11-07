@@ -156,6 +156,88 @@ test.group('Expenses', (group) => {
     assert.include(expense, { fxRate: '1', fxSource: 'identity', baseAmountMinor: -1500 })
   })
 
+  test('zero fx rate is rejected', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const good = mutation(trip.id, 'expense', {
+      amountMinor: 100,
+      currency: 'AUD',
+      spentOn: '2027-01-22',
+    })
+
+    const response = await actingAs(client.post('/api/v1/sync/push'), owner).json({
+      mutations: [
+        mutation(trip.id, 'expense', {
+          amountMinor: 45000,
+          currency: 'THB',
+          fxRate: '0',
+          spentOn: '2027-01-22',
+        }),
+        mutation(trip.id, 'expense', {
+          amountMinor: 45000,
+          currency: 'THB',
+          fxRate: '0.0000000000',
+          spentOn: '2027-01-22',
+        }),
+        good,
+      ],
+    })
+
+    response.assertStatus(200)
+    const [zero, zeroes, applied] = response.body().data.results
+    for (const rejected of [zero, zeroes]) {
+      assert.equal(rejected.status, 'rejected')
+      assert.deepEqual(
+        rejected.error.errors.map((e: { field: string; rule: string }) => [e.field, e.rule]),
+        [['fxRate', 'positive']]
+      )
+    }
+    assert.equal(applied.status, 'applied')
+  })
+
+  test('oversized amount is rejected', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    const response = await actingAs(client.post('/api/v1/sync/push'), owner).json({
+      mutations: [
+        mutation(trip.id, 'expense', { amountMinor: 1e20, currency: 'AUD', spentOn: '2027-01-22' }),
+        mutation(trip.id, 'expense', {
+          amountMinor: -(Number.MAX_SAFE_INTEGER + 2),
+          currency: 'AUD',
+          spentOn: '2027-01-22',
+        }),
+        mutation(trip.id, 'expense', {
+          amountMinor: Number.MAX_SAFE_INTEGER,
+          currency: 'JPY',
+          fxRate: '0.0000000001',
+          spentOn: '2027-01-22',
+        }),
+        mutation(trip.id, 'expense', {
+          amountMinor: Number.MAX_SAFE_INTEGER,
+          currency: 'AUD',
+          spentOn: '2027-01-22',
+        }),
+      ],
+    })
+
+    response.assertStatus(200)
+    const [huge, hugeRefund, hugeBase, largest] = response.body().data.results
+    assert.deepEqual(
+      huge.error.errors.map((e: { field: string; rule: string }) => [e.field, e.rule]),
+      [['amountMinor', 'max']]
+    )
+    assert.deepEqual(
+      hugeRefund.error.errors.map((e: { field: string; rule: string }) => [e.field, e.rule]),
+      [['amountMinor', 'min']]
+    )
+    // The converted amount would not fit either.
+    assert.equal(hugeBase.status, 'rejected')
+    assert.equal(hugeBase.error.code, 'E_VALIDATION_ERROR')
+    assert.equal(largest.status, 'applied')
+    assert.equal(largest.row.baseAmountMinor, Number.MAX_SAFE_INTEGER)
+  })
+
   test('a zero amount is refused', async ({ client, assert }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner)

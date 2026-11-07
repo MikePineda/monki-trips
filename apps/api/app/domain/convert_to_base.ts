@@ -20,13 +20,13 @@ export interface ConvertToBaseInput {
 
 const RATE = /^(\d+)(?:\.(\d+))?$/
 
-/** Parses a positive decimal string into an integer and the number of decimals it carries. */
+/** Parses a positive decimal string into an integer and the number of decimals it carries; `RangeError` otherwise. */
 export function parseDecimal(value: string): { digits: bigint; scale: number } {
   const match = RATE.exec(value.trim())
-  if (!match) throw new Error('rate must be a positive decimal string')
+  if (!match) throw new RangeError('rate must be a positive decimal string')
   const [, whole, fraction = ''] = match
   const digits = BigInt(whole + fraction)
-  if (digits === 0n) throw new Error('rate must be greater than zero')
+  if (digits === 0n) throw new RangeError('rate must be greater than zero')
   return { digits, scale: fraction.length }
 }
 

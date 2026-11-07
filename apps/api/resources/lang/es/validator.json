@@ -31,7 +31,10 @@
       "boolean": "{field} debe ser verdadero o falso",
       "array": "{field} debe ser una lista",
       "date": "{field} debe ser una fecha",
-      "timezone": "{field} debe ser una zona horaria conocida"
+      "timezone": "{field} debe ser una zona horaria conocida",
+      "positive": "{field} debe ser mayor que cero",
+      "convertedRange": "{field} es demasiado grande al convertirlo a la moneda base",
+      "storable": "{field} tiene un valor que el servidor no puede guardar"
     },
     "fields": {
       "email": "el correo",

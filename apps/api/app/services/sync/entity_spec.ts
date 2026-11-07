@@ -60,6 +60,8 @@ export type MergedRow = Record<string, unknown> &
     Record<
       | 'id'
       | 'tripId'
+      | 'eventId'
+      | 'position'
       | 'kind'
       | 'url'
       | 'key'

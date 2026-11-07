@@ -1,12 +1,17 @@
 import type { DbRow, EntitySpec, FieldProblem } from '#services/sync/entity_spec'
 import { deriveInstant } from '#services/sync/entities/event_entity'
-import { recomputeEventFromSegments, tombstoneWhere } from '#services/sync/table_writes'
+import {
+  recomputeEventFromSegments,
+  swapSegmentPosition,
+  tombstoneWhere,
+} from '#services/sync/table_writes'
 import { segmentChanges } from '#validators/sync/entities'
 
 /**
  * Legs of a transport event. Departure and arrival instants are derived
  * from the local times and zones; every write (and delete) recomputes the
- * parent event's start and end. A segment never moves to another event.
+ * parent event's start and end. A segment never moves to another event;
+ * moving it onto a position another leg holds swaps the two.
  */
 export const segmentEntity: EntitySpec = {
   entity: 'segment',
@@ -48,7 +53,7 @@ export const segmentEntity: EntitySpec = {
     { field: 'deletedAt', column: 'deleted_at', type: 'instant', writable: false },
     { field: 'updatedAt', column: 'updated_at', type: 'instant', writable: false },
   ],
-  async derive(merged) {
+  async derive(merged, ctx) {
     const problems: FieldProblem[] = []
     const columns: DbRow = {}
     const departs = deriveInstant(
@@ -72,6 +77,22 @@ export const segmentEntity: EntitySpec = {
     columns.departs_at = departs.at ? new Date(departs.at) : null
     columns.arrives_local = arrives.local
     columns.arrives_at = arrives.at ? new Date(arrives.at) : null
+    if (problems.length === 0 && !ctx.inserting && typeof merged.position === 'number') {
+      const [stored] = (await ctx.trx
+        .from('event_segments')
+        .where('id', String(merged.id))
+        .select('position')) as { position: number }[]
+      await swapSegmentPosition(
+        ctx.trx,
+        {
+          id: String(merged.id),
+          eventId: String(merged.eventId),
+          from: Number(stored.position),
+          to: merged.position,
+        },
+        { userId: ctx.userId, changedAt: ctx.changedAt }
+      )
+    }
     return { columns, problems }
   },
   async afterWrite(ctx) {

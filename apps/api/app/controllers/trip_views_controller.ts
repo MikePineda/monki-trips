@@ -4,6 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { ApiEnvelope, TripBudgetView, TripNightsView, TripTodayView } from '@monkitrips/shared'
 import { TripViews } from '#services/trip_views'
 import { instantField } from '#validators/sync/fields'
+import { parseIsoInstant } from '#domain/iso_instant'
 
 const todayQuery = vine.compile(vine.object({ at: instantField.optional() }))
 
@@ -26,6 +27,8 @@ export default class TripViewsController {
       meta: undefined,
       messagesProvider: ctx.i18n.createMessagesProvider(),
     })
-    return { data: await this.views.today(ctx.trip, at ? new Date(at) : undefined) }
+    return {
+      data: await this.views.today(ctx.trip, at ? (parseIsoInstant(at) ?? undefined) : undefined),
+    }
   }
 }
