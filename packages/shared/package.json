@@ -1,0 +1,30 @@
+{
+  "name": "@monkitrips/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "Wire types and pure domain helpers shared by the API and the web app. Compiled to dist/ because Node does not load .ts from node_modules.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@adonisjs/eslint-config": "3.1.0",
+    "@types/node": "~24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "~6.0.3"
+  },
+  "prettier": "@adonisjs/prettier-config"
+}
