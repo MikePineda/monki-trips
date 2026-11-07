@@ -168,7 +168,7 @@ Mandatory edge-case tests: date line; DST gap and ambiguity; night covered by ho
 
 **Seed** (`node ace db:seed`, dev/E2E only, fictitious): `owner@example.com`, `editor@example.com`, one traveller without an account; trip "Demo Loop", 18 days, base AUD, expenses in two foreign currencies including zero-decimal JPY; an overnight train, last night on a plane, **one night without a hotel on purpose**, a fictitious PDF tagged `print`, a two-segment flight with per-person seats, overdue tasks and one `high`. Invented cities and codes only.
 
-**Security:** nothing personal in repo/fixtures/logs (logs exclude `booking_code`, `emergency_info` and document contents); private bucket, keys `trips/{tripId}/{documentId}`, 300 s signed URL, `Content-Disposition: attachment` except image/PDF; PDF/web text goes to the AI inside `<data>` as untrusted; tools only propose diffs; `clientIp(ctx)` reads the CDN client-IP header (`CF-Connecting-IP`); no CORS; CSRF on every POST.
+**Security:** nothing personal in repo/fixtures/logs (logs exclude `booking_code`, `emergency_info` and document contents); private bucket, keys `trips/{tripId}/{documentId}`, 300 s signed URL, `Content-Disposition: attachment` except image/PDF; PDF/web text goes to the AI inside `<data>` as untrusted; tools only propose diffs; `clientIp(ctx)` reads the CDN client-IP header (`CF-Connecting-IP`) only when `TRUSTED_PROXY=cloudflare`, else the socket address; no CORS; CSRF on every POST.
 
 ## 5. Frontend architecture (Angular 22, `apps/web`)
 
