@@ -20,7 +20,7 @@ import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
-import { TRIP_ERROR_CODES } from '../trips/create-trip.sheet'
+import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
 
 /**
  * The trip's members (owner first) and, for the owner, an invitation by

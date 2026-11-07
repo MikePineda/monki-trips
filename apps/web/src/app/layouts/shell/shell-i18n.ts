@@ -13,3 +13,15 @@ export function provideShellI18n() {
     },
   })
 }
+
+/**
+ * Error codes the shell catalogue explains (`shell.errors.<code>`) for the
+ * trip screens it frames: the list, creating a trip, members.
+ */
+export const TRIP_ERROR_CODES = [
+  'E_EMAIL_NOT_VERIFIED',
+  'E_VALIDATION_ERROR',
+  'E_TOO_MANY_REQUESTS',
+  'E_UNAUTHORIZED',
+  'E_BAD_CSRF_TOKEN',
+] as const
