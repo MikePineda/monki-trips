@@ -7,6 +7,7 @@ import {
   type LlmCompletion,
   type LlmDelta,
   type LlmRequest,
+  type LlmStreamOptions,
   type LlmToolCall,
 } from '#services/llm/llm_provider'
 
@@ -68,11 +69,16 @@ export class FakeLlmProvider extends LlmProvider {
     return this.completionOf(fixture, response)
   }
 
-  async *stream(request: LlmRequest): AsyncIterable<LlmDelta> {
+  async *stream(request: LlmRequest, options: LlmStreamOptions = {}): AsyncIterable<LlmDelta> {
     this.calls.push(request)
     const { fixture, response } = await this.next(request.purpose)
     if (response.error) throw new LlmUnavailableError(response.error)
     const completion = this.completionOf(fixture, response)
+    // Like a real provider, the input is known when the answer starts.
+    options.onUsage?.(
+      { inputTokens: completion.usage.inputTokens, outputTokens: 0 },
+      completion.model
+    )
     for (const chunk of completion.content.match(/\S+\s*|\s+/g) ?? []) {
       yield { type: 'text', text: chunk }
     }

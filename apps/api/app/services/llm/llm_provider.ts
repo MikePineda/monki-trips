@@ -98,6 +98,16 @@ export type LlmDelta =
   | { type: 'tool_call'; toolCall: LlmToolCall }
   | { type: 'done'; completion: LlmCompletion }
 
+/** What a streaming caller can observe besides the deltas. */
+export interface LlmStreamOptions {
+  /**
+   * Called whenever the provider learns the running usage (at the start of
+   * the answer and as it grows), so a stream that stops early or fails
+   * midway can still be charged what it used.
+   */
+  onUsage?: (usage: LlmUsage, model: string) => void
+}
+
 export abstract class LlmProvider {
   /** The provider's name for `llm_usage.provider`. */
   abstract readonly name: string
@@ -106,7 +116,7 @@ export abstract class LlmProvider {
   abstract complete(request: LlmRequest): Promise<LlmCompletion>
 
   /** The answer as it is generated; the last delta is `done` with the full completion. */
-  abstract stream(request: LlmRequest): AsyncIterable<LlmDelta>
+  abstract stream(request: LlmRequest, options?: LlmStreamOptions): AsyncIterable<LlmDelta>
 }
 
 /** The provider could not answer: network, upstream 4xx/5xx, timeout, or not configured. Answers 503. */
