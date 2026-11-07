@@ -57,4 +57,39 @@ describe('failureMessage', () => {
       fallback: 'brew',
     })
   })
+
+  it('a server error shows the translated generic entry, never the raw request text', () => {
+    const failure = new ApiFailure({
+      kind: 'http',
+      status: 502,
+      message: 'Request failed with status code 502 Bad Gateway: POST /api/v1/auth/login',
+    })
+
+    expect(failureMessage(failure, 'auth', KNOWN)).toEqual({
+      key: 'auth.errors.unknown',
+      params: {},
+      fallback: '',
+    })
+  })
+
+  it('a production 500 with its code shows the translated generic entry too', () => {
+    const failure = new ApiFailure({
+      kind: 'http',
+      status: 500,
+      code: 'E_INTERNAL_SERVER_ERROR',
+      message: 'Internal server error',
+    })
+
+    expect(failureMessage(failure, 'auth', KNOWN).fallback).toBe('')
+  })
+
+  it('a client error without a code body shows the translated generic entry', () => {
+    const failure = new ApiFailure({
+      kind: 'http',
+      status: 413,
+      message: 'Request failed with status code 413 Payload Too Large: POST /api/v1/trips',
+    })
+
+    expect(failureMessage(failure, 'auth', KNOWN).fallback).toBe('')
+  })
 })
