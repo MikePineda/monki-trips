@@ -105,11 +105,7 @@ export const routes: Routes = [
           },
         ],
       },
-      ...(['today'] as const).map((section) => ({
-        path: section,
-        loadComponent: () => import('./features/trip/trip-placeholder.page'),
-        data: { section },
-      })),
+      { path: 'today', loadComponent: () => import('./features/today/today.page') },
       {
         path: 'more',
         children: [

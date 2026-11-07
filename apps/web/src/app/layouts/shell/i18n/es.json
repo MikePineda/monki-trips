@@ -52,18 +52,6 @@
   "trip": {
     "untitled": "Viaje",
     "summary": "Resumen del viaje",
-    "today": {
-      "title": "Hoy",
-      "body": "El plan del día, el próximo evento, dónde dormimos y lo que queda por gastar llegan con la fase 2."
-    },
-    "plan": {
-      "title": "Plan",
-      "body": "Los días y dónde dormimos llegan con la fase 1."
-    },
-    "docs": {
-      "title": "Documentos",
-      "body": "Billetes, reservas y visados, guardados para usarlos sin conexión, llegan con la fase 1."
-    },
     "money": {
       "title": "Dinero",
       "body": "El presupuesto y los gastos llegan con la fase 2."

@@ -1,0 +1,73 @@
+{
+  "dayOf": "Día {{day}} de {{total}}",
+  "dayOfAt": "Día {{day}} de {{total}} · {{stop}}",
+  "preview": "Vista previa del día 1 · el viaje empieza el {{date}}",
+  "over": "El viaje terminó",
+  "overBody": "Terminó el {{date}}. El plan y el dinero siguen aquí para consultarlos.",
+  "mascot": {
+    "happy": "Kiko está feliz",
+    "worried": "Kiko está preocupado",
+    "excited": "Kiko está emocionado",
+    "asleep": "Kiko está dormido",
+    "celebrating": "Kiko está celebrando",
+    "thinking": "Kiko está pensando"
+  },
+  "next": {
+    "label": "Siguiente",
+    "emptyTitle": "No hay nada más planeado",
+    "emptyBody": "El resto del viaje está libre. Agrega eventos en el plan.",
+    "openPlan": "Abrir el plan",
+    "directions": "Cómo llegar"
+  },
+  "countdown": {
+    "soon": "empieza ya",
+    "minutes": "en {{minutes}} min",
+    "hours": "en {{hours}} h {{minutes}} min",
+    "days": "en {{days}} d {{hours}} h"
+  },
+  "documents": {
+    "label": "Documentos de hoy",
+    "print": "Llévalo impreso",
+    "printed": "Ya lo imprimí",
+    "saved": "Guardado sin conexión",
+    "missing": "No está en este teléfono",
+    "passport": "Hoy necesitas el pasaporte",
+    "showOnPhone": "Mostrar en el teléfono",
+    "printThis": "Imprimir"
+  },
+  "tonight": {
+    "label": "Esta noche",
+    "checkIn": "Check-in {{time}}",
+    "departs": "Sale a las {{time}}",
+    "onBoard": "Una noche a bordo",
+    "copy": "Copiar la dirección",
+    "copied": "Dirección copiada",
+    "directions": "Cómo llegar",
+    "alertTitle": "No hay dónde dormir esta noche",
+    "alertBody": "Agrega un hospedaje, o un transporte nocturno, para esta noche.",
+    "findStay": "Buscar hospedaje",
+    "lastDayTitle": "No hay noche que planear",
+    "lastDayBody": "El viaje termina hoy."
+  },
+  "money": {
+    "label": "Disponible hoy",
+    "overBy": "Te pasaste del presupuesto de hoy por {{amount}}",
+    "pendingOne": "Incluye 1 gasto pendiente de sincronizar",
+    "pendingOther": "Incluye {{count}} gastos pendientes de sincronizar",
+    "rateOne": "1 gasto espera un tipo de cambio y no se cuenta",
+    "rateOther": "{{count}} gastos esperan un tipo de cambio y no se cuentan",
+    "noBudgetTitle": "Aún no hay presupuesto",
+    "noBudgetBody": "Define un presupuesto del viaje para ver cuánto queda cada día.",
+    "pastTitle": "No queda nada por gastar",
+    "pastBody": "El viaje terminó."
+  },
+  "weather": {
+    "now": "{{degrees}}° · {{condition}}",
+    "age": "Actualizado {{age}}",
+    "clear": "Despejado",
+    "cloudy": "Nublado",
+    "rain": "Lluvia",
+    "snow": "Nieve",
+    "storm": "Tormenta"
+  }
+}

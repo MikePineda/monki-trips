@@ -52,18 +52,6 @@
   "trip": {
     "untitled": "Trip",
     "summary": "Trip summary",
-    "today": {
-      "title": "Today",
-      "body": "The day's plan, the next event, tonight's stay and what is left to spend arrive with phase 2."
-    },
-    "plan": {
-      "title": "Plan",
-      "body": "Days and where we sleep arrive with phase 1."
-    },
-    "docs": {
-      "title": "Documents",
-      "body": "Tickets, bookings and visas, saved for offline, arrive with phase 1."
-    },
     "money": {
       "title": "Money",
       "body": "Budget and expenses arrive with phase 2."

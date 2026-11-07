@@ -1,0 +1,73 @@
+{
+  "dayOf": "Day {{day}} of {{total}}",
+  "dayOfAt": "Day {{day}} of {{total}} · {{stop}}",
+  "preview": "Preview of day 1 · the trip starts on {{date}}",
+  "over": "The trip is over",
+  "overBody": "It ended on {{date}}. The plan and the money stay here to read.",
+  "mascot": {
+    "happy": "Kiko is happy",
+    "worried": "Kiko is worried",
+    "excited": "Kiko is excited",
+    "asleep": "Kiko is asleep",
+    "celebrating": "Kiko is celebrating",
+    "thinking": "Kiko is thinking"
+  },
+  "next": {
+    "label": "Next",
+    "emptyTitle": "Nothing else planned",
+    "emptyBody": "The rest of the trip is free. Add events in the plan.",
+    "openPlan": "Open the plan",
+    "directions": "Directions"
+  },
+  "countdown": {
+    "soon": "starting now",
+    "minutes": "in {{minutes}} min",
+    "hours": "in {{hours}} h {{minutes}} min",
+    "days": "in {{days}} d {{hours}} h"
+  },
+  "documents": {
+    "label": "Documents today",
+    "print": "Bring this printed",
+    "printed": "I printed it",
+    "saved": "Saved offline",
+    "missing": "Not on this phone",
+    "passport": "Passport needed today",
+    "showOnPhone": "Show on the phone",
+    "printThis": "Print this"
+  },
+  "tonight": {
+    "label": "Tonight",
+    "checkIn": "Check-in {{time}}",
+    "departs": "Departs {{time}}",
+    "onBoard": "A night on board",
+    "copy": "Copy the address",
+    "copied": "Address copied",
+    "directions": "Directions",
+    "alertTitle": "Nowhere to sleep tonight",
+    "alertBody": "Add lodging, or an overnight transport, for tonight.",
+    "findStay": "Find a stay",
+    "lastDayTitle": "No night to plan",
+    "lastDayBody": "The trip ends today."
+  },
+  "money": {
+    "label": "Left today",
+    "overBy": "Over today's budget by {{amount}}",
+    "pendingOne": "Includes 1 expense waiting to sync",
+    "pendingOther": "Includes {{count}} expenses waiting to sync",
+    "rateOne": "1 expense waits for an exchange rate and is not counted",
+    "rateOther": "{{count}} expenses wait for an exchange rate and are not counted",
+    "noBudgetTitle": "No budget yet",
+    "noBudgetBody": "Set a budget for the trip to see what is left each day.",
+    "pastTitle": "Nothing left to spend",
+    "pastBody": "The trip is over."
+  },
+  "weather": {
+    "now": "{{degrees}}° · {{condition}}",
+    "age": "Updated {{age}}",
+    "clear": "Clear",
+    "cloudy": "Cloudy",
+    "rain": "Rain",
+    "snow": "Snow",
+    "storm": "Storm"
+  }
+}

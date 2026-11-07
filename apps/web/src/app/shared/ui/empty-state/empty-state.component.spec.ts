@@ -22,6 +22,12 @@ class WithAction {}
 })
 class WithMascot {}
 
+@Component({
+  imports: [MkEmptyStateComponent],
+  template: `<mk-empty-state title="Nothing today" mascot="happy" mascotSize="sm" />`,
+})
+class WithSmallKiko {}
+
 describe('mk-empty-state', () => {
   function render<T>(host: new () => T): HTMLElement {
     TestBed.configureTestingModule({ imports: [host] })
@@ -45,5 +51,12 @@ describe('mk-empty-state', () => {
     expect(host.querySelector('[data-testid="probe.mascot"]')).not.toBeNull()
     expect(host.querySelector('mk-icon')).toBeNull()
     expect(host.querySelector('p')).toBeNull()
+  })
+
+  it('draws Kiko in the asked state, small inside a screen section', () => {
+    const mascot = render(WithSmallKiko).querySelector('mk-mascot')
+
+    expect(mascot?.getAttribute('data-state')).toBe('happy')
+    expect(mascot?.getAttribute('data-size')).toBe('sm')
   })
 })

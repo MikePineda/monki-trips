@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 import { MkIconComponent } from '../icon/icon.component'
 import type { IconName } from '../icon/icon-names'
-import { MkMascotComponent } from '../mascot/mascot.component'
+import { MkMascotComponent, type MascotSize } from '../mascot/mascot.component'
 import type { MascotState } from '../mascot/mascot-sheet'
 
 /** centred: the whole screen. compact: inside a list (an empty day), illustration at the left. */
@@ -71,7 +71,7 @@ export type EmptyStateLayout = 'centred' | 'compact'
     <div class="mk-empty-state__illustration">
       <ng-content select="[mkEmptyIcon]">
         @if (mascot(); as mascot) {
-          <mk-mascot [state]="mascot" size="md" />
+          <mk-mascot [state]="mascot" [size]="mascotSize()" />
         } @else if (icon(); as icon) {
           <span class="mk-empty-state__square"><mk-icon [name]="icon" [size]="24" /></span>
         }
@@ -93,5 +93,7 @@ export class MkEmptyStateComponent {
   readonly body = input<string>()
   readonly icon = input<IconName>()
   readonly mascot = input<MascotState>()
+  /** `md` on a whole screen; `sm` for an empty section inside one (Today, a list). */
+  readonly mascotSize = input<MascotSize>('md')
   readonly layout = input<EmptyStateLayout>('centred')
 }
