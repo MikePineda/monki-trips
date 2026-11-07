@@ -309,14 +309,18 @@ export default class VerifyEmailPage {
       this.startCooldown()
     } catch (error) {
       const failure = toFailure(error)
+      if (failure.isStatus(429)) {
+        // Throttled: wait as long as the server asks before offering it again.
+        this.startCooldown(failure.retryAfterSeconds ?? RESEND_COOLDOWN_SECONDS)
+      }
       if (!(await this.session.handleUnauthorized(failure, '/verify-email'))) {
         this.failure.set(failure)
       }
     }
   }
 
-  private startCooldown(): void {
-    this.cooldown.set(RESEND_COOLDOWN_SECONDS)
+  private startCooldown(seconds = RESEND_COOLDOWN_SECONDS): void {
+    this.cooldown.set(Math.max(1, Math.ceil(seconds)))
     this.stopCooldown()
     this.cooldownTimer = setInterval(() => {
       this.cooldown.update((left) => Math.max(0, left - 1))
