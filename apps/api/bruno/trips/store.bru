@@ -1,0 +1,37 @@
+meta {
+  name: Create a trip
+  type: http
+  seq: 24
+  tags: [
+    smoke
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "name": "Smoke trip",
+    "baseCurrency": "AUD",
+    "startsOn": "2027-01-20",
+    "endsOn": "2027-02-06",
+    "homeTz": "Australia/Sydney"
+  }
+}
+
+vars:post-response {
+  tripId: res.body.data.id
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.id: isString
+}

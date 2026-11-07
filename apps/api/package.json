@@ -17,7 +17,8 @@
     "test:watch": "node ace test --watch",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bruno:coverage": "node scripts/bruno-coverage.mjs"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",

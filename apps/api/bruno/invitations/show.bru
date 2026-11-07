@@ -1,0 +1,11 @@
+meta {
+  name: Preview an invitation
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/api/v1/invitations/{{invitationToken}}
+  body: none
+  auth: none
+}

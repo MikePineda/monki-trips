@@ -1,0 +1,19 @@
+headers {
+  Accept: application/json
+  User-Agent: Mozilla/5.0 (monki-trips smoke)
+}
+
+docs {
+  Smoke collection of the monki-trips API (docs/CONTRACTS.md).
+
+  Every route of the API has one request here; `npm run bruno:coverage`
+  fails when a route has none. Requests tagged `smoke` form the post-deploy
+  check: health, live, config (CSRF cookie), login, me, create trip, logout.
+
+  Credentials come from the environment, never from this collection:
+  SMOKE_EMAIL and SMOKE_PASSWORD (`{{process.env.*}}`). Copy
+  environments/local.bru to environments/<name>.local.bru (gitignored) for
+  a personal base URL.
+
+  Run the smoke: `bru run --env local --tags smoke` from apps/api/bruno.
+}

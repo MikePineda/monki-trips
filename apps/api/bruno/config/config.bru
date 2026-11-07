@@ -1,0 +1,24 @@
+meta {
+  name: Public config (hands out the CSRF cookie)
+  type: http
+  seq: 3
+  tags: [
+    smoke
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const cookies = [].concat(res.getHeader('set-cookie') || []);
+  const xsrf = cookies.find((c) => c.startsWith('XSRF-TOKEN='));
+  if (xsrf) bru.setVar('xsrfToken', decodeURIComponent(xsrf.split(';')[0].slice('XSRF-TOKEN='.length)));
+}
+
+assert {
+  res.status: eq 200
+}

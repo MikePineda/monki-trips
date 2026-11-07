@@ -1,0 +1,21 @@
+meta {
+  name: Verify e-mail by code
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/email/verify-code
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "code": "123456"
+  }
+}

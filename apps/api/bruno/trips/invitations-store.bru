@@ -1,0 +1,26 @@
+meta {
+  name: Invite someone
+  type: http
+  seq: 33
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/invitations
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "email": "partner@example.com"
+  }
+}
+
+vars:post-response {
+  invitationId: res.body.data.invitation.id
+  invitationToken: res.body.data.token
+}
