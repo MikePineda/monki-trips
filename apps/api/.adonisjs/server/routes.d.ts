@@ -8,6 +8,7 @@ export type ScannedRoutes = {
     'health.ready': { paramsTuple?: []; params?: {} }
     'health.live': { paramsTuple?: []; params?: {} }
     'config.show': { paramsTuple?: []; params?: {} }
+    'schemas.tripJsonV1': { paramsTuple?: []; params?: {} }
     'auth.signup': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.email.verify': { paramsTuple?: []; params?: {} }
@@ -30,6 +31,7 @@ export type ScannedRoutes = {
     'invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'trips.index': { paramsTuple?: []; params?: {} }
     'trips.store': { paramsTuple?: []; params?: {} }
+    'trips.import': { paramsTuple?: []; params?: {} }
     'sync.pull': { paramsTuple?: []; params?: {} }
     'sync.push': { paramsTuple?: []; params?: {} }
     'fx.rates': { paramsTuple?: []; params?: {} }
@@ -37,6 +39,7 @@ export type ScannedRoutes = {
     'trips.nights': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.budget': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -55,6 +58,7 @@ export type ScannedRoutes = {
     'health.ready': { paramsTuple?: []; params?: {} }
     'health.live': { paramsTuple?: []; params?: {} }
     'config.show': { paramsTuple?: []; params?: {} }
+    'schemas.tripJsonV1': { paramsTuple?: []; params?: {} }
     'invitations.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'me.export': { paramsTuple?: []; params?: {} }
@@ -65,6 +69,7 @@ export type ScannedRoutes = {
     'trips.nights': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.budget': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -75,6 +80,7 @@ export type ScannedRoutes = {
     'health.ready': { paramsTuple?: []; params?: {} }
     'health.live': { paramsTuple?: []; params?: {} }
     'config.show': { paramsTuple?: []; params?: {} }
+    'schemas.tripJsonV1': { paramsTuple?: []; params?: {} }
     'invitations.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'me.export': { paramsTuple?: []; params?: {} }
@@ -85,6 +91,7 @@ export type ScannedRoutes = {
     'trips.nights': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.budget': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -106,6 +113,7 @@ export type ScannedRoutes = {
     'me.pushSubscriptions.test': { paramsTuple?: []; params?: {} }
     'invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'trips.store': { paramsTuple?: []; params?: {} }
+    'trips.import': { paramsTuple?: []; params?: {} }
     'sync.push': { paramsTuple?: []; params?: {} }
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.transferOwnership': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }

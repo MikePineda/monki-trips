@@ -29,6 +29,9 @@ router
     router
       .group(() => {
         router.get('config', [controllers.Config, 'show']).as('config.show')
+        router
+          .get('schemas/trip-json-v1', [controllers.TripJson, 'schema'])
+          .as('schemas.tripJsonV1')
 
         // Public auth
         router
@@ -91,6 +94,8 @@ router
           .group(() => {
             router.get('trips', [controllers.Trips, 'index']).as('trips.index')
             router.post('trips', [controllers.Trips, 'store']).as('trips.store')
+            // A trip JSON v1 file always becomes a new trip of the caller (no :tripId).
+            router.post('trips/import', [controllers.TripJson, 'import']).as('trips.import')
 
             // Sync spans every trip of the account; tenancy is checked per row and per mutation.
             router.get('sync/pull', [controllers.Sync, 'pull']).as('sync.pull')
@@ -112,6 +117,9 @@ router
                 router
                   .get('trips/:tripId/today', [controllers.TripViews, 'today'])
                   .as('trips.today')
+                router
+                  .get('trips/:tripId/export', [controllers.TripJson, 'export'])
+                  .as('trips.export')
                 router
                   .post('trips/:tripId/documents', [controllers.Documents, 'store'])
                   .as('trips.documents.store')

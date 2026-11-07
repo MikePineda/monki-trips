@@ -3,9 +3,8 @@ import type { AccountExport as AccountExportWire } from '@monkitrips/shared'
 import { TRIP_JSON_SCHEMA_VERSION } from '@monkitrips/shared'
 import type User from '#models/user'
 import { Clock } from '#services/clock'
+import { TripExporter } from '#services/trip_exporter'
 import { TripMembership } from '#services/trip_membership'
-import { TripSnapshot } from '#services/trip_snapshot'
-import { buildTripJsonV1 } from '#domain/trip_export'
 import { toUserProfile } from '#transformers/user_profile'
 
 /**
@@ -17,7 +16,7 @@ export class AccountExport {
   constructor(
     private readonly clock: Clock,
     private readonly membership: TripMembership,
-    private readonly snapshot: TripSnapshot
+    private readonly exporter: TripExporter
   ) {}
 
   async build(user: User): Promise<AccountExportWire> {
@@ -25,8 +24,7 @@ export class AccountExport {
     const memberships = await this.membership.tripsOf(user)
     const trips = []
     for (const membership of memberships) {
-      const { trip, members, travellers } = await this.snapshot.build(membership.trip)
-      trips.push(buildTripJsonV1({ trip, members, travellers, exportedAt }))
+      trips.push(await this.exporter.build(membership.trip, exportedAt))
     }
     return {
       schemaVersion: TRIP_JSON_SCHEMA_VERSION,

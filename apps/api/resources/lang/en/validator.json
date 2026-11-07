@@ -34,7 +34,10 @@
       "timezone": "{field} must be a known time zone",
       "positive": "{field} must be greater than zero",
       "convertedRange": "{field} is too large once converted to the base currency",
-      "storable": "{field} holds a value the server cannot store"
+      "storable": "{field} holds a value the server cannot store",
+      "schema": "{field} does not match the trip JSON v1 schema",
+      "unresolvedRef": "{field} names a ref that is not in the file",
+      "duplicateRef": "{field} repeats a ref already used in the file"
     },
     "fields": {
       "email": "e-mail",
@@ -148,7 +151,19 @@
       "base": "base currency",
       "symbols": "currencies",
       "date": "date",
-      "at": "instant"
+      "at": "instant",
+      "ref": "ref",
+      "version": "format version",
+      "trip": "trip",
+      "document": "file",
+      "stopRef": "stop ref",
+      "eventRef": "event ref",
+      "travellerRef": "traveller ref",
+      "documentRef": "document ref",
+      "categoryRef": "category ref",
+      "paidByTravellerRef": "payer ref",
+      "sourceDocumentRef": "source document ref",
+      "dryRun": "dry run"
     }
   }
 }

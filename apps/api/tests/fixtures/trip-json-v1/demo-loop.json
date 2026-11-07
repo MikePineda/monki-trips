@@ -1,0 +1,379 @@
+{
+  "version": "trip-json-v1",
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-07T10:00:00.000Z",
+  "trip": {
+    "name": "Demo Loop",
+    "baseCurrency": "AUD",
+    "budgetMode": "shared",
+    "budgetTotalMinor": 1250000,
+    "startsOn": "2027-01-20",
+    "endsOn": "2027-02-06",
+    "homeTz": "Australia/Sydney"
+  },
+  "members": [
+    { "role": "owner", "displayName": "Owner" },
+    { "role": "editor", "displayName": "Partner" }
+  ],
+  "travellers": [
+    { "ref": "traveller-1", "displayName": "Owner", "position": 0 },
+    { "ref": "traveller-2", "displayName": "Partner", "position": 1 },
+    { "ref": "traveller-3", "displayName": "Friend without the app", "position": 2 }
+  ],
+  "stops": [
+    {
+      "ref": "stop-1",
+      "position": 0,
+      "name": "Harbour Town",
+      "countryCode": "AU",
+      "lat": null,
+      "lng": null,
+      "tz": "Australia/Sydney",
+      "arriveOn": "2027-01-20",
+      "departOn": "2027-01-20"
+    },
+    {
+      "ref": "stop-2",
+      "position": 1,
+      "name": "River City",
+      "countryCode": "TH",
+      "lat": 13.75,
+      "lng": 100.5,
+      "tz": "Asia/Bangkok",
+      "arriveOn": "2027-01-21",
+      "departOn": "2027-01-26"
+    },
+    {
+      "ref": "stop-3",
+      "position": 2,
+      "name": "Lantern Hills",
+      "countryCode": "TH",
+      "lat": null,
+      "lng": null,
+      "tz": "Asia/Bangkok",
+      "arriveOn": "2027-01-27",
+      "departOn": "2027-01-29"
+    }
+  ],
+  "events": [
+    {
+      "ref": "event-1",
+      "stopRef": "stop-1",
+      "kind": "flight",
+      "title": "Flight to River City",
+      "status": "paid",
+      "startsLocal": "2027-01-20T09:30:00",
+      "startTz": "Australia/Sydney",
+      "endsLocal": "2027-01-20T18:05:00",
+      "endTz": "Asia/Bangkok",
+      "placeName": null,
+      "address": null,
+      "addressLocal": null,
+      "lat": null,
+      "lng": null,
+      "providerName": "Demo Air",
+      "bookingCode": "DEMO01",
+      "costMinor": 189000,
+      "costCurrency": "AUD",
+      "notes": null,
+      "leaveBufferMin": 150,
+      "travelMin": 45,
+      "coversNight": null,
+      "segments": [
+        {
+          "ref": "segment-1",
+          "position": 1,
+          "carrier": "Demo Air",
+          "number": "DA 101",
+          "originName": "Harbour Town",
+          "originCode": "HBT",
+          "originLat": null,
+          "originLng": null,
+          "destName": "Island Hub",
+          "destCode": "IHB",
+          "destLat": null,
+          "destLng": null,
+          "departsLocal": "2027-01-20T09:30:00",
+          "departsTz": "Australia/Sydney",
+          "arrivesLocal": "2027-01-20T14:10:00",
+          "arrivesTz": "Asia/Singapore",
+          "seats": [
+            {
+              "travellerRef": "traveller-1",
+              "seat": "12A",
+              "coach": null,
+              "ticketNumber": "00001",
+              "documentRef": null
+            },
+            {
+              "travellerRef": "traveller-2",
+              "seat": "12B",
+              "coach": null,
+              "ticketNumber": "00002",
+              "documentRef": null
+            }
+          ]
+        },
+        {
+          "ref": "segment-2",
+          "position": 2,
+          "carrier": "Demo Air",
+          "number": "DA 118",
+          "originName": "Island Hub",
+          "originCode": "IHB",
+          "originLat": null,
+          "originLng": null,
+          "destName": "River City",
+          "destCode": "RVC",
+          "destLat": null,
+          "destLng": null,
+          "departsLocal": "2027-01-20T16:20:00",
+          "departsTz": "Asia/Singapore",
+          "arrivesLocal": "2027-01-20T18:05:00",
+          "arrivesTz": "Asia/Bangkok",
+          "seats": [
+            {
+              "travellerRef": "traveller-1",
+              "seat": "12A",
+              "coach": null,
+              "ticketNumber": "00001",
+              "documentRef": "document-1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "event-2",
+      "stopRef": "stop-2",
+      "kind": "lodging",
+      "title": "Riverside Inn",
+      "status": "booked",
+      "startsLocal": "2027-01-20T20:00:00",
+      "startTz": "Asia/Bangkok",
+      "endsLocal": "2027-01-26T11:00:00",
+      "endTz": "Asia/Bangkok",
+      "placeName": "Riverside Inn",
+      "address": "1 Demo Road, River City",
+      "addressLocal": null,
+      "lat": null,
+      "lng": null,
+      "providerName": null,
+      "bookingCode": null,
+      "costMinor": 1260000,
+      "costCurrency": "THB",
+      "notes": null,
+      "leaveBufferMin": null,
+      "travelMin": null,
+      "coversNight": null,
+      "segments": []
+    },
+    {
+      "ref": "event-3",
+      "stopRef": "stop-2",
+      "kind": "train",
+      "title": "Night train to Lantern Hills",
+      "status": "booked",
+      "startsLocal": "2027-01-27T20:30:00",
+      "startTz": "Asia/Bangkok",
+      "endsLocal": "2027-01-28T07:15:00",
+      "endTz": "Asia/Bangkok",
+      "placeName": null,
+      "address": null,
+      "addressLocal": null,
+      "lat": null,
+      "lng": null,
+      "providerName": "Demo Rail",
+      "bookingCode": "DEMO02",
+      "costMinor": 360000,
+      "costCurrency": "THB",
+      "notes": null,
+      "leaveBufferMin": 30,
+      "travelMin": null,
+      "coversNight": null,
+      "segments": []
+    },
+    {
+      "ref": "event-4",
+      "stopRef": "stop-2",
+      "kind": "tour",
+      "title": "Temple walk",
+      "status": "to_book",
+      "startsLocal": "2027-01-22T09:00:00",
+      "startTz": "Asia/Bangkok",
+      "endsLocal": "2027-01-22T12:00:00",
+      "endTz": "Asia/Bangkok",
+      "placeName": null,
+      "address": null,
+      "addressLocal": null,
+      "lat": null,
+      "lng": null,
+      "providerName": null,
+      "bookingCode": null,
+      "costMinor": null,
+      "costCurrency": null,
+      "notes": "Bring water",
+      "leaveBufferMin": null,
+      "travelMin": 20,
+      "coversNight": null,
+      "segments": []
+    }
+  ],
+  "budgetCategories": [
+    {
+      "ref": "category-accommodation",
+      "key": "accommodation",
+      "name": null,
+      "budgetMinor": 500000,
+      "position": 0
+    },
+    {
+      "ref": "category-transport",
+      "key": "transport",
+      "name": null,
+      "budgetMinor": null,
+      "position": 1
+    },
+    { "ref": "category-food", "key": "food", "name": null, "budgetMinor": 200000, "position": 2 },
+    {
+      "ref": "category-activities",
+      "key": "activities",
+      "name": null,
+      "budgetMinor": null,
+      "position": 3
+    },
+    {
+      "ref": "category-shopping",
+      "key": "shopping",
+      "name": null,
+      "budgetMinor": null,
+      "position": 4
+    },
+    { "ref": "category-other", "key": "other", "name": null, "budgetMinor": null, "position": 5 },
+    { "ref": "category-7", "key": null, "name": "Souvenirs", "budgetMinor": 30000, "position": 6 }
+  ],
+  "expenses": [
+    {
+      "eventRef": null,
+      "categoryRef": "category-food",
+      "amountMinor": 45000,
+      "currency": "THB",
+      "fxRate": "22.5",
+      "fxRateDate": "2027-01-21",
+      "fxSource": "manual",
+      "baseAmountMinor": 2000,
+      "spentOn": "2027-01-21",
+      "description": "Street food dinner",
+      "paidByTravellerRef": "traveller-1",
+      "needsDetails": false,
+      "shares": [
+        { "travellerRef": "traveller-1", "shareMinor": 22500 },
+        { "travellerRef": "traveller-2", "shareMinor": 22500 }
+      ]
+    },
+    {
+      "eventRef": "event-4",
+      "categoryRef": "category-7",
+      "amountMinor": 1900,
+      "currency": "JPY",
+      "fxRate": "95",
+      "fxRateDate": "2027-01-30",
+      "fxSource": "manual",
+      "baseAmountMinor": 2000,
+      "spentOn": "2027-01-30",
+      "description": "Local train",
+      "paidByTravellerRef": "traveller-1",
+      "needsDetails": false,
+      "shares": []
+    },
+    {
+      "eventRef": null,
+      "categoryRef": null,
+      "amountMinor": 85000,
+      "currency": "VND",
+      "fxRate": null,
+      "fxRateDate": null,
+      "fxSource": null,
+      "baseAmountMinor": null,
+      "spentOn": "2027-01-23",
+      "description": null,
+      "paidByTravellerRef": null,
+      "needsDetails": true,
+      "shares": []
+    }
+  ],
+  "tasks": [
+    {
+      "eventRef": null,
+      "title": "Renew travel insurance",
+      "titleKey": null,
+      "notes": null,
+      "dueOn": "2026-10-01",
+      "priority": "normal",
+      "doneAt": null,
+      "origin": "manual",
+      "sourceDocumentRef": null,
+      "templateItemKey": null
+    },
+    {
+      "eventRef": "event-1",
+      "title": "Check passport validity",
+      "titleKey": null,
+      "notes": "Six months left at least",
+      "dueOn": "2027-01-10",
+      "priority": "high",
+      "doneAt": "2026-11-01T09:00:00.000Z",
+      "origin": "manual",
+      "sourceDocumentRef": null,
+      "templateItemKey": null
+    },
+    {
+      "eventRef": null,
+      "title": "Night train voucher",
+      "titleKey": "print_document",
+      "notes": null,
+      "dueOn": "2027-01-19",
+      "priority": "normal",
+      "doneAt": "2026-11-05T09:00:00.000Z",
+      "origin": "document",
+      "sourceDocumentRef": "document-1",
+      "templateItemKey": null
+    }
+  ],
+  "documents": [
+    {
+      "ref": "document-1",
+      "eventRef": "event-3",
+      "kind": "file",
+      "title": "Night train voucher",
+      "url": null,
+      "tags": ["print"],
+      "availableOffline": false,
+      "storageKey": "trips/00000000-0000-4000-8000-000000000001/00000000-0000-4000-8000-000000000002",
+      "mime": "application/pdf",
+      "sizeBytes": 412,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "downloadUrl": "http://127.0.0.1:3333/drive/fs/trips/demo/voucher?signature=demo"
+    },
+    {
+      "ref": "document-2",
+      "eventRef": "event-4",
+      "kind": "link",
+      "title": "Temple walk tickets",
+      "url": "https://example.com/tickets/demo",
+      "tags": ["show_on_phone"],
+      "availableOffline": false,
+      "storageKey": null,
+      "mime": null,
+      "sizeBytes": null,
+      "sha256": null,
+      "downloadUrl": null
+    }
+  ],
+  "emergency": {
+    "contacts": [{ "name": "Travel insurer hotline", "phone": "0800 DEMO", "note": null }],
+    "notes": "Synthetic emergency notes for the demo trip."
+  },
+  "phraseCards": [],
+  "notes": "Synthetic fixture of the trip JSON v1 format. Nothing in it is real."
+}

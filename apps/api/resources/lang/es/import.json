@@ -1,0 +1,10 @@
+{
+  "warnings": {
+    "callerIsFirstTraveller": "El primer viajero del archivo eres tú: se conserva tu nombre y se aplica el resto de esa fila.",
+    "membersNotImported": "{count} miembro(s) del viaje original no se han añadido: invítalos de nuevo.",
+    "fileDocumentAsLink": "{count} archivo(s) subidos se han importado como enlaces a una dirección de descarga que caduca pronto: vuelve a subir los archivos.",
+    "fileDocumentSkipped": "{count} archivo(s) subidos no tenían dirección de descarga y se han dejado fuera.",
+    "taskOriginReset": "{count} tarea(s) generadas se han importado como tareas manuales.",
+    "phraseCardsSkipped": "{count} juego(s) de tarjetas de frases se han dejado fuera; la app puede generarlos de nuevo."
+  }
+}
