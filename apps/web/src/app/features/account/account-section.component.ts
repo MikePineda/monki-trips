@@ -303,8 +303,7 @@ export class AccountSectionComponent {
 
   private async leaveAfterDeletion(): Promise<void> {
     this.toasts.show({ message: this.transloco.translate('account.delete.done') })
-    // The server already ended every session; a logout answers 401, which signOut treats as done.
-    await this.session.signOut().catch(() => undefined)
+    await this.session.leaveDeletedAccount()
     await this.router.navigateByUrl('/login')
   }
 

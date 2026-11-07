@@ -284,4 +284,27 @@ describe('AccountSectionComponent', () => {
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/login'))
     expect(TestBed.inject(SessionStore).signedIn()).toBe(false)
   })
+
+  it('after a deletion the device is wiped even when the logout fails', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
+    await db.trips.put({
+      id: 'trip-1',
+      name: 'Sample',
+      startDate: '2027-01-20',
+      endDate: '2027-02-06',
+      baseCurrency: 'EUR',
+      updatedAt: '2026-11-07T00:00:00.000Z',
+    })
+    const { click, sheetType, sheetSubmit } = await render()
+    fakes.session.failWith = new ApiFailure({ kind: 'http', status: 503, message: 'x' })
+
+    await click('account.delete')
+    sheetType('account.delete.password', 'my password')
+    await sheetSubmit()
+
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/login'))
+    expect(fakes.session.calls).toContain('logout')
+    expect(TestBed.inject(SessionStore).signedIn()).toBe(false)
+    expect(await db.trips.count()).toBe(0)
+  })
 })
