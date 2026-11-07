@@ -15,6 +15,7 @@ export interface DbRow {
   id?: unknown
   trip_id?: unknown
   event_id?: unknown
+  expense_id?: unknown
   user_id?: unknown
   deleted_at?: unknown
   field_clock?: unknown

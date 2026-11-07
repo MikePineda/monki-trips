@@ -224,6 +224,88 @@ test.group('Expenses', (group) => {
     )
   })
 
+  test('a share id of another trip is rejected and the victim row is unchanged', async ({
+    client,
+    assert,
+  }) => {
+    const victim = await makeUser()
+    const attacker = await makeUser()
+    const victimTrip = await makeTrip(victim)
+    const ownTrip = await makeTrip(attacker)
+    const [victimTraveller] = await db.from('travellers').where('trip_id', victimTrip.id)
+    const [ownTraveller] = await db.from('travellers').where('trip_id', ownTrip.id)
+    const victimShareId = randomUUID()
+    const victimExpense = await pushApplied<Expense>(
+      client,
+      victim,
+      mutation(victimTrip.id, 'expense', {
+        amountMinor: 1000,
+        currency: 'AUD',
+        spentOn: '2027-01-22',
+        shares: [{ id: victimShareId, travellerId: victimTraveller.id, shareMinor: 1000 }],
+      })
+    )
+    const [before] = await db.from('expense_shares').where('id', victimShareId)
+
+    const stolen = await pushOne(
+      client,
+      attacker,
+      mutation(ownTrip.id, 'expense', {
+        amountMinor: 5,
+        currency: 'AUD',
+        spentOn: '2027-01-22',
+        shares: [{ id: victimShareId, travellerId: ownTraveller.id, shareMinor: 5 }],
+      })
+    )
+
+    assert.equal(stolen.status, 'rejected')
+    assert.equal(stolen.error?.code, 'E_ROW_NOT_FOUND')
+    assert.notProperty(stolen, 'row')
+    const [after] = await db.from('expense_shares').where('id', victimShareId)
+    assert.deepEqual(after, before)
+    assert.include(after, {
+      trip_id: victimTrip.id,
+      expense_id: victimExpense.id,
+      traveller_id: victimTraveller.id,
+    })
+    assert.isEmpty(await db.from('expenses').where('trip_id', ownTrip.id))
+  })
+
+  test('a share id of another expense of the same trip is rejected', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const [traveller] = await db.from('travellers').where('trip_id', trip.id)
+    const shareId = randomUUID()
+    const first = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        amountMinor: 1000,
+        currency: 'AUD',
+        spentOn: '2027-01-22',
+        shares: [{ id: shareId, travellerId: traveller.id, shareMinor: 1000 }],
+      })
+    )
+
+    const moved = await pushOne(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        amountMinor: 300,
+        currency: 'AUD',
+        spentOn: '2027-01-22',
+        shares: [{ id: shareId, travellerId: traveller.id, shareMinor: 300 }],
+      })
+    )
+
+    assert.equal(moved.status, 'rejected')
+    assert.equal(moved.error?.code, 'E_ROW_NOT_FOUND')
+    const [share] = await db.from('expense_shares').where('id', shareId)
+    assert.equal(share.expense_id, first.id)
+    assert.equal(Number(share.share_minor), 1000)
+    assert.isNull(share.deleted_at)
+  })
+
   test('the budget view sums converted expenses by category', async ({ client, assert }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner, {
