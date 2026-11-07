@@ -1,4 +1,6 @@
 import { test } from '@japa/runner'
+import { readFile } from 'node:fs/promises'
+import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import type { ApiResponse } from '@japa/api-client'
 import type { PhraseCard, PhraseCards } from '@monkitrips/shared'
@@ -33,6 +35,14 @@ async function addLodging(tripId: string, overrides: Record<string, unknown> = {
     starts_at: '2027-01-21T15:00:00Z',
     ...overrides,
   })
+}
+
+/** The default fixture's cards, for tests that tamper with one field. */
+async function defaultCards(): Promise<PhraseCard[]> {
+  const fixture = JSON.parse(
+    await readFile(app.makePath('tests/fixtures/llm/phrase_cards/default.json'), 'utf8')
+  )
+  return JSON.parse(fixture.responses[0].content).cards
 }
 
 test.group('Phrase cards', (group) => {
@@ -195,6 +205,51 @@ test.group('Phrase cards', (group) => {
     response.assertStatus(201)
     assert.lengthOf(llm.current.calls, 2)
     assert.include(llm.current.calls[1].messages.at(-1)?.content as string, '{name}')
+  })
+
+  test('card text with control characters or bidi overrides is refused', async ({
+    client,
+    assert,
+  }) => {
+    const payloads = {
+      'right-to-left override': '\u202E',
+      'left-to-right embedding': '\u202A',
+      'first strong isolate': '\u2068',
+      'pop directional isolate': '\u2069',
+      'bell': '\u0007',
+      'tab': '\t',
+      'carriage return': '\r',
+    }
+    for (const [name, payload] of Object.entries(payloads)) {
+      const owner = await makeUser()
+      const trip = await makeTrip(owner)
+      const cards = await defaultCards()
+      cards[0].phrase = `${cards[0].phrase}${payload}moc.elpmaxe`
+      llm.current.script('phrase_cards', `tampered-${name}`, {
+        responses: [{ content: JSON.stringify({ cards }) }],
+      })
+
+      const response = await generate(client, owner, trip.id, { language: 'ja' })
+
+      assert.equal(response.status(), 422, name)
+      response.assertBodyContains({ code: 'E_LLM_BAD_OUTPUT' })
+      assert.isEmpty(await db.from('phrase_cards').where('trip_id', trip.id), name)
+    }
+  })
+
+  test('card text may span lines', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const cards = await defaultCards()
+    cards[0].note = 'First line.\nSecond line.'
+    llm.current.script('phrase_cards', 'multi-line', {
+      responses: [{ content: JSON.stringify({ cards }) }],
+    })
+
+    const response = await generate(client, owner, trip.id, { language: 'ja' })
+
+    response.assertStatus(201)
+    assert.equal(response.body().data.cards[0].note, 'First line.\nSecond line.')
   })
 
   test('json wrapped in a code fence is accepted', async ({ client }) => {

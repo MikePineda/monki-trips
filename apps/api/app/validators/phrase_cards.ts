@@ -25,11 +25,32 @@ export const phraseCardsQueryValidator = vine.compile(
   vine.object({ force: vine.boolean().optional() })
 )
 
-const cardText = vine.string().trim().minLength(1).maxLength(PHRASE_CARD_TEXT_MAX)
+/**
+ * Card text is shown to people as plain text: no control characters (a
+ * line break is the one exception) and no bidi embeddings, overrides or
+ * isolates (U+202A–202E, U+2066–2069), which can make a phrase display
+ * something other than what it says.
+ */
+export const CARD_TEXT_PATTERN = /^(?:\n|[^\p{Cc}\u202A-\u202E\u2066-\u2069])*$/u
+
+const cardText = vine
+  .string()
+  .trim()
+  .minLength(1)
+  .maxLength(PHRASE_CARD_TEXT_MAX)
+  .regex(CARD_TEXT_PATTERN)
+const optionalCardText = vine
+  .string()
+  .trim()
+  .maxLength(PHRASE_CARD_TEXT_MAX)
+  .regex(CARD_TEXT_PATTERN)
+  .nullable()
+  .optional()
 
 /**
  * What the model must answer. Anything else (another shape, an unknown
- * category, an oversized text) is sent back once and then refused (422).
+ * category, an oversized text, a control or bidi character) is sent back
+ * once and then refused (422).
  */
 export const phraseCardsOutputValidator = vine.compile(
   vine.object({
@@ -39,8 +60,8 @@ export const phraseCardsOutputValidator = vine.compile(
           category: vine.enum(PHRASE_CARD_CATEGORIES),
           prompt: cardText,
           phrase: cardText.clone(),
-          romanization: vine.string().trim().maxLength(PHRASE_CARD_TEXT_MAX).nullable().optional(),
-          note: vine.string().trim().maxLength(PHRASE_CARD_TEXT_MAX).nullable().optional(),
+          romanization: optionalCardText,
+          note: optionalCardText.clone(),
         })
       )
       .minLength(PHRASE_CARDS_MIN)
