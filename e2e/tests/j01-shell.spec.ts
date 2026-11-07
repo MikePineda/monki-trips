@@ -37,9 +37,15 @@ test.describe('J01 shell', () => {
     const html = page.locator('html')
     await expect(html).not.toHaveAttribute('data-theme', /./)
 
+    const themeColor = page.locator('meta[name="theme-color"]')
+    const lightSurface = await themeColor.getAttribute('content')
+    expect(lightSurface).toMatch(/^#[0-9a-f]{6}$/)
+
     await page.getByTestId('settings.theme.dark').click()
     await expect(html).toHaveAttribute('data-theme', 'dark')
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', /rgb\(/)
+    // The browser chrome follows --surface-0 of the theme being shown.
+    await expect(themeColor).toHaveAttribute('content', /^#[0-9a-f]{6}$/)
+    await expect(themeColor).not.toHaveAttribute('content', lightSurface!)
 
     await page.reload()
     await expect(html).toHaveAttribute('data-theme', 'dark')
@@ -83,12 +89,14 @@ test.describe('J01 shell', () => {
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex')
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
 
-    await page.getByTestId('styleguide.open-sheet').click()
+    // Every component is rendered once per theme panel: drive the light one.
+    const light = page.getByTestId('styleguide.theme-panel.light')
+    await light.getByTestId('styleguide.open-sheet').click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog')).toHaveCount(0)
 
-    await page.getByTestId('styleguide.show-toast').click()
+    await light.getByTestId('styleguide.show-toast').click()
     await expect(page.getByTestId('ui.toast')).toContainText('Expense saved')
   })
 

@@ -7,8 +7,9 @@ import {
   input,
   signal,
 } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { RouterOutlet } from '@angular/router'
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { OFFLINE_DB } from '../../core/offline/db'
 import { META_ACTIVE_TRIP, MetaStore } from '../../core/offline/meta.store'
 import { MkTabBarComponent, type TabItem } from '../../shared/ui/tab-bar/tab-bar.component'
@@ -51,33 +52,40 @@ export class TripShellComponent {
   private readonly db = inject(OFFLINE_DB)
   private readonly meta = inject(MetaStore)
   private readonly transloco = inject(TranslocoService)
+  /** This component's own `shell` scope, so the service loads it like the pipe does. */
+  private readonly scope = inject(TRANSLOCO_SCOPE)
   private readonly tripName = signal<string | null>(null)
-  private readonly lang = signal(this.transloco.getActiveLang())
 
-  protected readonly title = computed(
-    () => this.tripName() ?? this.translate('shell.trip.untitled')
+  /** Tab labels in the active language, re-emitted when it changes or its catalogue loads. */
+  private readonly tabLabels = toSignal(
+    this.transloco.selectTranslate<string[]>(
+      TRIP_TABS.map((tab) => `tabs.${tab.id}`),
+      {},
+      this.scope
+    ),
+    { initialValue: [] as string[] }
+  )
+  private readonly untitled = toSignal(
+    this.transloco.selectTranslate<string>('trip.untitled', {}, this.scope),
+    { initialValue: '' }
   )
 
+  protected readonly title = computed(() => this.tripName() ?? this.untitled())
+
   protected readonly tabs = computed<TabItem[]>(() =>
-    TRIP_TABS.map((tab) => ({
+    TRIP_TABS.map((tab, index) => ({
       id: tab.id,
       icon: tab.icon,
-      label: this.translate(`shell.tabs.${tab.id}`),
+      label: this.tabLabels()[index] ?? '',
       link: ['/t', this.tripId(), tab.id],
     }))
   )
 
   constructor() {
-    this.transloco.langChanges$.subscribe((lang) => this.lang.set(lang))
     effect(() => {
       const tripId = this.tripId()
       void this.db.trips.get(tripId).then((trip) => this.tripName.set(trip?.name ?? null))
       void this.meta.set(META_ACTIVE_TRIP, tripId)
     })
-  }
-
-  /** Translates with the active language as a dependency, so labels follow a switch. */
-  private translate(key: string): string {
-    return this.transloco.translate(key, {}, this.lang())
   }
 }
