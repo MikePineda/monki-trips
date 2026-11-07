@@ -23,8 +23,13 @@ const ALWAYS_REVALIDATE = new Set([
   'worker-basic.min.js',
 ])
 
-/** Angular's output hashing: `name-XXXXXXXX.ext` with an uppercase base32 hash. */
-const CONTENT_HASH = /-[A-Z0-9]{8,}\.[a-z0-9]+$/
+/**
+ * Angular's output hashing: `name-XXXXXXXX.ext`. Initial files use an
+ * uppercase hash (`main-SKJHZDS5.js`), lazy chunks a mixed-case one
+ * (`chunk-D436evU6.js`). At least one uppercase letter or digit is required
+ * so a plain word (`icon-maskable.png`) is never taken for a hash.
+ */
+const CONTENT_HASH = /-(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{8,}\.[a-z0-9]+$/
 
 /**
  * Returns the caching headers for a file, given its path relative to the

@@ -20,6 +20,7 @@ test.group('Static cache policy', () => {
     .with([
       'main-HFSQMWGS.js',
       'chunk-7UQ2KXRB.js',
+      'chunk-D436evU6.js',
       'styles-5INURTSO.css',
       'media/font-ZK3A2D4Q.woff2',
     ])
@@ -28,7 +29,7 @@ test.group('Static cache policy', () => {
     })
 
   test('{$self} has no hash and gets a short public cache')
-    .with(['favicon.ico', 'icons/icon-192.png', 'theme-boot.js'])
+    .with(['favicon.ico', 'icons/icon-192.png', 'theme-boot.js', 'icons/icon-maskable.png'])
     .run(({ assert }, file) => {
       assert.deepEqual(cacheHeadersFor(file), { 'Cache-Control': 'public, max-age=3600' })
     })
