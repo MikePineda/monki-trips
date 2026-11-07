@@ -93,8 +93,7 @@ export const routes: Routes = [
       },
       {
         path: 'add',
-        loadComponent: () =>
-          import('./features/money/money-pages').then((m) => m.QuickExpensePage),
+        loadComponent: () => import('./features/money/money-pages').then((m) => m.QuickExpensePage),
       },
       ...(['today', 'docs'] as const).map((section) => ({
         path: section,
