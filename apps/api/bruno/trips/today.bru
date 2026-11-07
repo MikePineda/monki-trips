@@ -1,0 +1,15 @@
+meta {
+  name: Today
+  type: http
+  seq: 45
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/today?at=
+  body: none
+  auth: none
+}
+
+params:query {
+  at: 
+}

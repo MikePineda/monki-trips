@@ -1,0 +1,36 @@
+meta {
+  name: Sync push
+  type: http
+  seq: 41
+}
+
+post {
+  url: {{baseUrl}}/api/v1/sync/push
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "mutations": [
+      {
+        "mutationId": "00000000-0000-4000-8000-000000000001",
+        "tripId": "{{tripId}}",
+        "entity": "stop",
+        "op": "upsert",
+        "id": "00000000-0000-4000-8000-000000000002",
+        "changes": { "name": "Harbour Town", "countryCode": "AU", "position": 0 },
+        "changedAt": "2026-11-07T10:00:00.000Z"
+      }
+    ]
+  }
+}
+
+docs {
+  The one write path of trip content: up to 100 mutations, one transaction
+  each, field-level last-write-wins. Results: applied | partial | duplicate | rejected.
+}

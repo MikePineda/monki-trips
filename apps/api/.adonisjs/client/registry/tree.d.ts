@@ -45,6 +45,13 @@ export interface ApiDefinition {
     index: typeof routes['trips.index']
     store: typeof routes['trips.store']
     snapshot: typeof routes['trips.snapshot']
+    nights: typeof routes['trips.nights']
+    budget: typeof routes['trips.budget']
+    today: typeof routes['trips.today']
+    documents: {
+      store: typeof routes['trips.documents.store']
+      file: typeof routes['trips.documents.file']
+    }
     members: {
       index: typeof routes['trips.members.index']
       destroy: typeof routes['trips.members.destroy']
@@ -58,5 +65,12 @@ export interface ApiDefinition {
       destroy: typeof routes['trips.invitations.destroy']
     }
     restore: typeof routes['trips.restore']
+  }
+  sync: {
+    pull: typeof routes['sync.pull']
+    push: typeof routes['sync.push']
+  }
+  fx: {
+    rates: typeof routes['fx.rates']
   }
 }
