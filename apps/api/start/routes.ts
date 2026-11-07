@@ -76,6 +76,9 @@ router
             router
               .delete('me/push-subscriptions/:id', [controllers.PushSubscriptions, 'destroy'])
               .as('me.pushSubscriptions.destroy')
+            router
+              .post('me/push-subscriptions/test', [controllers.PushSubscriptions, 'test'])
+              .as('me.pushSubscriptions.test')
 
             router
               .post('invitations/:token/accept', [controllers.Invitations, 'accept'])

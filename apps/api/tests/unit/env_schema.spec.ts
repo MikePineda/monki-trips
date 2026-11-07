@@ -138,6 +138,39 @@ test.group('Environment schema', () => {
     )
   })
 
+  test('vapid variables are accepted empty, together, and refused half set', ({ assert }) => {
+    const empty = validateEnv({
+      ...REQUIRED,
+      VAPID_PUBLIC_KEY: '',
+      VAPID_PRIVATE_KEY: '',
+      VAPID_SUBJECT: '',
+    })
+    assert.isUndefined(empty.VAPID_PUBLIC_KEY)
+
+    const complete = validateEnv({
+      ...REQUIRED,
+      VAPID_PUBLIC_KEY: 'public-key',
+      VAPID_PRIVATE_KEY: 'private-key',
+      VAPID_SUBJECT: 'mailto:admin@example.com',
+    })
+    assert.equal(complete.VAPID_SUBJECT, 'mailto:admin@example.com')
+    assert.notInclude(String(complete.VAPID_PRIVATE_KEY), 'private-key')
+
+    assert.throws(
+      () => validateEnv({ ...REQUIRED, VAPID_PUBLIC_KEY: 'public-key' }),
+      /VAPID_PRIVATE_KEY[\s\S]*VAPID_SUBJECT/
+    )
+    assert.throws(
+      () => validateEnv({ ...REQUIRED, VAPID_PRIVATE_KEY: 'private-key', VAPID_SUBJECT: '' }),
+      /VAPID_PUBLIC_KEY/
+    )
+  })
+
+  test('the scheduler switch accepts on and off only', ({ assert }) => {
+    assert.equal(validateEnv({ ...REQUIRED, SCHEDULER: 'off' }).SCHEDULER, 'off')
+    assert.throws(() => validateEnv({ ...REQUIRED, SCHEDULER: 'sometimes' }), /SCHEDULER/)
+  })
+
   test('a dependent-variable error never echoes a secret value', ({ assert }) => {
     try {
       validateEnv({ ...REQUIRED, DRIVE_DISK: 's3', S3_KEY: 'very-secret-key-value' })

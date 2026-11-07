@@ -15,6 +15,17 @@ test.group('Public config', () => {
     assert.isString(data.version)
   })
 
+  test('GET /config exposes the vapid public key when push is enabled, never the private one', async ({
+    client,
+    assert,
+  }) => {
+    const response = await client.get('/api/v1/config')
+
+    const { data } = response.body()
+    assert.isTrue(data.pushEnabled)
+    assert.match(data.vapidPublicKey, /^B[A-Za-z0-9_-]{86}$/)
+  })
+
   test('GET /config hands out the CSRF cookie the first mutating request needs', async ({
     client,
     assert,

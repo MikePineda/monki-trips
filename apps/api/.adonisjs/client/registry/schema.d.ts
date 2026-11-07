@@ -281,6 +281,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/push_subscriptions_controller').default['destroy']>>>
     }
   }
+  'me.pushSubscriptions.test': {
+    methods: ["POST"]
+    pattern: '/api/v1/me/push-subscriptions/test'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/push_subscriptions_controller').default['test']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/push_subscriptions_controller').default['test']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/push_subscriptions_controller').default['test']>>>
+    }
+  }
   'invitations.accept': {
     methods: ["POST"]
     pattern: '/api/v1/invitations/:token/accept'
