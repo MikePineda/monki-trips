@@ -1,4 +1,9 @@
-import type { SyncPullOutput, SyncPushOutput, TripTaskRow } from '@monkitrips/shared'
+import type {
+  TripDocumentRow,
+  SyncPullOutput,
+  SyncPushOutput,
+  TripTaskRow,
+} from '@monkitrips/shared'
 import type { OutboxRecord } from '../offline/records'
 import { SyncCursorExpired } from '../offline/sync-api'
 import type { ApiClient } from './api'
@@ -73,8 +78,8 @@ describe('RealSyncApi', () => {
           { entity: 'task', row: TASK_ROW },
           { entity: 'task', row: { ...TASK_ROW, id: 'k2', deletedAt: '2026-11-07T12:00:00.000Z' } },
           {
-            entity: 'document',
-            row: { id: 'd1', tripId: 't1' } as never,
+            entity: 'phrase_card',
+            row: { id: 'p1', tripId: 't1' } as never,
           },
         ],
         tripIds: ['t1'],
@@ -91,6 +96,48 @@ describe('RealSyncApi', () => {
     expect(result.changes).toEqual([
       { table: 'tasks', row: expect.objectContaining({ id: 'k1', title: 'Buy an adapter' }) },
       { table: 'tasks', row: { id: 'k2' }, deleted: true },
+    ])
+  })
+
+  it('pulls documents into the device docs table, tombstones included', async () => {
+    const document: TripDocumentRow = {
+      id: 'd1',
+      tripId: 't1',
+      eventId: null,
+      kind: 'file',
+      title: 'Ferry voucher',
+      url: null,
+      mime: 'application/pdf',
+      sizeBytes: 10,
+      sha256: 'abc',
+      tags: ['print'],
+      availableOffline: false,
+      uploadedBy: 'u1',
+      deletedAt: null,
+      updatedAt: '2026-11-07T00:00:00.000Z',
+    }
+    const { loader } = clientWith({
+      pull: () => ({
+        changes: [
+          { entity: 'document', row: document },
+          {
+            entity: 'document',
+            row: { ...document, id: 'd2', deletedAt: '2026-11-07T12:00:00.000Z' },
+          },
+        ],
+        tripIds: ['t1'],
+        cursor: 'c2',
+        hasMore: false,
+      }),
+    })
+
+    const result = await new RealSyncApi(loader).pull(null)
+
+    const { deletedAt, ...kept } = document
+    void deletedAt
+    expect(result.changes).toEqual([
+      { table: 'docs', row: kept },
+      { table: 'docs', row: { id: 'd2' }, deleted: true },
     ])
   })
 

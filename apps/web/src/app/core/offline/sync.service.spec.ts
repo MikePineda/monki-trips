@@ -8,7 +8,8 @@ import {
   resetOfflineTesting,
 } from '../../../testing/offline-testing'
 import type { MonkiTripsDb } from './db'
-import { META_CURSOR, META_LAST_PULL_AT, MetaStore } from './meta.store'
+import { META_CURSOR, META_LAST_PULL_AT, META_SYNCED_ENTITIES, MetaStore } from './meta.store'
+import { syncedEntitiesKey } from './entity-tables'
 import { OutboxStore } from './outbox.store'
 import type { EmergencyRecord, ExpenseRecord, TaskRecord } from './records'
 import { SyncCursorExpired } from './sync-api'
@@ -142,8 +143,69 @@ describe('SyncService', () => {
     expect(await db.events.get('e1')).toMatchObject({ title: 'Fly' })
   })
 
+  it('a newly mapped entity makes the next pull start from scratch once', async () => {
+    await meta.set(META_CURSOR, 'from-an-older-mapping')
+    await meta.set(META_SYNCED_ENTITIES, 'event,task,trip')
+
+    await sync.pull()
+    await sync.pull()
+
+    expect(api.calls).toEqual([
+      { kind: 'pull', cursor: null },
+      { kind: 'pull', cursor: 'fake-1' },
+    ])
+    expect(await meta.get(META_SYNCED_ENTITIES)).toBe(syncedEntitiesKey())
+  })
+
+  it('a cursor stored before the mapping was recorded (a device upgraded from Dexie version 4) pulls from scratch once', async () => {
+    await meta.set(META_CURSOR, 'from-before-the-money-mapping')
+
+    await sync.pull()
+    await sync.pull()
+
+    expect(api.calls).toEqual([
+      { kind: 'pull', cursor: null },
+      { kind: 'pull', cursor: 'fake-1' },
+    ])
+    expect(await meta.get(META_SYNCED_ENTITIES)).toBe(syncedEntitiesKey())
+  })
+
+  it('the same mapping keeps pulling from the stored cursor', async () => {
+    await meta.set(META_CURSOR, 'kept-cursor')
+    await meta.set(META_SYNCED_ENTITIES, syncedEntitiesKey())
+
+    await sync.pull()
+
+    expect(api.calls).toEqual([{ kind: 'pull', cursor: 'kept-cursor' }])
+  })
+
+  it('the server print task replaces the optimistic one the device made for the document', async () => {
+    await db.tasks.bulkPut([
+      {
+        ...TASK,
+        id: 'local-print',
+        origin: 'document',
+        sourceDocumentId: 'doc-1',
+        syncState: 'pending',
+      },
+      { ...TASK, id: 'other-doc', origin: 'document', sourceDocumentId: 'doc-2' },
+    ])
+    api.queuePullChanges({
+      table: 'tasks',
+      row: { ...TASK, id: 'server-print', origin: 'document', sourceDocumentId: 'doc-1' },
+    })
+
+    await sync.pull()
+
+    expect((await db.tasks.toArray()).map((task) => task.id).sort()).toEqual([
+      'other-doc',
+      'server-print',
+    ])
+  })
+
   it('a failed pull keeps the old cursor and the old rows', async () => {
     await meta.set(META_CURSOR, 'kept')
+    await meta.set(META_SYNCED_ENTITIES, syncedEntitiesKey())
     api.failNextPullWith(new TypeError('Failed to fetch'))
 
     await expect(sync.pull()).rejects.toThrow('Failed to fetch')
@@ -369,6 +431,7 @@ describe('SyncService', () => {
 
   it('an expired cursor clears the copy, keeps the outbox and pulls from scratch', async () => {
     await meta.set(META_CURSOR, 'stale')
+    await meta.set(META_SYNCED_ENTITIES, syncedEntitiesKey())
     await db.tasks.put(TASK)
     const queued = await outbox.enqueue({ tripId: 't1', kind: 'task.upsert', payload: {} })
     api.failNextPullWith(new SyncCursorExpired())
@@ -422,6 +485,7 @@ describe('SyncService', () => {
 
   it('expired cursor wipes the cache but keeps the outbox', async () => {
     await meta.set(META_CURSOR, 'stale-cursor')
+    await meta.set(META_SYNCED_ENTITIES, syncedEntitiesKey())
     await db.events.put(toEventRecord(blankEvent({ id: 'cached', tripId: 'trip-1' })))
     const queued = await outbox.enqueue({
       tripId: 'trip-1',

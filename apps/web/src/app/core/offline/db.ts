@@ -88,12 +88,11 @@ export class MonkiTripsDb extends Dexie {
     })
     // WP 2.2: money. Expenses take the wire row (indexed by the day they were
     // spent) next to the trip's budget categories. The pull skipped both
-    // until now, so the cursor goes: the next pull is a full snapshot.
-    this.version(5)
-      .stores({
-        expenses: 'id, tripId, [tripId+spentOn], updatedAt',
-        budgetCategories: 'id, tripId, updatedAt',
-      })
-      .upgrade((tx) => tx.table('meta').delete('sync.cursor'))
+    // until now; the sync service sees the new entity mapping
+    // (`syncedEntitiesKey`) and pulls from scratch once, so no upgrade here.
+    this.version(5).stores({
+      expenses: 'id, tripId, [tripId+spentOn], updatedAt',
+      budgetCategories: 'id, tripId, updatedAt',
+    })
   }
 }

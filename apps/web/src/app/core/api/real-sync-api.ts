@@ -1,4 +1,5 @@
 import type { SyncChange as WireChange, SyncMutation, SyncMutationResult } from '@monkitrips/shared'
+import { toDocumentRecord } from '../offline/document-record'
 import { toEmergencyRecord } from '../offline/emergency-record'
 import { ENTITY_TABLES } from '../offline/entity-tables'
 import { toEventRecord } from '../offline/event-record'
@@ -149,6 +150,10 @@ export function toDeviceChange(change: WireChange): SyncChange[] {
       return change.row.deletedAt
         ? [{ table: 'seats', row: { id: change.row.id }, deleted: true }]
         : [{ table: 'seats', row: toSeatRecord(change.row) }]
+    case 'document':
+      return change.row.deletedAt
+        ? [{ table: 'docs', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'docs', row: toDocumentRecord(change.row) }]
     case 'task':
       return change.row.deletedAt
         ? [{ table: 'tasks', row: { id: change.row.id }, deleted: true }]
