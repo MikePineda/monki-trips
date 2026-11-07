@@ -1,3 +1,9 @@
+import type {
+  EmergencyInfoContent,
+  TaskOrigin,
+  TaskPriority,
+  TripMemberRole,
+} from '@monkitrips/shared'
 import type { OutboxState } from '../../domain/outbox-transition'
 
 /**
@@ -69,9 +75,32 @@ export interface DocBlobRecord {
   savedAt: string
 }
 
+/**
+ * A task as the device keeps it: the API's `TripTaskRow` without the
+ * tombstone. `titleKey` names a translation for generated tasks (print,
+ * template), rendered with `title` as the fallback and parameter;
+ * `templateItemKey` ties a pre-trip checklist item to its template entry.
+ */
 export interface TaskRecord extends TripScopedRecord {
+  eventId: string | null
   title: string
-  done: boolean
+  titleKey: string | null
+  notes: string | null
+  /** YYYY-MM-DD, null for an undated task. */
+  dueOn: string | null
+  priority: TaskPriority
+  /** ISO instant when it was ticked, null while open. */
+  doneAt: string | null
+  doneBy: string | null
+  origin: TaskOrigin
+  sourceDocumentId: string | null
+  templateItemKey: string | null
+}
+
+/** Emergency information of a trip: one row per trip, `id` equals `tripId`. */
+export interface EmergencyRecord extends TripScopedRecord {
+  content: EmergencyInfoContent
+  schemaVersion: number
 }
 
 export interface ChecklistRecord extends TripScopedRecord {
@@ -91,7 +120,9 @@ export interface ExpenseRecord extends TripScopedRecord {
 
 export interface MemberRecord extends TripScopedRecord {
   userId: string
-  role: string
+  role: TripMemberRole
+  /** Display name of the account, absent on rows written before the sync client. */
+  displayName?: string
 }
 
 /**
@@ -134,8 +165,9 @@ export interface OutboxRecord {
   /** UUIDv7 = mutationId, the idempotency key on the server. */
   id: string
   tripId: string
-  /** e.g. 'expense.create' (free string now; typed union later). */
+  /** `<entity>.<op>` for a sync mutation (`task.upsert`); older free-form kinds are rejected on push. */
   kind: string
+  /** An `OutboxMutation` (mutation.ts) for everything the sync client sends. */
   payload: unknown
   state: OutboxState
   attempts: number
@@ -158,6 +190,7 @@ export interface SyncRowMap {
   expenses: ExpenseRecord
   members: MemberRecord
   travellers: TravellerRecord
+  emergency: EmergencyRecord
 }
 
 export type SyncTable = keyof SyncRowMap
@@ -172,9 +205,12 @@ export const SYNC_TABLES: readonly SyncTable[] = [
   'expenses',
   'members',
   'travellers',
+  'emergency',
 ]
 
-/** One row the server changed: an upsert, or a delete when `deleted`. */
+/** One row the server changed: an upsert, or a delete (a tombstone needs only the id). */
 export type SyncChange = {
-  [K in SyncTable]: { table: K; row: SyncRowMap[K]; deleted?: boolean }
+  [K in SyncTable]:
+    | { table: K; row: SyncRowMap[K]; deleted?: false }
+    | { table: K; row: Pick<SyncRowMap[K], 'id'>; deleted: true }
 }[SyncTable]
