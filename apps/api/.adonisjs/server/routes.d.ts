@@ -43,6 +43,8 @@ export type ScannedRoutes = {
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.tasks.fromTemplate': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.emergency.update': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.members.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.destroy': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -72,6 +74,7 @@ export type ScannedRoutes = {
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'spa.fallback': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
@@ -94,6 +97,7 @@ export type ScannedRoutes = {
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'spa.fallback': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
@@ -128,6 +132,7 @@ export type ScannedRoutes = {
   }
   PUT: {
     'me.password': { paramsTuple?: []; params?: {} }
+    'trips.emergency.update': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
   }
   DELETE: {
     'me.pushSubscriptions.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

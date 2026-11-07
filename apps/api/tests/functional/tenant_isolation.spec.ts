@@ -95,6 +95,13 @@ const CASES: Record<string, IsolationCase> = {
   'trips.tasks.fromTemplate': {
     request: (c, v, a) => actingAs(c.post(`/api/v1/trips/${v.trip.id}/tasks/from-template`), a),
   },
+  'trips.emergency.show': {
+    request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/emergency`), a),
+  },
+  'trips.emergency.update': {
+    request: (c, v, a) =>
+      actingAs(c.put(`/api/v1/trips/${v.trip.id}/emergency`), a).json({ notes: 'Intruder' }),
+  },
   'trips.destroy': {
     request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}`), a),
   },

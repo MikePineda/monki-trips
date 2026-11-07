@@ -236,6 +236,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"tasks"],[0,"from-template"]],
     types: placeholder as Registry['trips.tasks.fromTemplate']['types'],
   },
+  'trips.emergency.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/emergency',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"emergency"]],
+    types: placeholder as Registry['trips.emergency.show']['types'],
+  },
+  'trips.emergency.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/trips/:tripId/emergency',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"emergency"]],
+    types: placeholder as Registry['trips.emergency.update']['types'],
+  },
   'trips.members.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/trips/:tripId/members',

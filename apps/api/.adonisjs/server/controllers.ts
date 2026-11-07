@@ -8,6 +8,7 @@ export const controllers = {
   Config: () => import('#controllers/config_controller'),
   Documents: () => import('#controllers/documents_controller'),
   EmailVerification: () => import('#controllers/email_verification_controller'),
+  Emergency: () => import('#controllers/emergency_controller'),
   Fx: () => import('#controllers/fx_controller'),
   HealthChecks: () => import('#controllers/health_checks_controller'),
   Invitations: () => import('#controllers/invitations_controller'),
