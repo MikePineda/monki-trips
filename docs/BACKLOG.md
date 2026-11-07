@@ -26,3 +26,4 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: `E_BASE_CURRENCY_LOCKED` is reserved: trip edits (name, dates, `base_currency`) arrive with sync push; `viewer` role as an additive CHECK change.
 - 2026-11-07: Bruno smoke in production needs a smoke user (`SMOKE_EMAIL`/`SMOKE_PASSWORD`, owner's machine) and `bru`; `ResendMailer` has no automated test (network) and should get one against a local fake endpoint.
 - 2026-11-07: `docs/ARCHITECTURE.md` still says `app/domain/` is empty and lists no auth; refresh it after WP 0.5 lands.
+- 2026-11-07: `GET /me/export` returns one JSON file (`AccountExport`) today; the plan asks for a zip with one trip JSON v1 per trip (and documents once they exist). Switch when documents land, keeping the JSON shape inside the zip.
