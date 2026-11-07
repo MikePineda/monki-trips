@@ -1,0 +1,482 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Budget</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS CDN with plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-0': '#0F1113',
+              'surface-1': '#17191C',
+              'surface-2': '#202326',
+              'ink-1': '#ECEDEE',
+              'ink-2': '#B4B9BF',
+              'ink-3': '#8A9097',
+              'outline-variant': '#2C3035',
+              'outline': '#6A7079',
+              'accent': '#F08A4B',
+              'accent-soft': '#33200F',
+              'mark-neutral': '#A1A9B0',
+              'mark-muted': '#3A3F45',
+              'grid-line': '#25292D',
+              'status-good': '#7CC58B',
+              'status-warning': '#E2AA3A',
+              'status-serious': '#FFB89A',
+              'status-critical': '#F07070',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-half': '4px',
+              'space-2xl': '48px',
+              'gutter': '16px',
+              'space-xl': '32px',
+              'space-sm': '8px',
+              'margin': '16px',
+              'space-lg': '24px',
+              'space-md': '16px',
+            },
+            fontFamily: {
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+            },
+            fontSize: {
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+            },
+            boxShadow: {
+              'level-1': '0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        font-size: 20px;
+        line-height: 1;
+      }
+      .lucide-icon {
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+      body {
+        background-color: #050607;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: 'IBM Plex Sans', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-[#050607] text-ink-1 selection:bg-accent-soft selection:text-accent">
+    <!-- Mobile Viewport Frame (390 x 844) -->
+    <main
+      class="relative w-[390px] h-[844px] bg-surface-0 flex flex-col overflow-hidden shadow-2xl"
+    >
+      <!-- 1. Top iOS Status Bar (47px safe top area) -->
+      <header
+        class="pt-[14px] px-7 h-[47px] w-full flex justify-between items-center select-none shrink-0 z-40 bg-surface-0"
+      >
+        <span class="font-heading text-[15px] font-semibold text-ink-1 tracking-tight tabular-nums"
+          >09:41</span
+        >
+        <div class="flex items-center gap-[6px] text-ink-1">
+          <!-- Cellular Signal -->
+          <svg class="w-4 h-3.5" fill="currentColor" viewbox="0 0 17 12">
+            <rect height="4" rx="0.5" width="3" x="0" y="8"></rect>
+            <rect height="6.5" rx="0.5" width="3" x="4.5" y="5.5"></rect>
+            <rect height="9" rx="0.5" width="3" x="9" y="3"></rect>
+            <rect height="12" rx="0.5" width="3" x="13.5" y="0"></rect>
+          </svg>
+          <!-- Wifi -->
+          <svg class="w-4 h-3.5" fill="currentColor" viewbox="0 0 16 12">
+            <path
+              d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM4.9 7.8a4.4 4.4 0 016.2 0 .7.7 0 001-.9 5.8 5.8 0 00-8.2 0 .7.7 0 101 .9zM2.1 5a8.4 8.4 0 0111.8 0 .7.7 0 001-1 9.8 9.8 0 00-13.8 0 .7.7 0 001 1z"
+            ></path>
+          </svg>
+          <!-- Battery -->
+          <div
+            class="w-[22px] h-[11.5px] border border-ink-1 rounded-[3px] p-[1.5px] flex items-center relative ml-0.5"
+          >
+            <div class="h-full w-[80%] bg-ink-1 rounded-[1.5px]"></div>
+            <div
+              class="w-[1.5px] h-[4px] bg-ink-1 absolute -right-[3px] top-[2.75px] rounded-r-[1px]"
+            ></div>
+          </div>
+        </div>
+      </header>
+      <!-- Scrollable Content Canvas -->
+      <div
+        class="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-2 scroll-smooth"
+        style="padding-bottom: 120px"
+      >
+        <!-- 2 & 3. Title Section -->
+        <section class="px-margin pt-1 pb-4 flex items-baseline justify-between">
+          <h1 class="font-title text-title text-ink-1 tracking-tight">Money</h1>
+          <span class="font-eyebrow text-eyebrow text-ink-2 uppercase tabular-nums"
+            >EUR // AUD</span
+          >
+        </section>
+        <!-- 4. Stat Tiles: Row of 3 separated ONLY by 1px hairlines -->
+        <section class="grid grid-cols-3 w-full py-1">
+          <!-- Tile 1 -->
+          <div class="px-margin flex flex-col justify-start">
+            <span class="font-eyebrow text-eyebrow text-ink-3 uppercase tracking-wider mb-1"
+              >LEFT</span
+            >
+            <span class="font-display text-[24px] leading-8 font-semibold text-ink-1 tabular-nums"
+              >€1,240</span
+            >
+            <span class="font-caption text-caption text-ink-2 mt-0.5 whitespace-nowrap tabular-nums"
+              >A$2,040 of €3k</span
+            >
+          </div>
+          <!-- Tile 2 -->
+          <div class="px-margin border-l border-outline-variant flex flex-col justify-start">
+            <span class="font-eyebrow text-eyebrow text-ink-3 uppercase tracking-wider mb-1"
+              >PER DAY</span
+            >
+            <span class="font-display text-[24px] leading-8 font-semibold text-ink-1 tabular-nums"
+              >€155</span
+            >
+            <span class="font-caption text-caption text-ink-2 mt-0.5 whitespace-nowrap"
+              >8 days left</span
+            >
+          </div>
+          <!-- Tile 3 -->
+          <div class="px-margin border-l border-outline-variant flex flex-col justify-start">
+            <span class="font-eyebrow text-eyebrow text-ink-3 uppercase tracking-wider mb-1"
+              >TODAY</span
+            >
+            <span class="font-display text-[24px] leading-8 font-semibold text-ink-1 tabular-nums"
+              >€84</span
+            >
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-ink-3"></span>
+              <span class="font-caption text-caption text-ink-2 whitespace-nowrap">1 pending</span>
+            </div>
+          </div>
+        </section>
+        <!-- 5. 1px hairline divider -->
+        <div class="h-[1px] w-full bg-outline-variant my-5"></div>
+        <!-- 6. Segmented Control: Chart | Table -->
+        <section class="px-margin mb-6">
+          <div class="bg-surface-2 h-10 p-[2px] rounded-xl flex items-center w-full select-none">
+            <button
+              class="flex-1 h-9 rounded-xl bg-surface-1 shadow-sm ring-1 ring-outline text-accent font-heading text-label flex items-center justify-center font-semibold transition-all"
+              type="button"
+            >
+              Chart
+            </button>
+            <button
+              class="flex-1 h-9 rounded-xl text-ink-2 font-label text-label flex items-center justify-center font-medium hover:text-ink-1 transition-colors"
+              type="button"
+            >
+              Table
+            </button>
+          </div>
+        </section>
+        <!-- 7. Eyebrow: SPENT BY CATEGORY -->
+        <section class="px-margin mb-3">
+          <h2 class="font-eyebrow text-eyebrow text-ink-3 uppercase tracking-wider">
+            SPENT BY CATEGORY
+          </h2>
+        </section>
+        <!-- 8. Horizontal bar chart (Single neutral series #A1A9B0, 12px thick, square baseline) -->
+        <section class="px-margin mb-6">
+          <div class="relative w-full border-l border-outline pl-2 py-1 flex flex-col gap-3.5">
+            <!-- Background Guidelines (1px solid #25292D) -->
+            <div class="absolute inset-0 pl-2 pointer-events-none flex justify-between">
+              <div class="h-full border-r border-grid-line"></div>
+              <div class="h-full border-r border-grid-line"></div>
+              <div class="h-full border-r border-grid-line"></div>
+            </div>
+            <!-- Row 1: Lodging (€820) - max scale reference ~100% -->
+            <div class="relative z-10">
+              <div class="flex justify-between items-baseline mb-1">
+                <span class="font-body text-[14px] leading-5 text-ink-1">Lodging</span>
+                <span class="font-code text-[14px] leading-5 text-ink-1 tabular-nums font-medium"
+                  >€820</span
+                >
+              </div>
+              <div class="w-full bg-surface-2 h-3 rounded-none overflow-hidden">
+                <div class="bg-mark-neutral h-3 rounded-r-lg" style="width: 100%"></div>
+              </div>
+            </div>
+            <!-- Row 2: Transport (€410) - 50% -->
+            <div class="relative z-10">
+              <div class="flex justify-between items-baseline mb-1">
+                <span class="font-body text-[14px] leading-5 text-ink-1">Transport</span>
+                <span class="font-code text-[14px] leading-5 text-ink-1 tabular-nums font-medium"
+                  >€410</span
+                >
+              </div>
+              <div class="w-full bg-surface-2 h-3 rounded-none overflow-hidden">
+                <div class="bg-mark-neutral h-3 rounded-r-lg" style="width: 50%"></div>
+              </div>
+            </div>
+            <!-- Row 3: Food (€360) - 44% -->
+            <div class="relative z-10">
+              <div class="flex justify-between items-baseline mb-1">
+                <span class="font-body text-[14px] leading-5 text-ink-1">Food</span>
+                <span class="font-code text-[14px] leading-5 text-ink-1 tabular-nums font-medium"
+                  >€360</span
+                >
+              </div>
+              <div class="w-full bg-surface-2 h-3 rounded-none overflow-hidden">
+                <div class="bg-mark-neutral h-3 rounded-r-lg" style="width: 44%"></div>
+              </div>
+            </div>
+            <!-- Row 4: Tickets (€120) - 15% -->
+            <div class="relative z-10">
+              <div class="flex justify-between items-baseline mb-1">
+                <span class="font-body text-[14px] leading-5 text-ink-1">Tickets</span>
+                <span class="font-code text-[14px] leading-5 text-ink-1 tabular-nums font-medium"
+                  >€120</span
+                >
+              </div>
+              <div class="w-full bg-surface-2 h-3 rounded-none overflow-hidden">
+                <div class="bg-mark-neutral h-3 rounded-r-lg" style="width: 15%"></div>
+              </div>
+            </div>
+            <!-- Row 5: Other (€50) - 6% -->
+            <div class="relative z-10">
+              <div class="flex justify-between items-baseline mb-1">
+                <span class="font-body text-[14px] leading-5 text-ink-1">Other</span>
+                <span class="font-code text-[14px] leading-5 text-ink-1 tabular-nums font-medium"
+                  >€50</span
+                >
+              </div>
+              <div class="w-full bg-surface-2 h-3 rounded-none overflow-hidden">
+                <div class="bg-mark-muted h-3 rounded-r-lg" style="width: 6%"></div>
+              </div>
+            </div>
+          </div>
+          <p class="font-caption text-caption text-ink-3 mt-3">Tap Table for the exact values</p>
+        </section>
+        <!-- 9. 1px hairline divider -->
+        <div class="h-[1px] w-full bg-outline-variant my-5"></div>
+        <!-- 10. Eyebrow: RECENT -->
+        <section class="px-margin mb-1">
+          <h2 class="font-eyebrow text-eyebrow text-ink-3 uppercase tracking-wider">RECENT</h2>
+        </section>
+        <!-- 11. Recent Expense rows (min 56px height each, separated by 1px hairlines) -->
+        <section class="flex flex-col">
+          <!-- Row 1: Lunch at the harbour -->
+          <article
+            class="min-h-[56px] px-margin py-3 flex items-center justify-between border-b border-outline-variant"
+          >
+            <div class="flex flex-col pr-2">
+              <span class="font-body-strong text-[15px] leading-5 text-ink-1"
+                >Lunch at the harbour</span
+              >
+              <span class="font-caption text-caption text-ink-2 mt-0.5">Food · you paid</span>
+            </div>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="font-code text-[15px] font-medium text-ink-1 tabular-nums">€18.50</span>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-ink-3"></span>
+                <span class="font-caption text-caption text-ink-3">pending</span>
+              </div>
+            </div>
+          </article>
+          <!-- Row 2: Train ALD -> KSB -->
+          <article
+            class="min-h-[56px] px-margin py-3 flex items-center justify-between border-b border-outline-variant"
+          >
+            <div class="flex flex-col pr-2">
+              <div class="flex items-center gap-1.5">
+                <span class="font-body-strong text-[15px] leading-5 text-ink-1"
+                  >Train ALD → KSB</span
+                >
+              </div>
+              <span class="font-caption text-caption text-ink-2 mt-0.5"
+                >Transport · {partner} paid</span
+              >
+            </div>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="font-code text-[15px] font-medium text-ink-1 tabular-nums">€46.00</span>
+            </div>
+          </article>
+          <!-- Row 3: Museum -->
+          <article
+            class="min-h-[56px] px-margin py-3 flex items-center justify-between border-b border-outline-variant"
+          >
+            <div class="flex flex-col pr-2">
+              <span class="font-body-strong text-[15px] leading-5 text-ink-1">Museum</span>
+              <span class="font-caption text-caption text-ink-2 mt-0.5">Tickets · you paid</span>
+            </div>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="font-code text-[15px] font-medium text-ink-1 tabular-nums">€24.00</span>
+            </div>
+          </article>
+        </section>
+      </div>
+      <!-- 12. Floating Action Button (FAB) (56px, orange #F08A4B, 12px radius, level 1 elevation, icon #0F1113) -->
+      <div class="absolute right-margin bottom-[106px] z-50">
+        <button
+          aria-label="Add transaction"
+          class="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-[#0F1113] shadow-level-1 active:scale-95 transition-transform duration-100 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent"
+          type="button"
+        >
+          <svg
+            class="w-7 h-7 text-[#0F1113] lucide-icon stroke-current"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.25"
+            viewbox="0 0 24 24"
+          >
+            <line x1="12" x2="12" y1="5" y2="19"></line>
+            <line x1="5" x2="19" y1="12" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+      <!-- 13. Bottom Tab Bar (Strict Shared Components alignment, BottomNavBar with active Money tab on dark background #0F1113) -->
+      <nav
+        class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto z-40 bg-surface-0 border-t border-outline-variant flex flex-col justify-between"
+        style="height: 90px; padding-bottom: 34px"
+      >
+        <div class="h-14 w-full flex items-center justify-around px-2">
+          <!-- Destination 1: Today -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 py-1 w-16"
+            type="button"
+          >
+            <span class="material-symbols-outlined mb-0.5" data-icon="today">today</span>
+            <span class="text-[11px] leading-3 font-medium">Today</span>
+          </button>
+          <!-- Destination 2: Plan -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 py-1 w-16"
+            type="button"
+          >
+            <span class="material-symbols-outlined mb-0.5" data-icon="calendar_month"
+              >calendar_month</span
+            >
+            <span class="text-[11px] leading-3 font-medium">Plan</span>
+          </button>
+          <!-- Destination 3: Docs -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 py-1 w-16"
+            type="button"
+          >
+            <span class="material-symbols-outlined mb-0.5" data-icon="folder_open"
+              >folder_open</span
+            >
+            <span class="text-[11px] leading-3 font-medium">Docs</span>
+          </button>
+          <!-- Destination 4: Money (Active State strictly applied) -->
+          <button
+            class="flex flex-col items-center justify-center text-accent font-label text-label py-1 w-16"
+            type="button"
+          >
+            <span
+              class="material-symbols-outlined mb-0.5 text-accent"
+              data-icon="payments"
+              data-weight="fill"
+              style="font-variation-settings: 'FILL' 1"
+              >payments</span
+            >
+            <span class="text-[11px] leading-3 font-semibold text-accent">Money</span>
+          </button>
+          <!-- Destination 5: More -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 py-1 w-16"
+            type="button"
+          >
+            <span class="material-symbols-outlined mb-0.5" data-icon="more_horiz">more_horiz</span>
+            <span class="text-[11px] leading-3 font-medium">More</span>
+          </button>
+        </div>
+        <!-- iOS Home Indicator Safe Area spacing (34px) -->
+        <div class="h-[34px] w-full flex justify-center items-center pb-2">
+          <div class="w-32 h-1 bg-ink-1 rounded-full opacity-20"></div>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>

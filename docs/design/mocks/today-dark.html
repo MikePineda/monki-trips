@@ -1,0 +1,445 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>monki-trips - Today</title>
+    <!-- Google Fonts: IBM Plex Sans & IBM Plex Mono -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-0': '#0F1113',
+              'surface-1': '#17191C',
+              'surface-2': '#202326',
+              'ink-1': '#ECEDEE',
+              'ink-2': '#B4B9BF',
+              'ink-3': '#8A9097',
+              'line': '#2C3035',
+              'line-strong': '#6A7079',
+              'accent': '#F08A4B',
+              'accent-ink': '#0F1113',
+              'accent-soft': '#33200F',
+              'status-good': '#7CC58B',
+              'status-warning': '#E2AA3A',
+              'status-serious': '#FFB89A',
+              'status-critical': '#F07070',
+              'print-warning': '#4D3410',
+              'on-print-warning': '#ECEDEE',
+              'on-print-warning-2': '#B4B9BF',
+              'stamp-ink': '#8DB3DD',
+              'background': '#0F1113',
+              'surface': '#0F1113',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-sm': '8px',
+              'space-lg': '24px',
+              'space-half': '4px',
+              'margin': '16px',
+              'space-xl': '32px',
+              'gutter': '16px',
+              'space-md': '16px',
+              'space-2xl': '48px',
+            },
+            fontFamily: {
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+            },
+            fontSize: {
+              'display': [
+                '40px',
+                { lineHeight: '44px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'code-display': [
+                '24px',
+                { lineHeight: '30px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'body': ['16px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'code': ['15px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '500' }],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'heading': ['17px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '600' }],
+              'body-strong': [
+                '15px',
+                { lineHeight: '20px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 1;
+      }
+
+      /* Boarding pass perforation cutouts */
+      .notch-left {
+        position: absolute;
+        top: 50%;
+        left: -9px;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #0f1113;
+        border-right: 1px solid #6a7079;
+        z-index: 10;
+      }
+      .notch-right {
+        position: absolute;
+        top: 50%;
+        right: -9px;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #0f1113;
+        border-left: 1px solid #6a7079;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#0F1113] text-ink-1 antialiased selection:bg-accent-soft selection:text-accent min-h-screen flex justify-center"
+  >
+    <!-- Mobile Viewport Container: Exactly 390px, fits snugly without overflow on 390x844 -->
+    <main
+      class="w-[390px] max-w-[390px] h-[844px] max-h-[844px] overflow-hidden bg-[#0F1113] relative flex flex-col justify-between"
+    >
+      <div>
+        <!-- iOS Status Bar Spacer (compact) -->
+        <div class="h-4 w-full"></div>
+        <!-- SECTION 1: CLEAN HEADER -->
+        <section class="px-margin pt-1 pb-2.5 flex justify-between items-start">
+          <div class="flex flex-col">
+            <h1
+              class="font-title text-[24px] leading-[32px] font-semibold text-ink-1 tracking-tight"
+            >
+              Day 4 of 12 · Aldria
+            </h1>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="material-symbols-outlined text-ink-2 text-[15px]" data-icon="wifi_off"
+                >wifi_off</span
+              >
+              <span class="font-label text-label text-ink-2">Offline · everything saved</span>
+            </div>
+          </div>
+          <!-- Kiko placeholder: 48x48 rounded-md bg-surface-2 border border-line-strong flex items-center justify-center -->
+          <div
+            class="w-12 h-12 rounded-md bg-surface-2 border border-[#6A7079] flex items-center justify-center shrink-0"
+          >
+            <span class="font-eyebrow text-xs text-ink-3">Kiko</span>
+          </div>
+        </section>
+        <!-- Divider Line -->
+        <div class="w-full h-[1px] bg-[#2C3035]"></div>
+        <!-- SECTION 2: NEXT + TICKET CARD (Only Card on Screen) -->
+        <section class="px-margin pt-2.5 pb-2.5">
+          <div class="font-eyebrow text-eyebrow text-ink-3 uppercase mb-1.5">NEXT</div>
+          <!-- Ticket Card: 358px wide (via w-full in px-margin container), surface-1 background, 1px border-[#6A7079], rounded-md -->
+          <article
+            class="relative w-full bg-surface-1 border border-[#6A7079] rounded-md overflow-visible"
+          >
+            <!-- Top Part -->
+            <div class="px-3.5 pt-3 pb-2.5">
+              <div>
+                <h2 class="font-heading text-heading text-ink-1">Train to Kessbury</h2>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="font-code-display text-[22px] leading-[28px] text-ink-1 tabular-nums"
+                    >14:20 EEST</span
+                  >
+                  <span class="font-label text-label text-ink-2 tabular-nums">in 1 h 32 min</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 mt-2 pt-2 border-t border-[#2C3035]">
+                <span class="material-symbols-outlined text-ink-1 text-[15px]" data-icon="schedule"
+                  >schedule</span
+                >
+                <span class="font-body-strong text-[13px] text-ink-1">Leave at 13:40</span>
+              </div>
+            </div>
+            <!-- Perforation Divider with Notches and Dashed Hairline -->
+            <div class="relative w-full h-[1px] my-0 flex items-center">
+              <div class="notch-left"></div>
+              <div class="w-full border-t border-dashed border-[#6A7079]"></div>
+              <div class="notch-right"></div>
+            </div>
+            <!-- Stub Part -->
+            <div class="px-3.5 py-2.5 bg-surface-1 rounded-b-md flex items-center justify-between">
+              <div class="flex flex-col">
+                <div class="font-code-display text-[18px] font-semibold text-ink-1 tracking-tight">
+                  ALD <span class="text-ink-3 font-normal">→</span> KSB
+                </div>
+                <div class="font-code-label text-[12px] text-ink-2 mt-0.5 tracking-wider">
+                  ABC123
+                </div>
+              </div>
+              <button
+                class="h-8 px-3 border border-[#6A7079] bg-surface-1 text-ink-1 rounded-md flex items-center gap-1.5 text-label font-label active:scale-95 transition-transform duration-100 ease-out"
+                type="button"
+              >
+                <span class="material-symbols-outlined text-[15px]" data-icon="near_me"
+                  >near_me</span
+                >
+                <span>Directions</span>
+              </button>
+            </div>
+          </article>
+        </section>
+        <!-- Hairline Separator -->
+        <div class="w-full h-[1px] bg-[#2C3035]"></div>
+        <!-- SECTION 3: TODAY'S DOCUMENTS -->
+        <section class="pt-2 pb-1">
+          <div class="px-margin font-eyebrow text-eyebrow text-ink-3 uppercase mb-1.5">
+            TODAY'S DOCUMENTS
+          </div>
+          <!-- Edge-to-edge Print Warning Banner -->
+          <div class="w-full bg-[#4D3410] px-margin py-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#ECEDEE] text-[18px]" data-icon="print"
+                >print</span
+              >
+              <div class="flex flex-col">
+                <span class="font-label text-[13px] font-semibold text-[#ECEDEE] leading-tight"
+                  >Bring this printed</span
+                >
+                <span class="font-code-label text-[11px] text-[#B4B9BF]"
+                  >Rail pass · ALD → KSB</span
+                >
+              </div>
+            </div>
+            <button
+              class="text-[#ECEDEE] font-semibold text-[13px] underline decoration-[#ECEDEE] underline-offset-2 hover:opacity-80 active:opacity-60 transition-opacity"
+              type="button"
+            >
+              I printed it
+            </button>
+          </div>
+          <!-- Document rows: 56px min height, 1px line hairlines between rows -->
+          <div class="px-margin flex flex-col">
+            <!-- Row 1 -->
+            <div
+              class="min-h-[50px] py-2 flex justify-between items-center border-b border-[#2C3035]"
+            >
+              <span class="font-body-strong text-[14px] text-ink-1">Rail pass</span>
+              <div class="flex items-center gap-1.5">
+                <span
+                  class="material-symbols-outlined text-status-good text-[17px]"
+                  data-icon="check_circle"
+                  data-weight="fill"
+                  style="font-variation-settings: 'FILL' 1"
+                  >check_circle</span
+                >
+                <span class="font-label text-[13px] text-ink-2">Saved offline</span>
+              </div>
+            </div>
+            <!-- Row 2 -->
+            <div class="min-h-[50px] py-2 flex justify-between items-center">
+              <span class="font-body-strong text-[14px] text-ink-1">Museum tickets</span>
+              <div class="flex items-center gap-1.5">
+                <span
+                  class="material-symbols-outlined text-status-warning text-[17px]"
+                  data-icon="warning"
+                  data-weight="fill"
+                  style="font-variation-settings: 'FILL' 1"
+                  >warning</span
+                >
+                <span class="font-label text-[13px] text-ink-2">Not saved offline</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Hairline Separator -->
+        <div class="w-full h-[1px] bg-[#2C3035]"></div>
+        <!-- SECTION 4: TONIGHT -->
+        <section class="px-margin pt-2 pb-2">
+          <div class="font-eyebrow text-eyebrow text-ink-3 uppercase mb-1">TONIGHT</div>
+          <div class="flex flex-col gap-0.5">
+            <h3 class="font-heading text-heading text-ink-1">Harbour Inn</h3>
+            <!-- Address row with copy button -->
+            <div class="flex items-center justify-between">
+              <span class="font-body text-[14px] text-ink-1 leading-snug"
+                >14 Quay Street, Kessbury</span
+              >
+              <button
+                aria-label="Copy address"
+                class="p-1 text-ink-2 hover:text-ink-1 active:scale-90 transition-transform"
+                type="button"
+              >
+                <span class="material-symbols-outlined text-[15px]" data-icon="content_copy"
+                  >content_copy</span
+                >
+              </button>
+            </div>
+            <div class="font-body text-caption text-ink-3">Οδός Λιμανιού 14</div>
+            <!-- Meta row: Check-in, Phone, Directions -->
+            <div
+              class="flex items-center gap-2.5 mt-1.5 pt-1.5 border-t border-[#2C3035] font-label text-[12px]"
+            >
+              <span class="text-ink-2">Check-in from 15:00</span>
+              <span class="text-[#2C3035]">|</span>
+              <span class="font-code text-[12px] text-ink-2">+99 555 0142</span>
+              <span class="text-[#2C3035]">|</span>
+              <a
+                class="text-accent font-semibold flex items-center gap-1 hover:underline ml-auto"
+                href="#"
+              >
+                <span class="material-symbols-outlined text-[14px]" data-icon="navigation"
+                  >navigation</span
+                >
+                <span>Directions</span>
+              </a>
+            </div>
+          </div>
+        </section>
+        <!-- Hairline Separator -->
+        <div class="w-full h-[1px] bg-[#2C3035]"></div>
+        <!-- SECTION 5: SPLIT ROW (LEFT TODAY & WEATHER) -->
+        <section class="px-margin pt-2 pb-2 grid grid-cols-2 gap-3">
+          <!-- Left Column: LEFT TODAY -->
+          <div class="pr-2 border-r border-[#2C3035] flex flex-col justify-between">
+            <div class="font-eyebrow text-eyebrow text-ink-3 uppercase">LEFT TODAY</div>
+            <div
+              class="font-code-display text-[34px] leading-tight font-semibold text-ink-1 tabular-nums mt-0.5"
+            >
+              €84
+            </div>
+            <div class="font-label text-[12px] text-ink-2 mt-0.5">A$138 · 1 pending</div>
+          </div>
+          <!-- Right Column: WEATHER -->
+          <div class="pl-1 flex flex-col justify-between">
+            <div class="font-eyebrow text-eyebrow text-ink-3 uppercase">WEATHER</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="material-symbols-outlined text-ink-1 text-[22px]" data-icon="cloud"
+                >cloud</span
+              >
+              <span class="font-title text-[18px] font-semibold text-ink-1">18° Cloudy</span>
+            </div>
+            <div class="font-caption text-caption text-ink-3 mt-0.5">updated 3 h ago</div>
+          </div>
+        </section>
+      </div>
+      <!-- FLOATING ACTION BUTTON (FAB): Runway orange 48px square/rounded-lg with '+' icon, 16px above tab bar -->
+      <div class="relative w-full">
+        <button
+          aria-label="Add transaction or note"
+          class="absolute bottom-20 right-4 z-40 w-12 h-12 bg-accent text-accent-ink rounded-lg flex items-center justify-center transition-transform active:scale-95 duration-100 ease-out shadow-md"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[24px]" data-icon="add">add</span>
+        </button>
+        <!-- Shared Component: BottomNavBar (5 tabs, Today active in accent orange) -->
+        <nav
+          class="w-full z-50 flex justify-around items-center h-16 px-space-sm bg-surface-1 border-t border-[#2C3035]"
+        >
+          <!-- Tab 1: Today (ACTIVE) -->
+          <button
+            class="flex flex-col items-center justify-center text-accent font-label text-label active:scale-95 transition-transform duration-100 ease-out"
+            type="button"
+          >
+            <span
+              class="material-symbols-outlined text-[24px]"
+              data-icon="today"
+              data-weight="fill"
+              style="font-variation-settings: 'FILL' 1"
+              >today</span
+            >
+            <span class="mt-0.5 font-semibold text-[11px]">Today</span>
+          </button>
+          <!-- Tab 2: Plan -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 active:scale-95"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[24px]" data-icon="calendar_month"
+              >calendar_month</span
+            >
+            <span class="mt-0.5 text-[11px]">Plan</span>
+          </button>
+          <!-- Tab 3: Docs -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 active:scale-95"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[24px]" data-icon="folder_open"
+              >folder_open</span
+            >
+            <span class="mt-0.5 text-[11px]">Docs</span>
+          </button>
+          <!-- Tab 4: Money -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 active:scale-95"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[24px]" data-icon="payments">payments</span>
+            <span class="mt-0.5 text-[11px]">Money</span>
+          </button>
+          <!-- Tab 5: More -->
+          <button
+            class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 active:scale-95"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[24px]" data-icon="more_horiz"
+              >more_horiz</span
+            >
+            <span class="mt-0.5 text-[11px]">More</span>
+          </button>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,397 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ready to fly - Checklist</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'status-critical': '#F07070',
+              'error-container': '#410002',
+              'on-surface-variant': '#B4B9BF',
+              'background': '#0F1113',
+              'surface-0': '#0F1113',
+              'status-warning': '#E2AA3A',
+              'status-good': '#7CC58B',
+              'status-serious': '#FFB89A',
+              'tertiary': '#00519d',
+              'surface-container-lowest': '#0A0B0C',
+              'surface-container-high': '#1E2124',
+              'ink-1': '#ECEDEE',
+              'ink-2': '#B4B9BF',
+              'ink-3': '#8A9097',
+              'surface-container-low': '#131518',
+              'stamp-ink': '#2F5C8A',
+              'surface-container': '#17191C',
+              'surface-1': '#17191C',
+              'surface-2': '#202326',
+              'surface': '#0F1113',
+              'surface-dim': '#0F1113',
+              'accent': '#F08A4B',
+              'accent-ink': '#0F1113',
+              'surface-variant': '#202326',
+              'primary-container': '#F08A4B',
+              'accent-soft': '#33200F',
+              'on-surface': '#ECEDEE',
+              'surface-container-highest': '#282C30',
+              'surface-bright': '#1F2226',
+              'line': '#2C3035',
+              'line-strong': '#6A7079',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-xl': '32px',
+              'space-lg': '24px',
+              'margin': '16px',
+              'space-half': '4px',
+              'space-2xl': '48px',
+              'space-sm': '8px',
+              'space-md': '16px',
+              'gutter': '16px',
+            },
+            fontFamily: {
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+            },
+            fontSize: {
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 1;
+      }
+      .material-symbols-outlined.fill-icon {
+        font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      }
+      /* Tabular numbers lock */
+      .tabular-mono {
+        font-feature-settings: 'tnum' 1;
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#050607] text-ink-1 antialiased selection:bg-accent-soft selection:text-accent min-h-screen flex justify-center items-start"
+  >
+    <!-- Mobile Viewport Frame (390px base width, safe areas accounted) -->
+    <div
+      class="w-full max-w-[390px] min-h-screen bg-surface-0 flex flex-col justify-between relative shadow-sm border-x border-[#1a1d20]"
+    >
+      <!-- Top Safe Area Padding (iOS ~47px) -->
+      <div class="pt-[47px] px-space-md flex flex-col flex-1 pb-space-lg">
+        <!-- Back Navigation Row -->
+        <div class="h-10 flex items-center -ml-2 mb-2">
+          <button
+            aria-label="Go back"
+            class="h-11 w-11 flex items-center justify-center text-ink-2 hover:text-ink-1 transition-colors active:scale-95 duration-100"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[20px]" data-icon="chevron_left"
+              >chevron_left</span
+            >
+          </button>
+        </div>
+        <!-- Title & Mascot Box Row -->
+        <div class="flex items-center justify-between pb-6">
+          <div>
+            <h1 class="font-title text-title text-ink-1 tracking-tight">Ready to fly</h1>
+          </div>
+          <!-- Mascot Placeholder Box (exactly 48px square, 1px border #6A7079, rounded-lg, text centered mono 12px) -->
+          <div
+            class="w-[48px] h-[48px] border border-line-strong rounded-xl flex items-center justify-center bg-surface-1"
+          >
+            <span class="font-code-label text-caption text-ink-2">Kiko</span>
+          </div>
+        </div>
+        <!-- Summary & Progress Section -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="font-code text-body-strong text-ink-1 tabular-mono tracking-tight"
+              >5 of 7 ready</span
+            >
+            <span class="font-eyebrow text-eyebrow text-ink-3 tracking-wider uppercase"
+              >STATUS CHECK</span
+            >
+          </div>
+          <!-- Stepped Progress Bar: 7 equal segments, 4px height, 2px gap, rounded ends, strictly 5 ink-1 (#ECEDEE), 2 sunken surface-2 (#202326) -->
+          <div class="flex items-center gap-[2px] w-full h-[4px]">
+            <div class="h-full flex-1 bg-ink-1 rounded-l-[2px]"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-surface-2"></div>
+            <div class="h-full flex-1 bg-surface-2 rounded-r-[2px]"></div>
+          </div>
+        </div>
+        <!-- Checklist Rows Container -->
+        <div class="flex flex-col border-t border-line">
+          <!-- Row 1: App installed -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1">App installed</span>
+            </div>
+          </div>
+          <!-- Row 2: Latest version cached -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1">Latest version cached</span>
+            </div>
+          </div>
+          <!-- Row 3: Trip data from today 09:12 -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1"
+                >Trip data from today
+                <span class="font-code text-body tabular-mono text-ink-1">09:12</span></span
+              >
+            </div>
+          </div>
+          <!-- Row 4: Both languages saved -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1">Both languages saved</span>
+            </div>
+          </div>
+          <!-- Row 5: Storage kept by browser · 420 MB free -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1"
+                >Storage kept by the browser ·
+                <span class="font-code text-body tabular-mono">420 MB</span> free</span
+              >
+            </div>
+          </div>
+          <!-- Row 6: 2 documents not saved offline (Warning + Quiet Orange Action) -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-warning text-[20px] fill-icon"
+                data-icon="warning"
+                data-weight="fill"
+                >warning</span
+              >
+              <span class="font-body text-body text-ink-1">2 documents not saved offline</span>
+            </div>
+            <button
+              class="font-label text-label text-accent font-semibold hover:opacity-80 active:scale-95 transition-transform duration-100 pl-2"
+              type="button"
+            >
+              Save them
+            </button>
+          </div>
+          <!-- Row 7: 1 expense waiting to sync -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-warning text-[20px] fill-icon"
+                data-icon="warning"
+                data-weight="fill"
+                >warning</span
+              >
+              <span class="font-body text-body text-ink-1">1 expense waiting to sync</span>
+            </div>
+          </div>
+        </div>
+        <!-- Audit / Test timestamp line -->
+        <div class="pt-4 pb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined text-ink-3 text-[16px]" data-icon="flight"
+            >flight</span
+          >
+          <span class="font-label text-caption text-ink-3 tracking-wide"
+            >Tested offline on
+            <span class="font-code text-caption tabular-mono text-ink-3">Mon 10 May</span></span
+          >
+        </div>
+        <!-- Action Buttons Container (Stacked above bottom navigation) -->
+        <div class="mt-auto space-y-2.5 pt-2">
+          <!-- Secondary outlined button -->
+          <button
+            class="w-full h-[44px] rounded-xl border border-line-strong bg-surface-1 text-ink-1 font-body-strong text-[15px] flex items-center justify-center active:scale-[0.98] transition-transform duration-100 hover:bg-surface-2"
+            type="button"
+          >
+            Test in airplane mode
+          </button>
+          <!-- Primary button -->
+          <button
+            class="w-full h-[48px] rounded-xl bg-accent text-accent-ink font-body-strong text-body-strong font-semibold flex items-center justify-center active:scale-[0.98] transition-transform duration-100 hover:opacity-95 shadow-none"
+            type="button"
+          >
+            Download everything
+          </button>
+        </div>
+      </div>
+      <!-- Bottom Tab Bar (Docked, 56px height + iOS bottom indicator padding, 1px border-t #2C3035) -->
+      <nav
+        class="h-[56px] bg-surface-0 border-t border-line flex items-stretch justify-around px-2 z-30 shrink-0"
+      >
+        <!-- Tab 1: Today -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="today">today</span>
+          <span class="font-label text-[11px] leading-none">Today</span>
+        </a>
+        <!-- Tab 2: Plan -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="calendar_month"
+            >calendar_month</span
+          >
+          <span class="font-label text-[11px] leading-none">Plan</span>
+        </a>
+        <!-- Tab 3: Docs -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="folder_open"
+            >folder_open</span
+          >
+          <span class="font-label text-[11px] leading-none">Docs</span>
+        </a>
+        <!-- Tab 4: Money -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="payments"
+            >payments</span
+          >
+          <span class="font-label text-[11px] leading-none">Money</span>
+        </a>
+        <!-- Tab 5: More (ACTIVE) -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-accent font-body-strong active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1 fill-icon" data-icon="more_horiz"
+            >more_horiz</span
+          >
+          <span class="font-label text-[11px] leading-none font-semibold">More</span>
+        </a>
+      </nav>
+      <!-- iOS Home Indicator Base Spacer (34px) -->
+      <div class="h-[34px] w-full bg-surface-0 flex items-center justify-center shrink-0">
+        <div class="w-[134px] h-[5px] bg-[#3B4046] rounded-full"></div>
+      </div>
+    </div>
+  </body>
+</html>

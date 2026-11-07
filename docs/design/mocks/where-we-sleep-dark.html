@@ -1,0 +1,403 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+      name="viewport"
+    />
+    <title>Where we sleep · Plan · monki-trips</title>
+    <!-- Fonts: IBM Plex Sans & IBM Plex Mono -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-0': '#0F1113',
+              'surface-1': '#17191C',
+              'surface-2': '#202326',
+              'ink-1': '#ECEDEE',
+              'ink-2': '#B4B9BF',
+              'ink-3': '#8A9097',
+              'line': '#2C3035',
+              'line-strong': '#6A7079',
+              'accent': '#F08A4B',
+              'accent-soft': '#33200F',
+              'status-good': '#7CC58B',
+              'status-warning': '#E2AA3A',
+              'status-serious': '#FFB89A',
+              'status-critical': '#F07070',
+              'on-accent': '#0F1113',
+              'background': '#0F1113',
+              'surface': '#17191C',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-xl': '32px',
+              'space-half': '4px',
+              'space-sm': '8px',
+              'space-md': '16px',
+              'gutter': '16px',
+              'space-lg': '24px',
+              'space-2xl': '48px',
+              'margin': '16px',
+            },
+            fontFamily: {
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+            },
+            fontSize: {
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+            },
+            boxShadow: {
+              fab: '0 2px 8px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Strict offline minimalism styles */
+      body {
+        background-color: #0f1113;
+        color: #ecedee;
+        -webkit-font-smoothing: antialiased;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .tnum {
+        font-variant-numeric: tabular-nums;
+      }
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-surface-0 min-h-screen text-ink-1 flex justify-center">
+    <!-- Mobile Viewport Shell (390px base constraint) -->
+    <div
+      class="w-full max-w-[480px] min-h-screen flex flex-col relative bg-surface-0 border-x border-line shadow-sm"
+    >
+      <!-- Top Status & Device Header Bar (iOS Safe Area Simulation) -->
+      <div class="w-full bg-surface-0 pt-3 px-margin flex items-center justify-between text-ink-3">
+        <div
+          class="flex items-center space-x-1.5 font-eyebrow text-caption text-ink-2 tracking-wider"
+        >
+          <i class="w-3.5 h-3.5 text-ink-2 stroke-[1.75]" data-lucide="wifi-off"></i>
+          <span class="tracking-wider">OFFLINE · ALL SAVED</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-code-label text-caption text-ink-3 tnum">SYNCED 09:41</span>
+        </div>
+      </div>
+      <!-- Main Navigation Header -->
+      <header class="w-full px-margin pt-2 pb-3 bg-surface-0">
+        <div class="flex items-start justify-between">
+          <div>
+            <span
+              class="font-eyebrow text-caption text-ink-3 tracking-widest block uppercase font-medium"
+              >Coast and Islands</span
+            >
+            <h1 class="font-title text-title text-ink-1 tracking-tight mt-0.5">Plan</h1>
+          </div>
+          <button
+            aria-label="View Map"
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-line-strong bg-surface-1 text-ink-1 hover:border-ink-2 active:scale-95 transition-all mt-1"
+          >
+            <i class="w-5 h-5 text-ink-1 stroke-[1.75]" data-lucide="map"></i>
+          </button>
+        </div>
+        <!-- Segmented Control (40px track, 8px radius) -->
+        <div class="mt-4 w-full h-10 bg-surface-2 p-1 rounded-xl flex items-center relative">
+          <button
+            class="flex-1 h-8 rounded-lg flex items-center justify-center font-label text-label text-ink-2 transition-colors hover:text-ink-1"
+          >
+            Days
+          </button>
+          <button
+            class="flex-1 h-8 bg-surface-1 rounded-lg border border-line-strong shadow-xs flex items-center justify-center font-label text-label font-semibold text-accent transition-all"
+          >
+            Where we sleep
+          </button>
+        </div>
+      </header>
+      <!-- Main Content Canvas (Scrollable timeline) -->
+      <main class="flex-1 pb-24 overflow-y-auto">
+        <!-- Summary & Nights Progress Section -->
+        <section class="px-margin pt-2 pb-4">
+          <div class="flex items-baseline justify-between mb-2">
+            <span class="font-body-strong text-body-strong text-ink-1"
+              >11 of 12 nights covered</span
+            >
+            <span class="font-code-label text-caption text-ink-3 tnum">91.6%</span>
+          </div>
+          <!-- Strict utilitarian progress bar (4px height, ink-1 fill) -->
+          <div class="w-full h-1 bg-surface-2 rounded-full overflow-hidden">
+            <div class="h-full bg-ink-1 rounded-full" style="width: 91.666%"></div>
+          </div>
+        </section>
+        <!-- Alert Row: Uncovered Night Notice -->
+        <section
+          class="px-margin py-3.5 bg-surface-1 border-y border-line flex items-center justify-between transition-colors"
+        >
+          <div class="flex items-start space-x-3">
+            <div class="mt-0.5 text-status-serious flex-shrink-0">
+              <i class="w-5 h-5 stroke-[1.75] text-status-serious" data-lucide="octagon-alert"></i>
+            </div>
+            <div>
+              <h2 class="font-label text-label font-medium text-ink-1 leading-tight">
+                No lodging for Fri 14 May
+              </h2>
+              <p class="font-caption text-caption text-ink-2 mt-0.5">Night 6 of 12 · Kessbury</p>
+            </div>
+          </div>
+          <button
+            class="font-label text-label text-accent font-semibold px-2 py-1 rounded hover:bg-accent-soft active:scale-95 transition-all self-center"
+          >
+            Add stay
+          </button>
+        </section>
+        <!-- Lodging Timeline Section (Hairline separated, flat utilitarian aesthetic) -->
+        <section class="mt-2 bg-surface-1 border-y border-line">
+          <!-- Row 1: Harbour Inn Aldria -->
+          <div
+            class="px-margin py-3.5 flex items-center justify-between border-b border-line hover:bg-surface-2/40 transition-colors cursor-pointer group"
+          >
+            <div class="flex items-start space-x-3.5 min-w-0">
+              <div class="mt-1 text-ink-2 flex-shrink-0">
+                <i class="w-5 h-5 stroke-[1.75] text-ink-2" data-lucide="bed-double"></i>
+              </div>
+              <div class="min-w-0">
+                <h3
+                  class="font-body-strong text-label font-medium text-ink-1 truncate group-hover:text-accent transition-colors"
+                >
+                  Harbour Inn Aldria
+                </h3>
+                <div
+                  class="flex items-center space-x-1.5 mt-0.5 font-code text-caption text-ink-2 tnum"
+                >
+                  <span>Mon 10 – Wed 12 May</span>
+                  <span class="text-ink-3">·</span>
+                  <span>2 nights</span>
+                </div>
+                <p class="font-caption text-caption text-ink-2 mt-0.5">Aldria waterfront</p>
+              </div>
+            </div>
+            <div class="text-ink-3 ml-2 flex-shrink-0">
+              <i class="w-4 h-4 stroke-[1.75]" data-lucide="chevron-right"></i>
+            </div>
+          </div>
+          <!-- Row 2: Harbour Inn Kessbury -->
+          <div
+            class="px-margin py-3.5 flex items-center justify-between border-b border-line hover:bg-surface-2/40 transition-colors cursor-pointer group"
+          >
+            <div class="flex items-start space-x-3.5 min-w-0">
+              <div class="mt-1 text-ink-2 flex-shrink-0">
+                <i class="w-5 h-5 stroke-[1.75] text-ink-2" data-lucide="bed-double"></i>
+              </div>
+              <div class="min-w-0">
+                <h3
+                  class="font-body-strong text-label font-medium text-ink-1 truncate group-hover:text-accent transition-colors"
+                >
+                  Harbour Inn Kessbury
+                </h3>
+                <div
+                  class="flex items-center space-x-1.5 mt-0.5 font-code text-caption text-ink-2 tnum"
+                >
+                  <span>Wed 12 – Fri 14 May</span>
+                  <span class="text-ink-3">·</span>
+                  <span>2 nights</span>
+                </div>
+                <p class="font-caption text-caption text-ink-2 mt-0.5">Kessbury port</p>
+              </div>
+            </div>
+            <div class="text-ink-3 ml-2 flex-shrink-0">
+              <i class="w-4 h-4 stroke-[1.75]" data-lucide="chevron-right"></i>
+            </div>
+          </div>
+          <!-- Gap Row: Visual subtle indicator of missing night in schedule -->
+          <div
+            class="px-margin py-3 bg-surface-2/60 border-b border-line flex items-center justify-between"
+          >
+            <div class="flex items-center space-x-3.5 min-w-0">
+              <div class="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                <div class="w-2 h-2 rounded-full border border-status-serious"></div>
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="font-code text-caption text-ink-2 font-medium tnum"
+                    >Fri 14 May · not covered</span
+                  >
+                  <span
+                    class="px-1.5 py-0.2 bg-surface-2 rounded text-[10px] font-code text-status-serious uppercase tracking-wider font-semibold"
+                    >Gap</span
+                  >
+                </div>
+                <p class="font-caption text-caption text-ink-3">
+                  Night 6 of 12 · Destination: Kessbury
+                </p>
+              </div>
+            </div>
+            <button
+              class="font-label text-caption text-ink-1 font-semibold px-2 py-1 rounded border border-line-strong bg-surface-1 hover:border-ink-2 active:scale-95 transition-all"
+            >
+              + Add
+            </button>
+          </div>
+          <!-- Row 3: Old Mill Rooms, Travenna -->
+          <div
+            class="px-margin py-3.5 flex items-center justify-between hover:bg-surface-2/40 transition-colors cursor-pointer group"
+          >
+            <div class="flex items-start space-x-3.5 min-w-0">
+              <div class="mt-1 text-ink-2 flex-shrink-0">
+                <i class="w-5 h-5 stroke-[1.75] text-ink-2" data-lucide="bed-double"></i>
+              </div>
+              <div class="min-w-0">
+                <h3
+                  class="font-body-strong text-label font-medium text-ink-1 truncate group-hover:text-accent transition-colors"
+                >
+                  Old Mill Rooms, Travenna
+                </h3>
+                <div
+                  class="flex items-center space-x-1.5 mt-0.5 font-code text-caption text-ink-2 tnum"
+                >
+                  <span>Sat 15 – Sun 23 May</span>
+                  <span class="text-ink-3">·</span>
+                  <span>8 nights</span>
+                </div>
+                <p class="font-caption text-caption text-ink-2 mt-0.5">Travenna High St</p>
+              </div>
+            </div>
+            <div class="text-ink-3 ml-2 flex-shrink-0">
+              <i class="w-4 h-4 stroke-[1.75]" data-lucide="chevron-right"></i>
+            </div>
+          </div>
+        </section>
+        <!-- Offline Meta Footer Detail -->
+      </main>
+      <!-- Floating Action Button (FAB) (Level 1 elevation, Runway Orange) -->
+      <div class="absolute right-margin bottom-20 z-40">
+        <button
+          aria-label="Add new stay"
+          class="w-14 h-14 rounded-xl bg-accent text-on-accent flex items-center justify-center shadow-fab active:scale-95 hover:brightness-105 transition-transform"
+        >
+          <i class="w-6 h-6 stroke-[2.25] text-on-accent" data-lucide="plus"></i>
+        </button>
+      </div>
+      <!-- Bottom Tab Navigation Bar (Shared Component Schema Match) -->
+      <nav
+        class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto z-50 flex justify-around items-center h-16 px-space-sm pb-safe bg-surface-0 border-t border-line"
+      >
+        <!-- Tab 1: Today -->
+        <a
+          class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 flex-1"
+          href="#today"
+        >
+          <span class="material-symbols-outlined text-[22px]">today</span>
+          <span class="text-[11px] mt-0.5">Today</span>
+        </a>
+        <!-- Tab 2: Plan (ACTIVE - Match rule: Plan tab selected) -->
+        <a
+          class="flex flex-col items-center justify-center text-accent font-label text-label font-semibold flex-1"
+          href="#plan"
+        >
+          <span
+            class="material-symbols-outlined text-[22px]"
+            style="font-variation-settings: 'FILL' 1"
+            >calendar_month</span
+          >
+          <span class="text-[11px] mt-0.5 text-accent font-semibold">Plan</span>
+        </a>
+        <!-- Tab 3: Docs -->
+        <a
+          class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 flex-1"
+          href="#docs"
+        >
+          <span class="material-symbols-outlined text-[22px]">folder_open</span>
+          <span class="text-[11px] mt-0.5">Docs</span>
+        </a>
+        <!-- Tab 4: Money -->
+        <a
+          class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 flex-1"
+          href="#money"
+        >
+          <span class="material-symbols-outlined text-[22px]">payments</span>
+          <span class="text-[11px] mt-0.5">Money</span>
+        </a>
+        <!-- Tab 5: More -->
+        <a
+          class="flex flex-col items-center justify-center text-ink-3 font-label text-label hover:text-accent transition-colors duration-150 flex-1"
+          href="#more"
+        >
+          <span class="material-symbols-outlined text-[22px]">more_horiz</span>
+          <span class="text-[11px] mt-0.5">More</span>
+        </a>
+      </nav>
+    </div>
+    <!-- Initialize Lucide Icons -->
+    <script>
+      lucide.createIcons()
+    </script>
+  </body>
+</html>

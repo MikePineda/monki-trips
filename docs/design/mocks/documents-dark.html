@@ -1,0 +1,593 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Documents · monki-trips</title>
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- IBM Plex Sans & IBM Plex Mono -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'error': '#ba1a1a',
+              'surface-tint': '#a53c00',
+              'surface-container-highest': '#e2e3e0',
+              'tertiary': '#00519d',
+              'on-primary-fixed-variant': '#7e2c00',
+              'surface-container': '#eeeeeb',
+              'background': '#f9f9f6',
+              'surface-dim': '#dadad7',
+              'surface-0': '#F5F5F2',
+              'on-tertiary-container': '#e2ebff',
+              'on-surface': '#1a1c1b',
+              'primary-container': '#b5470c',
+              'surface-bright': '#f9f9f6',
+              'outline-variant': '#dfc0b5',
+              'inverse-on-surface': '#f1f1ee',
+              'stamp-ink': '#2F5C8A',
+              'primary-fixed': '#ffdbcd',
+              'on-tertiary-fixed': '#001b3c',
+              'secondary-container': '#9fcafe',
+              'on-error-container': '#93000a',
+              'accent': '#B5470C',
+              'on-tertiary': '#ffffff',
+              'secondary-fixed-dim': '#9fcafe',
+              'outline': '#8b7168',
+              'on-tertiary-fixed-variant': '#004689',
+              'on-secondary-fixed-variant': '#174976',
+              'on-primary-fixed': '#360f00',
+              'tertiary-fixed-dim': '#a8c8ff',
+              'secondary-fixed': '#d1e4ff',
+              'surface-container-lowest': '#ffffff',
+              'on-primary-container': '#ffe6dd',
+              'inverse-primary': '#ffb598',
+              'ink-2': '#4A5058',
+              'ink-1': '#111417',
+              'on-secondary-container': '#275582',
+              'status-critical': '#A01C1C',
+              'surface-variant': '#e2e3e0',
+              'on-surface-variant': '#584239',
+              'surface-1': '#FBFBF9',
+              'on-background': '#1a1c1b',
+              'on-secondary-fixed': '#001d36',
+              'status-warning': '#845600',
+              'ink-3': '#626971',
+              'surface-container-high': '#e8e8e5',
+              'secondary': '#34618f',
+              'error-container': '#ffdad6',
+              'surface-2': '#ECECE8',
+              'tertiary-container': '#0069c8',
+              'status-good': '#2E6B3F',
+              'primary-fixed-dim': '#ffb598',
+              'tertiary-fixed': '#d5e3ff',
+              'primary': '#903400',
+              'surface': '#f9f9f6',
+              'on-primary': '#ffffff',
+              'accent-soft': '#F9EBE1',
+              'status-serious': '#7E3418',
+              'on-error': '#ffffff',
+              'inverse-surface': '#2f312f',
+              'on-secondary': '#ffffff',
+              'surface-container-low': '#f4f4f1',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'margin': '16px',
+              'space-lg': '24px',
+              'space-half': '4px',
+              'space-xl': '32px',
+              'space-sm': '8px',
+              'gutter': '16px',
+              'space-2xl': '48px',
+              'space-md': '16px',
+            },
+            fontFamily: {
+              'code-display': ['IBM Plex Mono'],
+              'label': ['IBM Plex Sans'],
+              'code-label': ['IBM Plex Mono'],
+              'title': ['IBM Plex Sans'],
+              'body': ['IBM Plex Sans'],
+              'caption': ['IBM Plex Sans'],
+              'heading': ['IBM Plex Sans'],
+              'display': ['IBM Plex Sans'],
+              'code': ['IBM Plex Mono'],
+              'eyebrow': ['IBM Plex Mono'],
+              'body-strong': ['IBM Plex Sans'],
+            },
+            fontSize: {
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        font-size: 20px;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .lucide-custom {
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .tabular-mono {
+        font-feature-settings: 'tnum' 1;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#0F1113] text-[#ECEDEE] flex justify-center min-h-screen antialiased selection:bg-[#33200F] selection:text-[#F08A4B]"
+  >
+    <!-- Mobile Viewport Frame (390 x 844) constrained to 480px max -->
+    <div class="w-full max-w-[480px] min-h-screen bg-[#0F1113] flex flex-col relative pb-24">
+      <!-- iOS Status Bar (390x44) -->
+      <header class="w-full h-11 px-6 flex justify-between items-center select-none pt-1">
+        <span class="font-code-label text-[14px] font-semibold text-[#ECEDEE] tracking-tight"
+          >09:41</span
+        >
+        <div class="flex items-center space-x-2 text-[#ECEDEE]">
+          <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+            <path d="M2 17h3v4H2v-4zm6-5h3v9H8v-9zm6-5h3v14h-3V7zm6-4h3v18h-3V3z"></path>
+          </svg>
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewbox="0 0 24 24"
+          >
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" x2="12.01" y1="20" y2="20"></line>
+          </svg>
+          <div class="flex items-center">
+            <div
+              class="w-5 h-2.5 border-[1.5px] border-[#ECEDEE] rounded-[3px] p-0.5 flex items-center"
+            >
+              <div class="h-full w-full bg-[#ECEDEE] rounded-[1px]"></div>
+            </div>
+            <div class="w-0.5 h-1 bg-[#ECEDEE] rounded-r-[1px] ml-[0.5px]"></div>
+          </div>
+        </div>
+      </header>
+      <!-- Header area (Clean, no invented logo bar) -->
+      <div class="px-margin pt-3 pb-3 flex justify-between items-center">
+        <h1 class="font-title text-title text-[#ECEDEE]">Documents</h1>
+        <button
+          class="font-label text-[14px] font-semibold text-[#F08A4B] hover:opacity-85 transition-opacity active:scale-[0.98]"
+        >
+          + Upload
+        </button>
+      </div>
+      <!-- Filter Chips (Horizontal row, px-4, py-2, gap-2) -->
+      <nav
+        aria-label="Document filters"
+        class="px-margin py-2 flex items-center space-x-2 overflow-x-auto no-scrollbar"
+      >
+        <button
+          class="h-8 px-3 rounded-[4px] bg-[#33200F] border border-[#F08A4B] text-[#F08A4B] font-label text-[13px] font-semibold shrink-0 transition-colors"
+        >
+          All
+        </button>
+        <button
+          class="h-8 px-3 rounded-[4px] bg-[#17191C] border border-[#6A7079] text-[#B4B9BF] font-label text-[13px] font-medium shrink-0 hover:bg-[#202326] transition-colors"
+        >
+          Transport
+        </button>
+        <button
+          class="h-8 px-3 rounded-[4px] bg-[#17191C] border border-[#6A7079] text-[#B4B9BF] font-label text-[13px] font-medium shrink-0 hover:bg-[#202326] transition-colors"
+        >
+          Lodging
+        </button>
+        <button
+          class="h-8 px-3 rounded-[4px] bg-[#17191C] border border-[#6A7079] text-[#B4B9BF] font-label text-[13px] font-medium shrink-0 hover:bg-[#202326] transition-colors"
+        >
+          Tickets
+        </button>
+        <button
+          class="h-8 px-3 rounded-[4px] bg-[#17191C] border border-[#6A7079] text-[#B4B9BF] font-label text-[13px] font-medium shrink-0 hover:bg-[#202326] transition-colors"
+        >
+          Insurance
+        </button>
+      </nav>
+      <!-- Banner (Bring this printed) -->
+      <aside
+        class="w-full bg-[#4D3410] py-3 px-margin mt-2 flex items-center justify-between border-y border-[#6A4515]"
+      >
+        <div class="flex items-start space-x-3">
+          <svg
+            class="w-5 h-5 text-[#ECEDEE] shrink-0 mt-0.5 lucide-custom"
+            fill="none"
+            stroke="currentColor"
+            viewbox="0 0 24 24"
+          >
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path
+              d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+            ></path>
+            <rect height="8" width="12" x="6" y="14"></rect>
+          </svg>
+          <div class="flex flex-col">
+            <span class="font-label text-[14px] font-semibold text-[#ECEDEE] leading-snug"
+              >Bring this printed</span
+            >
+            <span
+              class="font-code text-[12px] text-[#B4B9BF] tracking-tight tabular-mono leading-tight"
+              >Rail pass · ALD → KSB · Wed 12 May</span
+            >
+          </div>
+        </div>
+        <button
+          class="text-[#ECEDEE] font-label text-[12px] font-semibold underline underline-offset-2 shrink-0 ml-3 hover:opacity-80 active:scale-95 transition-transform"
+        >
+          I printed it
+        </button>
+      </aside>
+      <!-- Section Eyebrow -->
+      <div class="px-margin pt-5 pb-2">
+        <h2 class="font-eyebrow text-eyebrow text-[#8A9097] uppercase tracking-wider">THIS TRIP</h2>
+      </div>
+      <!-- Document Rows (Hairline separated, flat list, no card nesting) -->
+      <section
+        aria-label="Documents list"
+        class="border-t border-[#2C3035] flex flex-col divide-y divide-[#2C3035]"
+      >
+        <article
+          class="min-h-[56px] px-margin py-3 flex items-center justify-between bg-[#0F1113] hover:bg-[#17191C] transition-colors"
+        >
+          <div class="flex items-center space-x-3.5 pr-2">
+            <svg
+              class="w-5 h-5 text-[#B4B9BF] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" x2="8" y1="13" y2="13"></line>
+              <line x1="16" x2="8" y1="17" y2="17"></line>
+              <line x1="10" x2="8" y1="9" y2="9"></line>
+            </svg>
+            <div class="flex flex-col">
+              <span class="font-label text-[15px] font-medium text-[#ECEDEE] leading-snug"
+                >Rail pass</span
+              >
+              <span class="font-code text-[12px] text-[#8A9097] tabular-mono leading-tight"
+                >PDF · 240 KB · Transport</span
+              >
+            </div>
+          </div>
+          <div class="flex items-center space-x-1.5 shrink-0 pl-1 text-right">
+            <svg
+              class="w-4 h-4 text-[#7CC58B] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span class="font-label text-[13px] text-[#B4B9BF]">Saved offline</span>
+          </div>
+        </article>
+        <article
+          class="min-h-[56px] px-margin py-3 flex items-center justify-between bg-[#0F1113] hover:bg-[#17191C] transition-colors"
+        >
+          <div class="flex items-center space-x-3.5 pr-2">
+            <svg
+              class="w-5 h-5 text-[#B4B9BF] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" x2="8" y1="13" y2="13"></line>
+              <line x1="16" x2="8" y1="17" y2="17"></line>
+              <line x1="10" x2="8" y1="9" y2="9"></line>
+            </svg>
+            <div class="flex flex-col">
+              <span class="font-label text-[15px] font-medium text-[#ECEDEE] leading-snug"
+                >Harbour Inn booking</span
+              >
+              <span class="font-code text-[12px] text-[#8A9097] tabular-mono leading-tight"
+                >PDF · 180 KB · Lodging</span
+              >
+            </div>
+          </div>
+          <div class="flex items-center space-x-1.5 shrink-0 pl-1 text-right">
+            <svg
+              class="w-4 h-4 text-[#7CC58B] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span class="font-label text-[13px] text-[#B4B9BF]">Saved offline</span>
+          </div>
+        </article>
+        <article
+          class="min-h-[56px] px-margin py-3 flex items-center justify-between bg-[#0F1113] hover:bg-[#17191C] transition-colors"
+        >
+          <div class="flex items-center space-x-3.5 pr-2">
+            <svg
+              class="w-5 h-5 text-[#B4B9BF] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"
+              ></path>
+              <path d="M13 5v2"></path>
+              <path d="M13 17v2"></path>
+              <path d="M13 11v2"></path>
+            </svg>
+            <div class="flex flex-col">
+              <span class="font-label text-[15px] font-medium text-[#ECEDEE] leading-snug"
+                >Museum tickets</span
+              >
+              <span class="font-code text-[12px] text-[#8A9097] tabular-mono leading-tight"
+                >PDF · 520 KB · Tickets</span
+              >
+            </div>
+          </div>
+          <div class="flex flex-col items-end shrink-0 pl-1 text-right">
+            <div class="flex items-center space-x-1.5">
+              <svg
+                class="w-4 h-4 text-[#E2AA3A] shrink-0 lucide-custom"
+                fill="none"
+                stroke="currentColor"
+                viewbox="0 0 24 24"
+              >
+                <path
+                  d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+                ></path>
+                <line x1="12" x2="12" y1="9" y2="13"></line>
+                <line x1="12" x2="12.01" y1="17" y2="17"></line>
+              </svg>
+              <span class="font-label text-[13px] text-[#B4B9BF]">Not saved offline</span>
+            </div>
+            <button
+              class="font-label text-[12px] font-semibold text-[#E2AA3A] underline underline-offset-1 mt-0.5 hover:opacity-80"
+            >
+              Save offline
+            </button>
+          </div>
+        </article>
+        <article
+          class="min-h-[56px] px-margin py-3 flex items-center justify-between bg-[#0F1113] hover:bg-[#17191C] transition-colors"
+        >
+          <div class="flex items-center space-x-3.5 pr-2">
+            <svg
+              class="w-5 h-5 text-[#B4B9BF] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <div class="flex flex-col">
+              <span class="font-label text-[15px] font-medium text-[#ECEDEE] leading-snug"
+                >Travel insurance</span
+              >
+              <span class="font-code text-[12px] text-[#8A9097] tabular-mono leading-tight"
+                >PDF · 1.1 MB · Insurance</span
+              >
+            </div>
+          </div>
+          <div class="flex items-center space-x-1.5 shrink-0 pl-1 text-right">
+            <svg
+              class="w-4 h-4 text-[#8A9097] shrink-0 animate-spin lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+              <path d="M16 21h5v-5"></path>
+            </svg>
+            <span class="font-code-label text-[13px] text-[#B4B9BF] tabular-mono">Saving 60%</span>
+          </div>
+        </article>
+        <article
+          class="min-h-[56px] px-margin py-3 flex items-center justify-between bg-[#0F1113] hover:bg-[#17191C] transition-colors"
+        >
+          <div class="flex items-center space-x-3.5 pr-2">
+            <svg
+              class="w-5 h-5 text-[#B4B9BF] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" x2="8" y1="13" y2="13"></line>
+              <line x1="16" x2="8" y1="17" y2="17"></line>
+              <line x1="10" x2="8" y1="9" y2="9"></line>
+            </svg>
+            <div class="flex flex-col">
+              <span class="font-label text-[15px] font-medium text-[#ECEDEE] leading-snug"
+                >Ferry tickets</span
+              >
+              <span class="font-code text-[12px] text-[#8A9097] tabular-mono leading-tight"
+                >PDF · 310 KB · Transport</span
+              >
+            </div>
+          </div>
+          <div class="flex items-center space-x-1.5 shrink-0 pl-1 text-right">
+            <svg
+              class="w-4 h-4 text-[#8A9097] shrink-0 lucide-custom"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+            </svg>
+            <span class="font-label text-[13px] text-[#8A9097]">Online only</span>
+          </div>
+        </article>
+      </section>
+      <!-- Footer Storage Caption -->
+      <footer class="py-6 px-margin flex items-center justify-center space-x-2">
+        <svg
+          class="w-3.5 h-3.5 text-[#8A9097] shrink-0 lucide-custom"
+          fill="none"
+          stroke="currentColor"
+          viewbox="0 0 24 24"
+        >
+          <line x1="22" x2="2" y1="12" y2="12"></line>
+          <path
+            d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+          ></path>
+          <line x1="6" x2="6.01" y1="16" y2="16"></line>
+          <line x1="10" x2="10.01" y1="16" y2="16"></line>
+        </svg>
+        <span class="font-code text-[12px] text-[#8A9097] tabular-mono tracking-tight"
+          >4.2 MB of 120 MB used on this device</span
+        >
+      </footer>
+      <!-- Floating Action Button (FAB) -->
+      <!-- Positioned 16px above bottom nav (56px nav + 16px = ~72px/bottom-20) -->
+      <button
+        aria-label="Upload document"
+        class="fixed bottom-20 right-4 md:right-[calc(50%-240px+16px)] z-40 w-14 h-14 rounded-[12px] bg-[#F08A4B] text-[#0F1113] flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.3)] active:scale-95 hover:opacity-90 transition-all duration-150"
+      >
+        <span
+          class="material-symbols-outlined text-[28px] font-normal text-[#0F1113]"
+          data-icon="add"
+          >add</span
+        >
+      </button>
+      <!-- BottomNavBar Component (Shared Component Contract) -->
+      <!-- Active Destination: "Docs" (Index 2) -->
+      <nav
+        aria-label="Primary navigation"
+        class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto z-50 flex justify-around items-center h-16 px-space-sm pb-safe bg-[#0F1113] border-t border-[#2C3035]"
+      >
+        <button
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#ECEDEE] transition-colors duration-150 active:scale-95 py-1"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-0.5" data-icon="today">today</span>
+          <span class="font-label text-[11px] leading-tight">Today</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#ECEDEE] transition-colors duration-150 active:scale-95 py-1"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-0.5" data-icon="calendar_month"
+            >calendar_month</span
+          >
+          <span class="font-label text-[11px] leading-tight">Plan</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center text-[#F08A4B] font-label text-label transition-colors duration-150 active:scale-95 py-1"
+        >
+          <span
+            class="material-symbols-outlined text-[20px] mb-0.5"
+            data-icon="folder_open"
+            data-weight="fill"
+            style="font-variation-settings: 'FILL' 1"
+            >folder_open</span
+          >
+          <span class="font-label text-[11px] font-semibold leading-tight">Docs</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#ECEDEE] transition-colors duration-150 active:scale-95 py-1"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-0.5" data-icon="payments"
+            >payments</span
+          >
+          <span class="font-label text-[11px] leading-tight">Money</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#ECEDEE] transition-colors duration-150 active:scale-95 py-1"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-0.5" data-icon="more_horiz"
+            >more_horiz</span
+          >
+          <span class="font-label text-[11px] leading-tight">More</span>
+        </button>
+      </nav>
+    </div>
+  </body>
+</html>

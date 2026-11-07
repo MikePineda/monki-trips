@@ -1,0 +1,658 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Settings — monki-trips</title>
+    <!-- Google Fonts: IBM Plex Sans & IBM Plex Mono -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS with Forms and Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'ink-3': '#8A9097',
+              'primary': '#F08A4B',
+              'on-surface': '#ECEDEE',
+              'surface-container-highest': '#202326',
+              'on-primary': '#0F1113',
+              'surface-container-low': '#17191C',
+              'outline-variant': '#2C3035',
+              'accent-soft': '#33200F',
+              'on-surface-variant': '#B4B9BF',
+              'background': '#0F1113',
+              'on-background': '#ECEDEE',
+              'secondary': '#34618f',
+              'status-critical': '#F07070',
+              'status-serious': '#7E3418',
+              'status-good': '#2E6B3F',
+              'surface-container': '#17191C',
+              'surface-bright': '#202326',
+              'surface-1': '#17191C',
+              'surface-container-lowest': '#0F1113',
+              'surface': '#0F1113',
+              'ink-2': '#B4B9BF',
+              'outline': '#6A7079',
+              'surface-0': '#0F1113',
+              'accent': '#F08A4B',
+              'surface-2': '#202326',
+              'status-warning': '#E2AA3A',
+              'surface-variant': '#202326',
+              'ink-1': '#ECEDEE',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-md': '16px',
+              'space-half': '4px',
+              'margin': '16px',
+              'space-sm': '8px',
+              'space-lg': '24px',
+              'space-xl': '32px',
+              'space-2xl': '48px',
+              'gutter': '16px',
+            },
+            fontFamily: {
+              'code-display': ['IBM Plex Mono'],
+              'body': ['IBM Plex Sans'],
+              'eyebrow': ['IBM Plex Mono'],
+              'display': ['IBM Plex Sans'],
+              'title': ['IBM Plex Sans'],
+              'label': ['IBM Plex Sans'],
+              'code-label': ['IBM Plex Mono'],
+              'heading': ['IBM Plex Sans'],
+              'caption': ['IBM Plex Sans'],
+              'body-strong': ['IBM Plex Sans'],
+              'code': ['IBM Plex Mono'],
+            },
+            fontSize: {
+              'code-display': [
+                '24px',
+                {
+                  lineHeight: '32px',
+                  letterSpacing: '0.02em',
+                  fontWeight: '500',
+                },
+              ],
+              'body': [
+                '16px',
+                {
+                  lineHeight: '24px',
+                  letterSpacing: '0px',
+                  fontWeight: '400',
+                },
+              ],
+              'eyebrow': [
+                '12px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.08em',
+                  fontWeight: '500',
+                },
+              ],
+              'display': [
+                '40px',
+                {
+                  lineHeight: '48px',
+                  letterSpacing: '-0.4px',
+                  fontWeight: '600',
+                },
+              ],
+              'title': [
+                '24px',
+                {
+                  lineHeight: '32px',
+                  letterSpacing: '-0.12px',
+                  fontWeight: '600',
+                },
+              ],
+              'label': [
+                '13px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.13px',
+                  fontWeight: '500',
+                },
+              ],
+              'code-label': [
+                '13px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.04em',
+                  fontWeight: '500',
+                },
+              ],
+              'heading': [
+                '18px',
+                {
+                  lineHeight: '24px',
+                  letterSpacing: '0px',
+                  fontWeight: '600',
+                },
+              ],
+              'caption': [
+                '12px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.12px',
+                  fontWeight: '400',
+                },
+              ],
+              'body-strong': [
+                '16px',
+                {
+                  lineHeight: '24px',
+                  letterSpacing: '0px',
+                  fontWeight: '500',
+                },
+              ],
+              'code': [
+                '16px',
+                {
+                  lineHeight: '24px',
+                  letterSpacing: '0px',
+                  fontWeight: '500',
+                },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Global utilitarian & strict hairline tokens */
+      body {
+        background-color: #0f1113;
+        color: #ecedee;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .hairline-b {
+        border-bottom: 1px solid #2c3035;
+      }
+      .hairline-t {
+        border-top: 1px solid #2c3035;
+      }
+      .hairline-y {
+        border-top: 1px solid #2c3035;
+        border-bottom: 1px solid #2c3035;
+      }
+      .hairline-all {
+        border: 1px solid #2c3035;
+      }
+      .active-border {
+        border: 1px solid #6a7079;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 20px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        -webkit-font-smoothing: antialiased;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen bg-surface-0 flex justify-center selection:bg-accent selection:text-surface-1"
+  >
+    <!-- Mobile Viewport Frame: 390px base constraint up to max 480px -->
+    <main class="w-full max-w-[480px] bg-surface-0 min-h-screen flex flex-col relative pb-[90px]">
+      <!-- 1. iOS Status Bar -->
+      <header
+        class="w-full pt-3 px-6 pb-2 flex justify-between items-center select-none bg-surface-0"
+      >
+        <span class="font-eyebrow text-eyebrow font-semibold text-ink-1 tracking-tight">09:41</span>
+        <div class="flex items-center space-x-1.5 text-ink-1">
+          <!-- Cellular Signal Icon (SVG with 1.75 stroke) -->
+          <svg
+            class="w-4 h-4 text-ink-1"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.75"
+            viewbox="0 0 24 24"
+          >
+            <path d="M2 20h.01"></path>
+            <path d="M7 20v-4"></path>
+            <path d="M12 20v-8"></path>
+            <path d="M17 20V4"></path>
+          </svg>
+          <!-- Wifi Icon -->
+          <svg
+            class="w-4 h-4 text-ink-1"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.75"
+            viewbox="0 0 24 24"
+          >
+            <path d="M12 20h.01"></path>
+            <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+            <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+            <path d="M1.5 9.288a15 15 0 0 1 21 0"></path>
+          </svg>
+          <!-- Battery Icon -->
+          <svg
+            class="w-5 h-5 text-ink-1"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.75"
+            viewbox="0 0 24 24"
+          >
+            <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+            <line x1="22" x2="22" y1="11" y2="13"></line>
+            <rect fill="currentColor" height="6" rx="1" stroke="none" width="9" x="4" y="9"></rect>
+          </svg>
+        </div>
+      </header>
+      <!-- Top Bar: Back Chevron + Title "Settings" -->
+      <section class="w-full px-4 h-14 flex items-center justify-between bg-surface-0 hairline-b">
+        <div class="flex items-center space-x-2">
+          <button
+            aria-label="Go back"
+            class="w-10 h-10 -ml-2 flex items-center justify-center rounded-xl text-ink-1 hover:bg-surface-2 active:scale-95 transition-all"
+            type="button"
+          >
+            <svg
+              class="w-5 h-5 text-ink-1"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.75"
+              viewbox="0 0 24 24"
+            >
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+          <h1 class="font-title text-title font-semibold text-ink-1">Settings</h1>
+        </div>
+        <!-- Right Status Chip indicator for offline-first posture -->
+      </section>
+      <!-- Content Canvas -->
+      <div class="flex-1 w-full pt-4 space-y-6">
+        <!-- SECTION: ACCOUNT -->
+        <section class="w-full">
+          <div class="px-4 pb-1.5">
+            <span class="font-eyebrow text-eyebrow uppercase tracking-wider text-ink-3"
+              >ACCOUNT</span
+            >
+          </div>
+          <div class="bg-surface-1 hairline-y divide-y divide-[#2C3035]">
+            <!-- Name Row -->
+            <div class="min-h-[56px] px-4 py-3.5 flex items-center justify-between">
+              <span class="font-body text-body text-ink-1">Name</span>
+              <span class="font-body text-body text-ink-2">Traveller one</span>
+            </div>
+            <!-- Email Row -->
+            <div class="min-h-[56px] px-4 py-3.5 flex items-center justify-between">
+              <span class="font-body text-body text-ink-1">Email</span>
+              <span class="font-body text-body text-ink-2">traveller@example.com</span>
+            </div>
+            <!-- Home Currency Row -->
+            <div class="min-h-[56px] px-4 py-3.5 flex items-center justify-between">
+              <span class="font-body text-body text-ink-1">Home currency</span>
+              <span class="font-code text-code font-medium text-ink-1 tabular-nums">AUD</span>
+            </div>
+          </div>
+        </section>
+        <!-- SECTION: APPEARANCE -->
+        <section class="w-full">
+          <div class="px-4 pb-1.5">
+            <span class="font-eyebrow text-eyebrow uppercase tracking-wider text-ink-3"
+              >APPEARANCE</span
+            >
+          </div>
+          <div class="bg-surface-1 hairline-y divide-y divide-[#2C3035]">
+            <!-- Language Row -->
+            <div class="min-h-[56px] px-4 py-3.5 flex items-center justify-between">
+              <span class="font-body text-body text-ink-1">Language</span>
+              <div
+                aria-label="Language selection"
+                class="h-9 bg-surface-2 rounded-xl p-0.5 flex items-center"
+                role="radiogroup"
+              >
+                <!-- Selected: English -->
+                <button
+                  aria-checked="true"
+                  class="bg-surface-1 ring-1 ring-[#6A7079] rounded-[6px] px-3 py-1.5 text-accent font-semibold text-xs tracking-tight transition-shadow shadow-xs focus:outline-none"
+                  role="radio"
+                  type="button"
+                >
+                  English
+                </button>
+                <!-- Unselected: Español -->
+                <button
+                  aria-checked="false"
+                  class="px-3 py-1.5 text-ink-2 hover:text-ink-1 text-xs font-medium transition-colors focus:outline-none"
+                  role="radio"
+                  type="button"
+                >
+                  Español
+                </button>
+              </div>
+            </div>
+            <!-- Theme Row -->
+            <div class="min-h-[56px] px-4 py-3.5 flex items-center justify-between">
+              <span class="font-body text-body text-ink-1">Theme</span>
+              <div
+                aria-label="Theme selection"
+                class="h-9 bg-surface-2 rounded-xl p-0.5 flex items-center"
+                role="radiogroup"
+              >
+                <!-- Selected: System -->
+                <button
+                  aria-checked="true"
+                  class="bg-surface-1 ring-1 ring-[#6A7079] rounded-[6px] px-2.5 py-1.5 text-accent font-semibold text-xs tracking-tight transition-shadow shadow-xs focus:outline-none"
+                  role="radio"
+                  type="button"
+                >
+                  System
+                </button>
+                <!-- Unselected: Light -->
+                <button
+                  aria-checked="false"
+                  class="px-2.5 py-1.5 text-ink-2 hover:text-ink-1 text-xs font-medium transition-colors focus:outline-none"
+                  role="radio"
+                  type="button"
+                >
+                  Light
+                </button>
+                <!-- Unselected: Dark -->
+                <button
+                  aria-checked="false"
+                  class="px-2.5 py-1.5 text-ink-2 hover:text-ink-1 text-xs font-medium transition-colors focus:outline-none"
+                  role="radio"
+                  type="button"
+                >
+                  Dark
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- SECTION: THIS DEVICE -->
+        <section class="w-full">
+          <div class="px-4 pb-1.5">
+            <span class="font-eyebrow text-eyebrow uppercase tracking-wider text-ink-3"
+              >THIS DEVICE</span
+            >
+          </div>
+          <div class="bg-surface-1 hairline-y divide-y divide-[#2C3035]">
+            <!-- Install App Row -->
+            <button
+              class="w-full text-left min-h-[56px] px-4 py-3.5 flex items-center justify-between hover:bg-surface-2/60 transition-colors"
+              type="button"
+            >
+              <span class="font-body text-body text-ink-1">Install the app</span>
+              <svg
+                class="w-5 h-5 text-ink-3"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewbox="0 0 24 24"
+              >
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </button>
+            <!-- Storage Row -->
+            <div class="min-h-[56px] px-4 py-3.5 flex items-center justify-between">
+              <span class="font-body text-body text-ink-1">Storage</span>
+              <span class="font-code text-xs text-ink-2 tabular-nums"
+                >42 MB used · kept by the browser</span
+              >
+            </div>
+            <!-- Download Everything Row -->
+            <button
+              class="w-full text-left min-h-[56px] px-4 py-3.5 flex items-center justify-between hover:bg-surface-2/60 transition-colors"
+              type="button"
+            >
+              <span class="font-body text-body text-ink-1">Download everything</span>
+              <svg
+                class="w-5 h-5 text-ink-3"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewbox="0 0 24 24"
+              >
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </button>
+          </div>
+        </section>
+        <!-- SECTION: TRIP -->
+        <section class="w-full">
+          <div class="px-4 pb-1.5">
+            <span class="font-eyebrow text-eyebrow uppercase tracking-wider text-ink-3">TRIP</span>
+          </div>
+          <div class="bg-surface-1 hairline-y divide-y divide-[#2C3035]">
+            <!-- Members Row -->
+            <button
+              class="w-full text-left min-h-[56px] px-4 py-3.5 flex items-center justify-between hover:bg-surface-2/60 transition-colors"
+              type="button"
+            >
+              <span class="font-body text-body text-ink-1">Members</span>
+              <div class="flex items-center space-x-1">
+                <span class="font-code text-body text-ink-2 tabular-nums">2</span>
+                <svg
+                  class="w-5 h-5 text-ink-3"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.75"
+                  viewbox="0 0 24 24"
+                >
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </button>
+            <!-- Invite Someone Row -->
+            <button
+              class="w-full text-left min-h-[56px] px-4 py-3.5 flex items-center justify-between hover:bg-surface-2/60 transition-colors"
+              type="button"
+            >
+              <span class="font-body text-body text-ink-1">Invite someone</span>
+              <svg
+                class="w-5 h-5 text-ink-3"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewbox="0 0 24 24"
+              >
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </button>
+          </div>
+        </section>
+        <!-- SECTION: DANGER ZONE -->
+        <section class="w-full px-4 pt-2">
+          <div class="pb-2">
+            <span class="font-eyebrow text-eyebrow uppercase tracking-wider text-ink-3"
+              >DANGER ZONE</span
+            >
+          </div>
+          <div class="space-y-2">
+            <!-- Sign Out Outlined Button -->
+            <button
+              class="w-full h-11 rounded-xl bg-surface-1 active-border flex items-center justify-center hover:bg-surface-2 active:scale-[0.99] transition-all"
+              type="button"
+            >
+              <span class="font-body font-semibold text-status-critical text-base">Sign out</span>
+            </button>
+            <!-- Warning sync caption -->
+            <div class="flex items-start space-x-2 px-1 py-1">
+              <svg
+                class="w-4 h-4 text-status-warning shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewbox="0 0 24 24"
+              >
+                <path
+                  d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+                ></path>
+                <line x1="12" x2="12" y1="9" y2="13"></line>
+                <line x1="12" x2="12.01" y1="17" y2="17"></line>
+              </svg>
+              <p class="font-caption text-caption text-ink-2 leading-tight">
+                1 expense has not synced yet. Signing out now would lose it.
+              </p>
+            </div>
+          </div>
+        </section>
+        <!-- Footer Caption: Version -->
+        <footer class="w-full text-center pt-2 pb-6">
+          <p class="font-eyebrow text-xs text-ink-3 tabular-nums font-normal">Version 0.4.0</p>
+        </footer>
+      </div>
+      <!-- 8. Docked Bottom Tab Bar (Fixed docked 56px + iOS safe bottom 34px, bg #0F1113, border-t 1px #2C3035) -->
+      <!-- STRICTLY NO FLOATING ACTION BUTTON (FAB) ON THIS SCREEN -->
+      <nav
+        aria-label="Primary destinations"
+        class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto z-50 bg-surface-0 hairline-t flex justify-around items-center h-[56px] pb-safe select-none"
+      >
+        <!-- 1. Destination: Today (Inactive) -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-ink-1 transition-colors"
+          href="#today"
+        >
+          <span class="material-symbols-outlined text-[22px] leading-none mb-0.5" data-icon="today"
+            >today</span
+          >
+          <span class="font-label text-[11px] leading-tight font-medium">Today</span>
+        </a>
+        <!-- 2. Destination: Plan (Inactive) -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-ink-1 transition-colors"
+          href="#plan"
+        >
+          <span
+            class="material-symbols-outlined text-[22px] leading-none mb-0.5"
+            data-icon="calendar_month"
+            >calendar_month</span
+          >
+          <span class="font-label text-[11px] leading-tight font-medium">Plan</span>
+        </a>
+        <!-- 3. Destination: Docs (Inactive) -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-ink-1 transition-colors"
+          href="#docs"
+        >
+          <span
+            class="material-symbols-outlined text-[22px] leading-none mb-0.5"
+            data-icon="folder_open"
+            >folder_open</span
+          >
+          <span class="font-label text-[11px] leading-tight font-medium">Docs</span>
+        </a>
+        <!-- 4. Destination: Money (Inactive) -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-ink-1 transition-colors"
+          href="#money"
+        >
+          <span
+            class="material-symbols-outlined text-[22px] leading-none mb-0.5"
+            data-icon="payments"
+            >payments</span
+          >
+          <span class="font-label text-[11px] leading-tight font-medium">Money</span>
+        </a>
+        <!-- 5. Destination: More (Active Settings screen) -->
+        <a
+          aria-current="page"
+          class="flex flex-col items-center justify-center flex-1 h-full text-accent transition-colors"
+          href="#more"
+        >
+          <span
+            class="material-symbols-outlined text-[22px] leading-none mb-0.5"
+            data-icon="more_horiz"
+            style="font-variation-settings: 'FILL' 1"
+            >more_horiz</span
+          >
+          <span class="font-label text-[11px] leading-tight font-semibold">More</span>
+        </a>
+      </nav>
+    </main>
+    <script>
+      // Lightweight toggle simulation for Segmented Controls
+      document.querySelectorAll('[role="radiogroup"]').forEach((group) => {
+        const buttons = group.querySelectorAll('button')
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            buttons.forEach((b) => {
+              b.classList.remove(
+                'bg-surface-1',
+                'ring-1',
+                'ring-[#6A7079]',
+                'text-accent',
+                'font-semibold',
+                'shadow-xs'
+              )
+              b.classList.add('text-ink-2', 'font-medium')
+              b.setAttribute('aria-checked', 'false')
+            })
+            btn.classList.add(
+              'bg-surface-1',
+              'ring-1',
+              'ring-[#6A7079]',
+              'text-accent',
+              'font-semibold',
+              'shadow-xs'
+            )
+            btn.classList.remove('text-ink-2', 'font-medium')
+            btn.setAttribute('aria-checked', 'true')
+          })
+        })
+      })
+    </script>
+  </body>
+</html>

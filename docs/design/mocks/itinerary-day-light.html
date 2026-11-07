@@ -1,0 +1,513 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>monki-trips · Plan · Day 4</title>
+    <!-- Google Fonts: IBM Plex Sans & IBM Plex Mono -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined (Literal Requirement) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Theme Configuration Verbatim -->
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'on-tertiary': '#ffffff',
+              'on-error-container': '#93000a',
+              'status-warning': '#845600',
+              'on-tertiary-fixed': '#001b3c',
+              'on-secondary': '#ffffff',
+              'on-primary-container': '#ffe6dd',
+              'primary': '#903400',
+              'inverse-surface': '#2f312f',
+              'surface-container-highest': '#e2e3e0',
+              'stamp-ink': '#2F5C8A',
+              'surface-container-high': '#e8e8e5',
+              'inverse-on-surface': '#f1f1ee',
+              'tertiary-fixed-dim': '#a8c8ff',
+              'surface-variant': '#e2e3e0',
+              'secondary-fixed': '#d1e4ff',
+              'ink-1': '#111417',
+              'outline-variant': '#dfc0b5',
+              'on-tertiary-container': '#e2ebff',
+              'status-serious': '#7E3418',
+              'inverse-primary': '#ffb598',
+              'primary-fixed': '#ffdbcd',
+              'on-secondary-fixed-variant': '#174976',
+              'surface-dim': '#dadad7',
+              'secondary-fixed-dim': '#9fcafe',
+              'error-container': '#ffdad6',
+              'on-secondary-fixed': '#001d36',
+              'status-good': '#2E6B3F',
+              'ink-3': '#626971',
+              'tertiary': '#00519d',
+              'primary-fixed-dim': '#ffb598',
+              'secondary-container': '#9fcafe',
+              'error': '#ba1a1a',
+              'on-primary-fixed': '#360f00',
+              'surface-1': '#FBFBF9',
+              'surface-container-low': '#f4f4f1',
+              'on-secondary-container': '#275582',
+              'tertiary-fixed': '#d5e3ff',
+              'on-primary': '#ffffff',
+              'outline': '#8b7168',
+              'ink-2': '#4A5058',
+              'accent-soft': '#F9EBE1',
+              'surface-container': '#eeeeeb',
+              'tertiary-container': '#0069c8',
+              'on-tertiary-fixed-variant': '#004689',
+              'surface-2': '#ECECE8',
+              'primary-container': '#b5470c',
+              'on-background': '#1a1c1b',
+              'on-error': '#ffffff',
+              'surface-container-lowest': '#ffffff',
+              'surface-0': '#F5F5F2',
+              'on-surface': '#1a1c1b',
+              'status-critical': '#A01C1C',
+              'accent': '#B5470C',
+              'on-surface-variant': '#584239',
+              'surface-tint': '#a53c00',
+              'secondary': '#34618f',
+              'surface': '#f9f9f6',
+              'background': '#f9f9f6',
+              'on-primary-fixed-variant': '#7e2c00',
+              'surface-bright': '#f9f9f6',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-xl': '32px',
+              'space-lg': '24px',
+              'gutter': '16px',
+              'space-md': '16px',
+              'space-sm': '8px',
+              'margin': '16px',
+              'space-half': '4px',
+              'space-2xl': '48px',
+            },
+            fontFamily: {
+              'body': ['IBM Plex Sans'],
+              'title': ['IBM Plex Sans'],
+              'eyebrow': ['IBM Plex Mono'],
+              'code': ['IBM Plex Mono'],
+              'code-label': ['IBM Plex Mono'],
+              'heading': ['IBM Plex Sans'],
+              'label': ['IBM Plex Sans'],
+              'body-strong': ['IBM Plex Sans'],
+              'code-display': ['IBM Plex Mono'],
+              'caption': ['IBM Plex Sans'],
+              'display': ['IBM Plex Sans'],
+            },
+            fontSize: {
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Tabular figures for pristine timetable alignment */
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+      /* Hairline boundaries as defined in design system */
+      .border-hairline {
+        border-color: #d7d8d3;
+      }
+      .border-line-strong {
+        border-color: #80868e;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-surface-0 text-ink-1 min-h-screen flex justify-center selection:bg-accent-soft selection:text-accent font-body"
+  >
+    <!-- Mobile Frame Container (390 x 844 viewport constrained) -->
+    <div class="w-full max-w-[390px] min-h-[844px] bg-surface-0 flex flex-col relative pb-[90px]">
+      <!-- 1. Top Status & App Bar Area with iOS Safe Area (safe-top 47px) -->
+      <header class="w-full bg-surface-0 border-b border-hairline pt-[47px] px-margin select-none">
+        <!-- Status Reassurance & Sync Banner Row -->
+        <div class="flex items-center justify-between h-9 text-ink-2">
+          <div class="flex items-center space-x-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-status-good"></span>
+            <span class="font-eyebrow text-eyebrow uppercase tracking-wider text-ink-2"
+              >Offline · Everything saved</span
+            >
+          </div>
+          <div class="flex items-center space-x-1 text-ink-3">
+            <span class="material-symbols-outlined text-[16px] leading-none" data-icon="cloud_done"
+              >cloud_done</span
+            >
+            <span class="font-eyebrow text-[11px] leading-none tabular-nums text-ink-3"
+              >12:04 SYNC</span
+            >
+          </div>
+        </div>
+        <!-- Main Section Subheader -->
+        <div class="flex items-center justify-between pb-3 pt-1">
+          <div class="flex items-baseline space-x-2">
+            <h1 class="font-title text-title text-ink-1 tracking-tight">Plan</h1>
+            <span class="font-eyebrow text-eyebrow text-ink-3 uppercase">COAST AND ISLANDS</span>
+          </div>
+          <button
+            aria-label="Trip overview map"
+            class="p-1.5 text-ink-2 hover:text-accent transition-colors duration-150"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[20px]" data-icon="map">map</span>
+          </button>
+        </div>
+        <!-- 2. Segmented Control "Days | Where we sleep" -->
+        <!-- Track #ECECE8, 8px radius, 40px height, inset 2px -->
+        <div class="pb-space-md">
+          <div class="w-full h-10 bg-surface-2 rounded-xl p-[2px] flex items-center">
+            <!-- "Days" selected: #FBFBF9 thumb, 1px #80868E ring, orange #B5470C label -->
+            <button
+              class="flex-1 h-full bg-surface-1 rounded-[6px] border border-line-strong flex items-center justify-center font-label text-label font-semibold text-accent transition-all"
+              type="button"
+            >
+              Days
+            </button>
+            <!-- "Where we sleep": #4A5058 label -->
+            <button
+              class="flex-1 h-full rounded-[6px] flex items-center justify-center font-label text-label text-ink-2 hover:text-ink-1 transition-colors"
+              type="button"
+            >
+              Where we sleep
+            </button>
+          </div>
+        </div>
+      </header>
+      <!-- 3. Horizontal Strip of Day Chips -->
+      <div
+        class="w-full bg-surface-0 border-b border-hairline py-2.5 px-margin overflow-x-auto hide-scrollbar"
+      >
+        <div class="flex items-center space-x-2 whitespace-nowrap">
+          <!-- Day Chip: Tue 11 -->
+          <button
+            class="h-8 px-3 rounded-lg border border-hairline bg-surface-0 text-ink-2 font-code-label text-code-label flex items-center justify-center hover:border-line-strong active:scale-95 transition-all"
+            type="button"
+          >
+            Tue 11
+          </button>
+          <!-- Day Chip: Wed 12 (Selected) -->
+          <button
+            class="h-8 px-3 rounded-lg bg-accent-soft border border-accent text-accent font-code-label text-code-label font-semibold flex items-center justify-center shadow-none active:scale-95 transition-all"
+            type="button"
+          >
+            Wed 12
+          </button>
+          <!-- Day Chip: Thu 13 -->
+          <button
+            class="h-8 px-3 rounded-lg border border-hairline bg-surface-0 text-ink-2 font-code-label text-code-label flex items-center justify-center hover:border-line-strong active:scale-95 transition-all"
+            type="button"
+          >
+            Thu 13
+          </button>
+          <!-- Day Chip: Fri 14 -->
+          <button
+            class="h-8 px-3 rounded-lg border border-hairline bg-surface-0 text-ink-2 font-code-label text-code-label flex items-center justify-center hover:border-line-strong active:scale-95 transition-all"
+            type="button"
+          >
+            Fri 14
+          </button>
+          <!-- Day Chip: Sat 15 -->
+          <button
+            class="h-8 px-3 rounded-lg border border-hairline bg-surface-0 text-ink-2 font-code-label text-code-label flex items-center justify-center hover:border-line-strong active:scale-95 transition-all"
+            type="button"
+          >
+            Sat 15
+          </button>
+        </div>
+      </div>
+      <!-- 4. Date Heading & Route Header -->
+      <div class="px-margin pt-5 pb-4 border-b border-hairline bg-surface-0">
+        <div class="flex items-baseline space-x-3">
+          <h2 class="font-title text-title text-ink-1">Wed 12 May</h2>
+          <span class="font-body text-body text-ink-2 font-normal">Day 4 of 12</span>
+        </div>
+        <!-- Route chip underneath: ALD -> KSB -->
+        <div class="mt-2 flex items-center">
+          <div
+            class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-lg border border-line-strong bg-transparent"
+          >
+            <span class="font-code-label text-code-label text-ink-1 font-medium">ALD</span>
+            <span class="font-code-label text-code-label text-ink-3">→</span>
+            <span class="font-code-label text-code-label text-ink-1 font-medium">KSB</span>
+          </div>
+        </div>
+      </div>
+      <!-- 5. Event Rows (Strict 1px hairlines, tabular mono time column, no boxed cards) -->
+      <main class="w-full flex flex-col flex-1 divide-y divide-hairline">
+        <!-- Row 1: Breakfast at the harbour market -->
+        <div
+          class="min-h-[56px] py-4 px-margin flex items-start space-x-3 bg-surface-0 hover:bg-surface-1 transition-colors"
+        >
+          <!-- 64px Mono Time Column -->
+          <div class="w-16 flex-shrink-0 flex flex-col">
+            <span class="font-code text-code text-ink-1 tabular-nums font-semibold leading-tight"
+              >08:30</span
+            >
+            <span class="font-eyebrow text-[12px] text-ink-3 tracking-normal">EEST</span>
+          </div>
+          <!-- Leading Semantic Icon -->
+          <div class="pt-0.5 text-ink-3 flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]" data-icon="restaurant"
+              >restaurant</span
+            >
+          </div>
+          <!-- Content Details -->
+          <div class="flex-1 min-w-0">
+            <p class="font-body-strong text-body-strong text-ink-1 tracking-tight">
+              Breakfast at the harbour market
+            </p>
+            <p class="font-caption text-caption text-ink-2 mt-0.5">Seafood stalls &amp; bakeries</p>
+          </div>
+        </div>
+        <!-- Row 2: Check-out · Harbour Inn Aldria -->
+        <div
+          class="min-h-[56px] py-4 px-margin flex items-start space-x-3 bg-surface-0 hover:bg-surface-1 transition-colors"
+        >
+          <!-- 64px Mono Time Column -->
+          <div class="w-16 flex-shrink-0 flex flex-col">
+            <span class="font-code text-code text-ink-1 tabular-nums font-semibold leading-tight"
+              >10:00</span
+            >
+            <span class="font-eyebrow text-[12px] text-ink-3 tracking-normal">EEST</span>
+          </div>
+          <!-- Leading Semantic Icon (Bed / Hotel checkout) -->
+          <div class="pt-0.5 text-ink-3 flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]" data-icon="hotel">hotel</span>
+          </div>
+          <!-- Content Details -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-1.5 flex-wrap">
+              <span class="font-body-strong text-body-strong text-ink-1"
+                >Check-out · Harbour Inn Aldria</span
+              >
+            </div>
+            <p class="font-caption text-caption text-ink-2 mt-0.5">
+              Night 2 of 2 · Luggage hold requested
+            </p>
+          </div>
+        </div>
+        <!-- Row 3: Train to Kessbury (With Directions action link) -->
+        <div
+          class="min-h-[56px] py-4 px-margin flex items-start space-x-3 bg-surface-0 hover:bg-surface-1 transition-colors"
+        >
+          <!-- 64px Mono Time Column -->
+          <div class="w-16 flex-shrink-0 flex flex-col">
+            <span class="font-code text-code text-ink-1 tabular-nums font-semibold leading-tight"
+              >14:20</span
+            >
+            <span class="font-eyebrow text-[12px] text-ink-3 tracking-normal">EEST</span>
+          </div>
+          <!-- Leading Semantic Icon (Train / Transit) -->
+          <div class="pt-0.5 text-ink-3 flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]" data-icon="train">train</span>
+          </div>
+          <!-- Content Details -->
+          <div class="flex-1 min-w-0">
+            <p class="font-body-strong text-body-strong text-ink-1">Train to Kessbury</p>
+            <div class="mt-0.5 flex items-center space-x-2 flex-wrap">
+              <span class="font-caption text-caption text-ink-2"
+                >Coach 5 · <span class="font-code-label text-[12px] text-ink-1">ABC123</span> · Seat
+                42A, 42B</span
+              >
+            </div>
+            <!-- Action: Directions link in #B5470C with navigation icon -->
+            <div class="mt-2">
+              <a
+                class="inline-flex items-center space-x-1 text-accent font-label text-label hover:underline active:opacity-75"
+                href="#directions-transit"
+              >
+                <span
+                  class="material-symbols-outlined text-[16px] leading-none"
+                  data-icon="navigation"
+                  >navigation</span
+                >
+                <span class="font-medium">Directions</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Row 4: Check-in · Harbour Inn Kessbury (With Directions action link) -->
+        <div
+          class="min-h-[56px] py-4 px-margin flex items-start space-x-3 bg-surface-0 hover:bg-surface-1 transition-colors"
+        >
+          <!-- 64px Mono Time Column -->
+          <div class="w-16 flex-shrink-0 flex flex-col">
+            <span class="font-code text-code text-ink-1 tabular-nums font-semibold leading-tight"
+              >18:00</span
+            >
+            <span class="font-eyebrow text-[12px] text-ink-3 tracking-normal">EEST</span>
+          </div>
+          <!-- Leading Semantic Icon (Bed / Hotel check-in) -->
+          <div class="pt-0.5 text-ink-3 flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]" data-icon="hotel">hotel</span>
+          </div>
+          <!-- Content Details -->
+          <div class="flex-1 min-w-0">
+            <p class="font-body-strong text-body-strong text-ink-1">
+              Check-in · Harbour Inn Kessbury
+            </p>
+            <p class="font-caption text-caption text-ink-2 mt-0.5">
+              Night 1 of 2 · Confirmation
+              <span class="font-code-label text-[12px] text-ink-1">#KB-904</span>
+            </p>
+            <!-- Action: Directions link in #B5470C with navigation icon -->
+            <div class="mt-2">
+              <a
+                class="inline-flex items-center space-x-1 text-accent font-label text-label hover:underline active:opacity-75"
+                href="#directions-hotel"
+              >
+                <span
+                  class="material-symbols-outlined text-[16px] leading-none"
+                  data-icon="navigation"
+                  >navigation</span
+                >
+                <span class="font-medium">Directions</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Empty space cushion for scroll clearance above fixed bottom components -->
+        <div class="h-16 bg-surface-0"></div>
+      </main>
+      <!-- 6. Floating Action Button (FAB) -->
+      <!-- 56px orange (#B5470C) button with plus icon, 12px radius, floating 16px above tab bar at bottom right -->
+      <div class="fixed bottom-[96px] right-[max(16px,calc(50vw-195px+16px))] z-40">
+        <button
+          aria-label="Add itinerary event"
+          class="w-14 h-14 bg-accent text-on-primary rounded-xl flex items-center justify-center shadow-[0_1px_2px_#1114170F,0_6px_16px_#11141714] active:scale-95 transition-transform duration-100 ease-out focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[28px] leading-none" data-icon="add"
+            >add</span
+          >
+        </button>
+      </div>
+      <!-- 7. Bottom Tab Bar (From Shared Components JSON & Specifications) -->
+      <!-- Fixed at bottom, 56px height + safe-bottom 34px = 90px, #F5F5F2 background, 1px #D7D8D3 hairline top border -->
+      <nav
+        class="fixed bottom-0 left-0 right-0 w-full max-w-[390px] mx-auto z-50 h-[90px] pb-[34px] bg-surface-0 border-t border-hairline flex items-center justify-around select-none"
+      >
+        <!-- Tab 1: Today (Inactive) -->
+        <button
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-accent transition-colors duration-150 active:scale-95"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[24px]" data-icon="today">today</span>
+          <span class="font-label text-label mt-0.5">Today</span>
+        </button>
+        <!-- Tab 2: Plan (Active - #B5470C with calendar_month icon) -->
+        <button
+          class="flex flex-col items-center justify-center flex-1 h-full text-accent font-semibold active:scale-95"
+          type="button"
+        >
+          <span
+            class="material-symbols-outlined text-[24px]"
+            data-icon="calendar_month"
+            data-weight="fill"
+            style="font-variation-settings: 'FILL' 1"
+            >calendar_month</span
+          >
+          <span class="font-label text-label mt-0.5">Plan</span>
+        </button>
+        <!-- Tab 3: Docs (Inactive) -->
+        <button
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-accent transition-colors duration-150 active:scale-95"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[24px]" data-icon="folder_open"
+            >folder_open</span
+          >
+          <span class="font-label text-label mt-0.5">Docs</span>
+        </button>
+        <!-- Tab 4: Money (Inactive) -->
+        <button
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-accent transition-colors duration-150 active:scale-95"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[24px]" data-icon="payments">payments</span>
+          <span class="font-label text-label mt-0.5">Money</span>
+        </button>
+        <!-- Tab 5: More (Inactive) -->
+        <button
+          class="flex flex-col items-center justify-center flex-1 h-full text-ink-3 hover:text-accent transition-colors duration-150 active:scale-95"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[24px]" data-icon="more_horiz"
+            >more_horiz</span
+          >
+          <span class="font-label text-label mt-0.5">More</span>
+        </button>
+      </nav>
+    </div>
+  </body>
+</html>
