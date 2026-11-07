@@ -1,0 +1,16 @@
+meta {
+  name: Emergency info
+  type: http
+  seq: 53
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/emergency
+  body: none
+  auth: none
+}
+
+docs {
+  The trip's emergency document (`EmergencyInfo`), or `null` while nobody
+  has written one.
+}

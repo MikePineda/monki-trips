@@ -130,6 +130,12 @@ router
                   .post('trips/:tripId/tasks/from-template', [controllers.Tasks, 'fromTemplate'])
                   .as('trips.tasks.fromTemplate')
                 router
+                  .get('trips/:tripId/emergency', [controllers.Emergency, 'show'])
+                  .as('trips.emergency.show')
+                router
+                  .put('trips/:tripId/emergency', [controllers.Emergency, 'update'])
+                  .as('trips.emergency.update')
+                router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')
                 router

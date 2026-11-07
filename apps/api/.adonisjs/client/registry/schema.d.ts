@@ -502,6 +502,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/tasks_controller').default['fromTemplate']>>>
     }
   }
+  'trips.emergency.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/emergency'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['show']>>>
+    }
+  }
+  'trips.emergency.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/trips/:tripId/emergency'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/sync/entities').emergencyChanges)>>
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/sync/entities').emergencyChanges)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'trips.members.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/members'

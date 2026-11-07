@@ -1,0 +1,31 @@
+meta {
+  name: Replace emergency info
+  type: http
+  seq: 54
+}
+
+put {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/emergency
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "contacts": [{ "name": "Local emergency number", "phone": "000", "note": null }],
+    "insurance": { "provider": "Demo Insurance", "policyNumber": "POL-0000", "phone": "0800 000 000" },
+    "embassy": null,
+    "medical": { "notes": "No allergies" },
+    "notes": "Pharmacy next to the hotel"
+  }
+}
+
+docs {
+  Replaces the whole document: every key gets this request's clock and a
+  key left out of the body becomes null, through the same `emergency`
+  mutation path as sync push (per-key last-write-wins, activity row).
+}

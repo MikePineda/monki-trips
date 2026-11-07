@@ -60,6 +60,10 @@ export interface ApiDefinition {
     tasks: {
       fromTemplate: typeof routes['trips.tasks.fromTemplate']
     }
+    emergency: {
+      show: typeof routes['trips.emergency.show']
+      update: typeof routes['trips.emergency.update']
+    }
     members: {
       index: typeof routes['trips.members.index']
       destroy: typeof routes['trips.members.destroy']
