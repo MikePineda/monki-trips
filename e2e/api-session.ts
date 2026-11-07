@@ -3,7 +3,14 @@ import type { E2eAccount } from './accounts.ts'
 
 /** The parts of the snapshot the journeys read (the full shape lives in @monkitrips/shared). */
 export interface TripContentSnapshotLike {
-  tasks: { id: string; title: string; doneAt: string | null; origin: string }[]
+  tasks: {
+    id: string
+    title: string
+    doneAt: string | null
+    origin: string
+    sourceDocumentId?: string | null
+  }[]
+  documents: { id: string; title: string; kind: string; tags: string[]; sha256: string | null }[]
   emergency: { content: Record<string, unknown> } | null
   stops: { id: string; name: string; tz: string | null }[]
   events: { id: string; kind: string; title: string; startsOn: string | null }[]

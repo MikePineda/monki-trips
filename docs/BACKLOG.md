@@ -92,3 +92,8 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: Phrase cards: the web screen (language picker, preferences, offline cards from the `phrase_card` pull rows) and importing `phraseCards` from trip JSON v1 (`phraseCardsSkipped` today).
 - 2026-11-07: Confirm MiniMax's model id and list prices for `config/llm.ts` (`MiniMax-M2` is a placeholder price) before the first production call; a missing model leaves `cost_micros` null.
 - 2026-11-07: `.env.selfhost.example` does not list the new `LLM_VISION_MODEL` and `LLM_MONTHLY_TOKEN_CAP_OVERRIDE` (outside this package's scope).
+- 2026-11-07: WP 1.5: in production `GET .../documents/:id/file` redirects to an S3 signed URL on another origin and "Save offline" reads it with `fetch`, so the bucket needs CORS (GET from `APP_URL`); the fs disk of E2E is same-origin. Add it to `docs/SELF_HOSTING.md` and the runbook, and verify on the real bucket.
+- 2026-11-07: WP 1.5: `documents.available_offline` is one flag shared by every member while the copy is per device (Dexie `docBlobs`); the web never writes it. Drop it in a later release or make it per member.
+- 2026-11-07: WP 1.5: `OfflineReadinessStore.documentsFor` (every file document of the trip has a copy whose sha256 equals the server's) is ready for "Ready to fly" (WP 2.5); nothing renders it yet.
+- 2026-11-07: WP 1.5: `DocumentsStore.documentsNeededToday` is ready for Today (WP 2.4); the "I printed it" action (tick the print task) is still to build.
+- 2026-11-07: WP 1.5: a file picked offline is refused with a message (the plan allows only "save offline" offline); queuing uploads (blob in the outbox) is a later round. Renaming a document is not in the detail sheet yet (tags and event are).
