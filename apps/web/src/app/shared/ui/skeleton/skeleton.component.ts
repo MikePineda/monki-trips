@@ -9,7 +9,7 @@ import { provideUiI18n } from '../ui-i18n'
 @Component({
   selector: 'mk-skeleton',
   imports: [TranslocoPipe],
-  providers: [provideUiI18n()],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'class': 'mk-skeleton', 'role': 'status', 'aria-busy': 'true' },
   styles: `

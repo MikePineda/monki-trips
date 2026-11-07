@@ -104,6 +104,15 @@ describe('architecture', () => {
     expect(bad).toEqual([])
   })
 
+  it('ui-kit components give the ui scope to their own view only (viewProviders)', () => {
+    const leaking = /\bproviders:\s*\[[^\]]*provideUiI18n\(/
+    const offenders = sources
+      .filter((file) => file.rel.startsWith('shared/ui/'))
+      .filter((file) => leaking.test(readFileSync(file.path, 'utf8')))
+      .map((file) => file.rel)
+    expect(offenders).toEqual([])
+  })
+
   it('no hex colour outside styles.css and the manifest', () => {
     const hex = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b/
     const offenders = webFiles()

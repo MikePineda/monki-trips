@@ -26,7 +26,7 @@ import { provideUiI18n } from '../ui-i18n'
 @Component({
   selector: 'mk-field',
   imports: [TranslocoPipe],
-  providers: [provideUiI18n()],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: { 'class': 'mk-field', '[class.mk-field--invalid]': '!!error()' },
