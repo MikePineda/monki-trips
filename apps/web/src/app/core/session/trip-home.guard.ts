@@ -1,9 +1,9 @@
 import { inject } from '@angular/core'
 import { Router, type CanActivateFn } from '@angular/router'
 import { tripPhase } from '@monkitrips/shared'
-import { localDateIn } from '../../domain/local-date'
+import { localToday } from '../../domain/local-today'
 import { CLOCK } from '../offline/clock'
-import { DEVICE_TIME_ZONE } from '../offline/device-zone'
+import { TIME_ZONE } from '../offline/time-zone'
 import { OFFLINE_DB } from '../offline/offline-db'
 
 /**
@@ -16,10 +16,10 @@ export const tripHomeGuard: CanActivateFn = async (route) => {
   const router = inject(Router)
   const database = inject(OFFLINE_DB)
   const clock = inject(CLOCK)
-  const zone = inject(DEVICE_TIME_ZONE)
+  const zone = inject(TIME_ZONE)
   const tripId = route.paramMap.get('tripId') ?? ''
   const trip = await (await database).trips.get(tripId)
-  const today = localDateIn(clock(), zone)
+  const today = localToday(clock(), zone)
   const ongoing =
     trip !== undefined &&
     tripPhase({ startsOn: trip.startDate, endsOn: trip.endDate }, today) === 'ongoing'

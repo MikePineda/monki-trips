@@ -7,7 +7,15 @@ import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 
 interface MoreItem {
-  id: 'tasks' | 'checklist' | 'emergency' | 'members' | 'activity' | 'settings' | 'offline'
+  id:
+    | 'summary'
+    | 'tasks'
+    | 'checklist'
+    | 'emergency'
+    | 'members'
+    | 'activity'
+    | 'settings'
+    | 'offline'
   icon: IconName
 }
 
@@ -24,7 +32,7 @@ interface MoreItem {
           <mk-list-row
             [icon]="item.icon"
             [title]="'shell.trip.more.' + item.id | transloco"
-            [link]="item.id"
+            [link]="item.id === 'summary' ? ['..', 'summary'] : item.id"
             [testId]="'trip.more.' + item.id"
           />
         }
@@ -34,6 +42,7 @@ interface MoreItem {
 })
 export default class MorePage {
   protected readonly items: readonly MoreItem[] = [
+    { id: 'summary', icon: 'info' },
     { id: 'tasks', icon: 'list-checks' },
     { id: 'checklist', icon: 'clipboard-check' },
     { id: 'emergency', icon: 'siren' },

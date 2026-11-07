@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { intlLocale } from '../../core/i18n/intl-locale'
-import { DEVICE_TIME_ZONE } from '../../core/offline/device-zone'
+import { TIME_ZONE } from '../../core/offline/time-zone'
 import { formatDayDate } from '../../domain/day-date'
 import type { DayItem, ItineraryDay } from '../../domain/itinerary-days'
 import { zoneLabel } from '../../domain/zoned-time'
@@ -140,7 +140,7 @@ export class DaysComponent {
   readonly directions = input<Record<string, string>>({})
   readonly addEvent = output<string>()
 
-  private readonly deviceZone = inject(DEVICE_TIME_ZONE)
+  private readonly deviceZone = inject(TIME_ZONE)
   private readonly locale = intlLocale()
 
   protected readonly icons = EVENT_KIND_ICONS

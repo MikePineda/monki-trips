@@ -49,7 +49,10 @@ export interface ItineraryDay {
   items: DayItem[]
 }
 
-type EventRow = TripEventRow & { syncState?: 'pending' | 'failed' }
+/** The stored rows, with or without the tombstone column (the device keeps them without). */
+type EventRow = Omit<TripEventRow, 'deletedAt'> & { syncState?: 'pending' | 'failed' }
+type SegmentRow = Omit<EventSegmentRow, 'deletedAt'>
+type StopRow = Omit<TripStopRow, 'deletedAt'>
 
 /**
  * The itinerary, one section per calendar date. Days are cut by the
@@ -63,8 +66,8 @@ type EventRow = TripEventRow & { syncState?: 'pending' | 'failed' }
 export function itineraryDays(
   trip: TripDates,
   events: readonly EventRow[],
-  segments: readonly EventSegmentRow[],
-  stops: readonly TripStopRow[]
+  segments: readonly SegmentRow[],
+  stops: readonly StopRow[]
 ): ItineraryDay[] {
   const byDate = new Map<IsoDate, DayItem[]>()
   const chipsByDate = new Map<IsoDate, string[][]>()
@@ -194,7 +197,7 @@ export function itineraryDays(
 }
 
 /** The stops a date belongs to, as one chip (`A → B` on a day that moves from one to the next). */
-function stopChips(stops: readonly TripStopRow[], date: IsoDate): string[][] {
+function stopChips(stops: readonly StopRow[], date: IsoDate): string[][] {
   const covering = stops.filter(
     (stop) =>
       stop.arriveOn !== null &&
@@ -206,11 +209,11 @@ function stopChips(stops: readonly TripStopRow[], date: IsoDate): string[][] {
   return labels.length > 0 ? [labels] : []
 }
 
-function destLabel(segment: EventSegmentRow): string {
+function destLabel(segment: SegmentRow): string {
   return segment.destCode ?? segment.destName ?? ''
 }
 
-function carrierLabel(segment: EventSegmentRow): string | null {
+function carrierLabel(segment: SegmentRow): string | null {
   const parts = [segment.carrier, segment.number].filter(Boolean)
   return parts.length > 0 ? parts.join(' ') : null
 }

@@ -638,7 +638,7 @@ export class EventFormSheet {
         return
       }
       const zone = zoneForDate(this.data, date)
-      if (zone) {
+      if (zone && zone !== untracked(() => this.model().startTz)) {
         untracked(() => this.model.update((model) => ({ ...model, startTz: zone })))
       }
     })

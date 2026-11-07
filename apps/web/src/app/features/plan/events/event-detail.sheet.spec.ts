@@ -107,7 +107,7 @@ describe('EventDetailSheet', () => {
 
     expect(await db.events.get('inn')).toMatchObject({ coversNight: false, syncState: 'pending' })
     expect(await db.outbox.toArray()).toMatchObject([
-      { entity: 'event', changes: { coversNight: false } },
+      { kind: 'event.upsert', payload: { entity: 'event', changes: { coversNight: false } } },
     ])
   })
 

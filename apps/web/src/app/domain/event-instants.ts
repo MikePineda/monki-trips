@@ -13,9 +13,13 @@ import { zonedInstant } from './zoned-time'
  * offset, segments nested under their event. An event with no start
  * cannot be placed and is left out. Pure.
  */
+/** The stored rows, with or without the tombstone column (the device keeps them without). */
+export type EventRow = Omit<TripEventRow, 'deletedAt'>
+export type SegmentRow = Omit<EventSegmentRow, 'deletedAt'>
+
 export function toDomainEvent(
-  event: TripEventRow,
-  segments: readonly EventSegmentRow[] = []
+  event: EventRow,
+  segments: readonly SegmentRow[] = []
 ): TripEvent | null {
   const starts = zoned(event.startsAt, event.startTz)
   if (!starts) {
@@ -46,15 +50,15 @@ export function toDomainEvent(
 }
 
 export function toDomainEvents(
-  events: readonly TripEventRow[],
-  segments: readonly EventSegmentRow[] = []
+  events: readonly EventRow[],
+  segments: readonly SegmentRow[] = []
 ): TripEvent[] {
   return events
     .map((event) => toDomainEvent(event, segments))
     .filter((event): event is TripEvent => event !== null)
 }
 
-function toDomainSegment(segment: EventSegmentRow): EventSegment | null {
+function toDomainSegment(segment: SegmentRow): EventSegment | null {
   const departs = zoned(segment.departsAt, segment.departsTz)
   if (!departs) {
     return null

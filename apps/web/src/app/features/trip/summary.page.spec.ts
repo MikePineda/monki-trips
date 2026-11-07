@@ -71,7 +71,7 @@ describe('SummaryPage', () => {
       expect(host.querySelector('[data-testid="trip.summary.route"]')).not.toBeNull()
     })
     expect(host.querySelector('[data-testid="trip.summary.dates"]')?.textContent).toContain(
-      'Tue 20 Jan'
+      'Wed 20 Jan'
     )
     expect(host.querySelector('[data-testid="trip.summary.stats"]')?.textContent).toMatch(
       /5 days\s*·\s*4 nights\s*·\s*2 countries/

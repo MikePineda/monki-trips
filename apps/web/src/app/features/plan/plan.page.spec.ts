@@ -7,6 +7,7 @@ import {
   DEMO_TRIP_ID,
   DEMO_TRIP_RECORD,
   blankSegment,
+  blankStop,
   placedEvent,
 } from '../../../testing/fake-trip-content'
 import { i18nTesting } from '../../../testing/i18n-testing'
@@ -17,7 +18,7 @@ import {
 } from '../../../testing/offline-testing'
 import { settle, typeInto } from '../../../testing/settle'
 import type { MonkiTripsDb } from '../../core/offline/db'
-import { DEVICE_TIME_ZONE } from '../../core/offline/device-zone'
+import { TIME_ZONE } from '../../core/offline/time-zone'
 import PlanPage from './plan.page'
 
 describe('PlanPage', () => {
@@ -32,7 +33,7 @@ describe('PlanPage', () => {
         ...provideOfflineTesting({ db }),
         ...provideApiTesting(apiFakes()),
         provideRouter([]),
-        { provide: DEVICE_TIME_ZONE, useValue: 'Australia/Sydney' },
+        { provide: TIME_ZONE, useValue: 'Australia/Sydney' },
       ],
     })
   })
@@ -104,9 +105,10 @@ describe('PlanPage', () => {
     expect(directions?.getAttribute('href')).toBe(
       'https://www.google.com/maps/dir/?api=1&destination=1%20Station%20Road'
     )
-    expect(days[1].querySelector('[data-testid="plan.event"]')?.getAttribute('href')).toBe(
-      '/t/trip-1/plan/e/train'
+    const links = [...days[1].querySelectorAll('[data-testid="plan.event"]')].map((link) =>
+      link.getAttribute('href')
     )
+    expect(links).toEqual(['/t/trip-1/plan/e/inn', '/t/trip-1/plan/e/train'])
   })
 
   it('a flight with legs shows the route chip of the day', async () => {
@@ -166,20 +168,7 @@ describe('PlanPage', () => {
   })
 
   it('adding an event writes it to the device and the outbox at once', async () => {
-    await db.stops.put({
-      id: 's1',
-      tripId: DEMO_TRIP_ID,
-      position: 0,
-      name: 'Port Vellmar',
-      countryCode: 'XA',
-      lat: null,
-      lng: null,
-      tz: 'Asia/Bangkok',
-      arriveOn: '2027-01-20',
-      departOn: '2027-01-24',
-      deletedAt: null,
-      updatedAt: 'x',
-    })
+    await db.stops.put(blankStop({ id: 's1', tz: 'Asia/Bangkok' }))
     const { fixture, host } = await render()
     await vi.waitFor(() => {
       fixture.detectChanges()
@@ -210,7 +199,7 @@ describe('PlanPage', () => {
       syncState: 'pending',
     })
     expect(await db.outbox.toArray()).toMatchObject([
-      { entity: 'event', op: 'upsert', rowId: event.id },
+      { kind: 'event.upsert', payload: { entity: 'event', op: 'upsert', id: event.id } },
     ])
     await vi.waitFor(() => {
       fixture.detectChanges()
