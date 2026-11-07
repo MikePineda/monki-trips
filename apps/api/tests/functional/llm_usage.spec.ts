@@ -9,9 +9,11 @@ import { LlmClient } from '#services/llm/llm_client'
 import { estimateInputTokens } from '#services/llm/input_token_estimate'
 import {
   LlmProvider,
+  LlmUnavailableError,
   type LlmCompletion,
   type LlmDelta,
   type LlmRequest,
+  type LlmStreamOptions,
 } from '#services/llm/llm_provider'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
@@ -59,6 +61,21 @@ class SlowProvider extends LlmProvider {
 
   async *stream(_request: LlmRequest): AsyncIterable<LlmDelta> {
     throw new Error('not used')
+  }
+}
+
+/** A provider whose stream starts, reports its input, then breaks midway. */
+class BrokenStreamProvider extends LlmProvider {
+  readonly name = 'broken'
+
+  async complete(_request: LlmRequest): Promise<LlmCompletion> {
+    throw new LlmUnavailableError('not used')
+  }
+
+  async *stream(_request: LlmRequest, options: LlmStreamOptions = {}): AsyncIterable<LlmDelta> {
+    options.onUsage?.({ inputTokens: 70, outputTokens: 1 }, 'broken-model')
+    yield { type: 'text', text: 'Half' }
+    throw new LlmUnavailableError('llm stream reported an error')
   }
 }
 
@@ -211,6 +228,32 @@ test.group('LLM usage and cap', (group) => {
 
     // A generator closed before its first step never ran: no reservation, no row.
     assert.isEmpty(await db.from('llm_usage').where('user_id', user.id))
+  })
+
+  test('a stream that fails midway is charged the input the provider reported', async ({
+    assert,
+    cleanup,
+  }) => {
+    const user = await makeUser()
+    app.container.swap(LlmProvider, () => new BrokenStreamProvider())
+    cleanup(() => app.container.restore(LlmProvider))
+    const llmClient = await app.container.make(LlmClient)
+
+    const error = await (async () => {
+      for await (const delta of llmClient.stream({ user, tripId: null }, chat)) {
+        assert.equal(delta.type, 'text')
+      }
+    })().then(
+      () => null,
+      (thrown) => thrown
+    )
+
+    assert.equal(error?.code, 'E_LLM_UNAVAILABLE')
+    const [row] = await db.from('llm_usage').where('user_id', user.id)
+    assert.deepEqual(
+      [row.status, row.tokens_in, row.tokens_out, row.model],
+      ['error', 70, 1, 'broken-model']
+    )
   })
 
   test('a priced model stores its cost in micro-dollars', async ({ assert }) => {

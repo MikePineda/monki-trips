@@ -403,4 +403,82 @@ test.group('Anthropic compatible provider', () => {
       await endpoint.close()
     }
   })
+
+  test('a stream that ends without message_stop is unavailable, not complete', async ({
+    assert,
+  }) => {
+    const endpoint = await fakeEndpoint([
+      (_received, response) => {
+        response.writeHead(200, { 'content-type': 'text/event-stream' })
+        const start = {
+          type: 'message_start',
+          message: { model: 'fake-model-1', usage: { input_tokens: 70, output_tokens: 1 } },
+        }
+        const text = {
+          type: 'content_block_delta',
+          index: 0,
+          delta: { type: 'text_delta', text: 'Half an ans' },
+        }
+        response.write(`event: message_start\ndata: ${JSON.stringify(start)}\n\n`)
+        response.write(`event: content_block_delta\ndata: ${JSON.stringify(text)}\n\n`)
+        response.end()
+      },
+    ])
+    try {
+      const provider = new AnthropicCompatibleProvider({
+        baseUrl: endpoint.baseUrl,
+        apiKey: 'k',
+        model: 'text-model',
+      })
+      const deltas: LlmDelta[] = []
+
+      await assert.rejects(async () => {
+        for await (const delta of provider.stream(request)) deltas.push(delta)
+      }, LlmUnavailableError as any)
+
+      assert.notInclude(
+        deltas.map((delta) => delta.type),
+        'done',
+        'a truncated answer is never reported as complete'
+      )
+    } finally {
+      await endpoint.close()
+    }
+  })
+
+  test('an error event fails the stream after reporting the input it used', async ({ assert }) => {
+    const endpoint = await fakeEndpoint([
+      (_received, response) => {
+        response.writeHead(200, { 'content-type': 'text/event-stream' })
+        const start = {
+          type: 'message_start',
+          message: { model: 'fake-model-1', usage: { input_tokens: 70, output_tokens: 1 } },
+        }
+        const error = { type: 'error', error: { type: 'overloaded_error', message: 'busy' } }
+        response.write(`event: message_start\ndata: ${JSON.stringify(start)}\n\n`)
+        response.write(`event: error\ndata: ${JSON.stringify(error)}\n\n`)
+        response.end()
+      },
+    ])
+    try {
+      const provider = new AnthropicCompatibleProvider({
+        baseUrl: endpoint.baseUrl,
+        apiKey: 'k',
+        model: 'text-model',
+      })
+      const reported: number[] = []
+
+      await assert.rejects(async () => {
+        for await (const delta of provider.stream(request, {
+          onUsage: (usage) => reported.push(usage.inputTokens),
+        })) {
+          assert.fail(`unexpected ${delta.type}`)
+        }
+      }, LlmUnavailableError as any)
+
+      assert.deepEqual(reported, [70])
+    } finally {
+      await endpoint.close()
+    }
+  })
 })
