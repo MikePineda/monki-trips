@@ -7,10 +7,12 @@ import {
   provideOfflineTesting,
   resetOfflineTesting,
 } from '../../../testing/offline-testing'
+import { provideApiTesting } from '../../../testing/api-testing'
 import { HEALTH_API } from '../../core/api/health-api'
 import { LANG_STORAGE_KEY } from '../../core/i18n/lang.store'
 import type { MonkiTripsDb } from '../../core/offline/db'
 import { InstallService, type InstallMode } from '../../core/pwa/install.service'
+import { SessionStore } from '../../core/session/session.store'
 import { THEME_STORAGE_KEY } from '../../core/theme/theme.store'
 import SettingsPage from './settings.page'
 
@@ -33,6 +35,7 @@ describe('SettingsPage', () => {
       imports: [SettingsPage, i18nTesting()],
       providers: [
         ...provideOfflineTesting({ db }),
+        ...provideApiTesting(),
         { provide: HEALTH_API, useValue: { health: async () => report } },
       ],
     })
@@ -110,6 +113,16 @@ describe('SettingsPage', () => {
     expect(document.querySelector('.cdk-overlay-container h2')?.textContent).toBe(
       'Add to your Home Screen'
     )
+  })
+
+  it('shows the account section once the session is known', async () => {
+    await TestBed.inject(SessionStore).restore()
+    const { fixture, host } = render()
+    await fixture.whenStable()
+    fixture.detectChanges()
+
+    expect(host.querySelector('[data-testid="account.section"]')).not.toBeNull()
+    expect(host.querySelector('[data-testid="account.signOut"]')).not.toBeNull()
   })
 
   it('an installed app shows no install button', () => {
