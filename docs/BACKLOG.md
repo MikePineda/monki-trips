@@ -27,3 +27,9 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: Bruno smoke in production needs a smoke user (`SMOKE_EMAIL`/`SMOKE_PASSWORD`, owner's machine) and `bru`; `ResendMailer` has no automated test (network) and should get one against a local fake endpoint.
 - 2026-11-07: `docs/ARCHITECTURE.md` still says `app/domain/` is empty and lists no auth; refresh it after WP 0.5 lands.
 - 2026-11-07: `GET /me/export` returns one JSON file (`AccountExport`) today; the plan asks for a zip with one trip JSON v1 per trip (and documents once they exist). Switch when documents land, keeping the JSON shape inside the zip.
+- 2026-11-07: Test-only mail inspection in the API (`NODE_ENV=test`, e.g. `GET /api/_test/mails`): E2E J13 cannot follow the reset link and the verification link/code because `MAIL_DRIVER=log` keeps the body out of reach; today J13 covers the request (202) and an unknown link (410) only.
+- 2026-11-07: E2E accounts come from running the production bootstrap seeder twice in `e2e/global-setup.ts` (owner + partner, then a solo traveller); a dedicated `seed:e2e` command (or a `SEED_*` list) would be cleaner once more fixtures are needed.
+- 2026-11-07: The web `SessionApi.canOpenTrip` is gone: `tripMemberGuard` fetches `GET /trips/:tripId/snapshot` and caches the trip row; the snapshot's members and travellers are discarded until the sync WP writes them to Dexie.
+- 2026-11-07: Trip list rows keep only name, dates, currency and budget; `role` and `memberCount` from `GET /trips` are not stored yet (the members page asks the server).
+- 2026-11-07: Initial bundle is 427 kB after WP 0.6b (warning at 350 kB, error at 450 kB); the budget decision is still open.
+- 2026-11-07: `/settings` outside a trip now hosts the Account section too (same page as `more/settings`); confirm or drop the outside route together with the earlier backlog line.

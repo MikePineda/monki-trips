@@ -35,6 +35,8 @@ const chromePath = process.env.CHROME_PATH
 
 export default defineConfig({
   testDir: './tests',
+  // Creates the suite's accounts on the run's database (e2e/accounts.ts).
+  globalSetup: './global-setup.ts',
   outputDir: process.env.E2E_RESULTS_DIR,
   workers: workersFromEnv(process.env.E2E_WORKERS),
   fullyParallel: true,

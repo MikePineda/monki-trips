@@ -110,6 +110,16 @@ describe('SessionStore', () => {
     expect(fakes.session.calls).toEqual(['me'])
   })
 
+  it('after signing in, restore answers the new session instead of the earlier anonymous one', async () => {
+    fakes.session.user = null
+    const store = TestBed.inject(SessionStore)
+    expect(await store.restore()).toBeNull()
+
+    await store.login({ email: 'owner@example.com', password: 'correct horse' })
+
+    expect((await store.restore())?.email).toBe('owner@example.com')
+  })
+
   it('signing in caches the profile the server returned', async () => {
     const store = TestBed.inject(SessionStore)
 
