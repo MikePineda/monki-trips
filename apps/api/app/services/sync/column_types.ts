@@ -27,10 +27,15 @@ export function normalizeDecimalString(value: string): string {
   return value.replace(/0+$/, '').replace(/\.$/, '')
 }
 
-/** A `date` or `timestamp` value as pg returns it, back to the wall-clock text it was stored as. */
+/**
+ * A `date` or `timestamp` value as pg returns it, back to the wall-clock
+ * text it was stored as. Text (timestamps, see `config/database.ts`) is read
+ * as UTC so no zone, and no daylight-saving gap of one, can move it; a
+ * `date` still arrives as a Date at local midnight and is read in that zone.
+ */
 function wallClock(value: unknown): DateTime | null {
   if (value instanceof Date) return DateTime.fromJSDate(value)
-  if (typeof value === 'string') return DateTime.fromISO(value.replace(' ', 'T'), { setZone: true })
+  if (typeof value === 'string') return DateTime.fromISO(value.replace(' ', 'T'), { zone: 'utc' })
   return null
 }
 

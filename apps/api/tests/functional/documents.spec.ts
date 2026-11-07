@@ -1,6 +1,8 @@
 import { test } from '@japa/runner'
 import { createHash, randomUUID } from 'node:crypto'
-import { rm } from 'node:fs/promises'
+import { readFile, readdir, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import drive from '@adonisjs/drive/services/main'
@@ -65,6 +67,30 @@ test.group('Documents', (group) => {
       entity_id: id,
       action: 'created',
     })
+  })
+
+  test('the multipart temp file is deleted once the bytes are stored', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const before = new Set(await readdir(tmpdir()))
+    // A unique payload, so a leftover temp file can be recognised by its bytes.
+    const payload = Buffer.concat([PDF, Buffer.from(`%${randomUUID()}\n`)])
+
+    const response = await actingAs(client.post(`/api/v1/trips/${trip.id}/documents`), owner)
+      .field('title', 'Temp check')
+      .file('file', payload, { filename: 'temp.pdf' })
+
+    response.assertStatus(201)
+    const leftovers: string[] = []
+    for (const name of await readdir(tmpdir())) {
+      if (before.has(name)) continue
+      const bytes = await readFile(join(tmpdir(), name)).catch(() => null)
+      if (bytes?.equals(payload)) leftovers.push(name)
+    }
+    assert.deepEqual(leftovers, [])
   })
 
   test('upload rejects disguised executable', async ({ client, db: dbAssert }) => {
@@ -136,7 +162,10 @@ test.group('Documents', (group) => {
     const location = new URL(response.header('location')!, 'http://127.0.0.1')
     assert.include(location.pathname, `/drive/fs/trips/${trip.id}/${id}`)
     assert.isNotEmpty(location.searchParams.get('signature'))
-    assert.equal(location.searchParams.get('contentDisposition'), 'inline; filename="Voucher.pdf"')
+    assert.equal(
+      location.searchParams.get('contentDisposition'),
+      `inline; filename="Voucher.pdf"; filename*=UTF-8''Voucher.pdf`
+    )
     assert.equal(response.header('cache-control'), 'no-store')
 
     // The signed URL serves the bytes until it expires (300 s).

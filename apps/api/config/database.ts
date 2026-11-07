@@ -1,6 +1,15 @@
+import pg from 'pg'
 import env from '#start/env'
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/lucid'
+
+/**
+ * `timestamp without time zone` (the `*_local` wall clocks of events and
+ * segments) comes back as the text Postgres stores, `YYYY-MM-DD HH:mm:ss`.
+ * pg's default builds a JS Date in the process zone, so the value would
+ * depend on `TZ`, and a wall time inside that zone's DST gap would shift.
+ */
+pg.types.setTypeParser(pg.types.builtins.TIMESTAMP, (value: string) => value)
 
 const dbConfig = defineConfig({
   connection: 'postgres',

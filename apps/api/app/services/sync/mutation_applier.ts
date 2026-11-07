@@ -122,6 +122,7 @@ export class MutationApplier {
   ): Promise<SyncMutationResult | null> {
     const stored = (await db.from('sync_mutations').where('id', mutation.mutationId).first()) as {
       user_id: string
+      trip_id: string
       response: SyncMutationResult
     } | null
     if (!stored) return null
@@ -131,6 +132,20 @@ export class MutationApplier {
         status: 'rejected',
         error: { code: 'E_CONFLICT', message: i18n.t('errors.E_CONFLICT', {}, 'E_CONFLICT') },
       }
+    }
+    // The stored row is trip content: someone who left the trip (or whose trip is gone) does not see it.
+    const member = await db
+      .from('trip_members as m')
+      .join('trips as t', 't.id', 'm.trip_id')
+      .where('m.trip_id', stored.trip_id)
+      .where('m.user_id', user.id)
+      .whereNull('m.deleted_at')
+      .whereNull('t.deleted_at')
+      .select('m.id')
+      .first()
+    if (!member) {
+      const notFound = MutationRejected.code(i18n, 'E_ROW_NOT_FOUND')
+      return { mutationId: mutation.mutationId, status: 'rejected', error: notFound.error }
     }
     return { ...stored.response, mutationId: mutation.mutationId, status: 'duplicate' }
   }

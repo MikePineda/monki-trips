@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 import { randomUUID } from 'node:crypto'
+import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
@@ -61,6 +62,26 @@ test.group('Sync push', (group) => {
     assert.deepEqual(replay.row, first.row)
     await dbAssert.assertHas('stops', { id: stop.id, name: 'Harbour Town' })
     await dbAssert.assertCount('trip_activity', 1)
+  })
+
+  test('a replay from someone who left the trip is rejected as not found', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const editor = await makeUser()
+    const trip = await makeTrip(owner)
+    const membership = await addMember(trip, editor)
+    const stop = mutation(trip.id, 'stop', { name: 'Before leaving' })
+    await pushApplied(client, editor, stop)
+
+    membership.deletedAt = DateTime.now()
+    await membership.save()
+    const replay = await pushOne(client, editor, stop)
+
+    assert.equal(replay.status, 'rejected')
+    assert.equal(replay.error?.code, 'E_ROW_NOT_FOUND')
+    assert.notProperty(replay, 'row')
   })
 
   test('field level last write wins across two users', async ({ client, assert }) => {
