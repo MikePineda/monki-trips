@@ -1,0 +1,45 @@
+# Owner-only scratch: Q&A, plan copies with names, ids, the real trip data.
+docs/internal/
+
+# Environment files. Test env files with fake values are committed on purpose.
+.env
+.env.*
+!.env.example
+!.env.selfhost.example
+!apps/api/.env.example
+!apps/api/.env.test
+!e2e/e2e.env
+
+# Real data never enters the repo (synthetic fixtures live under tests/fixtures).
+*.csv
+*.ics
+*.eml
+trips/*.json
+!**/tests/fixtures/**
+!**/e2e/fixtures/**
+
+# Node and build output
+node_modules/
+dist/
+build/
+.turbo/
+.angular/
+coverage/
+*.tsbuildinfo
+
+# Test output
+test-results*/
+playwright-report*/
+blob-report/
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/cloud-setup.log
+.claude/worktrees/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

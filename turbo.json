@@ -1,0 +1,69 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalDependencies": [".nvmrc"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**", "dist/**"],
+      "env": ["NODE_ENV"]
+    },
+    "@monkitrips/api#build": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": ["build/**", ".adonisjs/**"],
+      "env": ["NODE_ENV"]
+    },
+    "@monkitrips/web#build": {
+      "dependsOn": ["^build", "@monkitrips/api#codegen"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "codegen": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "env": ["DB_*", "S3_*"]
+    },
+    "@monkitrips/api#test": {
+      "dependsOn": ["^build", "codegen"],
+      "cache": false,
+      "env": ["DB_*", "S3_*"]
+    },
+    "@monkitrips/web#test": {
+      "dependsOn": ["^build", "@monkitrips/api#codegen"],
+      "cache": false
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "@monkitrips/api#lint": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "@monkitrips/api#typecheck": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": []
+    },
+    "@monkitrips/web#typecheck": {
+      "dependsOn": ["^build", "@monkitrips/api#codegen"],
+      "outputs": []
+    },
+    "e2e": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "passThroughEnv": ["E2E_SLOT", "E2E_WORKERS", "E2E_WEBKIT", "CHROME_PATH", "CI"]
+    }
+  }
+}

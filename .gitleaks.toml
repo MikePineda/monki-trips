@@ -1,0 +1,8 @@
+# Extends the default gitleaks rules with the repo's known false positives.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholders and fake test values that trip generic rules"
+regexes = ['''test-key-not-real''', '''e2e-key-not-real''', '''gitleaks:allow''']
+paths = ['''apps/api/tests/fixtures/''', '''e2e/fixtures/''']

@@ -1,0 +1,22 @@
+{
+  "name": "@monkitrips/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "Playwright end-to-end suite against the real stack: compose.test.yaml plus the production build of the API serving the built Angular app.",
+  "scripts": {
+    "e2e": "bash ../scripts/e2e.sh",
+    "typecheck": "tsc --noEmit",
+    "report": "playwright show-report"
+  },
+  "dependencies": {
+    "@monkitrips/api": "*",
+    "@monkitrips/web": "*"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "~24.19.2",
+    "typescript": "~6.0.3"
+  }
+}

@@ -1,0 +1,18 @@
+# Generated or vendored output
+node_modules
+build
+dist
+coverage
+.turbo
+.angular
+.adonisjs
+tmp
+playwright-report*
+test-results*
+package-lock.json
+# Owned by release-please
+CHANGELOG.md
+# Verbatim license text
+LICENSE
+# Local-only notes (gitignored)
+docs/internal
