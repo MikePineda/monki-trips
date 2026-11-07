@@ -2,10 +2,12 @@ import type {
   EventSegmentRow,
   SegmentSeat,
   Trip,
+  TripDocumentRow,
   TripEventRow,
   TripStopRow,
 } from '@monkitrips/shared'
 import type { TripRecord } from '../app/core/offline/records'
+import { documentRow } from './fake-documents-api'
 
 /**
  * Synthetic trip content for specs: invented places, codes and prices.
@@ -162,6 +164,18 @@ export function blankSeat(overrides: Partial<SegmentSeat> = {}): SegmentSeat {
     updatedAt: '2026-11-07T00:00:00.000Z',
     ...overrides,
   }
+}
+
+/** A file document of the demo trip with a made-up server hash: the documents builder, filled in. */
+export function blankDocument(overrides: Partial<TripDocumentRow> = {}): TripDocumentRow {
+  return documentRow({
+    tripId: DEMO_TRIP_ID,
+    title: 'Ferry ticket',
+    sizeBytes: 1024,
+    sha256: 'a'.repeat(64),
+    availableOffline: true,
+    ...overrides,
+  })
 }
 
 /** The instant of a local time in a zone, with the offsets the fixtures use (no DST in them). */
