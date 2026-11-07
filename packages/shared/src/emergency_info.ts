@@ -10,13 +10,15 @@ export interface EmergencyContact {
 /**
  * Emergency information of a trip, one row per trip. Sync merges it per
  * top-level key (each key has its own last-write-wins clock). Everything is
- * optional: a key the trip never filled in is absent.
+ * optional: a key the trip never filled in is absent, and one cleared later
+ * is null (`PUT /trips/:tripId/emergency` writes null for every key the
+ * body leaves out, so the clearing wins against older offline edits).
  */
 export interface EmergencyInfoContent {
   contacts?: EmergencyContact[]
-  insurance?: { provider: string; policyNumber: string | null; phone: string | null }
-  embassy?: { name: string; phone: string | null; address: string | null }
-  medical?: { notes: string | null }
+  insurance?: { provider: string; policyNumber: string | null; phone: string | null } | null
+  embassy?: { name: string; phone: string | null; address: string | null } | null
+  medical?: { notes: string | null } | null
   notes?: string | null
 }
 
