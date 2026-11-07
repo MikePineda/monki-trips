@@ -1,0 +1,46 @@
+{
+  "shared": {
+    "messages": {
+      "required": "{field} es obligatorio",
+      "string": "{field} debe ser texto",
+      "email": "{field} debe ser un correo válido",
+      "minLength": "{field} debe tener al menos {min} caracteres",
+      "maxLength": "{field} debe tener como máximo {max} caracteres",
+      "regex": "{field} tiene un formato inválido",
+      "enum": "{field} debe ser uno de {choices}",
+      "in": "{field} no es un valor conocido",
+      "uuid": "{field} debe ser un identificador válido",
+      "url": "{field} debe ser una URL válida",
+      "number": "{field} debe ser un número",
+      "withoutDecimals": "{field} debe ser un número entero",
+      "min": "{field} debe ser al menos {min}",
+      "object": "{field} debe ser un objeto",
+      "endsOn": {
+        "afterOrEqual": "La fecha de fin no puede ser anterior a la de inicio"
+      }
+    },
+    "fields": {
+      "email": "el correo",
+      "password": "la contraseña",
+      "currentPassword": "la contraseña actual",
+      "displayName": "el nombre",
+      "locale": "el idioma",
+      "timezone": "la zona horaria",
+      "theme": "el tema",
+      "invitationToken": "la invitación",
+      "token": "el enlace",
+      "code": "el código",
+      "name": "el nombre",
+      "baseCurrency": "la moneda base",
+      "startsOn": "la fecha de inicio",
+      "endsOn": "la fecha de fin",
+      "homeTz": "la zona horaria de origen",
+      "budgetMode": "el modo de presupuesto",
+      "budgetTotalMinor": "el presupuesto",
+      "role": "el rol",
+      "userId": "el miembro",
+      "endpoint": "el endpoint",
+      "deviceLabel": "el nombre del dispositivo"
+    }
+  }
+}

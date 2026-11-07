@@ -7,13 +7,16 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { apiClient } from '@japa/api-client'
 import { shieldApiClient } from '@adonisjs/shield/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
+import { authApiClient } from '@adonisjs/auth/plugins/api_client'
 
 /**
  * Imported by the "bin/test.ts" entrypoint.
  *
  * `sessionApiClient` + `shieldApiClient` give `withSession()` and
- * `withCsrfToken()`; `dbAssertions` gives `db.assertHas(...)`. The auth
- * plugin (`loginAs`) joins when users exist (WP 0.5).
+ * `withCsrfToken()`; `dbAssertions` gives `db.assertHas(...)`;
+ * `authApiClient` gives `loginAs(user)`. Prefer `actingAs(request, user)`
+ * from tests/helpers/acting_as.ts: it also stamps the session version the
+ * auth middleware checks.
  */
 export const plugins: Config['plugins'] = [
   assert(),
@@ -22,6 +25,7 @@ export const plugins: Config['plugins'] = [
   apiClient(),
   sessionApiClient(app),
   shieldApiClient(),
+  authApiClient(app),
 ]
 
 /**

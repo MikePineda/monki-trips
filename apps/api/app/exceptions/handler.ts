@@ -1,13 +1,16 @@
 import app from '@adonisjs/core/services/app'
 import { type HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 import { requestI18n } from '#middleware/detect_user_locale_middleware'
+import { ApiException } from '#exceptions/api_exception'
 
 /**
- * JSON-only error rendering. Errors that render themselves (validation, CSRF
- * later) keep their shape; any other 4xx answers `{ message, code }` with the
- * message translated from `errors.<code>` in the request's locale. A 5xx shows
- * the debug page in development and a generic translated body in production,
- * so driver messages and table names never leave the server.
+ * JSON-only error rendering. Every 4xx answers `{ message, code }` with the
+ * message translated from `errors.<code>` in the request's locale, except
+ * validation errors, which keep VineJS' `{ errors: [{ field, rule, message }] }`.
+ * Business errors (`ApiException`) may add fields (`tripIds`); throttling adds
+ * the rate-limit headers. A 5xx shows the debug page in development and a
+ * generic translated body in production, so driver messages and table names
+ * never leave the server.
  */
 export default class HttpExceptionHandler extends ExceptionHandler {
   protected debug = !app.inProduction
@@ -21,15 +24,26 @@ export default class HttpExceptionHandler extends ExceptionHandler {
       status: number
       code?: string
       message: string
-      handle?: unknown
+      getDefaultHeaders?: () => Record<string, unknown>
     }
-    const selfRendered = typeof httpError.handle === 'function'
 
-    if (!selfRendered && httpError.status >= 400 && httpError.status < 500) {
+    if (httpError.code === 'E_VALIDATION_ERROR') {
+      // Always JSON: the default renderer would flash and redirect a form post.
+      const { messages } = error as { messages: { field: string; rule: string; message: string }[] }
+      return ctx.response.status(422).send({ errors: messages })
+    }
+
+    if (httpError.status >= 400 && httpError.status < 500) {
       const code = httpError.code ?? 'E_BAD_REQUEST'
+      if (typeof httpError.getDefaultHeaders === 'function') {
+        for (const [name, value] of Object.entries(httpError.getDefaultHeaders())) {
+          ctx.response.header(name, String(value))
+        }
+      }
+      const payload = error instanceof ApiException ? error.payload : {}
       return ctx.response
         .status(httpError.status)
-        .send({ message: translate(code, httpError.message), code })
+        .send({ message: translate(code, httpError.message), code, ...payload })
     }
 
     if (httpError.status >= 500 && !this.debug) {

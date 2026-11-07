@@ -33,7 +33,10 @@ test.group('Trip roles', () => {
   })
 
   test('roles change only by the owner and never touch the owner row', ({ assert }) => {
-    assert.equal(roleChange({ actorRole: 'editor', targetRole: 'editor', newRole: 'editor' }), 'E_TRIP_ROLE')
+    assert.equal(
+      roleChange({ actorRole: 'editor', targetRole: 'editor', newRole: 'editor' }),
+      'E_TRIP_ROLE'
+    )
     assert.equal(
       roleChange({ actorRole: 'owner', targetRole: 'owner', newRole: 'editor' }),
       'E_OWNER_CANNOT_LEAVE'
@@ -42,6 +45,9 @@ test.group('Trip roles', () => {
       roleChange({ actorRole: 'owner', targetRole: 'editor', newRole: 'owner' }),
       'E_OWNER_CANNOT_LEAVE'
     )
-    assert.equal(roleChange({ actorRole: 'owner', targetRole: 'editor', newRole: 'editor' }), 'allowed')
+    assert.equal(
+      roleChange({ actorRole: 'owner', targetRole: 'editor', newRole: 'editor' }),
+      'allowed'
+    )
   })
 })

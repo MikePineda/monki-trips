@@ -1,11 +1,13 @@
 import type { UserTokenPurpose } from '@monkitrips/shared'
 
 /** Lifetime and wrong-code allowance per token purpose. */
-export const USER_TOKEN_RULES: Record<UserTokenPurpose, { ttlMinutes: number; maxAttempts: number }> =
-  {
-    verify_email: { ttlMinutes: 15, maxAttempts: 5 },
-    reset_password: { ttlMinutes: 60, maxAttempts: 1 },
-  }
+export const USER_TOKEN_RULES: Record<
+  UserTokenPurpose,
+  { ttlMinutes: number; maxAttempts: number }
+> = {
+  verify_email: { ttlMinutes: 15, maxAttempts: 5 },
+  reset_password: { ttlMinutes: 60, maxAttempts: 1 },
+}
 
 export interface UserTokenFacts {
   purpose: UserTokenPurpose

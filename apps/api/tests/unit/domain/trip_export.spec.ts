@@ -23,8 +23,22 @@ test.group('Trip JSON v1 export', () => {
     const document = buildTripJsonV1({
       trip,
       members: [
-        { id: 'm1', tripId: 'trip-1', userId: 'user-1', role: 'owner', displayName: 'Owner', joinedAt: 'x' },
-        { id: 'm2', tripId: 'trip-1', userId: 'user-2', role: 'editor', displayName: 'Partner', joinedAt: 'y' },
+        {
+          id: 'm1',
+          tripId: 'trip-1',
+          userId: 'user-1',
+          role: 'owner',
+          displayName: 'Owner',
+          joinedAt: 'x',
+        },
+        {
+          id: 'm2',
+          tripId: 'trip-1',
+          userId: 'user-2',
+          role: 'editor',
+          displayName: 'Partner',
+          joinedAt: 'y',
+        },
       ],
       travellers: [
         { id: 't1', tripId: 'trip-1', displayName: 'Owner', userId: 'user-1', position: 0 },

@@ -45,7 +45,11 @@ test.group('Signup gate', () => {
   test('an expired, accepted, revoked or unknown invitation answers expired', ({ assert }) => {
     for (const state of ['expired', 'accepted', 'revoked'] as const) {
       assert.deepEqual(
-        signupGate({ registrationOpen: true, email: 'a@example.com', invitation: { state, email: null } }),
+        signupGate({
+          registrationOpen: true,
+          email: 'a@example.com',
+          invitation: { state, email: null },
+        }),
         { allowed: false, code: 'E_INVITATION_EXPIRED' }
       )
     }

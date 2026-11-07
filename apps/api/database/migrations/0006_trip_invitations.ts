@@ -24,7 +24,11 @@ export default class extends BaseSchema {
       table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(this.now())
 
       table.check("role in ('editor')", [], 'trip_invitations_role_check')
-      table.check('email is null or email = lower(email)', [], 'trip_invitations_email_lowercase_check')
+      table.check(
+        'email is null or email = lower(email)',
+        [],
+        'trip_invitations_email_lowercase_check'
+      )
       table.index(['trip_id'])
     })
   }

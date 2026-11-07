@@ -6,4 +6,56 @@ export interface ApiDefinition {
     ready: typeof routes['health.ready']
     live: typeof routes['health.live']
   }
+  config: {
+    show: typeof routes['config.show']
+  }
+  auth: {
+    signup: typeof routes['auth.signup']
+    login: typeof routes['auth.login']
+    email: {
+      verify: typeof routes['auth.email.verify']
+      verifyCode: typeof routes['auth.email.verifyCode']
+      resend: typeof routes['auth.email.resend']
+    }
+    password: {
+      forgot: typeof routes['auth.password.forgot']
+      reset: typeof routes['auth.password.reset']
+    }
+    me: typeof routes['auth.me']
+    logout: typeof routes['auth.logout']
+    logoutAll: typeof routes['auth.logoutAll']
+  }
+  invitations: {
+    show: typeof routes['invitations.show']
+    accept: typeof routes['invitations.accept']
+  }
+  me: {
+    update: typeof routes['me.update']
+    password: typeof routes['me.password']
+    export: typeof routes['me.export']
+    delete: typeof routes['me.delete']
+    restore: typeof routes['me.restore']
+    pushSubscriptions: {
+      store: typeof routes['me.pushSubscriptions.store']
+      destroy: typeof routes['me.pushSubscriptions.destroy']
+    }
+  }
+  trips: {
+    index: typeof routes['trips.index']
+    store: typeof routes['trips.store']
+    snapshot: typeof routes['trips.snapshot']
+    members: {
+      index: typeof routes['trips.members.index']
+      destroy: typeof routes['trips.members.destroy']
+      update: typeof routes['trips.members.update']
+    }
+    destroy: typeof routes['trips.destroy']
+    transferOwnership: typeof routes['trips.transferOwnership']
+    invitations: {
+      index: typeof routes['trips.invitations.index']
+      store: typeof routes['trips.invitations.store']
+      destroy: typeof routes['trips.invitations.destroy']
+    }
+    restore: typeof routes['trips.restore']
+  }
 }

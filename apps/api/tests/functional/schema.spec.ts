@@ -150,7 +150,11 @@ test.group('Schema', () => {
       const owner = await insertUser()
       const tripId = table === 'users' ? undefined : await insertTrip(owner)
       const bases: Record<string, () => object> = {
-        users: () => ({ email: `${crypto.randomUUID()}@example.com`, password: 'x', display_name: 'P' }),
+        users: () => ({
+          email: `${crypto.randomUUID()}@example.com`,
+          password: 'x',
+          display_name: 'P',
+        }),
         trips: () => ({
           name: 'T',
           base_currency: 'EUR',
