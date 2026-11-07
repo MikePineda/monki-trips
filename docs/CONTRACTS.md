@@ -109,8 +109,8 @@ IP within 15 minutes. Production 5xx answer
 | Invitation     | `APP_URL/invite/<token>`         | 7 days, single use                    |
 
 Texts come from `resources/lang/<locale>/mails.json` in the recipient's
-locale (the inviter's for invitations). `MAIL_DRIVER=log` logs recipient and
-subject only.
+locale (the inviter's for invitations). `MAIL_DRIVER=log` logs the masked
+recipient (`m***@example.com`) and the subject only.
 
 ## Typed client
 
