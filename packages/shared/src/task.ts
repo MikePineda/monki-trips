@@ -23,3 +23,13 @@ export interface TripTaskRow extends Required<TripTask> {
   deletedAt: IsoInstant | null
   updatedAt: IsoInstant
 }
+
+/**
+ * What `POST /trips/:tripId/tasks/from-template` answers: the trip's live
+ * checklist (every task with a `templateItemKey`, in template order) and
+ * how many items this request created (0 when the checklist was complete).
+ */
+export interface TemplateTasksResult {
+  tasks: TripTaskRow[]
+  created: number
+}
