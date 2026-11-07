@@ -64,6 +64,11 @@ export interface ApiDefinition {
       show: typeof routes['trips.emergency.show']
       update: typeof routes['trips.emergency.update']
     }
+    phraseCards: {
+      index: typeof routes['trips.phraseCards.index']
+      store: typeof routes['trips.phraseCards.store']
+      destroy: typeof routes['trips.phraseCards.destroy']
+    }
     members: {
       index: typeof routes['trips.members.index']
       destroy: typeof routes['trips.members.destroy']

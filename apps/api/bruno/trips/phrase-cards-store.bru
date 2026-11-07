@@ -1,0 +1,31 @@
+meta {
+  name: Generate phrase cards
+  type: http
+  seq: 56
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/phrase-cards
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "language": "ja",
+    "preferences": ["vegetarian", "no peanuts"]
+  }
+}
+
+docs {
+  Generates the cards of one language once (201 `PhraseCards`) through the
+  LLM: greetings, a reservation card with the `{name}` placeholder, one
+  address card per lodging of the trip, food (from `preferences`),
+  emergency, numbers and prices. 409 `E_CONFLICT` with the existing `id`
+  unless `?force=true`; 402 `E_LLM_QUOTA_EXCEEDED` over the monthly cap;
+  503 `E_LLM_UNAVAILABLE`; 422 `E_LLM_BAD_OUTPUT` after one retry.
+}

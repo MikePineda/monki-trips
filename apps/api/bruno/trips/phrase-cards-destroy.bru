@@ -1,0 +1,24 @@
+meta {
+  name: Delete phrase cards
+  type: http
+  seq: 57
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/phrase-cards/{{language}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  language: ja
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+docs {
+  Tombstones the live set of `language` (a BCP 47 tag such as `ja`) (204) so it can be generated
+  again; 404 when the trip has none.
+}

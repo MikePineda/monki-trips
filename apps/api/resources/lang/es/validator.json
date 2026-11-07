@@ -167,7 +167,10 @@
       "categoryRef": "la ref de categoría",
       "paidByTravellerRef": "la ref de quien pagó",
       "sourceDocumentRef": "la ref del documento origen",
-      "dryRun": "el ensayo"
+      "dryRun": "el ensayo",
+      "language": "el idioma de las tarjetas",
+      "preferences": "las preferencias de comida",
+      "force": "forzar"
     }
   }
 }

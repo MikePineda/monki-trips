@@ -25,7 +25,10 @@ export const memberEntity: EntitySpec = {
   ],
 }
 
-/** Phrase cards: written by the AI package later, synced read-only until then. */
+/**
+ * Phrase cards: written only by `POST /trips/:tripId/phrase-cards` (the LLM
+ * generates them once per language), synced read-only to every device.
+ */
 export const phraseCardEntity: EntitySpec = {
   entity: 'phrase_card',
   table: 'phrase_cards',

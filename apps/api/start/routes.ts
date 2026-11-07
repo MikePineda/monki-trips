@@ -136,6 +136,18 @@ router
                   .put('trips/:tripId/emergency', [controllers.Emergency, 'update'])
                   .as('trips.emergency.update')
                 router
+                  .get('trips/:tripId/phrase-cards', [controllers.PhraseCards, 'index'])
+                  .as('trips.phraseCards.index')
+                router
+                  .post('trips/:tripId/phrase-cards', [controllers.PhraseCards, 'store'])
+                  .as('trips.phraseCards.store')
+                router
+                  .delete('trips/:tripId/phrase-cards/:language', [
+                    controllers.PhraseCards,
+                    'destroy',
+                  ])
+                  .as('trips.phraseCards.destroy')
+                router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')
                 router

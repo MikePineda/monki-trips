@@ -102,6 +102,16 @@ const CASES: Record<string, IsolationCase> = {
     request: (c, v, a) =>
       actingAs(c.put(`/api/v1/trips/${v.trip.id}/emergency`), a).json({ notes: 'Intruder' }),
   },
+  'trips.phraseCards.index': {
+    request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/phrase-cards`), a),
+  },
+  'trips.phraseCards.store': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/phrase-cards`), a).json({ language: 'ko' }),
+  },
+  'trips.phraseCards.destroy': {
+    request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}/phrase-cards/ja`), a),
+  },
   'trips.destroy': {
     request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}`), a),
   },
@@ -496,6 +506,7 @@ const CONTENT_TABLES = [
   'expenses',
   'expense_shares',
   'emergency_info',
+  'phrase_cards',
   'trip_activity',
 ]
 
@@ -588,6 +599,12 @@ async function makeVictim(): Promise<Victim> {
       share_minor: 1000,
     })
     .returning('id')
+  await db.table('phrase_cards').insert({
+    trip_id: trip.id,
+    language: 'ja',
+    cards: JSON.stringify([]),
+    created_by: owner.id,
+  })
   const mutationId = randomUUID()
   await db.table('sync_mutations').insert({
     id: mutationId,

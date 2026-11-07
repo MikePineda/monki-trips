@@ -528,6 +528,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/emergency_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'trips.phraseCards.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/phrase-cards'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['index']>>>
+    }
+  }
+  'trips.phraseCards.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/phrase-cards'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/phrase_cards').generatePhraseCardsValidator)>|InferInput<(typeof import('#validators/phrase_cards').phraseCardsQueryValidator)>>
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/phrase_cards').generatePhraseCardsValidator)>|InferInput<(typeof import('#validators/phrase_cards').phraseCardsQueryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'trips.phraseCards.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/trips/:tripId/phrase-cards/:language'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; language: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['destroy']>>>
+    }
+  }
   'trips.members.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/members'

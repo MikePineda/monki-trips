@@ -248,6 +248,24 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"emergency"]],
     types: placeholder as Registry['trips.emergency.update']['types'],
   },
+  'trips.phraseCards.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/phrase-cards',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"phrase-cards"]],
+    types: placeholder as Registry['trips.phraseCards.index']['types'],
+  },
+  'trips.phraseCards.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/phrase-cards',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"phrase-cards"]],
+    types: placeholder as Registry['trips.phraseCards.store']['types'],
+  },
+  'trips.phraseCards.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/trips/:tripId/phrase-cards/:language',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"phrase-cards"],[1,"language"]],
+    types: placeholder as Registry['trips.phraseCards.destroy']['types'],
+  },
   'trips.members.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/trips/:tripId/members',

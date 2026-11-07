@@ -167,7 +167,10 @@
       "categoryRef": "category ref",
       "paidByTravellerRef": "payer ref",
       "sourceDocumentRef": "source document ref",
-      "dryRun": "dry run"
+      "dryRun": "dry run",
+      "language": "language of the cards",
+      "preferences": "food preferences",
+      "force": "force"
     }
   }
 }
