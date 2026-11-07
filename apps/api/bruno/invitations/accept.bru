@@ -1,0 +1,15 @@
+meta {
+  name: Accept an invitation
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{baseUrl}}/api/v1/invitations/{{invitationToken}}/accept
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}

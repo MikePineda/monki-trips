@@ -1,0 +1,15 @@
+meta {
+  name: Cancel account deletion
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/api/v1/me/restore
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}

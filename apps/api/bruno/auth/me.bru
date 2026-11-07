@@ -1,0 +1,19 @@
+meta {
+  name: Who am I
+  type: http
+  seq: 6
+  tags: [
+    smoke
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/v1/auth/me
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.id: isString
+}

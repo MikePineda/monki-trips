@@ -1,0 +1,15 @@
+meta {
+  name: Remove a member
+  type: http
+  seq: 31
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/members/{{memberId}}
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}

@@ -31,6 +31,7 @@
     "test:guards": "bash scripts/ci/self-test.sh && node --test scripts/test/no-network.test.mjs",
     "check:lockfile": "node scripts/ci/check-lockfile.mjs",
     "privacy": "bash scripts/ci/privacy-pre-push.sh",
+    "bruno:coverage": "node apps/api/scripts/bruno-coverage.mjs",
     "prepare": "node scripts/install-git-hooks.mjs"
   },
   "devDependencies": {

@@ -1,0 +1,21 @@
+meta {
+  name: Transfer ownership
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/transfer-ownership
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "userId": "{{memberUserId}}"
+  }
+}

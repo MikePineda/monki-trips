@@ -1,0 +1,11 @@
+meta {
+  name: Trip snapshot
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/snapshot
+  body: none
+  auth: none
+}

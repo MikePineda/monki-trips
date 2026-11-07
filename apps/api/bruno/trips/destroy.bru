@@ -1,0 +1,15 @@
+meta {
+  name: Delete a trip
+  type: http
+  seq: 26
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}

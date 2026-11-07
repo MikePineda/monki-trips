@@ -1,0 +1,18 @@
+meta {
+  name: Liveness
+  type: http
+  seq: 2
+  tags: [
+    smoke
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/health/live
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}

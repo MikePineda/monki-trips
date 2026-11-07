@@ -1,0 +1,21 @@
+meta {
+  name: Change a member role
+  type: http
+  seq: 30
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/members/{{memberId}}
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "role": "editor"
+  }
+}

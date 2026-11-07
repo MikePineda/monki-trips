@@ -1,0 +1,15 @@
+meta {
+  name: Revoke an invitation
+  type: http
+  seq: 34
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/invitations/{{invitationId}}
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
