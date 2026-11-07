@@ -29,16 +29,19 @@
     "test": {
       "dependsOn": ["^build"],
       "cache": false,
-      "env": ["DB_*", "S3_*"]
+      "env": ["DB_*", "S3_*"],
+      "passThroughEnv": ["NO_NETWORK_ALLOW_HOSTS", "TZ", "CI"]
     },
     "@monkitrips/api#test": {
       "dependsOn": ["^build", "codegen"],
       "cache": false,
-      "env": ["DB_*", "S3_*"]
+      "env": ["DB_*", "S3_*"],
+      "passThroughEnv": ["NO_NETWORK_ALLOW_HOSTS", "TZ", "CI"]
     },
     "@monkitrips/web#test": {
       "dependsOn": ["^build", "@monkitrips/api#codegen"],
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["NO_NETWORK_ALLOW_HOSTS", "TZ", "CI"]
     },
     "lint": {
       "dependsOn": ["^build"],
@@ -63,7 +66,14 @@
     "e2e": {
       "dependsOn": ["^build"],
       "cache": false,
-      "passThroughEnv": ["E2E_SLOT", "E2E_WORKERS", "E2E_WEBKIT", "CHROME_PATH", "CI"]
+      "passThroughEnv": [
+        "E2E_SLOT",
+        "E2E_WORKERS",
+        "E2E_WEBKIT",
+        "CHROME_PATH",
+        "CI",
+        "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"
+      ]
     }
   }
 }

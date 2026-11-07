@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
 /**
@@ -11,5 +12,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     fsModuleCache: false,
+    // No test may reach the internet (scripts/test/no-network.mjs).
+    setupFiles: [fileURLToPath(new URL('../../scripts/test/no-network.mjs', import.meta.url))],
   },
 })

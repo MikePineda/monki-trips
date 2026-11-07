@@ -41,6 +41,9 @@ RUN npm ci --no-audit --no-fund
 FROM deps AS build
 COPY apps ./apps
 COPY packages ./packages
+# apps/api/bin/test.ts imports the test network guard; `node ace build`
+# type-checks it, so it must resolve here (it never reaches the runtime stage).
+COPY scripts/test/no-network.mjs ./scripts/test/
 RUN npm run build -w @monkitrips/shared \
  && npm run build -w @monkitrips/web \
  && cd apps/api && node ace build

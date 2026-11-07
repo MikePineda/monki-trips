@@ -27,6 +27,10 @@
     "verify:quick": "turbo run lint typecheck test build",
     "services:up": "docker compose -f compose.dev.yaml up -d --wait db",
     "services:down": "docker compose -f compose.dev.yaml down",
+    "test:offline": "bash scripts/test-offline.sh",
+    "test:guards": "bash scripts/ci/self-test.sh && node --test scripts/test/no-network.test.mjs",
+    "check:lockfile": "node scripts/ci/check-lockfile.mjs",
+    "privacy": "bash scripts/ci/privacy-pre-push.sh",
     "prepare": "node scripts/install-git-hooks.mjs"
   },
   "devDependencies": {
