@@ -1,11 +1,99 @@
 {
   "title": "Offline",
-  "ready": {
-    "title": "Ready to fly",
-    "body": "The checklist that proves the whole trip is on this phone, with “Download everything” and the airplane-mode test, arrives with phase 2."
-  },
   "status": {
     "label": "Connection",
     "synced": "Everything is in sync."
+  },
+  "ready": {
+    "title": "Ready to fly",
+    "allGood": "This phone is ready to fly",
+    "notYetOne": "1 thing to fix before you fly",
+    "notYetOther": "{{count}} things to fix before you fly",
+    "ok": "Ready",
+    "bad": "To fix",
+    "notApplicable": "Not needed"
+  },
+  "checks": {
+    "version": {
+      "title": "App saved on this phone",
+      "ok": "Version {{version}}",
+      "bad": "Not saved for offline use yet",
+      "pending": "A new version is waiting",
+      "fix": "Check",
+      "reload": "Reload"
+    },
+    "snapshot": {
+      "title": "Trip data",
+      "ok": "Synced {{age}}",
+      "stale": "Last synced {{age}}",
+      "never": "Never synced on this phone",
+      "fix": "Sync now"
+    },
+    "documents": {
+      "title": "Documents",
+      "okOne": "1 file saved and verified",
+      "okOther": "{{count}} files saved and verified",
+      "none": "No files to save",
+      "badOne": "1 file is missing or out of date",
+      "badOther": "{{count}} files are missing or out of date",
+      "fix": "Save them"
+    },
+    "assets": {
+      "title": "Languages and mascot",
+      "ok": "Both languages and Kiko are saved",
+      "bad": "Not saved yet",
+      "fix": "Save them"
+    },
+    "storage": {
+      "title": "Storage",
+      "ok": "Kept on this phone, with room to spare",
+      "notPersisted": "The browser may clear the data when space runs low",
+      "noRoom": "Less free space than the trip needs",
+      "fix": "Keep it"
+    },
+    "outbox": {
+      "title": "Changes to send",
+      "ok": "Nothing waiting",
+      "badOne": "1 change waiting to sync",
+      "badOther": "{{count}} changes waiting to sync",
+      "fix": "Send now"
+    },
+    "installed": {
+      "title": "Installed app",
+      "ok": "Running as the installed app",
+      "notApplicable": "Not needed on this device",
+      "bad": "Open it from the Home Screen: Safari keeps its data apart",
+      "fix": "How to install"
+    }
+  },
+  "download": {
+    "action": "Download everything",
+    "label": "Downloading",
+    "sync": "Syncing the trip",
+    "version": "Saving the app",
+    "documents": "Saving the documents",
+    "storage": "Keeping the data on this phone",
+    "assets": "Saving languages and Kiko",
+    "done": "Everything is on this phone",
+    "failedOne": "1 document could not be saved",
+    "failedOther": "{{count}} documents could not be saved",
+    "offline": "You need a connection for this",
+    "stopped": "The download stopped. Try again with a better connection.",
+    "iosOnly": "On iPhone and iPad, download from the installed app: Safari and the app keep separate data."
+  },
+  "airplane": {
+    "title": "Test in airplane mode",
+    "step1": "Tap “Download everything” and wait until every check is ready.",
+    "step2": "Close the app completely.",
+    "step3": "Turn on airplane mode.",
+    "step4": "Open the app: Today, the documents and tonight's stay must show.",
+    "tested": "Tested offline on {{date}}",
+    "never": "Not tested offline on this phone yet"
+  },
+  "install": {
+    "title": "Add to your Home Screen",
+    "step1": "Tap the Share button in Safari.",
+    "step2": "Choose “Add to Home Screen”.",
+    "step3": "Tap Add, then open the app from the Home Screen and download everything there."
   }
 }

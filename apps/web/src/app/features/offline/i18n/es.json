@@ -1,11 +1,99 @@
 {
   "title": "Sin conexión",
-  "ready": {
-    "title": "Listos para volar",
-    "body": "La lista que demuestra que todo el viaje está en este teléfono, con «Descargar todo» y la prueba en modo avión, llega con la fase 2."
-  },
   "status": {
     "label": "Conexión",
     "synced": "Todo está sincronizado."
+  },
+  "ready": {
+    "title": "Listos para volar",
+    "allGood": "Este teléfono está listo para volar",
+    "notYetOne": "Falta 1 cosa antes de volar",
+    "notYetOther": "Faltan {{count}} cosas antes de volar",
+    "ok": "Listo",
+    "bad": "Por resolver",
+    "notApplicable": "No hace falta"
+  },
+  "checks": {
+    "version": {
+      "title": "App guardada en este teléfono",
+      "ok": "Versión {{version}}",
+      "bad": "Aún no está guardada para usarse sin conexión",
+      "pending": "Hay una versión nueva esperando",
+      "fix": "Revisar",
+      "reload": "Recargar"
+    },
+    "snapshot": {
+      "title": "Datos del viaje",
+      "ok": "Sincronizado {{age}}",
+      "stale": "Última sincronización {{age}}",
+      "never": "Nunca se sincronizó en este teléfono",
+      "fix": "Sincronizar"
+    },
+    "documents": {
+      "title": "Documentos",
+      "okOne": "1 archivo guardado y verificado",
+      "okOther": "{{count}} archivos guardados y verificados",
+      "none": "No hay archivos que guardar",
+      "badOne": "Falta 1 archivo o está desactualizado",
+      "badOther": "Faltan {{count}} archivos o están desactualizados",
+      "fix": "Guardarlos"
+    },
+    "assets": {
+      "title": "Idiomas y mascota",
+      "ok": "Los dos idiomas y Kiko están guardados",
+      "bad": "Aún no están guardados",
+      "fix": "Guardarlos"
+    },
+    "storage": {
+      "title": "Almacenamiento",
+      "ok": "Se conserva en este teléfono, con espacio de sobra",
+      "notPersisted": "El navegador podría borrar los datos si falta espacio",
+      "noRoom": "Hay menos espacio libre del que necesita el viaje",
+      "fix": "Conservarlo"
+    },
+    "outbox": {
+      "title": "Cambios por enviar",
+      "ok": "Nada pendiente",
+      "badOne": "1 cambio pendiente de sincronizar",
+      "badOther": "{{count}} cambios pendientes de sincronizar",
+      "fix": "Enviar ahora"
+    },
+    "installed": {
+      "title": "App instalada",
+      "ok": "Funcionando como app instalada",
+      "notApplicable": "No hace falta en este dispositivo",
+      "bad": "Ábrela desde la pantalla de inicio: Safari guarda sus datos aparte",
+      "fix": "Cómo instalarla"
+    }
+  },
+  "download": {
+    "action": "Descargar todo",
+    "label": "Descargando",
+    "sync": "Sincronizando el viaje",
+    "version": "Guardando la app",
+    "documents": "Guardando los documentos",
+    "storage": "Conservando los datos en este teléfono",
+    "assets": "Guardando los idiomas y a Kiko",
+    "done": "Todo está en este teléfono",
+    "failedOne": "No se pudo guardar 1 documento",
+    "failedOther": "No se pudieron guardar {{count}} documentos",
+    "offline": "Necesitas conexión para esto",
+    "stopped": "La descarga se detuvo. Inténtalo de nuevo con mejor conexión.",
+    "iosOnly": "En iPhone y iPad, descarga desde la app instalada: Safari y la app guardan datos por separado."
+  },
+  "airplane": {
+    "title": "Probar en modo avión",
+    "step1": "Toca «Descargar todo» y espera a que todo esté listo.",
+    "step2": "Cierra la app por completo.",
+    "step3": "Activa el modo avión.",
+    "step4": "Abre la app: deben verse Hoy, los documentos y el hospedaje de esta noche.",
+    "tested": "Probado sin conexión el {{date}}",
+    "never": "Aún no se probó sin conexión en este teléfono"
+  },
+  "install": {
+    "title": "Agrégala a tu pantalla de inicio",
+    "step1": "Toca el botón Compartir en Safari.",
+    "step2": "Elige «Agregar a inicio».",
+    "step3": "Toca Agregar, abre la app desde la pantalla de inicio y descarga todo ahí."
   }
 }

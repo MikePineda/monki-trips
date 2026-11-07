@@ -111,6 +111,7 @@ import { EVENT_KIND_ICONS } from './events/event-kind-icon'
               <mk-empty-state
                 layout="compact"
                 mascot="thinking"
+                mascotSize="sm"
                 [title]="'plan.days.freeTitle' | transloco"
                 [body]="'plan.days.freeBody' | transloco"
                 data-testid="plan.day.free"

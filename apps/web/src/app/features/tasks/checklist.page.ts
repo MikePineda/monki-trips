@@ -61,7 +61,7 @@ interface ChecklistGroup {
 
       @if (items().length === 0) {
         <mk-empty-state
-          icon="clipboard-check"
+          mascot="excited"
           [title]="'tasks.checklist.emptyTitle' | transloco"
           [body]="'tasks.checklist.emptyBody' | transloco"
           data-testid="checklist.empty"

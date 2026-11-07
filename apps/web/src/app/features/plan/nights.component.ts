@@ -47,7 +47,7 @@ import { EVENT_KIND_ICONS } from './events/event-kind-icon'
       }
       @if (view().rows.length === 0) {
         <mk-empty-state
-          icon="bed-double"
+          mascot="happy"
           [title]="'plan.nights.emptyTitle' | transloco"
           [body]="'plan.nights.emptyBody' | transloco"
           data-testid="plan.nights.empty"
