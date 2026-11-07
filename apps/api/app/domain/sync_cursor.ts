@@ -4,6 +4,10 @@
  * the instant it was issued, so a cursor older than the purge horizon can
  * be refused before any tombstone it never saw has been purged. xid8 values
  * arrive from Postgres as decimal strings and go back the same way.
+ *
+ * While the snapshot of a trip the person joined after the cursor is being
+ * paged, `snapshotAfter` holds the last stamp of that snapshot delivered:
+ * the snapshot rows sort before the cursor itself.
  */
 
 export interface SyncCursor {
@@ -13,12 +17,16 @@ export interface SyncCursor {
   seq: string
   /** When the cursor was issued, epoch ms. */
   issuedAt: number
+  /** Where a paged snapshot of newly joined trips resumes, when one is in progress. */
+  snapshotAfter?: { xid: string; seq: string }
 }
 
 const DECIMAL = /^\d+$/
 
 export function encodeSyncCursor(cursor: SyncCursor): string {
-  return Buffer.from(`${cursor.xid}:${cursor.seq}:${cursor.issuedAt}`, 'utf8').toString('base64url')
+  const parts = [cursor.xid, cursor.seq, String(cursor.issuedAt)]
+  if (cursor.snapshotAfter) parts.push(cursor.snapshotAfter.xid, cursor.snapshotAfter.seq)
+  return Buffer.from(parts.join(':'), 'utf8').toString('base64url')
 }
 
 /** The cursor behind an opaque string, or null when it is not one of ours. */
@@ -30,11 +38,14 @@ export function decodeSyncCursor(value: string): SyncCursor | null {
     return null
   }
   const parts = text.split(':')
-  if (parts.length !== 3 || !parts.every((part) => DECIMAL.test(part))) return null
-  const [xid, seq, issued] = parts
+  if (parts.length !== 3 && parts.length !== 5) return null
+  if (!parts.every((part) => DECIMAL.test(part))) return null
+  const [xid, seq, issued, snapshotXid, snapshotSeq] = parts
   const issuedAt = Number(issued)
   if (!Number.isSafeInteger(issuedAt)) return null
-  return { xid, seq, issuedAt }
+  const cursor: SyncCursor = { xid, seq, issuedAt }
+  if (snapshotXid !== undefined) cursor.snapshotAfter = { xid: snapshotXid, seq: snapshotSeq }
+  return cursor
 }
 
 /** Whether the cursor was issued before `now - horizonDays`: tombstones it missed may be gone. */

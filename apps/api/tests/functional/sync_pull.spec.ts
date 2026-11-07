@@ -5,6 +5,7 @@ import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import env from '#start/env'
 import User from '#models/user'
+import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
@@ -151,6 +152,91 @@ test.group('Sync pull', (group) => {
     assert.deepEqual(after.body().data.changes, [])
     const snapshot = await pull(client, editor)
     assert.deepEqual(snapshot.body().data.changes, [])
+  })
+
+  test('a trip joined after the cursor arrives in full on the next pull', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const editor = await makeUser()
+    const trip = await makeTrip(owner)
+    const own = await makeTrip(editor, { name: 'Own trip' })
+    const stop = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'stop', { name: 'Before the join' })
+    )
+    const gone = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'task', { title: 'Deleted before the join' })
+    )
+    await pushOne(client, owner, mutation(trip.id, 'task', {}, { id: gone.id, op: 'delete' }))
+    // The editor's own latest change puts their cursor past everything above.
+    await pushApplied(client, editor, mutation(own.id, 'stop', { name: 'Own stop' }))
+    const before = await pull(client, editor)
+    let cursor: string = before.body().data.cursor
+
+    await addMember(trip, editor)
+
+    // Paged on purpose: the snapshot of the joined trip must survive page breaks.
+    const seen: Change[] = []
+    let tripIds: string[] = []
+    for (let page = 0; page < 20; page += 1) {
+      const response = await pull(client, editor, { cursor, limit: 3 })
+      response.assertStatus(200)
+      const data = response.body().data
+      seen.push(...data.changes)
+      tripIds = data.tripIds
+      cursor = data.cursor
+      if (!data.hasMore) break
+    }
+
+    assert.include(tripIds, trip.id)
+    const ofTrip = seen.filter((c) => c.row.tripId === trip.id || c.row.id === trip.id)
+    assert.include(ids(ofTrip, 'trip'), trip.id)
+    assert.include(ids(ofTrip, 'stop'), stop.id)
+    assert.lengthOf(new Set(ids(ofTrip, 'budget_category')), 6)
+    assert.lengthOf(new Set(ids(ofTrip, 'member')), 2)
+    assert.lengthOf(new Set(ids(ofTrip, 'traveller')), 2)
+    assert.notInclude(ids(ofTrip, 'task'), gone.id, 'a snapshot carries no tombstones')
+
+    // Once delivered, the trip is incremental again.
+    const next = await pull(client, editor, { cursor })
+    assert.deepEqual(next.body().data.changes, [])
+  })
+
+  test('a trip restored after the cursor arrives in full on the next pull', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const editor = await makeUser()
+    const trip = await makeTrip(owner)
+    await addMember(trip, editor)
+    const stop = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'stop', { name: 'Before the delete' })
+    )
+    const first = await pull(client, editor)
+    assert.deepEqual(first.body().data.tripIds, [trip.id])
+
+    const deleted = await actingAs(client.delete(`/api/v1/trips/${trip.id}`), owner)
+    deleted.assertStatus(204)
+    const whileDeleted = await pull(client, editor, { cursor: first.body().data.cursor })
+    assert.deepEqual(whileDeleted.body().data.tripIds, [])
+    const restore = await actingAs(client.post(`/api/v1/trips/${trip.id}/restore`), owner)
+    restore.assertStatus(200)
+
+    const restored = await pull(client, editor, { cursor: whileDeleted.body().data.cursor })
+
+    const { changes, tripIds } = restored.body().data
+    assert.deepEqual(tripIds, [trip.id])
+    assert.include(ids(changes, 'trip'), trip.id)
+    assert.include(ids(changes, 'stop'), stop.id)
+    assert.lengthOf(ids(changes, 'budget_category'), 6)
   })
 
   test('expired cursor answers 410', async ({ client }) => {

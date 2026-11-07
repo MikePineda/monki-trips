@@ -13,6 +13,17 @@ test.group('Sync cursor', () => {
     assert.deepEqual(decodeSyncCursor(encoded), cursor)
   })
 
+  test('round trips the resume point of a snapshot in progress', ({ assert }) => {
+    const cursor = {
+      xid: '900',
+      seq: '42',
+      issuedAt: 1_800_000_000_000,
+      snapshotAfter: { xid: '700', seq: '7' },
+    }
+
+    assert.deepEqual(decodeSyncCursor(encodeSyncCursor(cursor)), cursor)
+  })
+
   test('garbage is not a cursor', ({ assert }) => {
     assert.isNull(decodeSyncCursor('not-a-cursor'))
     assert.isNull(decodeSyncCursor(Buffer.from('1:2').toString('base64url')))
