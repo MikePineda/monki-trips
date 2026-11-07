@@ -1,4 +1,4 @@
-import { request, type APIRequestContext } from '@playwright/test'
+import { request, type APIRequestContext, type APIResponse } from '@playwright/test'
 import type { E2eAccount } from './accounts.ts'
 
 /**
@@ -40,11 +40,24 @@ export class ApiSession {
     }
   }
 
+  /** Sends the test notification to every device of the account and reports what happened. */
+  async sendPushTest(): Promise<{ sent: number; pruned: number; failed: number }> {
+    const response = await this.write('post', '/api/v1/me/push-subscriptions/test')
+    const body = (await response.json()) as {
+      data: { sent: number; pruned: number; failed: number }
+    }
+    return body.data
+  }
+
   async dispose(): Promise<void> {
     await this.context.dispose()
   }
 
-  private async write(method: 'post' | 'delete', path: string, data?: unknown): Promise<void> {
+  private async write(
+    method: 'post' | 'delete',
+    path: string,
+    data?: unknown
+  ): Promise<APIResponse> {
     const cookies = (await this.context.storageState()).cookies
     const xsrf = cookies.find((cookie) => cookie.name === 'XSRF-TOKEN')?.value ?? ''
     const response = await this.context[method](path, {
@@ -52,6 +65,7 @@ export class ApiSession {
       headers: { 'X-XSRF-TOKEN': decodeURIComponent(xsrf) },
     })
     await this.expectOk(response, `${method.toUpperCase()} ${path}`)
+    return response
   }
 
   private async expectOk(
