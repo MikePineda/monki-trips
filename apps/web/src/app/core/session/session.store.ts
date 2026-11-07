@@ -136,6 +136,16 @@ export class SessionStore {
     this.phase.set('anonymous')
   }
 
+  /**
+   * The account was deleted (204): the server already ended every session.
+   * The device forgets everything whatever the logout answers; the logout
+   * only clears this browser's cookie, best effort.
+   */
+  async leaveDeletedAccount(): Promise<void> {
+    await this.api.logout().catch(() => undefined)
+    await this.forgetDevice()
+  }
+
   /** Ends every other session; this one continues. */
   async signOutEverywhere(): Promise<void> {
     await this.api.logoutAll()
