@@ -1,0 +1,478 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# CI guards merges; it never deploys or publishes. The deploy platform builds
+# `main` on its own after a merge.
+#
+# Required checks (ruleset .github/rulesets/main.json): ci, commitlint,
+# gitleaks, privacy, e2e, cloud-parity, image-arm64. No path filters on
+# purpose: a required check that never runs blocks the PR forever. Jobs that
+# only make sense on pull requests (commitlint) are skipped on push, which
+# counts as passing.
+#
+# Security: the default token has no permissions and each job asks for
+# `contents: read` only; checkout never persists credentials; there is no
+# `pull_request_target`; every action is pinned to a full commit SHA (the
+# `ci` job enforces it); dependencies install with `npm ci --ignore-scripts`
+# and only the install scripts approved in package.json `allowScripts` run
+# (`npm rebuild --strict-allow-scripts`).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  NG_CLI_ANALYTICS: 'false'
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: monkitrips
+          POSTGRES_PASSWORD: monkitrips
+          POSTGRES_DB: monkitrips_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U monkitrips -d monkitrips_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      # Only for the S3 integration spec (skipped where S3_ENDPOINT is unset).
+      # Bitnami's frozen MinIO build: upstream minio/minio images are no
+      # longer published. MINIO_DEFAULT_BUCKETS creates the test bucket.
+      minio:
+        image: bitnamilegacy/minio:2025.7.23-debian-12-r5
+        env:
+          MINIO_ROOT_USER: monkitrips
+          MINIO_ROOT_PASSWORD: minio-not-real-secret
+          MINIO_DEFAULT_BUCKETS: monkitrips-test
+        ports:
+          - 9000:9000
+    env:
+      # Same values as apps/api/.env.test (fake, test-only).
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USER: monkitrips
+      DB_PASSWORD: monkitrips
+      DB_DATABASE: monkitrips_test
+      S3_ENDPOINT: http://127.0.0.1:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: monkitrips-test
+      S3_KEY: monkitrips
+      S3_SECRET: minio-not-real-secret
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: npm >= 11.19.0 (allowScripts policy)
+        run: bash scripts/ci/require-npm.sh
+
+      - name: Install dependencies (no install scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Run the install scripts approved in package.json allowScripts
+        run: npm rebuild --strict-allow-scripts
+
+      - name: Lockfile guard (registry, integrity, allowScripts, native builds)
+        run: node scripts/ci/check-lockfile.mjs
+
+      - name: Every action is pinned to a full commit SHA
+        run: |
+          unpinned="$(grep -rnE '^[[:space:]-]*uses:' .github/workflows \
+            | grep -vE 'uses:[[:space:]]*\./' \
+            | grep -vE 'uses:[[:space:]]*[^@[:space:]]+@[0-9a-f]{40}([[:space:]]|$)' || true)"
+          if [[ -n "$unpinned" ]]; then
+            echo "$unpinned"
+            echo '::error::pin every uses: line to a full 40-character commit SHA with a version comment'
+            exit 1
+          fi
+
+      - name: shellcheck
+        run: git ls-files -z -- '*.sh' | xargs -0 -r shellcheck
+
+      - name: Guard self-tests (network guard)
+        run: node --test scripts/test/no-network.test.mjs
+
+      - name: Wait for MinIO
+        run: |
+          for _ in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:9000/minio/health/live && exit 0
+            sleep 1
+          done
+          echo '::error::MinIO did not become healthy'
+          exit 1
+
+      # `node ace codegen` boots the app, so start/env.ts must validate. CI has
+      # no .env: create it exactly like a fresh clone does (tests still load
+      # .env.test on top of it).
+      - name: Prepare apps/api/.env
+        run: cp apps/api/.env.example apps/api/.env && (cd apps/api && node ace generate:key)
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - name: Generated contract is in sync (run `npm run codegen` and commit apps/api/.adonisjs)
+        run: |
+          npx --no-install turbo run codegen
+          git diff --exit-code -- apps/api/.adonisjs
+          untracked="$(git status --porcelain --untracked-files=all -- apps/api/.adonisjs)"
+          if [[ -n "$untracked" ]]; then
+            echo "$untracked"
+            echo '::error::codegen produced files that are not committed'
+            exit 1
+          fi
+
+      - name: Lint, typecheck, test, build
+        run: npx --no-install turbo run lint typecheck test build --continue
+
+      - name: npm audit (non-blocking)
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
+  commitlint:
+    name: commitlint
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: bash scripts/ci/require-npm.sh
+
+      - run: npm ci --ignore-scripts
+
+      # Rebase merges keep every commit, so every commit is linted (the PR
+      # title is not used for anything).
+      - name: Lint every commit of the pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: npx --no-install commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb # gitleaks_8.30.1_linux_x64.tar.gz
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The release binary, verified against a pinned SHA-256, instead of
+      # gitleaks-action (license key for organisations, one more third-party
+      # action with repo access).
+      - name: Install gitleaks (checksum verified)
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/gitleaks" gitleaks
+          echo "$RUNNER_TEMP/gitleaks" >>"$GITHUB_PATH"
+
+      - name: Scan the pull request commits
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        # The config comes from the base commit, so a pull request cannot
+        # allowlist its own leak by editing .gitleaks.toml.
+        run: |
+          config="$RUNNER_TEMP/gitleaks.toml"
+          if git cat-file -e "${BASE_SHA}:.gitleaks.toml" 2>/dev/null; then
+            git show "${BASE_SHA}:.gitleaks.toml" >"$config"
+            config_args=(--config "$config")
+          else
+            echo '::notice::No .gitleaks.toml on the base commit; using the default rules.'
+            config_args=()
+          fi
+          gitleaks git "${config_args[@]}" --redact --verbose --no-banner \
+            --log-opts="${BASE_SHA}..${HEAD_SHA}" .
+
+      - name: Scan the full history
+        if: github.event_name != 'pull_request'
+        run: gitleaks git --config .gitleaks.toml --redact --verbose --no-banner .
+
+  privacy:
+    name: privacy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Self-test of the guard scripts (synthetic patterns only)
+        run: bash scripts/ci/self-test.sh
+
+      # Secrets never reach pull requests from forks: only the generic checks
+      # (e-mail addresses, phone numbers, no-reply commit identities) run.
+      - name: Fork pull request notice
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: echo '::notice title=privacy::Pull request from a fork; personal patterns are not available, running the generic checks only. A maintainer reruns the full check before merging.'
+
+      # The patterns live only in the PRIVACY_PATTERNS secret (one ERE per
+      # line). The scripts print locations and field kinds, never text.
+      - name: No personal details in tracked files or paths
+        env:
+          PRIVACY_PATTERNS: ${{ secrets.PRIVACY_PATTERNS }}
+        run: bash scripts/ci/privacy-check.sh
+
+      - name: Commit identities and messages
+        env:
+          PRIVACY_PATTERNS: ${{ secrets.PRIVACY_PATTERNS }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: bash scripts/ci/check-commits.sh "$BASE_SHA" "$HEAD_SHA"
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies (approved install scripts only)
+        run: |
+          bash scripts/ci/require-npm.sh
+          npm ci --ignore-scripts
+          npm rebuild --strict-allow-scripts
+
+      - name: Prepare apps/api/.env
+        run: cp apps/api/.env.example apps/api/.env && (cd apps/api && node ace generate:key)
+
+      - name: Install Playwright Chromium
+        working-directory: e2e
+        run: npx --no-install playwright install --with-deps chromium
+
+      - name: E2E (mobile-chromium)
+        run: npx --no-install turbo run e2e -- --project=mobile-chromium
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-chromium
+          path: e2e/playwright-report
+          retention-days: 7
+
+  # Not required until it has been green 10 runs in a row.
+  e2e-webkit:
+    name: e2e-webkit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    continue-on-error: true
+    permissions:
+      contents: read
+    env:
+      E2E_WEBKIT: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies (approved install scripts only)
+        run: |
+          bash scripts/ci/require-npm.sh
+          npm ci --ignore-scripts
+          npm rebuild --strict-allow-scripts
+
+      - name: Prepare apps/api/.env
+        run: cp apps/api/.env.example apps/api/.env && (cd apps/api && node ace generate:key)
+
+      - name: Install Playwright WebKit
+        working-directory: e2e
+        run: npx --no-install playwright install --with-deps webkit
+
+      - name: E2E (mobile-webkit)
+        run: npx --no-install turbo run e2e -- --project=mobile-webkit
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-webkit
+          path: e2e/playwright-report
+          retention-days: 7
+
+  # Rehearses a cloud session on x64: the SessionStart hook must succeed with
+  # no WARN line, the suite must pass with no route to the internet, and E2E
+  # must pass with the preinstalled Chrome and no Playwright browser download.
+  cloud-parity:
+    name: cloud-parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: SessionStart hook (scripts/cloud-setup.sh) exits 0 with no WARN
+        env:
+          CLAUDE_CODE_REMOTE: 'true'
+        run: |
+          export CLAUDE_PROJECT_DIR="$PWD" CLAUDE_ENV_FILE="$RUNNER_TEMP/env"
+          : >"$CLAUDE_ENV_FILE"
+          status=0
+          bash scripts/cloud-setup.sh >"$RUNNER_TEMP/hook.out" || status=$?
+          cat "$RUNNER_TEMP/hook.out"
+          if [[ $status -ne 0 ]]; then
+            echo "::error::cloud-setup.sh exited ${status}; it must always exit 0"
+            exit 1
+          fi
+          if grep -n 'WARN' "$RUNNER_TEMP/hook.out"; then
+            echo '::error::cloud-setup.sh reported WARN lines (details in .claude/cloud-setup.log)'
+            exit 1
+          fi
+          echo '--- exported for the session'
+          cat "$CLAUDE_ENV_FILE"
+
+      - name: Test suite with no route to the internet (scripts/test-offline.sh)
+        run: |
+          source "$RUNNER_TEMP/env"
+          bash scripts/test-offline.sh
+
+      - name: E2E with the system Chrome (no Playwright download)
+        run: |
+          source "$RUNNER_TEMP/env"
+          npx --no-install turbo run e2e -- --project=mobile-chromium
+
+      - name: Upload the hook log and Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cloud-parity
+          path: |
+            .claude/cloud-setup.log
+            e2e/playwright-report
+          include-hidden-files: true
+          retention-days: 7
+
+  # Production runs on ARM64: the self-host compose stack must build and
+  # serve there natively. This replaces a rehearsal on the owner's machine.
+  image-arm64:
+    name: image-arm64
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      IMAGE_MAX_MB: 450
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Self-host .env from .env.selfhost.example with a fresh APP_KEY
+        run: |
+          cp .env.selfhost.example .env
+          key="$(openssl rand -base64 32)"
+          if grep -q '^APP_KEY=' .env; then
+            sed -i "s|^APP_KEY=.*|APP_KEY=${key}|" .env
+          else
+            echo "APP_KEY=${key}" >>.env
+          fi
+
+      - name: docker compose up --build --wait
+        run: docker compose -f compose.yaml up -d --build --wait --wait-timeout 300
+
+      - name: /api/health and / answer
+        run: |
+          curl -fsS --retry 10 --retry-delay 3 --retry-all-errors \
+            http://127.0.0.1:3333/api/health | tee "$RUNNER_TEMP/health.json"
+          echo
+          jq -e '.status == "ok"' "$RUNNER_TEMP/health.json" >/dev/null
+          curl -fsS -o /dev/null -w 'GET / -> %{http_code} %{content_type}\n' http://127.0.0.1:3333/
+
+      - name: Runtime image is smaller than IMAGE_MAX_MB (uncompressed)
+        run: |
+          container="$(docker compose -f compose.yaml ps -q app)"
+          image="$(docker inspect --format '{{.Image}}' "$container")"
+          bytes="$(docker image inspect --format '{{.Size}}' "$image")"
+          mb=$((bytes / 1024 / 1024))
+          echo "runtime image: ${mb} MB (limit ${IMAGE_MAX_MB} MB)"
+          if ((mb >= IMAGE_MAX_MB)); then
+            echo "::error::runtime image is ${mb} MB, limit ${IMAGE_MAX_MB} MB"
+            exit 1
+          fi
+
+      - name: Compose logs
+        if: failure()
+        run: docker compose -f compose.yaml logs --no-color --tail 300
+
+      - name: docker compose down -v
+        if: always()
+        run: docker compose -f compose.yaml down -v --remove-orphans
