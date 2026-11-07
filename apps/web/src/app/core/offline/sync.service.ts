@@ -12,7 +12,9 @@ import {
 } from '@angular/core'
 import { CLOCK } from './clock'
 import type { MonkiTripsDb } from './db'
+import { ENTITY_TABLES } from './entity-tables'
 import { META_CURSOR, META_LAST_PULL_AT, MetaStore } from './meta.store'
+import { outboxMutation } from './mutation'
 import { OnlineStore } from './online.store'
 import { OFFLINE_DB } from './offline-db'
 import { OutboxStore } from './outbox.store'
@@ -229,6 +231,7 @@ export class SyncService {
       await this.outbox.acknowledge(mutation.id)
     } else if (rejected) {
       await this.outbox.reject(mutation.id, rejected.message)
+      await this.markRowFailed(mutation)
     } else if (conflict) {
       const db = await this.database
       await db.transaction('rw', db.table(conflict.serverRow.table), () =>
@@ -242,6 +245,19 @@ export class SyncService {
       return false
     }
     return true
+  }
+
+  /** The row a refused change touched shows "needs attention" until the person decides. */
+  private async markRowFailed(entry: OutboxRecord): Promise<void> {
+    const mutation = outboxMutation(entry)
+    const table = mutation ? ENTITY_TABLES[mutation.entity] : undefined
+    if (!mutation || !table) {
+      return
+    }
+    const db = await this.database
+    if (await db.table(table).get(mutation.id)) {
+      await db.table(table).update(mutation.id, { syncState: 'failed' })
+    }
   }
 
   private async track<T>(work: () => Promise<T>): Promise<T> {

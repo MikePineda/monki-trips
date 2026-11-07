@@ -1,0 +1,74 @@
+{
+  "summary": {
+    "title": "Trip summary",
+    "open": "Trip summary",
+    "edit": "Edit trip",
+    "dates": "{{start}} to {{end}}",
+    "daysOne": "1 day",
+    "daysOther": "{{count}} days",
+    "nightsOne": "1 night",
+    "nightsOther": "{{count}} nights",
+    "countriesOne": "1 country",
+    "countriesOther": "{{count}} countries",
+    "phase": {
+      "upcomingOne": "Starts tomorrow",
+      "upcomingOther": "Starts in {{count}} days",
+      "ongoing": "Day {{day}} of {{total}}",
+      "pastOne": "Ended yesterday",
+      "pastOther": "Ended {{count}} days ago"
+    },
+    "route": "Route",
+    "noRoute": "Add stops to see the route.",
+    "alerts": {
+      "uncoveredOne": "1 night without a place to sleep",
+      "uncoveredOther": "{{count}} nights without a place to sleep",
+      "uncoveredBody": "Add lodging or an overnight transport for each night.",
+      "whereWeSleep": "Where we sleep"
+    },
+    "stops": {
+      "title": "Stops",
+      "add": "Add stop",
+      "emptyTitle": "No stops yet",
+      "emptyBody": "Add the places you will stay in, in order: they give the route and the local time of every event.",
+      "dates": "{{arrive}} to {{depart}}",
+      "undated": "Dates to decide"
+    }
+  },
+  "edit": {
+    "title": "Edit trip",
+    "name": "Name",
+    "startsOn": "Starts",
+    "endsOn": "Ends",
+    "baseCurrency": "Base currency",
+    "baseCurrencyHint": "3-letter code, e.g. EUR",
+    "ownerOnly": "Only the trip owner can change this.",
+    "budgetMode": "Budget",
+    "budget": {
+      "shared": "One shared pot",
+      "split": "Split between travellers"
+    },
+    "budgetTotal": "Budget total",
+    "budgetTotalHint": "In {{currency}}; leave empty for no budget.",
+    "homeTz": "Home time zone",
+    "save": "Save changes",
+    "saved": "Trip saved"
+  },
+  "stop": {
+    "newTitle": "New stop",
+    "editTitle": "Edit stop",
+    "name": "Place",
+    "country": "Country code",
+    "countryHint": "2 letters, e.g. XA",
+    "tz": "Time zone",
+    "arriveOn": "Arrive",
+    "departOn": "Leave",
+    "save": "Save stop",
+    "delete": "Delete stop",
+    "deleted": "Stop deleted"
+  },
+  "errors": {
+    "endsBeforeStart": "The end comes before the start",
+    "E_TRIP_ROLE": "Only the trip owner can do this.",
+    "E_BASE_CURRENCY_LOCKED": "The base currency is locked once expenses exist."
+  }
+}

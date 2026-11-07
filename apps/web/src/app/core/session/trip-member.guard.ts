@@ -1,9 +1,15 @@
 import { inject } from '@angular/core'
 import { Router, type CanActivateFn } from '@angular/router'
+import type { SyncChange, TripContentSnapshot, TripSnapshot } from '@monkitrips/shared'
+import { toDeviceChange } from '../api/real-sync-api'
 import { TRIPS_API } from '../api/trips-api'
+import type { MonkiTripsDb } from '../offline/db'
 import { META_DEVICE_USER, MetaStore } from '../offline/meta.store'
 import { OFFLINE_DB } from '../offline/offline-db'
 import { OnlineStore } from '../offline/online.store'
+import { OutboxStore } from '../offline/outbox.store'
+import { mergePendingRow } from '../offline/pending-merge'
+import type { TripRecord } from '../offline/records'
 import { toTripRecord } from '../offline/trip-record'
 import { SessionStore } from './session.store'
 
@@ -27,6 +33,7 @@ export const tripMemberGuard: CanActivateFn = async (route, state) => {
   const api = inject(TRIPS_API)
   const session = inject(SessionStore)
   const meta = inject(MetaStore)
+  const outbox = inject(OutboxStore)
   if (!tripId) {
     return router.createUrlTree(['/trips'])
   }
@@ -51,7 +58,7 @@ export const tripMemberGuard: CanActivateFn = async (route, state) => {
     if (!snapshot) {
       return router.createUrlTree([TRIP_NOT_FOUND_URL])
     }
-    await db.trips.put(toTripRecord(snapshot.trip))
+    await cacheSnapshot(db, outbox, snapshot, cached)
     return true
   } catch (error) {
     if (await session.handleUnauthorized(error, state.url)) {
@@ -60,4 +67,44 @@ export const tripMemberGuard: CanActivateFn = async (route, state) => {
     // No answer (or a verification wall): let the page explain instead of guessing.
     return true
   }
+}
+
+/**
+ * The trip row and the itinerary the snapshot carries (stops, events, legs,
+ * seats, members, travellers), so the first open shows the plan without
+ * waiting for a pull; the pull keeps them fresh from then on. Rows with a
+ * change still in the outbox keep those fields.
+ */
+async function cacheSnapshot(
+  db: MonkiTripsDb,
+  outbox: OutboxStore,
+  snapshot: TripSnapshot,
+  cached: TripRecord | undefined
+): Promise<void> {
+  const content: Partial<TripContentSnapshot> = snapshot
+  const changes: SyncChange[] = [
+    ...snapshot.members.map((row): SyncChange => ({ entity: 'member', row })),
+    ...snapshot.travellers.map((row): SyncChange => ({ entity: 'traveller', row })),
+    ...(content.stops ?? []).map((row): SyncChange => ({ entity: 'stop', row })),
+    ...(content.events ?? []).map((row): SyncChange => ({ entity: 'event', row })),
+    ...(content.segments ?? []).map((row): SyncChange => ({ entity: 'segment', row })),
+    ...(content.seats ?? []).map((row): SyncChange => ({ entity: 'seat', row })),
+  ].filter((change) => !change.row.deletedAt)
+  const tables = [db.trips, db.members, db.travellers, db.stops, db.events, db.segments, db.seats]
+  await db.transaction('rw', [...tables, db.outbox], async () => {
+    await db.trips.put(toTripRecord(snapshot.trip, cached))
+    const pending = await outbox.pendingFieldsByRow(db)
+    for (const change of changes.flatMap(toDeviceChange)) {
+      if (change.deleted) {
+        continue
+      }
+      const fields = pending.get(change.row.id)
+      const local = fields ? await db.table(change.table).get(change.row.id) : undefined
+      await db
+        .table(change.table)
+        .put(
+          fields && local ? mergePendingRow(change.table, local, change.row, fields) : change.row
+        )
+    }
+  })
 }

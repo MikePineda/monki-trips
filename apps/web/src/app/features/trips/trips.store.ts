@@ -48,7 +48,7 @@ export class TripsStore {
       await db.transaction('rw', db.trips, async () => {
         const stale = (await db.trips.toCollection().primaryKeys()).filter((id) => !ids.has(id))
         await db.trips.bulkDelete(stale)
-        await db.trips.bulkPut(list.map(toTripRecord))
+        await db.trips.bulkPut(list.map((trip) => toTripRecord(trip)))
       })
       this.failure.set(null)
     } catch (error) {
@@ -64,7 +64,8 @@ export class TripsStore {
   /** Creates the trip on the server and on the device; the ApiFailure reaches the caller. */
   async create(input: NewTripInput): Promise<Trip> {
     const trip = await this.api.create({ id: uuidv7(), ...input })
-    await (await this.database).trips.put(toTripRecord(trip))
+    // The creator owns the trip until the members table (sync) says otherwise.
+    await (await this.database).trips.put(toTripRecord({ ...trip, role: 'owner', memberCount: 1 }))
     return trip
   }
 }

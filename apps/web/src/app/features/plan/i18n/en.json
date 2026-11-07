@@ -1,0 +1,42 @@
+{
+  "title": "Plan",
+  "segments": {
+    "label": "Plan view",
+    "days": "Days",
+    "nights": "Where we sleep"
+  },
+  "days": {
+    "dayOf": "Day {{day}} of {{total}}",
+    "outside": "Outside the trip dates",
+    "freeTitle": "Free day",
+    "freeBody": "Nothing planned yet.",
+    "add": "Add event",
+    "allDay": "All day",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "arrives": "Arrives",
+    "nightOf": "Night {{night}} of {{total}}",
+    "directions": "Directions",
+    "open": "Open {{title}}",
+    "pending": "Pending",
+    "failed": "Needs attention"
+  },
+  "nights": {
+    "title": "Where we sleep",
+    "uncoveredOne": "1 night without a place to sleep",
+    "uncoveredOther": "{{count}} nights without a place to sleep",
+    "uncoveredBody": "Add lodging, or an overnight transport, for each night below.",
+    "nightsOne": "1 night",
+    "nightsOther": "{{count}} nights",
+    "lodgingOne": "1 in lodging",
+    "lodgingOther": "{{count}} in lodging",
+    "onTheWayOne": "1 on the way",
+    "onTheWayOther": "{{count}} on the way",
+    "nightOf": "Night {{night}} of {{total}}",
+    "noStay": "No stay",
+    "findStay": "Find a stay",
+    "onBoard": "On board",
+    "emptyTitle": "No nights to plan",
+    "emptyBody": "A one-day trip has no night to sleep somewhere."
+  }
+}

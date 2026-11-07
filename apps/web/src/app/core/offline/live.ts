@@ -3,8 +3,10 @@ import {
   ErrorHandler,
   Injector,
   assertInInjectionContext,
+  effect,
   inject,
   signal,
+  untracked,
   type Signal,
 } from '@angular/core'
 import type { MonkiTripsDb } from './db'
@@ -53,5 +55,48 @@ export function liveSignal<T>(
       unsubscribe = () => subscription.unsubscribe()
     })
     .catch(report)
+  return value.asReadonly()
+}
+
+/**
+ * A live signal whose query depends on a signal (a route parameter such as
+ * the trip id): the Dexie subscription is renewed whenever `param`
+ * changes, and the value goes back to `initial` until the new query
+ * answers. Call it from an injection context (a component field).
+ */
+export function liveSignalFor<P, T>(
+  param: Signal<P>,
+  querier: (db: MonkiTripsDb, param: P) => Promise<T> | T,
+  initial: T
+): Signal<T> {
+  assertInInjectionContext(liveSignalFor)
+  const injector = inject(Injector)
+  const value = signal<T>(initial)
+  const report = (error: unknown) => injector.get(ErrorHandler).handleError(error)
+  let unsubscribe = () => undefined as void
+  let generation = 0
+  injector.get(DestroyRef).onDestroy(() => {
+    generation += 1
+    unsubscribe()
+  })
+  effect(() => {
+    const current = param()
+    const mine = (generation += 1)
+    unsubscribe()
+    unsubscribe = () => undefined
+    untracked(() => value.set(initial))
+    void Promise.all([import('dexie'), injector.get(OFFLINE_DB)])
+      .then(([{ liveQuery }, db]) => {
+        if (mine !== generation) {
+          return
+        }
+        const subscription = liveQuery(() => querier(db, current)).subscribe({
+          next: (next) => value.set(next),
+          error: report,
+        })
+        unsubscribe = () => subscription.unsubscribe()
+      })
+      .catch(report)
+  })
   return value.asReadonly()
 }
