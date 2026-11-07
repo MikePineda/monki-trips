@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
+import { ensureVapidKeys } from './vapid-keys.ts'
 
 /**
  * E2E suite against the real stack: the production build of the API
@@ -11,6 +12,8 @@ import { defineConfig, devices } from '@playwright/test'
  * the API port (PORT) and the result and report folders.
  */
 process.loadEnvFile(fileURLToPath(new URL('./e2e.env', import.meta.url)))
+// A VAPID pair for this run only, handed to the API through the environment.
+ensureVapidKeys()
 
 if (!process.env.PORT) {
   throw new Error(
