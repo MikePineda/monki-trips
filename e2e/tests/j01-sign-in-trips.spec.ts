@@ -1,35 +1,82 @@
+import { randomUUID } from 'node:crypto'
+import { soloAccount } from '../accounts.ts'
 import { expect, test } from '../fixtures.ts'
+import { RAW_KEY, signIn, signOut } from '../sign-in.ts'
 
-/** Raw Transloco keys would look like `shell.trips.title`. */
-const RAW_KEY = /\b(?:shell|settings|offline|ui|app|update|sync)\.[a-zA-Z]+\.[a-zA-Z.]+/
+const solo = soloAccount()
 
-test.describe('J01 shell', () => {
-  test('the trip list opens with the honest empty state and no tab bar', async ({ page }) => {
-    await page.goto('/trips')
+test.describe('J01 sign in, trips, sign out', () => {
+  // The journey relies on the solo traveller's list starting empty: one test owns that account's trips.
+  test.describe.configure({ mode: 'serial' })
 
-    await expect(page.getByTestId('shell.name')).toHaveText('monki trips')
-    await expect(page.getByTestId('trips.empty')).toContainText('No trips yet')
-    await expect(page.getByTestId('trips.empty').getByRole('button')).toHaveCount(0)
-    await expect(page.getByTestId('shell.tab.today')).toHaveCount(0)
+  test('a wrong password is refused with an honest message', async ({ page }) => {
+    await page.goto('/login')
+
+    await page.getByTestId('login.email').fill(solo.email)
+    await page.getByTestId('login.password').fill('not-the-password')
+    await page.getByTestId('login.submit').click()
+
+    await expect(page.getByTestId('login.error')).toHaveText(
+      'That e-mail and password do not match.'
+    )
+    await expect(page).toHaveURL(/\/login$/)
   })
 
-  test('a trip route shows the five tabs and switches between placeholders', async ({ page }) => {
-    await page.goto('/t/demo-trip')
+  test('signs in, sees the empty list, creates a trip, opens it and signs out', async ({
+    page,
+  }) => {
+    await page.goto('/trips')
+    await expect(page).toHaveURL(/\/login\?returnUrl=%2Ftrips$/)
+    await signIn(page, solo)
 
-    await expect(page).toHaveURL(/\/t\/demo-trip\/today$/)
-    await expect(page.getByTestId('trip.today.title')).toBeVisible()
+    await expect(page.getByTestId('trips.empty')).toContainText('No trips yet')
+    await expect(page.getByTestId('shell.tab.today')).toHaveCount(0)
+
+    await page.getByTestId('trips.create').click()
+    const sheet = page.getByRole('dialog')
+    await sheet.getByTestId('trips.create.name').fill('Solo escape')
+    await sheet.getByTestId('trips.create.startsOn').fill('2027-03-01')
+    await sheet.getByTestId('trips.create.endsOn').fill('2027-03-10')
+    await sheet.getByTestId('trips.create.baseCurrency').fill('eur')
+    await sheet.getByTestId('trips.create.budgetMode').selectOption('split')
+    await sheet.getByTestId('trips.create.submit').click()
+
+    await expect(page).toHaveURL(/\/t\/[0-9a-f-]{36}\/today$/)
+    await expect(page.getByTestId('shell.name')).toHaveText('Solo escape')
     for (const tab of ['today', 'plan', 'docs', 'money', 'more']) {
       await expect(page.getByTestId(`shell.tab.${tab}`)).toBeVisible()
     }
-    await expect(page.getByTestId('shell.tab.today')).toHaveAttribute('aria-current', 'page')
-
-    await page.getByTestId('shell.tab.money').click()
-    await expect(page).toHaveURL(/\/t\/demo-trip\/money$/)
-    await expect(page.getByTestId('trip.money.title')).toHaveText('Money')
-    await expect(page.getByTestId('shell.tab.money')).toHaveAttribute('aria-current', 'page')
+    expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
 
     await page.getByTestId('shell.back').click()
     await expect(page).toHaveURL(/\/trips$/)
+    await expect(page.getByTestId('trips.item')).toHaveCount(1)
+    await expect(page.getByTestId('trips.item')).toContainText('Solo escape')
+    await expect(page.getByTestId('trips.item')).toContainText('2027-03-01 to 2027-03-10')
+
+    // A reload keeps the session (cookie) and the list (server, then device copy).
+    await page.reload()
+    await expect(page.getByTestId('trips.item')).toContainText('Solo escape')
+
+    await signOut(page)
+    await page.goto('/trips')
+    await expect(page).toHaveURL(/\/login\?returnUrl=%2Ftrips$/)
+  })
+
+  test('a trip you are not a member of is not found, never forbidden', async ({ page }) => {
+    await signIn(page, solo)
+
+    await page.goto(`/t/${randomUUID()}/today`)
+
+    await expect(page).toHaveURL(/\/not-found$/)
+    await expect(page.getByTestId('trips.notFound')).toContainText('Trip not found')
+    expect(await page.locator('body').innerText()).not.toMatch(/forbidden/i)
+  })
+})
+
+test.describe('J01 shell', () => {
+  test.beforeEach(async ({ page }) => {
+    await signIn(page, solo)
   })
 
   test('the theme choice flips data-theme and survives a reload', async ({ page }) => {
@@ -62,14 +109,11 @@ test.describe('J01 shell', () => {
     await page.getByTestId('settings.lang.es').click()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ajustes')
     await expect(page.locator('html')).toHaveAttribute('lang', 'es-MX')
+    await expect(page.getByTestId('account.signOut')).toContainText('Cerrar sesión')
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
 
     await page.goto('/trips')
-    await expect(page.getByTestId('trips.empty')).toContainText('Aún no hay viajes')
-    expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
-
-    await page.goto('/t/demo-trip/today')
-    await expect(page.getByTestId('shell.tab.today')).toHaveText('Hoy')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Viajes')
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
   })
 

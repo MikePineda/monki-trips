@@ -40,6 +40,10 @@ export class SessionStore {
    * calls share the result.
    */
   restore(): Promise<SessionUser | null> {
+    // Once the session is known, later callers (guards after a sign-in) get the current answer.
+    if (this.phase() !== 'unknown') {
+      return Promise.resolve(this.current())
+    }
     this.restoring ??= this.restoreOnce()
     return this.restoring
   }

@@ -1,12 +1,12 @@
 import { expect, test } from '../fixtures.ts'
 
 test.describe('J00 smoke', () => {
-  test('the app shell loads at /trips with the empty state', async ({ page }) => {
+  test('the app shell loads and an anonymous visitor is sent to sign in', async ({ page }) => {
     await page.goto('/trips')
 
+    await expect(page).toHaveURL(/\/login\?returnUrl=%2Ftrips$/)
     await expect(page.getByTestId('shell.name')).toHaveText('monki trips')
-    await expect(page.getByTestId('trips.empty')).toBeVisible()
-    await expect(page.getByTestId('trips.empty')).toContainText('No trips yet')
+    await expect(page.getByTestId('login.submit')).toBeVisible()
   })
 
   test('/api/health answers 200 JSON with version and sha', async ({ request }) => {
@@ -21,7 +21,7 @@ test.describe('J00 smoke', () => {
   })
 
   test('the guard records a request to a public host', async ({ page, blockedRequests }) => {
-    await page.goto('/trips')
+    await page.goto('/login')
     await page.evaluate(() => fetch('https://example.com/').catch(() => undefined))
 
     expect(blockedRequests).toEqual(['https://example.com/'])
