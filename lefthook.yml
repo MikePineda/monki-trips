@@ -1,6 +1,21 @@
 # Git hooks (installed by `npm install` through the root "prepare" script).
-# Only commit-msg is enforced for now; the full gate is `npm run verify` and CI.
+# The full gate is `npm run verify` and CI; these are the cheap local nets.
 commit-msg:
   jobs:
     - name: commitlint
       run: npx --no-install commitlint --edit {1}
+
+pre-commit:
+  jobs:
+    - name: lockfile guard
+      glob: package-lock.json
+      run: node scripts/ci/check-lockfile.mjs
+
+pre-push:
+  jobs:
+    - name: privacy
+      run: bash scripts/ci/privacy-pre-push.sh
+    # Before the first push origin/main does not exist: check-commits.sh then
+    # checks every commit reachable from HEAD, root commit included.
+    - name: commit identities
+      run: bash scripts/ci/check-commits.sh origin/main HEAD
