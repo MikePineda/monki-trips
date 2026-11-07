@@ -23,7 +23,7 @@ RUN if [ -n "$GIT_SHA" ]; then echo "$GIT_SHA"; \
 ########################################################################
 # deps: full install (dev dependencies included) for the build.
 ########################################################################
-FROM node:24.20.0-slim AS deps
+FROM node:26.12.1-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY scripts/install-git-hooks.mjs scripts/
@@ -59,7 +59,7 @@ RUN node -p "require('./package.json').version" > apps/api/build/.app-version \
 # --omit=optional matters: tools such as playwright and typescript are
 # optional peers of runtime packages and --omit=dev alone keeps them.
 ########################################################################
-FROM node:24.20.0-slim AS prod-deps
+FROM node:26.12.1-slim AS prod-deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY scripts/install-git-hooks.mjs scripts/
@@ -72,7 +72,7 @@ RUN npm ci --omit=dev --omit=optional -w @monkitrips/api -w @monkitrips/shared -
 ########################################################################
 # runtime
 ########################################################################
-FROM node:24.20.0-slim AS runtime
+FROM node:26.12.1-slim AS runtime
 ENV NODE_ENV=production \
     TZ=UTC \
     HOST=0.0.0.0 \
