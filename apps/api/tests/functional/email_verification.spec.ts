@@ -37,7 +37,10 @@ test.group('E-mail verification', (group) => {
     me.assertStatus(200)
   })
 
-  test('the link in the mail verifies the address without a session', async ({ client, assert }) => {
+  test('the link in the mail verifies the address without a session', async ({
+    client,
+    assert,
+  }) => {
     const { user, mail } = await unverifiedWithMail(client)
 
     const verify = await client
@@ -70,7 +73,9 @@ test.group('E-mail verification', (group) => {
     trips.assertStatus(200)
   })
 
-  test('a wrong code counts an attempt and the fifth one exhausts the token', async ({ client }) => {
+  test('a wrong code counts an attempt and the fifth one exhausts the token', async ({
+    client,
+  }) => {
     const { user, mail } = await unverifiedWithMail(client)
     const attempt = (code: string) =>
       actingAs(client.post('/api/v1/auth/email/verify-code'), user).json({ code })

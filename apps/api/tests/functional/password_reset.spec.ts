@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import limiter from '@adonisjs/limiter/services/main'
 import { actingAs } from '#tests/helpers/acting_as'
+import { expectStatus } from '#tests/helpers/expect_status'
 import { makeUser, TEST_PASSWORD } from '#tests/helpers/make_user'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
 import { tokenFromMail, useRecordingMailer } from '#tests/helpers/recording_mailer'
@@ -44,8 +45,8 @@ test.group('Password reset', (group) => {
     const phoneAfter = await client.get('/api/v1/auth/me').withSession(phone.session())
     phoneAfter.assertStatus(401)
 
-    ;(await login(client, 'owner@example.com', TEST_PASSWORD)).assertStatus(401)
-    ;(await login(client, 'owner@example.com', NEW_PASSWORD)).assertStatus(200)
+    await expectStatus(login(client, 'owner@example.com', TEST_PASSWORD), 401)
+    await expectStatus(login(client, 'owner@example.com', NEW_PASSWORD), 200)
     await user.refresh()
     assert.equal(user.sessionVersion, 2)
   })
@@ -55,7 +56,7 @@ test.group('Password reset', (group) => {
     await forgot(client, 'owner@example.com')
     const token = tokenFromMail(mailer.lastTo('owner@example.com'))
 
-    ;(await reset(client, token)).assertStatus(204)
+    await expectStatus(reset(client, token), 204)
     const second = await reset(client, token, 'yet-another-passphrase')
     second.assertStatus(410)
     second.assertBodyContains({ code: 'E_TOKEN_EXPIRED' })
@@ -78,26 +79,26 @@ test.group('Password reset', (group) => {
     await forgot(client, 'owner@example.com')
     const second = tokenFromMail(mailer.lastTo('owner@example.com'))
 
-    ;(await reset(client, first)).assertStatus(410)
-    ;(await reset(client, second)).assertStatus(204)
+    await expectStatus(reset(client, first), 410)
+    await expectStatus(reset(client, second), 204)
   })
 
   test('a disabled account gets no reset mail', async ({ client, assert }) => {
     await makeUser({ email: 'gone@example.com', status: 'disabled' })
 
-    ;(await forgot(client, 'gone@example.com')).assertStatus(202)
+    await expectStatus(forgot(client, 'gone@example.com'), 202)
     assert.isEmpty(mailer.sent)
   })
 
   test('forgot is throttled per address', async ({ client }) => {
     await makeUser({ email: 'owner@example.com' })
     for (let i = 0; i < 5; i++) {
-      ;(await forgot(client, 'owner@example.com')).assertStatus(202)
+      await expectStatus(forgot(client, 'owner@example.com'), 202)
     }
     const blocked = await forgot(client, 'owner@example.com')
     blocked.assertStatus(429)
     blocked.assertBodyContains({ code: 'E_TOO_MANY_REQUESTS' })
-    ;(await forgot(client, 'other@example.com')).assertStatus(202)
+    await expectStatus(forgot(client, 'other@example.com'), 202)
   })
 
   test('a signed-in person changes their password and keeps only this session', async ({
@@ -120,9 +121,9 @@ test.group('Password reset', (group) => {
     })
     change.assertStatus(204)
 
-    ;(await client.get('/api/v1/auth/me').withSession(change.session())).assertStatus(200)
-    ;(await client.get('/api/v1/auth/me').withSession(phone.session())).assertStatus(401)
-    ;(await login(client, 'owner@example.com', NEW_PASSWORD)).assertStatus(200)
+    await expectStatus(client.get('/api/v1/auth/me').withSession(change.session()), 200)
+    await expectStatus(client.get('/api/v1/auth/me').withSession(phone.session()), 401)
+    await expectStatus(login(client, 'owner@example.com', NEW_PASSWORD), 200)
     await user.refresh()
     assert.equal(user.sessionVersion, 2)
   })

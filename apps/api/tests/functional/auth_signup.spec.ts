@@ -134,7 +134,10 @@ test.group('Signup with registration open', (group) => {
     response.assertBodyContains({ code: 'E_EMAIL_TAKEN' })
   })
 
-  test('validation errors list field, rule and a translated message', async ({ client, assert }) => {
+  test('validation errors list field, rule and a translated message', async ({
+    client,
+    assert,
+  }) => {
     const response = await client
       .post('/api/v1/auth/signup')
       .withCsrfToken()

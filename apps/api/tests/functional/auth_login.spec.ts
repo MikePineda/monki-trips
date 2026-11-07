@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import limiter from '@adonisjs/limiter/services/main'
 import User from '#models/user'
 import { actingAs } from '#tests/helpers/acting_as'
+import { expectStatus } from '#tests/helpers/expect_status'
 import { makeUser, TEST_PASSWORD } from '#tests/helpers/make_user'
 
 test.group('Login and session', (group) => {
@@ -54,7 +55,7 @@ test.group('Login and session', (group) => {
         .json({ email: 'throttled@example.com', password })
 
     for (let i = 0; i < 5; i++) {
-      ;(await attempt('wrong-password')).assertStatus(401)
+      await expectStatus(attempt('wrong-password'), 401)
     }
     const blocked = await attempt(TEST_PASSWORD)
     blocked.assertStatus(429)
@@ -71,13 +72,13 @@ test.group('Login and session', (group) => {
         .json({ email: 'patient@example.com', password })
 
     for (let i = 0; i < 4; i++) {
-      ;(await attempt('wrong-password')).assertStatus(401)
+      await expectStatus(attempt('wrong-password'), 401)
     }
-    ;(await attempt(TEST_PASSWORD)).assertStatus(200)
+    await expectStatus(attempt(TEST_PASSWORD), 200)
     for (let i = 0; i < 4; i++) {
-      ;(await attempt('wrong-password')).assertStatus(401)
+      await expectStatus(attempt('wrong-password'), 401)
     }
-    ;(await attempt(TEST_PASSWORD)).assertStatus(200)
+    await expectStatus(attempt(TEST_PASSWORD), 200)
   })
 
   test('a disabled account cannot sign in', async ({ client }) => {
@@ -147,9 +148,8 @@ test.group('Login and session', (group) => {
 
     const response = await actingAs(client.get('/api/v1/auth/me'), user)
 
-    const cookie = response
-      .headers()
-      ['set-cookie']?.find((value: string) => value.startsWith('monkitrips_session='))
+    const cookies = response.headers()['set-cookie'] as unknown as string[] | undefined
+    const cookie = cookies?.find((value: string) => value.startsWith('monkitrips_session='))
     assert.exists(cookie, 'the session cookie is re-sent on an authenticated request')
     assert.include(cookie!.toLowerCase(), `max-age=${60 * 24 * 60 * 60}`)
     assert.include(cookie!.toLowerCase(), 'httponly')
