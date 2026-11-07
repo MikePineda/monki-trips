@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" role="img" aria-labelledby="t d">
+  <title id="t">Tag and Tug, two luggage tags on one string: six states</title>
+  <desc id="d">Original artwork for monki-trips, AGPL-3.0-only. Happy, worried, excited, asleep, celebrating and thinking.</desc>
+  <style>
+    .label { font: 500 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #4B4B55; text-anchor: middle; }
+    .name { font: 600 22px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #16161A; }
+    .sub { font: 400 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #62626D; }
+    .ink { fill: #16161A; }
+    .line { stroke: #16161A; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .string { stroke: #6A6A75; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+    .thin { stroke: #62626D; stroke-width: 1.5; stroke-linecap: round; fill: none; }
+  </style>
+  <defs>
+    <!-- Tag: kraft paper, rust band, metal eyelet. Local box 48x70, eyelet at (24,10). No face. -->
+    <g id="tag">
+      <rect x="0" y="0" width="48" height="70" rx="6" fill="#E8C39E" stroke="#5C3A1A" stroke-width="1.5"/>
+      <rect x="0" y="52" width="48" height="12" fill="#B5470C"/>
+      <rect x="0" y="64" width="48" height="6" rx="0" fill="#B5470C"/>
+      <path d="M0 64a6 6 0 0 0 6 6h36a6 6 0 0 0 6-6z" fill="#B5470C"/>
+      <circle cx="24" cy="10" r="4.5" fill="#FAFAF7" stroke="#6A6A75" stroke-width="2"/>
+    </g>
+    <!-- Tug: classic clipped-corner tag, pale blue with a navy band. Local box 48x70, eyelet at (24,10). No face. -->
+    <g id="tug">
+      <path d="M12 0h24l12 12v52a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6V12z" fill="#8FB0E0" stroke="#22508F" stroke-width="1.5"/>
+      <path d="M0 52h48v12a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6z" fill="#22508F"/>
+      <circle cx="24" cy="10" r="4.5" fill="#FAFAF7" stroke="#6A6A75" stroke-width="2"/>
+    </g>
+    <g id="eyes"><circle cx="-7" r="2.4" class="ink"/><circle cx="7" r="2.4" class="ink"/></g>
+  </defs>
+
+  <rect width="390" height="844" fill="#FAFAF7"/>
+  <text x="16" y="44" class="name">Tag and Tug</text>
+  <text x="16" y="66" class="sub">Two luggage tags tied by the same string</text>
+  <line x1="16" y1="82" x2="374" y2="82" stroke="#DCDCD6"/>
+
+  <!-- happy: hanging side by side from one knot -->
+  <g transform="translate(16 96)">
+    <path d="M88 6v20M88 26C70 30 50 40 44 56M88 26c18 4 38 14 44 30" class="string"/>
+    <circle cx="88" cy="26" r="3.5" fill="#6A6A75"/>
+    <g transform="translate(20 56) rotate(-8 24 10) scale(1.5)"><use href="#tag"/><use href="#eyes" x="24" y="30"/><path d="M18 38q6 5 12 0" class="line"/></g>
+    <g transform="translate(108 56) rotate(8 24 10) scale(1.5)"><use href="#tug"/><use href="#eyes" x="24" y="30"/><path d="M18 38q6 5 12 0" class="line"/></g>
+    <text x="87" y="225" class="label">happy</text>
+  </g>
+
+  <!-- worried: Tug grumpy, Tag anxious; the string points at a missing document -->
+  <g transform="translate(199 96)">
+    <path d="M88 6v20M88 26C70 30 50 40 44 56M88 26c18 4 38 14 44 30" class="string"/>
+    <circle cx="88" cy="26" r="3.5" fill="#6A6A75"/>
+    <g transform="translate(20 56) rotate(-4 24 10) scale(1.5)"><use href="#tag"/><use href="#eyes" x="24" y="30"/><path d="M14 24l7 2M34 24l-7 2" class="line"/><path d="M18 40q3-3 6 0t6 0" class="line"/></g>
+    <g transform="translate(108 56) rotate(4 24 10) scale(1.5)"><use href="#tug"/><use href="#eyes" x="24" y="30"/><path d="M15 25l8-2M33 25l-8-2" class="line"/><path d="M18 40q6-4 12 0" class="line"/></g>
+    <path d="M52 50c0-4 3-8 3-8s3 4 3 8a3 3 0 0 1-6 0z" fill="#8FB0E0"/>
+    <rect x="72" y="150" width="30" height="40" rx="3" fill="none" stroke="#85858F" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <path d="M80 162h14M80 170h14M80 178h8" class="thin" stroke-dasharray="2 3"/>
+    <text x="87" y="225" class="label">worried</text>
+  </g>
+
+  <!-- excited: bouncing up, string taut, mouths open -->
+  <g transform="translate(16 346)">
+    <path d="M88 6v14M88 20L36 36M88 20l52 16" class="string"/>
+    <circle cx="88" cy="20" r="3.5" fill="#6A6A75"/>
+    <g transform="translate(6 36) rotate(-22 24 10) scale(1.5)"><use href="#tag"/><use href="#eyes" x="24" y="29"/><ellipse cx="24" cy="39" rx="4" ry="4.5" class="ink"/></g>
+    <g transform="translate(122 36) rotate(22 24 10) scale(1.5)"><use href="#tug"/><use href="#eyes" x="24" y="29"/><ellipse cx="24" cy="39" rx="4" ry="4.5" class="ink"/></g>
+    <path d="M14 20l-6-6M6 40l-6 0M170 20l6-6M168 40l6 0M60 170l-4 8M116 170l4 8" class="thin"/>
+    <text x="87" y="225" class="label">excited</text>
+  </g>
+
+  <!-- asleep: leaning on each other, string slack, eyes closed -->
+  <g transform="translate(199 346)">
+    <path d="M88 6v30M88 36c-10 16-16 30-26 40M88 36c10 16 16 30 26 40" class="string"/>
+    <circle cx="88" cy="36" r="3.5" fill="#6A6A75"/>
+    <g transform="translate(34 70) rotate(14 24 10) scale(1.5)"><use href="#tag"/><path d="M14 30q3 3 6 0M28 30q3 3 6 0" class="line"/><path d="M20 39h8" class="line"/></g>
+    <g transform="translate(94 70) rotate(-14 24 10) scale(1.5)"><use href="#tug"/><path d="M14 30q3 3 6 0M28 30q3 3 6 0" class="line"/><path d="M20 39h8" class="line"/></g>
+    <path d="M134 40h10l-10 10h10" class="thin" stroke="#4B4B55"/>
+    <path d="M150 22h8l-8 8h8" class="thin" stroke="#4B4B55"/>
+    <path d="M162 8h6l-6 6h6" class="thin" stroke="#4B4B55"/>
+    <text x="87" y="225" class="label">asleep</text>
+  </g>
+
+  <!-- celebrating: string tied in a bow, confetti -->
+  <g transform="translate(16 596)">
+    <path d="M88 6v16M80 26c-10-8-14 8-2 4M96 26c10-8 14 8 2 4M88 28C70 32 52 42 46 58M88 28c18 4 36 14 42 30" class="string"/>
+    <circle cx="88" cy="26" r="3.5" fill="#6A6A75"/>
+    <g transform="translate(22 58) rotate(-10 24 10) scale(1.5)"><use href="#tag"/><path d="M14 30q3-3 6 0M28 30q3-3 6 0" class="line"/><path d="M16 37q8 8 16 0z" class="ink"/></g>
+    <g transform="translate(106 58) rotate(10 24 10) scale(1.5)"><use href="#tug"/><path d="M14 30q3-3 6 0M28 30q3-3 6 0" class="line"/><path d="M16 37q8 8 16 0z" class="ink"/></g>
+    <rect x="14" y="20" width="5" height="5" fill="#E0A93A" transform="rotate(20 16 22)"/>
+    <rect x="150" y="14" width="4" height="4" fill="#B5470C" transform="rotate(-15 152 16)"/>
+    <circle cx="40" cy="10" r="2.2" fill="#22508F"/>
+    <circle cx="140" cy="44" r="2.2" fill="#7FC08A"/>
+    <rect x="4" y="100" width="4" height="4" fill="#7FC08A" transform="rotate(10 6 102)"/>
+    <circle cx="168" cy="90" r="2.2" fill="#E0A93A"/>
+    <circle cx="90" cy="180" r="2.2" fill="#B5470C"/>
+    <text x="87" y="225" class="label">celebrating</text>
+  </g>
+
+  <!-- thinking: Tag ponders, Tug squints -->
+  <g transform="translate(199 596)">
+    <path d="M88 6v20M88 26C70 30 50 40 44 56M88 26c18 4 38 14 44 30" class="string"/>
+    <circle cx="88" cy="26" r="3.5" fill="#6A6A75"/>
+    <g transform="translate(20 56) rotate(-8 24 10) scale(1.5)"><use href="#tag"/><use href="#eyes" x="24" y="29"/><path d="M15 23l6-1" class="line"/><path d="M20 39l8-1.5" class="line"/></g>
+    <g transform="translate(108 56) rotate(8 24 10) scale(1.5)"><use href="#tug"/><path d="M14 30h6M28 30h6" class="line"/><path d="M19 39h10" class="line"/></g>
+    <circle cx="22" cy="44" r="2" fill="#B3B3B8"/><circle cx="14" cy="32" r="3" fill="#B3B3B8"/>
+    <ellipse cx="14" cy="14" rx="14" ry="9" fill="#B3B3B8"/>
+    <circle cx="8" cy="14" r="1.5" fill="#16161A"/><circle cx="14" cy="14" r="1.5" fill="#16161A"/><circle cx="20" cy="14" r="1.5" fill="#16161A"/>
+    <text x="87" y="225" class="label">thinking</text>
+  </g>
+</svg>

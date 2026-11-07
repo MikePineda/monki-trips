@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>monki-trips · Today · B Boarding pass (light)</title>
+<!--
+  Direction B · Boarding pass. Self-contained: fonts from ../fonts, inline
+  Lucide icons (1.75 px stroke), synthetic data only. Switch data-theme on
+  <html> between "light" and "dark"; today-dark.html is this file with the
+  dark attribute. The next event is a ticket whose perforation is an SVG mask.
+-->
+<style>
+@font-face { font-family: 'IBM Plex Sans'; font-weight: 400; font-display: block; src: url('../fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-weight: 500; font-display: block; src: url('../fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-weight: 600; font-display: block; src: url('../fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 400; font-display: block; src: url('../fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 500; font-display: block; src: url('../fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); }
+
+:root {
+  color-scheme: light;
+  --surface-0: #F5F5F2; --surface-1: #FBFBF9; --surface-2: #ECECE8;
+  --ink-1: #111417; --ink-2: #4A5058; --ink-3: #626971;
+  --line: #D7D8D3; --line-strong: #80868E;
+  --accent: #B5470C; --on-accent: #F5F5F2;
+  --status-good: #2E6B3F; --status-warning: #845600; --status-serious: #A1401A; --status-critical: #A01C1C;
+  --print-warning: #F4E2AE; --on-print-warning: #111417; --on-print-warning-2: #4A5058;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #0F1113; --surface-1: #17191C; --surface-2: #202326;
+  --ink-1: #ECEDEE; --ink-2: #B4B9BF; --ink-3: #8A9097;
+  --line: #2C3035; --line-strong: #6A7079;
+  --accent: #F08A4B; --on-accent: #0F1113;
+  --status-good: #7CC58B; --status-warning: #E2AA3A; --status-serious: #F0875A; --status-critical: #F07070;
+  --print-warning: #4D3410; --on-print-warning: #ECEDEE; --on-print-warning-2: #B4B9BF;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  width: 390px; height: 844px; overflow: hidden; position: relative;
+  background: var(--surface-0); color: var(--ink-1);
+  font: 400 15px/1.4 'IBM Plex Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+.display { font-weight: 600; letter-spacing: -0.01em; }
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.num { font-variant-numeric: tabular-nums; }
+.ic { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.ic-16 { width: 16px; height: 16px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: left; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Status bar (device chrome, drawn so the comp reads like a phone) */
+.status { height: 47px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 28px 8px; color: var(--ink-2); font-weight: 600; font-size: 14px; }
+.status .cells { display: flex; gap: 6px; align-items: center; }
+.status .cells i { display: block; background: currentColor; border-radius: 1px; }
+
+/* Header */
+header { padding: 2px 16px 6px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+header h1 { margin: 0; font-size: 20px; line-height: 28px; white-space: nowrap; }
+header h1 .city { font-weight: 400; color: var(--ink-2); }
+.conn { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--ink-2); font-size: 13px; font-weight: 500; }
+.mascot { width: 48px; height: 48px; flex: none; }
+
+main { padding: 0 16px; }
+section { padding: 8px 0; border-top: 1px solid var(--line); }
+section:first-child { border-top: 0; padding-top: 0; }
+.label { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 6px; }
+
+/* Next event: the ticket (perforation cut by an SVG mask, no gradient) */
+.ticket { position: relative; margin-top: 6px; padding: 10px 14px 8px; height: 136px; }
+.ticket .paper { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ticket .body { position: relative; }
+.ticket h2 { margin: 0; font-size: 20px; line-height: 24px; }
+.stub { position: relative; display: flex; align-items: center; gap: 12px; margin: 18px -14px -8px; padding: 4px 14px 4px; height: 52px; }
+.stub .route { font-size: 22px; line-height: 26px; font-weight: 500; }
+.stub .route small { font-size: 13px; font-weight: 400; color: var(--ink-3); margin-left: 6px; }
+.stub .names { color: var(--ink-3); font-size: 12px; line-height: 16px; }
+.stub .pnr { margin-left: auto; text-align: right; font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.stub .pnr b { display: block; color: var(--ink-1); font-weight: 500; font-size: 15px; line-height: 20px; }
+.event-time { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.event-time .at { font-size: 24px; line-height: 30px; font-weight: 500; }
+.event-time .in { color: var(--ink-2); font-size: 15px; }
+.row { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+.leave { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-1); font-weight: 500; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: 4px; font-size: 13px; }
+.row .chip { display: none; } /* the route lives on the stub in this direction */
+.spacer { flex: 1; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--accent); border: 1px solid var(--line-strong); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.link { color: var(--accent); font-weight: 600; font-size: 14px; }
+
+/* Documents */
+.doc { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.doc + .doc { border-top: 1px solid var(--line); }
+.doc .t { flex: 1; min-width: 0; }
+.doc .t b { display: block; font-weight: 500; line-height: 20px; }
+.doc .t small { color: var(--ink-3); font-size: 12px; line-height: 16px; }
+.state { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; }
+.state.good { color: var(--status-good); }
+.banner { display: flex; align-items: center; gap: 10px; margin: 0 -16px 2px; padding: 6px 16px; background: var(--print-warning); color: var(--on-print-warning); }
+.banner .t { flex: 1; }
+.banner .t b { display: block; font-weight: 600; }
+.banner .t small { color: var(--on-print-warning-2); font-size: 12px; line-height: 16px; }
+.banner .link { color: var(--on-print-warning); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+
+/* Tonight */
+.stay h2 { margin: 0; font-size: 19px; line-height: 24px; }
+.addr { display: flex; align-items: flex-start; gap: 8px; margin-top: 2px; }
+.addr .lines { flex: 1; }
+.addr .big { font-size: 18px; line-height: 24px; font-weight: 500; }
+.addr .local { color: var(--ink-2); font-size: 15px; line-height: 20px; margin-top: 2px; font-family: system-ui, sans-serif; }
+.copy { color: var(--accent); display: inline-flex; padding: 2px; }
+.meta { display: flex; gap: 10px; margin-top: 2px; color: var(--ink-2); font-size: 13px; align-items: center; white-space: nowrap; }
+.meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Money */
+.money { max-width: 230px; }
+.hero { font-size: 32px; line-height: 36px; font-weight: 600; }
+.base { color: var(--ink-2); font-size: 14px; line-height: 18px; margin-top: 2px; }
+.pending { display: flex; align-items: center; gap: 6px; color: var(--ink-3); font-size: 12px; line-height: 16px; margin-top: 2px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); display: inline-block; }
+.yday { color: var(--ink-2); font-size: 12px; line-height: 16px; margin-top: 2px; }
+
+/* Weather */
+.weather { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 13px; white-space: nowrap; }
+.weather b { color: var(--ink-1); font-weight: 500; font-size: 15px; white-space: nowrap; }
+
+/* FAB and tab bar */
+.fab { position: absolute; right: 16px; bottom: 99px; height: 48px; padding: 0 16px 0 12px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 15px; }
+nav { position: absolute; left: 0; right: 0; bottom: 0; height: 83px; padding: 6px 8px 0; border-top: 1px solid var(--line); background: var(--surface-0); display: grid; grid-template-columns: repeat(5, 1fr); }
+nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 4px; color: var(--ink-3); text-decoration: none; font-size: 11px; font-weight: 500; }
+nav a .ic { width: 24px; height: 24px; }
+nav a[aria-current] { color: var(--accent); font-weight: 600; }
+.home { position: absolute; left: 50%; bottom: 8px; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--ink-2); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fab, .btn { transition: background-color 150ms ease-out; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-wifi-off" viewBox="0 0 24 24"><line x1="2" x2="22" y1="2" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 13a10 10 0 0 1 5.24-2.76"/><line x1="12" x2="12.01" y1="20" y2="20"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-nav" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-printer" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-train" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="M8 19l-2 3"/><path d="M16 19l2 3"/><path d="M8 15h.01"/><path d="M16 15h.01"/></symbol>
+  </defs>
+</svg>
+
+<div class="status num" aria-hidden="true">
+  <span>9:41</span>
+  <span class="cells"><i style="width:14px;height:10px"></i><i style="width:14px;height:10px;border-radius:5px 5px 1px 1px"></i><i style="width:24px;height:11px;border-radius:3px"></i></span>
+</div>
+
+<header>
+  <div>
+    <h1 class="display">Day 4 of 12 <span class="city">· Port Vellmar</span></h1>
+    <div class="conn"><svg class="ic ic-16"><use href="#i-wifi-off"/></svg>Offline · everything saved</div>
+  </div>
+  <!-- Mascot slot (Kiko shown; any concept fits). Original artwork. -->
+  <svg class="mascot" viewBox="0 0 64 64" role="img" aria-label="Kiko is happy">
+    <rect x="12" y="24" width="38" height="34" rx="9" fill="#4E7A3B"/>
+    <rect x="12" y="24" width="38" height="8" rx="4" fill="#2F5126"/>
+    <g transform="rotate(12 44 20)"><rect x="40" y="12" width="9" height="13" rx="1.5" fill="#22508F"/><rect x="42" y="15" width="5" height="1.5" fill="#8FB0E0"/><rect x="42" y="18" width="5" height="1.5" fill="#8FB0E0"/></g>
+    <path d="M20 54c-6 2-10-2-9-8" stroke="#8B5A2B" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <rect x="22" y="38" width="20" height="18" rx="7" fill="#8B5A2B"/>
+    <circle cx="18" cy="26" r="6" fill="#8B5A2B"/><circle cx="46" cy="26" r="6" fill="#8B5A2B"/>
+    <circle cx="18" cy="26" r="3" fill="#E8C39E"/><circle cx="46" cy="26" r="3" fill="#E8C39E"/>
+    <circle cx="32" cy="27" r="14" fill="#8B5A2B"/>
+    <path d="M22 30a10 9 0 0 0 20 0a10 11 0 0 0-20 0z" fill="#E8C39E"/>
+    <circle cx="27.5" cy="27" r="1.9" fill="#16161A"/><circle cx="36.5" cy="27" r="1.9" fill="#16161A"/>
+    <path d="M28 33.5q4 3.5 8 0" stroke="#16161A" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M26 42h12" stroke="#E8C39E" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+</header>
+
+<main>
+  <section>
+    <p class="label">Next</p>
+    <article class="ticket">
+      <svg class="paper" viewBox="0 0 358 136" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <mask id="perforation" maskUnits="userSpaceOnUse" x="0" y="0" width="358" height="136">
+            <rect width="358" height="136" fill="#fff"/>
+            <circle cx="0" cy="82" r="8" fill="#000"/>
+            <circle cx="358" cy="82" r="8" fill="#000"/>
+          </mask>
+        </defs>
+        <rect x="0.5" y="0.5" width="357" height="135" rx="8" fill="var(--surface-1)" stroke="var(--line-strong)" mask="url(#perforation)"/>
+        <path d="M0 82.5a8 8 0 0 0 8-8v-0.5M0 82.5a8 8 0 0 1 8 8v0.5M358 82.5a8 8 0 0 1-8-8v-0.5M358 82.5a8 8 0 0 0-8 8v0.5" fill="none" stroke="var(--line-strong)"/>
+        <line x1="14" y1="82.5" x2="344" y2="82.5" stroke="var(--line-strong)" stroke-dasharray="4 4"/>
+      </svg>
+      <div class="body">
+        <h2 class="display">Train to Aldermoor</h2>
+        <div class="event-time">
+          <span class="at mono">14:20</span>
+          <span class="in num">in 1 h 32 min</span>
+          <span class="spacer"></span>
+          <span class="leave num"><svg class="ic ic-16"><use href="#i-clock"/></svg>Leave at 13:40</span>
+        </div>
+        <div class="stub">
+          <div>
+            <div class="route mono">PVM → ALD<small>ABC123</small></div>
+            <div class="names">Port Vellmar → Aldermoor · coach 4</div>
+          </div>
+          <span class="spacer"></span>
+          <button class="btn"><svg class="ic ic-16"><use href="#i-nav"/></svg>Directions</button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <p class="label">Today's documents</p>
+    <div class="banner" role="status">
+      <svg class="ic"><use href="#i-printer"/></svg>
+      <div class="t"><b>Bring this printed</b><small>Museum voucher · 2 pages</small></div>
+      <button class="link">I printed it</button>
+    </div>
+    <div class="doc">
+      <svg class="ic" style="color:var(--ink-2)"><use href="#i-file"/></svg>
+      <div class="t"><b>Train tickets</b><small class="mono">ABC123 · PDF · 2 seats</small></div>
+      <span class="state good"><svg class="ic ic-16"><use href="#i-check"/></svg>Saved offline</span>
+    </div>
+    <div class="doc">
+      <svg class="ic" style="color:var(--ink-2)"><use href="#i-file"/></svg>
+      <div class="t"><b>Harbour Inn booking</b><small class="mono">HBR-7742 · PDF</small></div>
+      <span class="state good"><svg class="ic ic-16"><use href="#i-check"/></svg>Saved offline</span>
+    </div>
+  </section>
+
+  <section class="stay">
+    <p class="label">Tonight</p>
+    <h2 class="display">Harbour Inn</h2>
+    <div class="addr">
+      <div class="lines">
+        <div class="big">14 Quay Lane, Aldermoor</div>
+        <div class="local" lang="el">Οδός Προκυμαίας 14, Άλντερμουρ</div>
+      </div>
+      <button class="copy" aria-label="Copy address"><svg class="ic"><use href="#i-copy"/></svg></button>
+    </div>
+    <div class="meta">
+      <span class="num"><svg class="ic ic-16"><use href="#i-moon"/></svg>Check-in 15:00</span>
+      <span class="num"><svg class="ic ic-16"><use href="#i-phone"/></svg>+1 555 0100</span>
+      <span class="spacer"></span>
+      <button class="link">Directions</button>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">Left today</p>
+    <div class="money">
+      <div>
+        <div class="hero display num">¥12 400</div>
+        <div class="base num">A$118.60</div>
+        <div class="pending num"><span class="dot"></span>1 expense waiting to sync</div>
+        <div class="yday num">Yesterday −¥3 200 over budget</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="weather num">
+      <svg class="ic"><use href="#i-rain"/></svg>
+      <b>18° · Light rain</b>
+      <span>· 3 h ago</span>
+    </div>
+  </section>
+</main>
+
+<button class="fab"><svg class="ic"><use href="#i-plus"/></svg>Expense</button>
+
+<nav aria-label="Trip">
+  <a href="#" aria-current="page"><svg class="ic"><use href="#i-sun"/></svg>Today</a>
+  <a href="#"><svg class="ic"><use href="#i-calendar"/></svg>Plan</a>
+  <a href="#"><svg class="ic"><use href="#i-folder"/></svg>Docs</a>
+  <a href="#"><svg class="ic"><use href="#i-wallet"/></svg>Money</a>
+  <a href="#"><svg class="ic"><use href="#i-more"/></svg>More</a>
+</nav>
+<div class="home" aria-hidden="true"></div>
+
+</body>
+</html>
