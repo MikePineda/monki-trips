@@ -1,0 +1,12 @@
+{
+  "model": "fake-phrase-model",
+  "responses": [
+    {
+      "content": "Here are the cards:\n```json\n{\"cards\": [{\"category\": \"greetings\", \"prompt\": \"Hello\", \"phrase\": \"こんにちは\", \"romanization\": \"konnichiwa\", \"note\": null}, {\"category\": \"greetings\", \"prompt\": \"Thank you\", \"phrase\": \"ありがとうございます\", \"romanization\": \"arigatou gozaimasu\", \"note\": null}, {\"category\": \"reservation\", \"prompt\": \"I have a reservation under {name}\", \"phrase\": \"{name}で予約しています\", \"romanization\": \"{name} de yoyaku shiteimasu\", \"note\": \"Show it at the front desk.\"}, {\"category\": \"lodging_address\", \"prompt\": \"Please take me to this address\", \"phrase\": \"この住所までお願いします：架空市 1-2-3\", \"romanization\": \"kono juusho made onegaishimasu\", \"note\": \"Synthetic address.\"}, {\"category\": \"food\", \"prompt\": \"I am vegetarian\", \"phrase\": \"ベジタリアンです\", \"romanization\": \"bejitarian desu\", \"note\": null}, {\"category\": \"food\", \"prompt\": \"The bill, please\", \"phrase\": \"お会計をお願いします\", \"romanization\": \"okaikei wo onegaishimasu\", \"note\": null}, {\"category\": \"emergency\", \"prompt\": \"Please call an ambulance\", \"phrase\": \"救急車を呼んでください\", \"romanization\": \"kyuukyuusha wo yonde kudasai\", \"note\": null}, {\"category\": \"emergency\", \"prompt\": \"Where is the pharmacy?\", \"phrase\": \"薬局はどこですか\", \"romanization\": \"yakkyoku wa doko desu ka\", \"note\": null}, {\"category\": \"numbers\", \"prompt\": \"How much is it?\", \"phrase\": \"いくらですか\", \"romanization\": \"ikura desu ka\", \"note\": null}, {\"category\": \"numbers\", \"prompt\": \"Can I pay by card?\", \"phrase\": \"カードで払えますか\", \"romanization\": \"kaado de haraemasu ka\", \"note\": null}]}\n```",
+      "usage": {
+        "inputTokens": 900,
+        "outputTokens": 600
+      }
+    }
+  ]
+}

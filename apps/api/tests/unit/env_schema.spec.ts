@@ -138,6 +138,28 @@ test.group('Environment schema', () => {
     )
   })
 
+  test('the openai seam and the llm extras validate', ({ assert }) => {
+    const env = validateEnv({
+      ...REQUIRED,
+      LLM_PROVIDER: 'openai',
+      LLM_VISION_MODEL: 'vision-model',
+      LLM_MONTHLY_TOKEN_CAP_OVERRIDE: '50000',
+    })
+
+    assert.equal(env.LLM_PROVIDER, 'openai')
+    assert.equal(env.LLM_VISION_MODEL, 'vision-model')
+    assert.equal(env.LLM_MONTHLY_TOKEN_CAP_OVERRIDE, 50000)
+    assert.throws(
+      () => validateEnv({ ...REQUIRED, LLM_MONTHLY_TOKEN_CAP_OVERRIDE: 'lots' }),
+      /LLM_MONTHLY_TOKEN_CAP_OVERRIDE/
+    )
+    assert.throws(
+      () =>
+        validateEnv({ ...REQUIRED, LLM_PROVIDER: 'anthropic', LLM_API_KEY: 'k', LLM_MODEL: '' }),
+      /LLM_MODEL/
+    )
+  })
+
   test('vapid variables are accepted empty, together, and refused half set', ({ assert }) => {
     const empty = validateEnv({
       ...REQUIRED,

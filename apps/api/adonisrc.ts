@@ -49,6 +49,7 @@ export default defineConfig({
     () => import('#providers/mail_provider'),
     () => import('#providers/push_provider'),
     () => import('#providers/fx_provider'),
+    () => import('#providers/llm_provider'),
     () => import('#providers/deferred_tasks_provider'),
     () => import('#providers/scheduler_provider'),
   ],

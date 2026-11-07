@@ -1,0 +1,12 @@
+{
+  "model": "fake-chat-model",
+  "responses": [
+    {
+      "content": "Your next event is the night train.",
+      "usage": {
+        "inputTokens": 300,
+        "outputTokens": 20
+      }
+    }
+  ]
+}

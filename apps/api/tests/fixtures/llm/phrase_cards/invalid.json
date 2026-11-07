@@ -1,0 +1,19 @@
+{
+  "model": "fake-phrase-model",
+  "responses": [
+    {
+      "content": "Sorry, I cannot produce JSON today.",
+      "usage": {
+        "inputTokens": 800,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "{\"cards\": [{\"category\": \"weather\", \"prompt\": \"Sunny\", \"phrase\": \"晴れ\"}]}",
+      "usage": {
+        "inputTokens": 850,
+        "outputTokens": 40
+      }
+    }
+  ]
+}
