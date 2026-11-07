@@ -28,8 +28,9 @@ import { mockTabs } from './mock-tabs'
 /**
  * The Today screen (the sacred one), top to bottom, with synthetic data:
  * header with "Day N of M · city", connection and Kiko; the ticket; today's
- * documents with the print banner first; tonight; left today with the
- * weather beside it; the expense FAB; the tab bar.
+ * documents with the print banner first; tonight; left today with nothing
+ * beside it (the FAB's column); the weather on its own full-width row; the
+ * expense FAB (the page keeps clearance for it); the tab bar.
  */
 @Component({
   selector: 'app-mock-today',
@@ -70,7 +71,7 @@ import { mockTabs } from './mock-tabs'
         <mk-mascot mkTopBarActions state="happy" size="sm" [motion]="motion()" />
       </mk-top-bar>
 
-      <mk-page [tabBar]="true">
+      <mk-page [tabBar]="true" [fab]="true">
         <mk-stack gap="0">
           <mk-section [eyebrow]="'styleguide.today.next' | transloco">
             <mk-ticket
@@ -167,26 +168,27 @@ import { mockTabs } from './mock-tabs'
           </mk-section>
 
           <mk-section [eyebrow]="'styleguide.today.leftToday' | transloco">
-            <mk-row gap="2" align="start" justify="between">
-              <mk-stack gap="0">
-                <p mk-text variant="display">{{ leftToday() }}</p>
-                <p mk-text variant="caption" tone="ink-2">{{ leftTodayBase() }}</p>
-                <p mk-text variant="caption" tone="ink-3">
-                  {{ 'styleguide.today.pending' | transloco: { count: trip.money.pendingCount } }}
-                </p>
-                <p mk-text variant="caption" tone="ink-2">
-                  {{ 'styleguide.today.yesterday' | transloco: { amount: yesterday() } }}
-                </p>
-              </mk-stack>
-              <mk-stack gap="0" align="end">
-                <span mk-text variant="label">
-                  <mk-icon name="cloud-rain" [size]="16" />
-                  {{ 'styleguide.today.weather' | transloco: { degrees: trip.weather.degrees } }}
-                </span>
-                <span mk-text variant="caption" tone="ink-3">
-                  {{ 'styleguide.today.weatherAge' | transloco: { hours: trip.weather.ageHours } }}
-                </span>
-              </mk-stack>
+            <mk-stack gap="0">
+              <p mk-text variant="display">{{ leftToday() }}</p>
+              <p mk-text variant="caption" tone="ink-2">{{ leftTodayBase() }}</p>
+              <p mk-text variant="caption" tone="ink-3">
+                {{ 'styleguide.today.pending' | transloco: { count: trip.money.pendingCount } }}
+              </p>
+              <p mk-text variant="caption" tone="ink-2">
+                {{ 'styleguide.today.yesterday' | transloco: { amount: yesterday() } }}
+              </p>
+            </mk-stack>
+          </mk-section>
+
+          <mk-section data-testid="styleguide.today.weather">
+            <mk-row gap="1" [wrap]="true">
+              <span mk-text variant="label">
+                <mk-icon name="cloud-rain" [size]="16" />
+                {{ 'styleguide.today.weather' | transloco: { degrees: trip.weather.degrees } }}
+              </span>
+              <span mk-text variant="caption" tone="ink-3">
+                {{ 'styleguide.today.weatherAge' | transloco: { hours: trip.weather.ageHours } }}
+              </span>
             </mk-row>
           </mk-section>
         </mk-stack>

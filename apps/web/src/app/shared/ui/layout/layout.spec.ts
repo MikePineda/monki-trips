@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { Component } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import { MkPageComponent } from './page.component'
@@ -27,6 +29,17 @@ import { MkStackComponent } from './stack.component'
 })
 class Host {}
 
+@Component({
+  imports: [MkPageComponent],
+  template: `<mk-page [tabBar]="true" [fab]="true"><p>Left today</p></mk-page>`,
+})
+class FabHost {}
+
+/** The text of every style element the mounted components added to the document. */
+function mountedCss(): string {
+  return [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n')
+}
+
 describe('layout primitives', () => {
   function render(): HTMLElement {
     TestBed.configureTestingModule({ imports: [Host] })
@@ -39,6 +52,28 @@ describe('layout primitives', () => {
     const host = render()
 
     expect(host.querySelector('mk-page')?.hasAttribute('data-tab-bar')).toBe(true)
+  })
+
+  it('page reserves clearance for the floating action', () => {
+    TestBed.configureTestingModule({ imports: [FabHost] })
+    const fixture = TestBed.createComponent(FabHost)
+    fixture.detectChanges()
+    const page = (fixture.nativeElement as HTMLElement).querySelector('mk-page')!
+
+    expect(page.hasAttribute('data-fab')).toBe(true)
+    // The bottom padding of a page with a FAB adds the FAB's clearance to the tab bar's room.
+    const fabRule = /\[data-fab\][^{]*\{([^}]*)\}/.exec(mountedCss())?.[1] ?? ''
+    expect(fabRule).toMatch(/padding-bottom:[^;]*var\(--fab-clearance\)/)
+    expect(fabRule).toMatch(/padding-bottom:[^;]*var\(--tab-bar-height\)/)
+    // The clearance is the FAB's own height (space-6) plus the 16 px gap above it.
+    const tokens = readFileSync(join(process.cwd(), 'src/styles.css'), 'utf8')
+    expect(tokens).toMatch(/--fab-clearance:\s*calc\(var\(--space-6\) \+ var\(--space-2\)\)/)
+  })
+
+  it('a page without a FAB keeps no clearance for one', () => {
+    const host = render()
+
+    expect(host.querySelector('mk-page')?.hasAttribute('data-fab')).toBe(false)
   })
 
   it('mk-section renders a mono eyebrow or a heading title and opts out of its hairline', () => {
