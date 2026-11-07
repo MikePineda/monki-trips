@@ -2,6 +2,8 @@ import { Dialog, type DialogRef } from '@angular/cdk/dialog'
 import { Overlay } from '@angular/cdk/overlay'
 import type { ComponentType } from '@angular/cdk/portal'
 import { Injectable, inject } from '@angular/core'
+import { firstValueFrom } from 'rxjs'
+import { MkConfirmSheetComponent, type ConfirmSheetData } from './confirm-sheet.component'
 
 export interface SheetOptions<D> {
   /** Data for the sheet component (`inject(DIALOG_DATA)`). */
@@ -43,6 +45,15 @@ export class SheetService {
       maxWidth: '40rem',
       positionStrategy: this.overlay.position().global().centerHorizontally().bottom('0'),
     })
+  }
+
+  /** A yes/no sheet; resolves `true` only when the person pressed the action. */
+  async confirm(data: ConfirmSheetData): Promise<boolean> {
+    const ref = this.open<boolean | undefined, ConfirmSheetData>(MkConfirmSheetComponent, {
+      data,
+      label: data.title,
+    })
+    return (await firstValueFrom(ref.closed)) === true
   }
 
   /** Closes every open sheet (route changes, sign-out). */

@@ -1,5 +1,6 @@
 import { Dexie, type DexieOptions, type Table } from 'dexie'
 import type {
+  ActivityRecord,
   ChecklistRecord,
   DocBlobRecord,
   DocRecord,
@@ -10,6 +11,7 @@ import type {
   OutboxRecord,
   StayRecord,
   TaskRecord,
+  TravellerRecord,
   TripRecord,
 } from './records'
 
@@ -36,6 +38,8 @@ export class MonkiTripsDb extends Dexie {
   declare checklist: Table<ChecklistRecord, string>
   declare expenses: Table<ExpenseRecord, string>
   declare members: Table<MemberRecord, string>
+  declare travellers: Table<TravellerRecord, string>
+  declare activity: Table<ActivityRecord, string>
   declare meta: Table<MetaRecord, string>
   declare outbox: Table<OutboxRecord, string>
 
@@ -54,6 +58,11 @@ export class MonkiTripsDb extends Dexie {
       members: 'id, tripId, userId, [tripId+userId]',
       meta: 'key',
       outbox: 'id, state, createdAt',
+    })
+    // WP 1.7: travellers (written through the outbox) and the cached activity feed.
+    this.version(2).stores({
+      travellers: 'id, tripId, updatedAt',
+      activity: 'id, tripId, [tripId+createdAt]',
     })
   }
 }

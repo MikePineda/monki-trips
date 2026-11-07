@@ -11,6 +11,7 @@ export function toTripRecord(trip: Trip): TripRecord {
     baseCurrency: trip.baseCurrency,
     budgetMode: trip.budgetMode,
     budgetTotalMinor: trip.budgetTotalMinor,
+    homeTz: trip.homeTz,
     updatedAt: trip.updatedAt,
   }
 }

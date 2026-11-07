@@ -1,4 +1,6 @@
 import 'fake-indexeddb/auto'
+import { Dexie } from 'dexie'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { freshOfflineDb } from '../../../testing/offline-testing'
 import { MonkiTripsDb } from './db'
 
@@ -13,18 +15,19 @@ describe('MonkiTripsDb', () => {
     await db.delete()
   })
 
-  it('is called monki-trips and opens at version 1', async () => {
+  it('is called monki-trips and opens at version 2', async () => {
     await db.open()
 
     expect(db.name).toBe('monki-trips')
-    expect(db.verno).toBe(1)
+    expect(db.verno).toBe(2)
   })
 
-  it('holds exactly the offline tables of the plan', async () => {
+  it('holds exactly the offline tables of the plan plus travellers and the activity cache', async () => {
     await db.open()
 
     expect(db.tables.map((table) => table.name).sort()).toEqual(
       [
+        'activity',
         'checklist',
         'docBlobs',
         'docs',
@@ -35,9 +38,26 @@ describe('MonkiTripsDb', () => {
         'outbox',
         'stays',
         'tasks',
+        'travellers',
         'trips',
       ].sort()
     )
+  })
+
+  it('a version 1 database keeps its rows when the app opens it at version 2', async () => {
+    const indexedDB = new IDBFactory()
+    const v1 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
+    v1.version(1).stores({ trips: 'id, updatedAt', meta: 'key', outbox: 'id, state, createdAt' })
+    await v1.table('trips').put({ id: 't1', name: 'Kept', updatedAt: 'x' })
+    v1.close()
+
+    const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
+    await upgraded.open()
+
+    expect(upgraded.verno).toBe(2)
+    expect((await upgraded.trips.get('t1'))?.name).toBe('Kept')
+    expect(await upgraded.travellers.count()).toBe(0)
+    upgraded.close()
   })
 
   it('keys each table and indexes it as the contract says', async () => {
@@ -56,6 +76,8 @@ describe('MonkiTripsDb', () => {
     expect(schema('checklist')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('expenses')).toEqual(['id', 'tripId', '[tripId+date]', 'updatedAt'])
     expect(schema('members')).toEqual(['id', 'tripId', 'userId', '[tripId+userId]'])
+    expect(schema('travellers')).toEqual(['id', 'tripId', 'updatedAt'])
+    expect(schema('activity')).toEqual(['id', 'tripId', '[tripId+createdAt]'])
     expect(schema('meta')).toEqual(['key'])
     expect(schema('outbox')).toEqual(['id', 'state', 'createdAt'])
   })

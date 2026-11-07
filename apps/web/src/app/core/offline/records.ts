@@ -31,6 +31,8 @@ export interface TripRecord extends SyncedRecord {
   budgetMode?: string
   /** Integer minor units of `baseCurrency`, null for no budget. */
   budgetTotalMinor?: number | null
+  /** IANA zone the trip's clocks follow; absent on rows written before WP 1.7. */
+  homeTz?: string
 }
 
 export interface EventRecord extends TripScopedRecord {
@@ -92,6 +94,36 @@ export interface MemberRecord extends TripScopedRecord {
   role: string
 }
 
+/**
+ * Someone who travels: every member gets one, and a trip can hold people
+ * without an account (`userId` null) for seats and expense shares. Written
+ * through the outbox (`traveller.upsert` / `traveller.delete`).
+ */
+export interface TravellerRecord extends TripScopedRecord {
+  displayName: string
+  userId: string | null
+  position: number
+}
+
+/**
+ * One line of the trip's activity feed, as `GET /trips/:tripId/activity`
+ * returns it: who (actor), what (entity and row), the action and the names
+ * of the fields that changed. Field names only, never values. Cached so the
+ * feed reads offline; `id` is the server's, the feed orders by `createdAt`.
+ */
+export interface ActivityRecord {
+  id: string
+  tripId: string
+  actorUserId: string | null
+  actorName: string | null
+  entity: string
+  entityId: string
+  action: string
+  fields: string[]
+  /** ISO instant. */
+  createdAt: string
+}
+
 export interface MetaRecord {
   key: string
   value: unknown
@@ -125,6 +157,7 @@ export interface SyncRowMap {
   checklist: ChecklistRecord
   expenses: ExpenseRecord
   members: MemberRecord
+  travellers: TravellerRecord
 }
 
 export type SyncTable = keyof SyncRowMap
@@ -138,6 +171,7 @@ export const SYNC_TABLES: readonly SyncTable[] = [
   'checklist',
   'expenses',
   'members',
+  'travellers',
 ]
 
 /** One row the server changed: an upsert, or a delete when `deleted`. */
