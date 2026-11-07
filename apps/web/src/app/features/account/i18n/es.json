@@ -46,7 +46,7 @@
     "action": "Cerrar sesión",
     "title": "Cerrar sesión",
     "pendingTitle": "Cambios sin enviar",
-    "pendingBody": "{{count}} cambios de este dispositivo no han llegado al servidor. Si cierras sesión ahora, se pierden.",
+    "pendingBody": "{{count}} cambios de este dispositivo no han llegado al servidor, incluidos los que necesitan tu atención. Si cierras sesión ahora, se pierden.",
     "confirm": "Cerrar sesión de todos modos",
     "cancel": "Seguir con la sesión"
   },
