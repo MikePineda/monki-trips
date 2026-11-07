@@ -1,13 +1,30 @@
 import { randomUUID } from 'node:crypto'
-import { soloAccount } from '../accounts.ts'
+import { soloAccount, type E2eAccount } from '../accounts.ts'
+import { ApiSession } from '../api-session.ts'
 import { expect, test } from '../fixtures.ts'
 import { RAW_KEY, signIn, signOut } from '../sign-in.ts'
 
-const solo = soloAccount()
+/** This project's own solo traveller: other projects on the same database never touch it. */
+let solo: E2eAccount
+
+// eslint-disable-next-line no-empty-pattern
+test.beforeAll(({}, testInfo) => {
+  solo = soloAccount(testInfo.project.name)
+})
 
 test.describe('J01 sign in, trips, sign out', () => {
-  // The journey relies on the solo traveller's list starting empty: one test owns that account's trips.
+  // The journey starts from an empty list: one test owns the account's trips.
   test.describe.configure({ mode: 'serial' })
+
+  // A retry (or an earlier run on this database) may have left a trip behind.
+  test.beforeAll(async () => {
+    const api = await ApiSession.signIn(solo)
+    try {
+      await api.deleteAllTrips()
+    } finally {
+      await api.dispose()
+    }
+  })
 
   test('a wrong password is refused with an honest message', async ({ page }) => {
     await page.goto('/login')
