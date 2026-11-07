@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { RouterLink, RouterOutlet } from '@angular/router'
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router'
+import { filter, map, startWith } from 'rxjs'
 import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { META_ACTIVE_TRIP, MetaStore } from '../../core/offline/meta.store'
 import { tripRecord } from '../../core/offline/trip-queries'
+import { MkFabComponent } from '../../shared/ui/fab/fab.component'
 import { MkIconButtonComponent } from '../../shared/ui/icon-button/icon-button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
 import { MkPageComponent } from '../../shared/ui/layout/page.component'
@@ -24,8 +26,10 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
 /**
  * The frame inside a trip (`/t/:tripId`): header with a way back to the
  * list, the trip name (from the device's copy) and the connection
- * indicator; the routed tab below; the five-tab bar at the bottom. Entering
- * a trip makes it the active one for the "Add expense" shortcut.
+ * indicator; the routed tab below; the five-tab bar at the bottom; the
+ * "Add expense" FAB everywhere but settings, the Plan tab (its own FAB) and
+ * the quick expense itself.
+ * Entering a trip makes it the active one for the "Add expense" shortcut.
  */
 @Component({
   selector: 'app-trip-shell',
@@ -38,6 +42,7 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
     MkPageComponent,
     MkIconComponent,
     MkIconButtonComponent,
+    MkFabComponent,
   ],
   providers: [provideShellI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,9 +58,15 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
         <mk-icon name="info" />
       </a>
     </app-shell-header>
-    <mk-page [tabBar]="true">
+    <mk-page [tabBar]="true" [fab]="showFab()">
       <router-outlet />
     </mk-page>
+    @if (showFab()) {
+      <a mk-fab [routerLink]="['/t', tripId(), 'add']" data-testid="shell.fab">
+        <mk-icon name="plus" />
+        {{ 'shell.trip.add.title' | transloco }}
+      </a>
+    }
     <mk-tab-bar [tabs]="tabs()" [label]="'shell.tabs.label' | transloco" />
   `,
 })
@@ -83,6 +94,25 @@ export class TripShellComponent {
     this.transloco.selectTranslate<string>('trip.untitled', {}, this.scope),
     { initialValue: '' }
   )
+
+  private readonly router = inject(Router)
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url)
+    ),
+    { initialValue: this.router.url }
+  )
+  /**
+   * The quick-expense button, on every trip screen but settings and the
+   * sheet's own route. The Plan tab floats its own "Add event" button and a
+   * screen has one floating control (DESIGN.md), so it hides there too.
+   */
+  protected readonly showFab = computed(() => {
+    const path = this.url().split(/[?#]/)[0]
+    return !/\/(more\/settings|plan)(\/|$)/.test(path) && !/\/add$/.test(path)
+  })
 
   protected readonly title = computed(() => this.trip()?.name ?? this.untitled())
 

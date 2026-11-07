@@ -5,6 +5,8 @@ import authEn from '../app/features/auth/i18n/en.json'
 import authEs from '../app/features/auth/i18n/es.json'
 import emergencyEn from '../app/features/emergency/i18n/en.json'
 import emergencyEs from '../app/features/emergency/i18n/es.json'
+import moneyEn from '../app/features/money/i18n/en.json'
+import moneyEs from '../app/features/money/i18n/es.json'
 import offlineEn from '../app/features/offline/i18n/en.json'
 import offlineEs from '../app/features/offline/i18n/es.json'
 import settingsEn from '../app/features/settings/i18n/en.json'
@@ -42,6 +44,7 @@ export const SCOPE_CATALOGUES = {
   emergency: { en: emergencyEn, es: emergencyEs },
   events: { en: eventsEn, es: eventsEs },
   members: { en: membersEn, es: membersEs },
+  money: { en: moneyEn, es: moneyEs },
   offline: { en: offlineEn, es: offlineEs },
   plan: { en: planEn, es: planEs },
   settings: { en: settingsEn, es: settingsEs },
