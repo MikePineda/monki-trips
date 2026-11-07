@@ -82,6 +82,17 @@ describe('OutboxStore', () => {
     })
   })
 
+  it('unsentCount counts pending, syncing and failed entries, read now', async () => {
+    const first = await outbox.enqueue({ tripId: 't1', kind: 'expense.create', payload: {} })
+    const second = await outbox.enqueue({ tripId: 't1', kind: 'expense.create', payload: {} })
+    await outbox.enqueue({ tripId: 't1', kind: 'expense.create', payload: {} })
+    await outbox.markSyncing(first.id)
+    await outbox.markSyncing(second.id)
+    await outbox.reject(second.id, 'refused')
+
+    expect(await outbox.unsentCount()).toBe(3)
+  })
+
   it('a queued mutation is pending with a UUIDv7 id and the clock time', async () => {
     const queued = await outbox.enqueue(EXPENSE)
 

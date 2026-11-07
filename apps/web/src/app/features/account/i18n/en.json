@@ -46,7 +46,7 @@
     "action": "Sign out",
     "title": "Sign out",
     "pendingTitle": "Changes not sent yet",
-    "pendingBody": "{{count}} changes on this device have not reached the server. Signing out now loses them.",
+    "pendingBody": "{{count}} changes on this device have not reached the server, including any that need your attention. Signing out now loses them.",
     "confirm": "Sign out anyway",
     "cancel": "Stay signed in"
   },

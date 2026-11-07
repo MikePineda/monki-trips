@@ -43,6 +43,16 @@ export class OutboxStore {
     { injector: this.injector }
   )
 
+  /**
+   * Every entry that has not reached the server (pending, syncing or
+   * failed), counted now: for decisions taken on a click, where a live
+   * signal may not have caught up yet.
+   */
+  async unsentCount(): Promise<number> {
+    const db = await this.database
+    return db.outbox.where('state').anyOf('pending', 'syncing', 'failed').count()
+  }
+
   async enqueue(input: OutboxEntryInput): Promise<OutboxRecord> {
     const record: OutboxRecord = {
       id: uuidv7(),

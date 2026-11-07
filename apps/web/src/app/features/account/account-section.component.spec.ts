@@ -140,6 +140,31 @@ describe('AccountSectionComponent', () => {
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/login'))
   })
 
+  it('sign-out warns about failed outbox items too', async () => {
+    const outbox = TestBed.inject(OutboxStore)
+    const entry = await outbox.enqueue({ tripId: 't1', kind: 'expense.create', payload: {} })
+    await outbox.markSyncing(entry.id)
+    await outbox.reject(entry.id, 'refused by the server')
+    const { click, sheet } = await render()
+
+    await click('account.signOut')
+
+    expect(sheet('account.signOut.warning')?.textContent).toContain('1 changes')
+    expect(fakes.session.calls).not.toContain('logout')
+  })
+
+  it('sign-out waits for the outbox count before deciding', async () => {
+    const outbox = TestBed.inject(OutboxStore)
+    const { click, sheet } = await render()
+    // Written after the page rendered: a live count may not have caught up yet.
+    await outbox.enqueue({ tripId: 't1', kind: 'expense.create', payload: {} })
+
+    await click('account.signOut')
+
+    expect(sheet('account.signOut.warning')).not.toBeNull()
+    expect(fakes.session.calls).not.toContain('logout')
+  })
+
   it('signing out everywhere keeps this session', async () => {
     const { click } = await render()
 

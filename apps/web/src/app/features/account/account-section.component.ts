@@ -275,9 +275,13 @@ export class AccountSectionComponent {
     })
   }
 
-  /** Signs out; with changes still in the outbox the person confirms first. */
+  /**
+   * Signs out; with changes that never reached the server (pending,
+   * syncing or failed) the person confirms first. The count is read at
+   * click time, not from a live signal that may still be loading.
+   */
   protected async signOut(): Promise<void> {
-    const pending = this.outbox.pendingCount()
+    const pending = await this.outbox.unsentCount()
     if (pending > 0) {
       const ref = this.sheets.open<boolean, SignOutSheetData>(SignOutSheet, {
         data: { pendingCount: pending },

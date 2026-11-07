@@ -6,7 +6,7 @@ import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
 import { provideAccountI18n } from './account-i18n'
 
 export interface SignOutSheetData {
-  /** Outbox entries that have not reached the server. */
+  /** Outbox entries that have not reached the server (pending, syncing or failed). */
   pendingCount: number
 }
 
