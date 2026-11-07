@@ -19,7 +19,12 @@ import { StructuredCompletion } from '#services/llm/structured_completion'
 import { phraseCardEntity } from '#services/sync/entities/read_only_entities'
 import type { DbRow } from '#services/sync/entity_spec'
 import { rowToWire } from '#services/sync/row_wire'
-import { canonicalLanguageTag, languageDisplayName } from '#domain/language_tag'
+import { PHRASE_CARD_LANGUAGES } from '#config/llm'
+import {
+  canonicalLanguageTag,
+  languageDisplayName,
+  supportedLanguageTag,
+} from '#domain/language_tag'
 import { phraseCardProblems } from '#domain/phrase_card_rules'
 import { phraseCardsOutputValidator } from '#validators/phrase_cards'
 
@@ -64,7 +69,7 @@ export class PhraseCardGeneration {
 
   /** Generates and stores the set; 409 `E_CONFLICT` with the existing `id` unless `force`. */
   async generate(user: User, trip: Trip, input: GeneratePhraseCards): Promise<PhraseCards> {
-    const language = canonicalLanguageTag(input.language)
+    const language = supportedLanguageTag(input.language, PHRASE_CARD_LANGUAGES)
     if (!language) throw new ApiException('E_BAD_REQUEST')
     const existing = await this.live(trip.id, language)
     if (existing && !input.force) {
@@ -192,12 +197,14 @@ export class PhraseCardGeneration {
     lodgings: LodgingAddress[],
     preferences: string[]
   ): PromptBuilder {
+    // The system prompt holds only the app's own text: the target language
+    // comes from the request, so it travels in the user turn, as data.
     const travellerLanguage = languageDisplayName(user.locale, 'en')
     const targetLanguage = languageDisplayName(language, 'en')
     const prompt = new PromptBuilder(
       'You write phrase cards a traveller shows or reads to local people. Each card pairs what ' +
-        `the traveller wants to say, in ${travellerLanguage}, with the same phrase in ` +
-        `${targetLanguage} (BCP 47 "${language}"), written in its usual script.`
+        `the traveller wants to say, in ${travellerLanguage}, with the same phrase in the ` +
+        'target language named in the user turn, written in its usual script.'
     )
       .rule(
         `Never write a real person's name. Where a name belongs, keep the literal placeholder ` +
@@ -210,6 +217,8 @@ export class PhraseCardGeneration {
       )
 
     const asks = [
+      'The target language (a name and its BCP 47 tag):',
+      PromptBuilder.untrusted('target language', `${targetLanguage} (${language})`),
       `Write cards for every one of these categories: ${required.join(', ')}.`,
       '- greetings: hello, thank you, sorry, excuse me, goodbye.',
       `- reservation: "I have a reservation under ${PHRASE_CARD_NAME_PLACEHOLDER}" and checking in or out.`,

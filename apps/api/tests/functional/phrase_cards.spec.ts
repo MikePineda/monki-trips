@@ -302,6 +302,47 @@ test.group('Phrase cards', (group) => {
     assert.lengthOf(live, 1)
   })
 
+  test('language tags with variants are rejected', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    for (const language of ['ja-hepburn', 'ja-Latn-JP-hepburn', 'ja-u-ca-japanese', 'ja-x-a']) {
+      const response = await generate(client, owner, trip.id, { language })
+      assert.equal(response.status(), 422, language)
+      assert.equal(response.body().errors?.[0]?.field, 'language', language)
+    }
+    assert.lengthOf(llm.current.calls, 0)
+    assert.isEmpty(await db.from('llm_usage').where('user_id', owner.id))
+  })
+
+  test('unsupported languages are rejected', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    for (const language of ['tlh', 'qaa', 'ja-JP']) {
+      const response = await generate(client, owner, trip.id, { language })
+      assert.equal(response.status(), 422, language)
+      assert.equal(response.body().errors?.[0]?.field, 'language', language)
+    }
+    assert.lengthOf(llm.current.calls, 0)
+  })
+
+  test('the language never appears in the system prompt', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    const response = await generate(client, owner, trip.id, { language: 'ko' })
+
+    response.assertStatus(201)
+    const [call] = llm.current.calls
+    assert.notMatch(call.system, /\bko\b/i)
+    assert.notInclude(call.system, 'Korean')
+    assert.match(
+      call.messages[0].content as string,
+      /<data label="target language">\nKorean \(ko\)\n<\/data>/
+    )
+  })
+
   test('a malformed language or preference list is refused before any call', async ({
     client,
     assert,
