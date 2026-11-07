@@ -2,6 +2,12 @@ import { test } from '@japa/runner'
 import db from '@adonisjs/lucid/services/db'
 import {
   BUDGET_MODES,
+  DOCUMENT_KINDS,
+  EVENT_KINDS,
+  EVENT_STATUSES,
+  FX_SOURCES,
+  TASK_ORIGINS,
+  TASK_PRIORITIES,
   THEMES,
   TRIP_MEMBER_ROLES,
   USER_PLANS,
@@ -11,7 +17,22 @@ import {
 import { SYNC_COLUMNS } from '#database/sync_columns'
 
 /** Tables the plan marks "S": they carry the sync columns and the stamp trigger. */
-const SYNCABLE_TABLES = ['trips', 'trip_members', 'travellers']
+const SYNCABLE_TABLES = [
+  'trips',
+  'trip_members',
+  'travellers',
+  'stops',
+  'events',
+  'event_segments',
+  'segment_seats',
+  'documents',
+  'tasks',
+  'budget_categories',
+  'expenses',
+  'expense_shares',
+  'emergency_info',
+  'phrase_cards',
+]
 
 const EXPECTED_TABLES = [
   'users',
@@ -25,6 +46,19 @@ const EXPECTED_TABLES = [
   'llm_usage',
   'sync_mutations',
   'scheduler_runs',
+  'stops',
+  'events',
+  'event_segments',
+  'segment_seats',
+  'documents',
+  'tasks',
+  'budget_categories',
+  'expenses',
+  'expense_shares',
+  'fx_rates',
+  'emergency_info',
+  'phrase_cards',
+  'trip_activity',
 ]
 
 async function columnsOf(table: string): Promise<string[]> {
@@ -145,6 +179,12 @@ test.group('Schema', () => {
       { table: 'trips', column: 'budget_mode', values: BUDGET_MODES },
       { table: 'trip_members', column: 'role', values: TRIP_MEMBER_ROLES },
       { table: 'user_tokens', column: 'purpose', values: USER_TOKEN_PURPOSES },
+      { table: 'events', column: 'kind', values: EVENT_KINDS },
+      { table: 'events', column: 'status', values: EVENT_STATUSES },
+      { table: 'documents', column: 'kind', values: DOCUMENT_KINDS },
+      { table: 'tasks', column: 'priority', values: TASK_PRIORITIES },
+      { table: 'tasks', column: 'origin', values: TASK_ORIGINS },
+      { table: 'expenses', column: 'fx_source', values: FX_SOURCES },
     ])
     .run(async ({ assert }, { table, column, values }) => {
       const owner = await insertUser()
@@ -171,12 +211,29 @@ test.group('Schema', () => {
           token_hash: crypto.randomUUID(),
           expires_at: new Date(),
         }),
+        events: () => ({ trip_id: tripId, kind: 'tour', title: 'T' }),
+        documents: () => ({
+          trip_id: tripId,
+          kind: 'link',
+          title: 'T',
+          url: 'https://example.com',
+        }),
+        tasks: () => ({ trip_id: tripId, title: 'T' }),
+        expenses: () => ({
+          trip_id: tripId,
+          amount_minor: 100,
+          currency: 'AUD',
+          fx_rate: '1',
+          base_amount_minor: 100,
+          spent_on: '2027-01-21',
+        }),
       }
       for (const value of values) {
-        const base =
+        let base =
           table === 'trip_members'
             ? { trip_id: await insertTrip(owner), user_id: owner }
             : bases[table]()
+        if (table === 'documents') base = { ...base, storage_key: 'k', url: 'https://example.com' }
         assert.isTrue(await checkAccepts(table, column, value, base), `${table}.${column}=${value}`)
       }
       assert.isFalse(
@@ -184,6 +241,80 @@ test.group('Schema', () => {
         `${table}.${column} rejects an unknown value`
       )
     })
+
+  test('content tables enforce the plan checks: {$self}')
+    .with([
+      { name: 'cost pair', table: 'events', row: { kind: 'tour', title: 'T', cost_minor: 100 } },
+      {
+        name: 'unknown tag',
+        table: 'documents',
+        row: { kind: 'link', title: 'T', url: 'https://example.com', tags: ['print', 'frame'] },
+      },
+      { name: 'file without storage key', table: 'documents', row: { kind: 'file', title: 'T' } },
+      {
+        name: 'rate without base amount',
+        table: 'expenses',
+        row: { amount_minor: 100, currency: 'AUD', fx_rate: '1', spent_on: '2027-01-21' },
+      },
+      {
+        name: 'zero amount',
+        table: 'expenses',
+        row: { amount_minor: 0, currency: 'AUD', spent_on: '2027-01-21' },
+      },
+      { name: 'category without key or name', table: 'budget_categories', row: {} },
+      {
+        name: 'stop departing before arriving',
+        table: 'stops',
+        row: { name: 'S', arrive_on: '2027-01-22', depart_on: '2027-01-21' },
+      },
+    ])
+    .run(async ({ assert }, { table, row }) => {
+      const owner = await insertUser()
+      const tripId = await insertTrip(owner)
+      assert.isFalse(await checkAccepts(table, 'trip_id', tripId, row))
+    })
+
+  test('partial unique indexes keep one live row per key', async ({ assert }) => {
+    const owner = await insertUser()
+    const tripId = await insertTrip(owner)
+    const [event] = await db
+      .table('events')
+      .insert({ trip_id: tripId, kind: 'flight', title: 'F' })
+      .returning('id')
+    const leg = {
+      event_id: event.id,
+      position: 1,
+      departs_local: '2027-01-21T10:00:00',
+      departs_tz: 'UTC',
+      departs_at: '2027-01-21T10:00:00Z',
+      arrives_local: '2027-01-21T12:00:00',
+      arrives_tz: 'UTC',
+      arrives_at: '2027-01-21T12:00:00Z',
+    }
+    await db.table('event_segments').insert({ ...leg, trip_id: tripId, deleted_at: new Date() })
+    assert.isTrue(await checkAccepts('event_segments', 'trip_id', tripId, leg))
+    assert.isFalse(await checkAccepts('event_segments', 'trip_id', tripId, leg))
+    assert.isTrue(await checkAccepts('budget_categories', 'trip_id', tripId, { key: 'food' }))
+    assert.isFalse(await checkAccepts('budget_categories', 'trip_id', tripId, { key: 'food' }))
+  })
+
+  test('deleting a trip cascades to its content', async ({ assert }) => {
+    const owner = await insertUser()
+    const tripId = await insertTrip(owner)
+    await db.table('stops').insert({ trip_id: tripId, name: 'S' })
+    await db
+      .table('emergency_info')
+      .insert({ trip_id: tripId, content: JSON.stringify({ notes: 'x' }) })
+    await db
+      .table('trip_activity')
+      .insert({ trip_id: tripId, entity: 'stop', entity_id: tripId, action: 'created' })
+
+    await db.from('trips').where('id', tripId).delete()
+
+    assert.isEmpty(await db.from('stops').where('trip_id', tripId))
+    assert.isEmpty(await db.from('emergency_info').where('trip_id', tripId))
+    assert.isEmpty(await db.from('trip_activity').where('trip_id', tripId))
+  })
 
   test('trip has exactly one owner', async ({ assert }) => {
     const owner = await insertUser('owner@example.com')
