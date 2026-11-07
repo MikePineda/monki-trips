@@ -16,12 +16,12 @@ import { intlLocale } from '../../core/i18n/intl-locale'
 import { scopedLabels } from '../../core/i18n/scoped-labels'
 import { CLOCK } from '../../core/offline/clock'
 import { DocumentCopiesStore } from '../../core/offline/document-copies.store'
+import { DocumentsStore } from '../../core/offline/documents.store'
 import { OnlineStore } from '../../core/offline/online.store'
 import { SyncService } from '../../core/offline/sync.service'
 import { TIME_ZONE } from '../../core/offline/time-zone'
 import { TripContentStore } from '../../core/offline/trip-content.store'
 import {
-  tripDocuments,
   tripEvents,
   tripExpenses,
   tripRecord,
@@ -40,7 +40,7 @@ import { formatMoney } from '../../domain/money'
 import { isIosUserAgent } from '../../domain/platform'
 import { relativeTime } from '../../domain/relative-time'
 import { telHref } from '../../domain/tel-href'
-import { todayScreen } from '../../domain/today-screen'
+import { todayDocuments, todayMascot, todayScreen } from '../../domain/today-screen'
 import { localClock, zoneLabel } from '../../domain/zoned-time'
 import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
@@ -146,8 +146,8 @@ interface DocumentLine {
             </mk-stack>
             <mk-mascot
               size="sm"
-              [state]="screen.mascot"
-              [label]="mascotLabel(screen.mascot) | transloco"
+              [state]="mascot()"
+              [label]="mascotLabel(mascot()) | transloco"
               data-testid="today.mascot"
             />
           </mk-row>
@@ -421,6 +421,7 @@ export default class TodayPage {
   private readonly clockNow = inject(CLOCK)
   private readonly deviceZone = inject(TIME_ZONE)
   private readonly document = inject(DOCUMENT)
+  private readonly documentsStore = inject(DocumentsStore)
   private readonly content = inject(TripContentStore)
   private readonly toasts = inject(ToastService)
   private readonly weatherStore = inject(WeatherStore)
@@ -439,7 +440,6 @@ export default class TodayPage {
   private readonly stops = tripStops(this.tripId)
   private readonly events = tripEvents(this.tripId)
   private readonly segments = tripSegments(this.tripId)
-  private readonly docs = tripDocuments(this.tripId)
   private readonly copies = inject(DocumentCopiesStore).copies
   private readonly tasks = tripTasks(this.tripId)
   private readonly expenses = tripExpenses(this.tripId)
@@ -458,8 +458,6 @@ export default class TodayPage {
       stops: this.stops(),
       events: this.events(),
       segments: this.segments(),
-      docs: this.docs(),
-      blobs: [...this.copies().values()],
       tasks: this.tasks(),
       expenses: this.expenses(),
       weather: this.cachedWeather(),
@@ -500,6 +498,16 @@ export default class TodayPage {
     }
   })
 
+  /** The day Today shows (day 1 before the trip): the vault picks its documents. */
+  private readonly shownDate = computed(() => this.screen()?.view.today ?? '')
+  private readonly needed = this.documentsStore.documentsNeededToday(this.tripId, this.shownDate)
+  private readonly todayDocs = computed(() => todayDocuments(this.needed(), this.copies()))
+
+  protected readonly mascot = computed(() => {
+    const screen = this.screen()
+    return screen ? todayMascot(screen, this.todayDocs()) : 'happy'
+  })
+
   protected readonly documents = computed<DocumentLine[]>(() => {
     const screen = this.screen()
     if (!screen) {
@@ -511,15 +519,11 @@ export default class TodayPage {
       show_on_phone: showOnPhone ?? '',
       requires_passport: passport ?? '',
     }
-    // The documents to print lead, like their bands do (DESIGN.md, Today).
-    const ordered = [...screen.view.documents].sort(
-      (a, b) => Number(b.reasons.includes('print')) - Number(a.reasons.includes('print'))
-    )
-    return ordered.map((doc) => ({
-      id: doc.documentId,
+    return this.todayDocs().map((doc) => ({
+      id: doc.id,
       title: doc.title,
       print: doc.reasons.includes('print'),
-      printTaskId: screen.printTasks[doc.documentId] ?? null,
+      printTaskId: screen.printTasks[doc.id] ?? null,
       meta: doc.reasons.map((reason) => reasonWords[reason]).join(' · '),
       status: doc.availableOffline
         ? { tone: 'good', icon: 'circle-check', label: saved ?? '' }

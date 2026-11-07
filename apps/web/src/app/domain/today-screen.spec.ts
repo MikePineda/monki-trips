@@ -1,5 +1,8 @@
 import { blankDocument, blankSegment, placedEvent } from '../../testing/fake-trip-content'
+import { documentsNeededToday } from './documents-needed-today'
 import {
+  todayDocuments,
+  todayMascot,
   todayScreen,
   type TodayExpenseRow,
   type TodayScreenInput,
@@ -30,8 +33,6 @@ function input(overrides: Partial<TodayScreenInput> = {}): TodayScreenInput {
     stops: [STOP],
     events: [],
     segments: [],
-    docs: [],
-    blobs: [],
     tasks: [],
     expenses: [],
     weather: null,
@@ -164,26 +165,23 @@ describe('todayScreen', () => {
     expect(screen.view.budget.pendingSyncCount).toBe(1)
   })
 
-  it('mascot is worried when a today document is not offline', () => {
+  it('mascot is worried when a document of the day has no verified copy', () => {
     const events = [placedEvent('2027-01-21T15:00', 'Asia/Bangkok', { id: 'tour', kind: 'tour' })]
     const doc = blankDocument({ id: 'd1', eventId: 'tour', tags: ['show_on_phone'] })
+    const screen = todayScreen(input({ events }))
+    const needed = documentsNeededToday([doc], events, screen.view.today)
+    const lines = (copies: [string, string][]) =>
+      todayDocuments(needed, new Map(copies.map(([id, sha256]) => [id, { sha256 }])))
 
-    const missing = todayScreen(input({ events, docs: [doc] }))
-    expect(missing.view.documents.map((d) => [d.documentId, d.availableOffline])).toEqual([
-      ['d1', false],
-    ])
-    expect(missing.mascot).toBe('worried')
+    const missing = lines([])
+    expect(missing.map((d) => [d.id, d.availableOffline])).toEqual([['d1', false]])
+    expect(todayMascot(screen, missing)).toBe('worried')
 
-    const stale = todayScreen(
-      input({ events, docs: [doc], blobs: [{ docId: 'd1', sha256: 'b'.repeat(64) }] })
-    )
-    expect(stale.mascot).toBe('worried')
+    expect(todayMascot(screen, lines([['d1', 'b'.repeat(64)]]))).toBe('worried')
 
-    const saved = todayScreen(
-      input({ events, docs: [doc], blobs: [{ docId: 'd1', sha256: doc.sha256! }] })
-    )
-    expect(saved.view.documents[0].availableOffline).toBe(true)
-    expect(saved.mascot).toBe('happy')
+    const saved = lines([['d1', doc.sha256!]])
+    expect(saved[0].availableOffline).toBe(true)
+    expect(todayMascot(screen, saved)).toBe('happy')
   })
 
   it('mascot sleeps during the overnight train', () => {
@@ -193,14 +191,11 @@ describe('todayScreen', () => {
       title: 'Night train',
       endsLocal: '2027-01-22T07:15',
     })
-    const doc = blankDocument({ id: 'd1', eventId: 'night-train', tags: ['print'] })
 
     // 21:00 in Port Vellmar: before the night hours, but on board.
-    const screen = todayScreen(
-      input({ events: [train], docs: [doc], now: '2027-01-21T14:00:00.000Z' })
-    )
+    const screen = todayScreen(input({ events: [train], now: '2027-01-21T14:00:00.000Z' }))
 
-    expect(screen.mascot).toBe('asleep')
+    expect(todayMascot(screen, [])).toBe('asleep')
     expect(screen.view.tonight?.eventId).toBe('night-train')
   })
 
@@ -209,7 +204,7 @@ describe('todayScreen', () => {
       input({ tasks: [task({ id: 'visa', priority: 'high', dueOn: '2027-01-19' })] })
     )
 
-    expect(screen.mascot).toBe('worried')
+    expect(todayMascot(screen, [])).toBe('worried')
   })
 
   it('tonight is the lodging, or an alert when there is none', () => {
@@ -246,7 +241,6 @@ describe('todayScreen', () => {
             endsLocal: '2027-01-22T11:00',
           }),
         ],
-        docs: [blankDocument({ id: 'd1', eventId: 'inn', tags: ['print'] })],
       })
     )
 
@@ -254,7 +248,6 @@ describe('todayScreen', () => {
     expect(screen.view.dayNumber).toBe(1)
     expect(screen.view.today).toBe('2027-01-20')
     expect(screen.view.tonight?.eventId).toBe('inn')
-    expect(screen.view.documents.map((d) => d.documentId)).toEqual(['d1'])
     expect(screen.view.nextEvent?.eventId).toBe('inn')
     // 10 Jan 05:00 UTC to 20 Jan 08:00 UTC.
     expect(screen.view.nextEvent?.countdownMs).toBe((10 * 24 + 3) * 3_600_000)
@@ -278,7 +271,7 @@ describe('todayScreen', () => {
     expect(screen.printTasks).toEqual({ d1: 'p1' })
   })
 
-  it('a link document is never offline', () => {
+  it('a link document is never offline, and the documents to print come first', () => {
     const events = [placedEvent('2027-01-21T15:00', 'Asia/Bangkok', { id: 'tour', kind: 'tour' })]
     const link = blankDocument({
       id: 'l1',
@@ -288,9 +281,14 @@ describe('todayScreen', () => {
       eventId: 'tour',
       tags: ['show_on_phone'],
     })
+    const voucher = blankDocument({ id: 'd1', eventId: 'tour', tags: ['print'] })
+    const needed = documentsNeededToday([link, voucher], events, '2027-01-21')
 
-    expect(todayScreen(input({ events, docs: [link] })).view.documents[0].availableOffline).toBe(
-      false
-    )
+    const lines = todayDocuments(needed, new Map([['l1', { sha256: 'a'.repeat(64) }]]))
+
+    expect(lines.map((d) => [d.id, d.reasons, d.availableOffline])).toEqual([
+      ['d1', ['print'], false],
+      ['l1', ['show_on_phone'], false],
+    ])
   })
 })

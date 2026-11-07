@@ -1,11 +1,10 @@
 import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import type { E2eAccount } from './accounts.ts'
 import { ApiSession } from './api-session.ts'
 
-/** A tiny but real PDF: the API sniffs the bytes, never the name. */
-const SAMPLE_PDF = Buffer.from(
-  '%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n'
-)
+/** The synthetic voucher J04 uploads: a real PDF, since the API sniffs the bytes. */
+const SAMPLE_PDF = readFileSync(new URL('./fixtures/voucher.pdf', import.meta.url))
 
 export interface TodayTrip {
   tripId: string

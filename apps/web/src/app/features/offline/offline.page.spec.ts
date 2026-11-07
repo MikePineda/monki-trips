@@ -187,7 +187,8 @@ describe('OfflinePage (Ready to fly)', () => {
     ;(host.querySelector('[data-testid="offline.download.action"]') as HTMLButtonElement).click()
 
     await until(() => expect(text('offline.download.outcome')).toBe('Everything is on this phone'))
-    expect(text('offline.ready.summary')).toBe('This phone is ready to fly')
+    // The saved copies reach the checks through a live query: wait for the settled summary.
+    await until(() => expect(text('offline.ready.summary')).toBe('This phone is ready to fly'))
     expect((await db.docBlobs.toArray()).map((blob) => blob.docId).sort()).toEqual([
       'ticket',
       'voucher',

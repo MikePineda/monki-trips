@@ -4,18 +4,19 @@ import {
   mascotState,
   todayView,
   type BudgetExpense,
-  type DocumentKind,
   type DocumentTag,
   type IsoDate,
+  type MascotInput,
   type MascotState,
   type TaskOrigin,
   type TaskPriority,
   type TodayStop,
   type TodayView,
-  type TripDocument,
   type TripTask,
   type WeatherSnapshot,
 } from '@monkitrips/shared'
+import { documentOfflineState, type OfflineStateDocument } from './document-offline-state'
+import type { NeededDocument, NeededDocumentInput } from './documents-needed-today'
 import { toDomainEvents, type EventRow, type SegmentRow } from './event-instants'
 import { isKnownZone, zoneOffsetMinutes } from './zoned-time'
 
@@ -25,6 +26,11 @@ import { isKnownZone, zoneOffsetMinutes } from './zoned-time'
  * computes the screen and `mascot_state` the mood. Nothing here is
  * recomputed by hand; this module only adapts shapes. Pure: `now` and
  * every row are parameters.
+ *
+ * The documents of the day are the vault's (`DocumentsStore
+ * .documentsNeededToday` for `view.today`), not the view's: the page
+ * reads them after the screen, `todayDocuments` adds whether the device
+ * holds each verified copy, and `todayMascot` gives the mood with them.
  *
  * Before the trip the screen is a preview of day 1: the day, documents
  * and tonight are read at the start of the first day, the next event and
@@ -48,21 +54,6 @@ export interface TodayStopRow {
   tz: string | null
   arriveOn: IsoDate | null
   departOn: IsoDate | null
-}
-
-export interface TodayDocRow {
-  id: string
-  eventId: string | null
-  kind: DocumentKind
-  title: string
-  tags: readonly DocumentTag[]
-  sha256: string | null
-}
-
-/** A document's bytes saved on the device, with the hash they were verified against. */
-export interface SavedBlob {
-  docId: string
-  sha256: string
 }
 
 export interface TodayTaskRow {
@@ -94,8 +85,6 @@ export interface TodayScreenInput<W extends WeatherSnapshot = WeatherSnapshot> {
   stops: readonly TodayStopRow[]
   events: readonly EventRow[]
   segments: readonly SegmentRow[]
-  docs: readonly TodayDocRow[]
-  blobs: readonly SavedBlob[]
   tasks: readonly TodayTaskRow[]
   expenses: readonly TodayExpenseRow[]
   weather?: W | null
@@ -105,20 +94,59 @@ export interface TodayScreenInput<W extends WeatherSnapshot = WeatherSnapshot> {
 }
 
 export interface TodayScreen<W extends WeatherSnapshot = WeatherSnapshot> {
-  view: TodayView<W>
+  /** The day; its documents are `todayDocuments` of the vault's list for `view.today`. */
+  view: Omit<TodayView<W>, 'documents'>
   /** True before the trip: the screen previews day 1. */
   preview: boolean
-  mascot: MascotState
+  /** What `mascot_state` reads, but the documents of the day (see `todayMascot`). */
+  mascotInput: Omit<MascotInput, 'todayDocuments'>
   /** The open "print this" task of each document, by document id. */
   printTasks: Record<string, string>
 }
 
-/** A document is offline when the device holds bytes whose hash is the server's. Links never are. */
-export function isSavedOffline(doc: TodayDocRow, blobs: readonly SavedBlob[]): boolean {
-  if (doc.kind !== 'file' || !doc.sha256) {
-    return false
-  }
-  return blobs.some((blob) => blob.docId === doc.id && blob.sha256 === doc.sha256)
+/** The device's document row, as far as Today reads it (a `DocRecord` is one). */
+export interface TodayDocumentRow extends NeededDocumentInput, OfflineStateDocument {
+  title: string
+}
+
+/** A document of the day: why it shows, and whether the device holds its verified copy. */
+export interface TodayDocumentLine {
+  id: string
+  title: string
+  tags: readonly DocumentTag[]
+  reasons: readonly DocumentTag[]
+  /** A saved copy whose sha256 is the server's; a link never is. */
+  availableOffline: boolean
+}
+
+/**
+ * The documents `documentsNeededToday` picked, with their offline state
+ * read from the saved copies (`documentOfflineState`), the ones to print
+ * first like their bands (DESIGN.md, Today).
+ */
+export function todayDocuments(
+  needed: readonly NeededDocument<TodayDocumentRow>[],
+  copies: ReadonlyMap<string, { sha256: string }>
+): TodayDocumentLine[] {
+  const lines = needed.map(({ document, reasons }) => ({
+    id: document.id,
+    title: document.title,
+    tags: document.tags,
+    reasons,
+    availableOffline:
+      documentOfflineState(document, copies.get(document.id) ?? null, false) === 'saved',
+  }))
+  return lines.sort(
+    (a, b) => Number(b.reasons.includes('print')) - Number(a.reasons.includes('print'))
+  )
+}
+
+/** Kiko's mood for the screen, with the documents of the day. */
+export function todayMascot(
+  screen: Pick<TodayScreen, 'mascotInput'>,
+  documents: readonly Pick<TodayDocumentLine, 'tags' | 'availableOffline'>[]
+): MascotState {
+  return mascotState({ ...screen.mascotInput, todayDocuments: documents })
 }
 
 function zoneOrUtc(zone: string | null | undefined): string {
@@ -143,19 +171,6 @@ function domainStops(stops: readonly TodayStopRow[], atMs: number): TodayStop[] 
       },
     ]
   })
-}
-
-function domainDocuments(
-  docs: readonly TodayDocRow[],
-  blobs: readonly SavedBlob[]
-): TripDocument[] {
-  return docs.map((doc) => ({
-    id: doc.id,
-    eventId: doc.eventId,
-    title: doc.title,
-    tags: doc.tags,
-    availableOffline: isSavedOffline(doc, blobs),
-  }))
 }
 
 function domainTasks(tasks: readonly TodayTaskRow[]): TripTask[] {
@@ -199,7 +214,6 @@ function firstDayStart(input: TodayScreenInput, homeZone: string): string {
 export function todayScreen<W extends WeatherSnapshot>(input: TodayScreenInput<W>): TodayScreen<W> {
   const homeZone = zoneOrUtc(input.trip.homeTz ?? input.deviceZone)
   const events = toDomainEvents(input.events, input.segments)
-  const documents = domainDocuments(input.docs, input.blobs)
   const tasks = domainTasks(input.tasks)
   const expenses = budgetExpenses(input.expenses)
 
@@ -216,7 +230,8 @@ export function todayScreen<W extends WeatherSnapshot>(input: TodayScreenInput<W
       },
       stops: domainStops(input.stops, nowMs),
       events,
-      documents,
+      // Today's documents are the vault's (`documentsNeededToday`), read by the page.
+      documents: [],
       expenses,
       weather: input.weather ?? null,
       now,
@@ -225,19 +240,19 @@ export function todayScreen<W extends WeatherSnapshot>(input: TodayScreenInput<W
 
   const live = viewAt(input.now)
   const preview = live.phase === 'upcoming'
-  const view = preview
+  const { documents: _none, ...view } = preview
     ? { ...viewAt(firstDayStart(input, homeZone)), nextEvent: live.nextEvent, now: live.now }
     : live
+  void _none
 
-  const mascot = mascotState({
+  const mascotInput = {
     trip: { startsOn: input.trip.startDate, endsOn: input.trip.endDate },
     now: input.now,
     offsetMin: live.offsetMin,
     events,
     budget: live.budget,
     tasks,
-    todayDocuments: view.documents,
-  })
+  }
 
   const printTasks: Record<string, string> = {}
   for (const task of tasks) {
@@ -246,5 +261,5 @@ export function todayScreen<W extends WeatherSnapshot>(input: TodayScreenInput<W
     }
   }
 
-  return { view, preview, mascot, printTasks }
+  return { view, preview, mascotInput, printTasks }
 }
