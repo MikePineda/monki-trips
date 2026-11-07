@@ -1,3 +1,4 @@
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import TripMember from '#models/trip_member'
 import type User from '#models/user'
 
@@ -15,6 +16,28 @@ export class TripMembership {
       .whereNull('deleted_at')
       .preload('trip')
       .first()
+  }
+
+  /**
+   * Live memberships of a trip, picked by membership id or by user id, read
+   * and locked `FOR UPDATE` inside `trx`. Role checks that guard a write run
+   * on these rows, not on ones loaded before the transaction: a member who
+   * left or changed role meanwhile is seen as they are now. Rows lock in id
+   * order so two transactions locking the same pair never deadlock.
+   */
+  async lockLive(
+    trx: TransactionClientContract,
+    tripId: string,
+    pick: { ids?: string[]; userIds?: string[] }
+  ): Promise<TripMember[]> {
+    return TripMember.query({ client: trx })
+      .where('trip_id', tripId)
+      .whereNull('deleted_at')
+      .where((query) => {
+        query.whereIn('id', pick.ids ?? []).orWhereIn('user_id', pick.userIds ?? [])
+      })
+      .orderBy('id')
+      .forUpdate()
   }
 
   /** Live members of a trip with their accounts, owner first then by join date. */

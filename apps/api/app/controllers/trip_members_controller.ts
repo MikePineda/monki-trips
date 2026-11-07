@@ -1,6 +1,8 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
+import db from '@adonisjs/lucid/services/db'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { ApiEnvelope, TripMember as TripMemberWire } from '@monkitrips/shared'
 import TripMember from '#models/trip_member'
 import { Clock } from '#services/clock'
@@ -30,30 +32,52 @@ export default class TripMembersController {
   async update(ctx: HttpContext): Promise<ApiEnvelope<TripMemberWire>> {
     const { role } = await ctx.request.validateUsing(updateMemberValidator)
     const target = await this.findMember(ctx)
-    const decision = roleChange({
-      actorRole: ctx.membership.role,
-      targetRole: target.role,
-      newRole: role,
+    await db.transaction(async (trx) => {
+      const { actor, fresh } = await this.lockPair(trx, ctx, target)
+      const decision = roleChange({ actorRole: actor.role, targetRole: fresh.role, newRole: role })
+      if (decision !== 'allowed') throw new ApiException(decision)
+      fresh.role = role
+      fresh.updatedBy = actor.userId
+      await fresh.save()
+      target.merge({ role: fresh.role, updatedBy: fresh.updatedBy })
     })
-    if (decision !== 'allowed') throw new ApiException(decision)
-    target.role = role
-    target.updatedBy = ctx.membership.userId
-    await target.save()
     return { data: toTripMemberWire(target) }
   }
 
   async destroy(ctx: HttpContext) {
     const target = await this.findMember(ctx)
-    const decision = memberRemoval({
-      actorRole: ctx.membership.role,
-      targetRole: target.role,
-      actorIsTarget: target.id === ctx.membership.id,
+    await db.transaction(async (trx) => {
+      const { actor, fresh } = await this.lockPair(trx, ctx, target)
+      const decision = memberRemoval({
+        actorRole: actor.role,
+        targetRole: fresh.role,
+        actorIsTarget: fresh.id === actor.id,
+      })
+      if (decision !== 'allowed') throw new ApiException(decision)
+      fresh.deletedAt = DateTime.fromJSDate(this.clock.now())
+      fresh.updatedBy = actor.userId
+      await fresh.save()
     })
-    if (decision !== 'allowed') throw new ApiException(decision)
-    target.deletedAt = DateTime.fromJSDate(this.clock.now())
-    target.updatedBy = ctx.membership.userId
-    await target.save()
     return ctx.response.noContent()
+  }
+
+  /**
+   * The acting member's row and the target's, locked and re-read inside the
+   * transaction, so the role rules see a transfer or a departure that landed
+   * meanwhile. Either one gone answers 404.
+   */
+  private async lockPair(
+    trx: TransactionClientContract,
+    ctx: HttpContext,
+    target: TripMember
+  ): Promise<{ actor: TripMember; fresh: TripMember }> {
+    const rows = await this.memberships.lockLive(trx, ctx.trip.id, {
+      ids: [ctx.membership.id, target.id],
+    })
+    const actor = rows.find((row) => row.id === ctx.membership.id)
+    const fresh = rows.find((row) => row.id === target.id)
+    if (!actor || !fresh) throw new ApiException('E_ROW_NOT_FOUND')
+    return { actor, fresh }
   }
 
   private async findMember(ctx: HttpContext): Promise<TripMember> {
