@@ -14,12 +14,28 @@
     "title": "Viajes",
     "emptyTitle": "Aún no hay viajes",
     "emptyBody": "Aquí aparecerán los viajes que planees o a los que te inviten.",
-    "dates": "Del {{start}} al {{end}}"
+    "dates": "Del {{start}} al {{end}}",
+    "unverified": "Verifica tu correo para ver y crear viajes.",
+    "verify": "Verificar ahora",
+    "create": {
+      "action": "Nuevo viaje",
+      "first": "Crea tu primer viaje",
+      "title": "Nuevo viaje",
+      "name": "Nombre",
+      "startsOn": "Empieza",
+      "endsOn": "Termina",
+      "baseCurrency": "Moneda base",
+      "baseCurrencyHint": "Código de 3 letras, p. ej. EUR",
+      "budgetMode": "Presupuesto",
+      "budget": {
+        "shared": "Un bote común",
+        "split": "Repartido entre viajeros"
+      },
+      "submit": "Crear viaje"
+    }
   },
   "login": {
-    "title": "Iniciar sesión",
-    "body": "El inicio de sesión llega con la API (paquete de trabajo 0.6b). Hasta entonces la app funciona para una persona viajera local.",
-    "continue": "Ir a los viajes"
+    "title": "Iniciar sesión"
   },
   "share": {
     "title": "Compartido con monki trips",
@@ -58,7 +74,28 @@
     "more": {
       "title": "Más",
       "settings": "Ajustes",
-      "offline": "Sin conexión"
+      "offline": "Sin conexión",
+      "members": "Miembros",
+      "activity": "Actividad"
+    },
+    "members": {
+      "title": "Miembros",
+      "role": {
+        "owner": "Dueño",
+        "editor": "Editor"
+      },
+      "you": "tú",
+      "invite": "Invitar con un enlace",
+      "inviteBody": "Cualquiera con el enlace puede unirse como editor. Sirve una vez, durante 7 días.",
+      "linkTitle": "Comparte este enlace",
+      "linkBody": "Solo se muestra ahora: cópialo antes de salir.",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado",
+      "offline": "Necesitas conexión para invitar a alguien."
+    },
+    "activity": {
+      "title": "Actividad",
+      "body": "Quién cambió qué, y cuándo, llega con la fase 2."
     }
   },
   "styleguide": {
@@ -102,5 +139,20 @@
       "emptyBody": "Un estado vacío honesto tiene una acción como máximo.",
       "emptyAction": "Hacer lo único que hay"
     }
+  },
+  "notFound": {
+    "title": "Viaje no encontrado",
+    "body": "Este viaje no existe o no eres uno de sus miembros.",
+    "back": "Volver a los viajes"
+  },
+  "errors": {
+    "E_EMAIL_NOT_VERIFIED": "Verifica tu correo primero.",
+    "E_VALIDATION_ERROR": "Revisa los campos marcados.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Prueba de nuevo en {{minutes}} min.",
+    "E_UNAUTHORIZED": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "E_BAD_CSRF_TOKEN": "Esta página está desactualizada. Recarga e inténtalo de nuevo.",
+    "E_TRIP_ROLE": "Solo el dueño del viaje puede hacer esto.",
+    "network": "Sin conexión. Se muestra lo que tiene este dispositivo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
   }
 }
