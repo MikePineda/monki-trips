@@ -1,3 +1,4 @@
+import { Dialog } from '@angular/cdk/dialog'
 import { TestBed } from '@angular/core/testing'
 import { Router, provideRouter } from '@angular/router'
 import { TranslocoService } from '@jsverse/transloco'
@@ -12,6 +13,8 @@ import {
 import { settle, typeInto } from '../../../testing/settle'
 import { ApiFailure } from '../../core/api/api-failure'
 import type { MonkiTripsDb } from '../../core/offline/db'
+import { META_DEVICE_USER, MetaStore } from '../../core/offline/meta.store'
+import { SessionStore } from '../../core/session/session.store'
 import LoginPage from './login.page'
 
 describe('LoginPage', () => {
@@ -29,6 +32,7 @@ describe('LoginPage', () => {
   })
 
   afterEach(async () => {
+    TestBed.inject(Dialog).closeAll()
     await resetOfflineTesting(db)
   })
 
@@ -146,5 +150,73 @@ describe('LoginPage', () => {
     expect(host.querySelector('[data-testid="login.signup"]')?.getAttribute('href')).toBe(
       '/signup?invitation=invitation-token-0123456789abcdef'
     )
+  })
+
+  describe('a device another account used', () => {
+    async function previousAccountLeftChanges() {
+      await TestBed.inject(MetaStore).set(META_DEVICE_USER, 'previous-account')
+      await db.trips.put({
+        id: 'trip-of-previous',
+        name: 'Not yours',
+        startDate: '2027-01-20',
+        endDate: '2027-02-06',
+        baseCurrency: 'EUR',
+        updatedAt: '2026-11-07T00:00:00.000Z',
+      })
+      await db.outbox.put({
+        id: 'outbox-1',
+        tripId: 'trip-of-previous',
+        kind: 'expense.create',
+        payload: {},
+        state: 'pending',
+        attempts: 0,
+        createdAt: '2026-11-07T00:00:00.000Z',
+        nextAttemptAt: null,
+        error: null,
+      })
+    }
+
+    const overlay = (id: string) =>
+      document.querySelector<HTMLElement>(`.cdk-overlay-container [data-testid="${id}"]`)
+
+    it("asks before discarding another account's unsynced changes; discarding signs in on a clean device", async () => {
+      await previousAccountLeftChanges()
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
+      const { fixture, type, submit } = await render()
+
+      type('login.email', 'partner@example.com')
+      type('login.password', 'correct horse battery')
+      await submit()
+
+      await vi.waitFor(() =>
+        expect(overlay('auth.foreignChanges.body')?.textContent).toContain('1 changes')
+      )
+      expect(navigate).not.toHaveBeenCalled()
+      overlay('auth.foreignChanges.discard')!.click()
+      await settle(fixture)
+
+      await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/trips'))
+      expect(TestBed.inject(SessionStore).signedIn()).toBe(true)
+      expect(await db.outbox.count()).toBe(0)
+      expect(await db.trips.count()).toBe(0)
+    })
+
+    it("keeping the other account's changes stays signed out with the changes", async () => {
+      await previousAccountLeftChanges()
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
+      const { fixture, type, submit } = await render()
+
+      type('login.email', 'partner@example.com')
+      type('login.password', 'correct horse battery')
+      await submit()
+      await vi.waitFor(() => expect(overlay('auth.foreignChanges.keep')).not.toBeNull())
+      overlay('auth.foreignChanges.keep')!.click()
+      await settle(fixture)
+
+      await vi.waitFor(() => expect(fakes.session.calls).toContain('logout'))
+      expect(navigate).not.toHaveBeenCalled()
+      expect(TestBed.inject(SessionStore).signedIn()).toBe(false)
+      expect(await db.outbox.count()).toBe(1)
+    })
   })
 })

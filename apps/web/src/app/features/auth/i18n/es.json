@@ -80,6 +80,12 @@
     "owner": "dueño",
     "editor": "editor"
   },
+  "foreignChanges": {
+    "title": "Cambios de otra cuenta",
+    "body": "Este dispositivo todavía tiene {{count}} cambios de otra cuenta que no han llegado al servidor. Si sigues con esta cuenta, se descartan.",
+    "discard": "Descartarlos y continuar",
+    "keep": "Conservarlos y volver"
+  },
   "errors": {
     "E_INVALID_CREDENTIALS": "Ese correo y esa contraseña no coinciden.",
     "E_ACCOUNT_DISABLED": "Esta cuenta está deshabilitada.",

@@ -5,11 +5,14 @@ import { TranslocoPipe } from '@jsverse/transloco'
 import { ApiFailure } from '../../core/api/api-failure'
 import { fieldError } from '../../core/forms/field-error'
 import { serverFieldErrors } from '../../core/forms/server-errors'
+import { ForeignChangesError } from '../../core/session/foreign-changes.error'
 import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
+import { resolveForeignChanges } from './foreign-changes'
 
 /** Where to go after signing in when nothing asked for a specific page. */
 export const HOME_URL = '/trips'
@@ -19,6 +22,8 @@ export const HOME_URL = '/trips'
  * password says so (401), a throttle says how long to wait (429), no
  * answer says to check the connection. Someone already signed in skips the
  * form. Afterwards the person lands where they were going (`returnUrl`).
+ * On a device that holds another account's unsynced changes the person
+ * first decides about them (discard and continue, or keep them).
  */
 @Component({
   selector: 'app-login-page',
@@ -92,6 +97,7 @@ export default class LoginPage {
 
   private readonly session = inject(SessionStore)
   private readonly router = inject(Router)
+  private readonly sheets = inject(SheetService)
 
   protected readonly codes = AUTH_ERROR_CODES
   protected readonly fieldError = fieldError
@@ -129,6 +135,12 @@ export default class LoginPage {
         await this.router.navigateByUrl(this.destination())
         return undefined
       } catch (error) {
+        if (error instanceof ForeignChangesError) {
+          if (await resolveForeignChanges(error, this.sheets, this.session)) {
+            await this.router.navigateByUrl(this.destination())
+          }
+          return undefined
+        }
         const failure = error instanceof ApiFailure ? error : null
         this.failure.set(failure ?? new ApiFailure({ kind: 'network', message: String(error) }))
         return failure ? serverFieldErrors(failure, this.form) : undefined

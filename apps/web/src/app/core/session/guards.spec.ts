@@ -11,11 +11,12 @@ import {
 import { ApiFailure } from '../api/api-failure'
 import { fakeTrip } from '../../../testing/fake-trips-api'
 import type { MonkiTripsDb } from '../offline/db'
-import { META_ACTIVE_TRIP, META_SESSION, MetaStore } from '../offline/meta.store'
+import { META_ACTIVE_TRIP, META_DEVICE_USER, META_SESSION, MetaStore } from '../offline/meta.store'
 import { OnlineStore } from '../offline/online.store'
 import { authGuard } from './auth.guard'
 import { currentTripGuard } from './current-trip.guard'
 import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
+import { SessionStore } from './session.store'
 import { tripMemberGuard } from './trip-member.guard'
 
 @Component({ template: '<p data-testid="probe.page">page</p>' })
@@ -121,6 +122,39 @@ describe('route guards', () => {
       goOffline()
 
       expect(await visit('/t/unknown/today')).toBe('/t/unknown/today')
+    })
+
+    it('trip member guard refuses cached trips of another device user', async () => {
+      // The device copy belongs to the account that used it before this session.
+      await TestBed.inject(MetaStore).set(META_DEVICE_USER, 'previous-account')
+      await db.trips.put({
+        id: 'trip-of-previous',
+        name: 'Not yours',
+        startDate: '2027-01-20',
+        endDate: '2027-02-06',
+        baseCurrency: 'EUR',
+        updatedAt: '2026-11-07T00:00:00.000Z',
+      })
+      const session = TestBed.inject(SessionStore)
+      vi.spyOn(session, 'restore').mockResolvedValue(FAKE_SESSION_USER)
+
+      expect(await visit('/t/trip-of-previous/today')).toBe('/not-found')
+      expect(fakes.trips.calls).toContain('snapshot:trip-of-previous')
+    })
+
+    it('offline, a cached trip of another device user is not found either', async () => {
+      await TestBed.inject(MetaStore).set(META_DEVICE_USER, 'previous-account')
+      await db.trips.put({
+        id: 'trip-of-previous',
+        name: 'Not yours',
+        startDate: '2027-01-20',
+        endDate: '2027-02-06',
+        baseCurrency: 'EUR',
+        updatedAt: '2026-11-07T00:00:00.000Z',
+      })
+      goOffline()
+
+      expect(await visit('/t/trip-of-previous/today')).toBe('/not-found')
     })
 
     it('401 online clears the session and goes to sign in with the return url', async () => {

@@ -17,14 +17,17 @@ import { AUTH_API } from '../../core/api/auth-api'
 import { fieldError } from '../../core/forms/field-error'
 import { serverFieldErrors } from '../../core/forms/server-errors'
 import { LangStore } from '../../core/i18n/lang.store'
+import { ForeignChangesError } from '../../core/session/foreign-changes.error'
 import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
 import { provideUiI18n } from '../../shared/ui/ui-i18n'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
+import { resolveForeignChanges } from './foreign-changes'
 import { HOME_URL } from './login.page'
 
 /** Shortest password the API accepts. */
@@ -159,6 +162,7 @@ export default class SignupPage {
   private readonly session = inject(SessionStore)
   private readonly lang = inject(LangStore)
   private readonly router = inject(Router)
+  private readonly sheets = inject(SheetService)
 
   protected readonly codes = AUTH_ERROR_CODES
   protected readonly fieldError = fieldError
@@ -218,7 +222,16 @@ export default class SignupPage {
           locale: this.lang.lang(),
           timezone: deviceTimeZone(),
         })
-        await this.session.setUser(user)
+        try {
+          await this.session.setUser(user)
+        } catch (error) {
+          if (!(error instanceof ForeignChangesError)) {
+            throw error
+          }
+          if (!(await resolveForeignChanges(error, this.sheets, this.session))) {
+            return undefined
+          }
+        }
         await this.router.navigateByUrl(user.emailVerifiedAt ? HOME_URL : '/verify-email')
         return undefined
       } catch (error) {

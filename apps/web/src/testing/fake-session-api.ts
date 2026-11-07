@@ -19,6 +19,8 @@ export const FAKE_SESSION_USER: SessionUser = {
 /** In-memory stand-in: always signed in. Specs flip its knobs. */
 export class FakeSessionApi extends FakeApi implements SessionApi {
   user: SessionUser | null = FAKE_SESSION_USER
+  /** Who the next login signs in as; by default the fake traveller with the e-mail typed. */
+  loginAs: SessionUser | null = null
 
   me(): Promise<SessionUser | null> {
     return this.run('me', () => this.user)
@@ -26,7 +28,7 @@ export class FakeSessionApi extends FakeApi implements SessionApi {
 
   login(input: LoginInput): Promise<SessionUser> {
     return this.run(`login:${input.email}`, () => {
-      this.user = { ...FAKE_SESSION_USER, email: input.email }
+      this.user = this.loginAs ?? { ...FAKE_SESSION_USER, email: input.email }
       return this.user
     })
   }
