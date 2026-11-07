@@ -172,11 +172,16 @@ export class PhraseCardGeneration {
       .whereNull('deleted_at')
       .where((query) => query.whereNotNull('address').orWhereNotNull('address_local'))
       .orderBy('starts_at', 'asc')
-      .select('place_name', 'title', 'address', 'address_local')) as DbRow[]
+      .select('place_name', 'title', 'address', 'address_local')) as {
+      place_name: string | null
+      title: string | null
+      address: string | null
+      address_local: string | null
+    }[]
     return rows.map((row) => ({
-      name: (row.place_name as string | null) ?? (row.title as string | null) ?? null,
-      address: (row.address as string | null) ?? null,
-      addressLocal: (row.address_local as string | null) ?? null,
+      name: row.place_name ?? row.title ?? null,
+      address: row.address ?? null,
+      addressLocal: row.address_local ?? null,
     }))
   }
 

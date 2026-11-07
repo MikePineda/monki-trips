@@ -22,6 +22,16 @@ export interface LlmUsageRecord {
   status: LlmUsageStatus
 }
 
+/** One aggregate row of `totalsByUser`, as `pg` returns it (sums and counts as strings). */
+interface TotalsRow {
+  user_id: string | null
+  calls: string | number
+  tokens_in: string | number | null
+  tokens_out: string | number | null
+  cost_micros: string | number | null
+  unpriced: string | number
+}
+
 export interface LlmUsageTotals {
   userId: string | null
   calls: number
@@ -114,9 +124,9 @@ export class LlmUsageService {
       .sum({ tokens_in: 'tokens_in', tokens_out: 'tokens_out', cost_micros: 'cost_micros' })
       .count({ unpriced: db.raw('case when cost_micros is null then 1 end') })
       .groupBy('user_id')
-      .orderByRaw('sum(tokens_in) + sum(tokens_out) desc')) as Record<string, unknown>[]
+      .orderByRaw('sum(tokens_in) + sum(tokens_out) desc')) as TotalsRow[]
     return rows.map((row) => ({
-      userId: (row.user_id as string | null) ?? null,
+      userId: row.user_id ?? null,
       calls: Number(row.calls),
       inputTokens: Number(row.tokens_in ?? 0),
       outputTokens: Number(row.tokens_out ?? 0),

@@ -44,6 +44,16 @@ interface MessagesRequestBody {
   stream?: boolean
 }
 
+/** One server-sent event of a streamed answer, as far as the adapter reads it. */
+interface StreamEvent {
+  type?: string
+  index?: number
+  message?: { model?: string; usage?: { input_tokens?: number; output_tokens?: number } }
+  content_block?: { type?: string; text?: string; id?: string; name?: string }
+  delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null }
+  usage?: { input_tokens?: number; output_tokens?: number }
+}
+
 interface MessagesResponseBody {
   model?: string
   stop_reason?: string | null
@@ -106,9 +116,9 @@ export class AnthropicCompatibleProvider extends LlmProvider {
     const openBlocks = new Map<number, { id: string; name: string; json: string }>()
 
     for await (const event of parseSseStream(response.body)) {
-      let data: Record<string, any>
+      let data: StreamEvent
       try {
-        data = JSON.parse(event.data)
+        data = JSON.parse(event.data) as StreamEvent
       } catch {
         continue
       }
@@ -120,7 +130,7 @@ export class AnthropicCompatibleProvider extends LlmProvider {
           break
         case 'content_block_start':
           if (data.content_block?.type === 'tool_use') {
-            openBlocks.set(data.index, {
+            openBlocks.set(data.index ?? -1, {
               id: String(data.content_block.id ?? ''),
               name: String(data.content_block.name ?? ''),
               json: '',
@@ -135,14 +145,14 @@ export class AnthropicCompatibleProvider extends LlmProvider {
             text.push(data.delta.text)
             yield { type: 'text', text: data.delta.text }
           } else if (data.delta?.type === 'input_json_delta') {
-            const block = openBlocks.get(data.index)
+            const block = openBlocks.get(data.index ?? -1)
             if (block) block.json += String(data.delta.partial_json ?? '')
           }
           break
         case 'content_block_stop': {
-          const block = openBlocks.get(data.index)
+          const block = openBlocks.get(data.index ?? -1)
           if (block) {
-            openBlocks.delete(data.index)
+            openBlocks.delete(data.index ?? -1)
             const toolCall = { id: block.id, name: block.name, input: parseToolInput(block.json) }
             toolCalls.push(toolCall)
             yield { type: 'tool_call', toolCall }
