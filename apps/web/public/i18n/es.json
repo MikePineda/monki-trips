@@ -1,5 +1,13 @@
 {
   "app": {
     "name": "monki trips"
+  },
+  "update": {
+    "ready": "Hay una nueva versión lista",
+    "reload": "Recargar",
+    "unrecoverable": "Esta copia de la app está dañada. Recarga para repararla."
+  },
+  "sync": {
+    "conflict": "Otra persona lo cambió antes; se muestra su versión."
   }
 }
