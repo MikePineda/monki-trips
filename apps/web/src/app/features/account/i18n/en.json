@@ -1,0 +1,63 @@
+{
+  "title": "Account",
+  "profile": {
+    "displayName": "Your name",
+    "displayNameHint": "How your travel companions see you",
+    "save": "Save",
+    "saved": "Name saved",
+    "email": "E-mail",
+    "emailHint": "Changing the e-mail arrives later.",
+    "verified": "Verified",
+    "unverified": "Not verified yet",
+    "verify": "Verify now"
+  },
+  "password": {
+    "title": "Change password",
+    "action": "Change password",
+    "current": "Current password",
+    "new": "New password",
+    "newHint": "At least 10 characters",
+    "submit": "Change password",
+    "changed": "Password changed. Other devices were signed out."
+  },
+  "sessions": {
+    "title": "Sessions",
+    "signOutEverywhere": "Sign out everywhere else",
+    "done": "Other devices were signed out."
+  },
+  "export": {
+    "title": "Your data",
+    "action": "Export my data",
+    "body": "A JSON file with your profile and every trip you belong to.",
+    "done": "Export downloaded"
+  },
+  "delete": {
+    "title": "Delete account",
+    "action": "Delete account",
+    "body": "Your account and its data are removed in 30 days. Signing in again before then cancels the deletion.",
+    "password": "Your password",
+    "confirm": "Delete my account",
+    "blockedTitle": "Hand over these trips first",
+    "blockedBody": "You are the only owner of trips other people still use. Transfer ownership or delete them, then try again.",
+    "unknownTrip": "A trip not on this device",
+    "done": "Your account will be deleted in 30 days."
+  },
+  "signOut": {
+    "action": "Sign out",
+    "title": "Sign out",
+    "pendingTitle": "Changes not sent yet",
+    "pendingBody": "{{count}} changes on this device have not reached the server. Signing out now loses them.",
+    "confirm": "Sign out anyway",
+    "cancel": "Stay signed in"
+  },
+  "errors": {
+    "E_INVALID_PASSWORD": "That is not your current password.",
+    "E_SOLE_OWNER_OF_SHARED_TRIPS": "You still own trips other people use.",
+    "E_TOO_MANY_REQUESTS": "Too many attempts. Try again in {{minutes}} min.",
+    "E_VALIDATION_ERROR": "Check the highlighted fields.",
+    "E_UNAUTHORIZED": "Your session ended. Sign in again.",
+    "E_BAD_CSRF_TOKEN": "This page is out of date. Reload and try again.",
+    "network": "No connection. Check your network and try again.",
+    "unknown": "Something went wrong. Try again."
+  }
+}

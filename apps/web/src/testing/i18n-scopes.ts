@@ -1,4 +1,8 @@
 import type { Translation } from '@jsverse/transloco'
+import accountEn from '../app/features/account/i18n/en.json'
+import accountEs from '../app/features/account/i18n/es.json'
+import authEn from '../app/features/auth/i18n/en.json'
+import authEs from '../app/features/auth/i18n/es.json'
 import offlineEn from '../app/features/offline/i18n/en.json'
 import offlineEs from '../app/features/offline/i18n/es.json'
 import settingsEn from '../app/features/settings/i18n/en.json'
@@ -16,6 +20,8 @@ import type { AppLang } from '../app/domain/locale'
  * A new scope goes here too: i18n-testing.spec.ts fails until it does.
  */
 export const SCOPE_CATALOGUES = {
+  account: { en: accountEn, es: accountEs },
+  auth: { en: authEn, es: authEs },
   offline: { en: offlineEn, es: offlineEs },
   settings: { en: settingsEn, es: settingsEs },
   shell: { en: shellEn, es: shellEs },

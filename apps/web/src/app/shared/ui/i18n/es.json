@@ -34,5 +34,8 @@
     "pendingOther": "{{count}} pendientes",
     "staleOne": "Datos de hace 1 día",
     "staleOther": "Datos de hace {{count}} días"
+  },
+  "actions": {
+    "retry": "Intentar de nuevo"
   }
 }
