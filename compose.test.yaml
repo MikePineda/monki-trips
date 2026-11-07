@@ -1,0 +1,23 @@
+# Ephemeral services for `npm run e2e` (scripts/e2e.sh brings them up and
+# tears them down with -v). Data lives in tmpfs and dies with the stack.
+# One copy per E2E slot: scripts/e2e.sh sets the project name (-p) and exports
+# the host ports. The fallbacks below are slot 0's, so a plain
+# `docker compose -f compose.test.yaml down -v` still reaches slot 0.
+name: monkitrips-test
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: monkitrips
+      POSTGRES_PASSWORD: monkitrips
+      POSTGRES_DB: monkitrips_e2e
+    ports:
+      - '127.0.0.1:${E2E_DB_PORT:-5433}:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U monkitrips -d monkitrips_e2e']
+      interval: 2s
+      timeout: 3s
+      retries: 30
