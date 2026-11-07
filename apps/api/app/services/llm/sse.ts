@@ -2,7 +2,8 @@
  * A minimal server-sent events reader over a `fetch` body: yields one
  * `{ event, data }` per message (multi-line `data:` joined with newlines),
  * ignores comments and unknown fields, and tolerates a stream that ends
- * without a final blank line.
+ * without a final blank line. A consumer that stops early cancels the body,
+ * so the upstream connection is closed instead of left streaming.
  */
 export interface SseEvent {
   event: string
@@ -13,6 +14,7 @@ export async function* parseSseStream(body: ReadableStream<Uint8Array>): AsyncIt
   const decoder = new TextDecoder()
   const reader = body.getReader()
   let buffer = ''
+  let finished = false
   let event = ''
   const data: string[] = []
 
@@ -42,7 +44,10 @@ export async function* parseSseStream(body: ReadableStream<Uint8Array>): AsyncIt
   try {
     for (;;) {
       const { value, done } = await reader.read()
-      if (done) break
+      if (done) {
+        finished = true
+        break
+      }
       buffer += decoder.decode(value, { stream: true })
       let newline: number
       while ((newline = buffer.indexOf('\n')) >= 0) {
@@ -60,6 +65,7 @@ export async function* parseSseStream(body: ReadableStream<Uint8Array>): AsyncIt
     const last = flush()
     if (last) yield last
   } finally {
+    if (!finished) await reader.cancel().catch(() => {})
     reader.releaseLock()
   }
 }
