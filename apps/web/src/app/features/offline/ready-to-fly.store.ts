@@ -17,6 +17,9 @@ import { InstallService } from '../../core/pwa/install.service'
 import { StorageProbe, type StorageState } from '../../core/pwa/storage-probe'
 import { UpdateService } from '../../core/pwa/update.service'
 
+/** The worker app.config registers (`provideServiceWorker('sw.js')`). */
+const SERVICE_WORKER_SCRIPT = 'sw.js'
+
 /** The steps of "Download everything", in order. */
 export const DOWNLOAD_STEPS = ['sync', 'version', 'documents', 'storage', 'assets'] as const
 
@@ -166,6 +169,9 @@ export class ReadyToFlyStore {
 
       step = 'assets'
       at(step)
+      if (this.updates.enabled) {
+        await this.assets.ensureRegistered(SERVICE_WORKER_SCRIPT)
+      }
       await this.assets.warm()
       done += 1
       at(step)
