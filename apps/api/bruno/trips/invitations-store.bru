@@ -15,9 +15,13 @@ headers {
 }
 
 body:json {
-  {
-    "email": "partner@example.com"
-  }
+  {}
+}
+
+docs {
+  A link invitation, so the response carries the token the next requests use.
+  With { "email": "partner@example.com" } the invitation is mailed instead and
+  the response has no token (delivery: email).
 }
 
 vars:post-response {

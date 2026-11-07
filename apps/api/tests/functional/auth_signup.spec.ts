@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import app from '@adonisjs/core/services/app'
 import { RegistrationPolicy } from '#services/registration_policy'
+import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser, TEST_PASSWORD } from '#tests/helpers/make_user'
 import { makeInvitation, makeTrip } from '#tests/helpers/make_trip'
 import { useRecordingMailer } from '#tests/helpers/recording_mailer'
@@ -54,6 +55,30 @@ test.group('Signup', (group) => {
 
     const me = await client.get('/api/v1/auth/me').withSession(response.session())
     me.assertStatus(200)
+  })
+
+  test('inviter cannot sign up as the invited address', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const invite = (body: object) =>
+      actingAs(client.post(`/api/v1/trips/${trip.id}/invitations`), owner).json(body)
+
+    // The e-mail invitation's token goes to the inbox only.
+    const byMail = await invite({ email: SIGNUP.email })
+    byMail.assertStatus(201)
+    assert.notProperty(byMail.body().data, 'token')
+
+    // A link invitation the owner holds lets them in, but proves no address.
+    const byLink = await invite({})
+    const response = await client
+      .post('/api/v1/auth/signup')
+      .withCsrfToken()
+      .json({ ...SIGNUP, invitationToken: byLink.body().data.token })
+
+    response.assertStatus(201)
+    assert.isNull(response.body().data.emailVerifiedAt)
+    const verification = mailer.lastTo(SIGNUP.email)
+    assert.equal(verification.subject, 'Confirm your e-mail for monki trips')
   })
 
   test('a link invitation lets someone sign up but their address still needs verifying', async ({

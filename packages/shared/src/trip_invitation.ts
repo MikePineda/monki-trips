@@ -21,13 +21,21 @@ export interface TripInvitation {
   createdAt: string
 }
 
-/** Answer of `POST /api/v1/trips/:tripId/invitations`: the plaintext token is shown exactly once. */
-export interface IssuedTripInvitation {
-  invitation: TripInvitation
-  token: string
-  /** Absolute URL for the invitee (`<APP_URL>/invite/<token>`). */
-  url: string
-}
+/**
+ * Answer of `POST /api/v1/trips/:tripId/invitations`. A link invitation
+ * (no e-mail) shows its plaintext token exactly once, here, for the owner to
+ * share. An e-mail invitation is mailed and its token never leaves the mail:
+ * holding it proves the address, so the inviter must not see it.
+ */
+export type IssuedTripInvitation =
+  | {
+      invitation: TripInvitation
+      delivery: 'link'
+      token: string
+      /** Absolute URL for the invitee (`<APP_URL>/invite/<token>`). */
+      url: string
+    }
+  | { invitation: TripInvitation; delivery: 'email' }
 
 /** Public preview of `GET /api/v1/invitations/:token`: trip name and role only. */
 export interface TripInvitationPreview {

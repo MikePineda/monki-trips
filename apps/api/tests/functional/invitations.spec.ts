@@ -9,6 +9,13 @@ import { addMember, makeInvitation, makeTrip } from '#tests/helpers/make_trip'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
 import { useRecordingMailer } from '#tests/helpers/recording_mailer'
 
+/** The plaintext token of the `/invite/<token>` link in an invitation mail. */
+function inviteTokenFromMail(text: string): string {
+  const match = text.match(/\/invite\/([A-Za-z0-9_%-]+)/)
+  if (!match) throw new Error('the mail carries no invitation link')
+  return decodeURIComponent(match[1])
+}
+
 test.group('Invitations: owner side', (group) => {
   const mailer = useRecordingMailer(group)
   useFixedClock(group)
@@ -59,8 +66,47 @@ test.group('Invitations: owner side', (group) => {
     assert.equal(response.body().data.invitation.email, 'partner@example.com')
     const mail = mailer.lastTo('partner@example.com')
     assert.equal(mail.subject, 'Demo Loop: te invitan a planear el viaje juntos')
-    assert.include(mail.text, response.body().data.url)
+    const token = inviteTokenFromMail(mail.text)
+    assert.include(mail.text, `http://127.0.0.1:3333/invite/${encodeURIComponent(token)}`)
+    const row = await TripInvitation.findOrFail(response.body().data.invitation.id)
+    assert.equal(row.tokenHash, hashToken(token))
     assert.include(mail.text, 'Owner')
+  })
+
+  test('e-mail invitation response does not expose the token', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    const response = await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/invitations`),
+      owner
+    ).json({ email: 'partner@example.com' })
+
+    response.assertStatus(201)
+    const data = response.body().data
+    assert.equal(data.delivery, 'email')
+    assert.notProperty(data, 'token')
+    assert.notProperty(data, 'url')
+    const token = inviteTokenFromMail(mailer.lastTo('partner@example.com').text)
+    assert.notInclude(JSON.stringify(response.body()), token)
+  })
+
+  test('link invitation returns its url once', async ({ client, assert }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+
+    const response = await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/invitations`),
+      owner
+    ).json({})
+
+    response.assertStatus(201)
+    const data = response.body().data
+    assert.equal(data.delivery, 'link')
+    assert.equal(data.url, `http://127.0.0.1:3333/invite/${encodeURIComponent(data.token)}`)
+    const list = await actingAs(client.get(`/api/v1/trips/${trip.id}/invitations`), owner)
+    assert.notInclude(JSON.stringify(list.body()), data.token)
+    assert.isEmpty(mailer.sent)
   })
 
   test('editors cannot issue or list invitations', async ({ client }) => {

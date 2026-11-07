@@ -32,7 +32,11 @@ export default class TripInvitationsController {
     return { data: rows.map((row) => toTripInvitationWire(row, this.invitations.stateOf(row))) }
   }
 
-  /** The plaintext token appears in this response only; an e-mail invitation is also mailed. */
+  /**
+   * A link invitation returns its plaintext token in this response only. An
+   * e-mail invitation is mailed and the response only says so: the token
+   * proves the address it was sent to, so the inviter never sees it.
+   */
   async store(ctx: HttpContext): Promise<ApiEnvelope<IssuedTripInvitation>> {
     const body = await ctx.request.validateUsing(createInvitationValidator)
     const inviter = ctx.auth.use('web').getUserOrFail()
@@ -47,6 +51,8 @@ export default class TripInvitationsController {
       expiresAt: DateTime.fromJSDate(invitationExpiry(now)),
     })
     const url = invitationUrl(token)
+    const wire = toTripInvitationWire(invitation, 'pending')
+    ctx.response.status(201)
     if (invitation.email) {
       await this.mails.sendInvitation({
         to: invitation.email,
@@ -55,11 +61,9 @@ export default class TripInvitationsController {
         url,
         locale: inviter.locale,
       })
+      return { data: { invitation: wire, delivery: 'email' } }
     }
-    ctx.response.status(201)
-    return {
-      data: { invitation: toTripInvitationWire(invitation, 'pending'), token, url },
-    }
+    return { data: { invitation: wire, delivery: 'link', token, url } }
   }
 
   async destroy(ctx: HttpContext) {
