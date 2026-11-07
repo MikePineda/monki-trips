@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing'
+import type { TripDocumentRow } from '@monkitrips/shared'
 import { FakeDeviceStorage } from '../../../testing/fake-device-storage'
 import { FakeDocumentsApi, documentRow } from '../../../testing/fake-documents-api'
 import {
@@ -8,6 +9,7 @@ import {
 } from '../../../testing/offline-testing'
 import type { MonkiTripsDb } from './db'
 import { DocumentCopiesStore } from './document-copies.store'
+import { toDocumentRecord } from './document-record'
 
 const BYTES = '%PDF-voucher'
 const BYTES_SHA = '11ab3b6b17c86444aa1357652cbcb92886fa5a53315409760f52512eabe6d76f'
@@ -63,6 +65,33 @@ describe('DocumentCopiesStore', () => {
     await expect(pending).rejects.toThrow('Failed to fetch')
     expect(copies.saving().has('doc-1')).toBe(false)
     expect(await db.docBlobs.count()).toBe(0)
+  })
+
+  it('saves every file of the trip it does not hold in its current version, with progress', async () => {
+    const file = (id: string, overrides: Partial<TripDocumentRow> = {}) =>
+      toDocumentRecord(documentRow({ id, sha256: BYTES_SHA, ...overrides }))
+    await db.docs.bulkPut([
+      file('doc-1'),
+      file('held'),
+      file('missing-bytes'),
+      file('link', { kind: 'link', url: 'https://example.com', mime: null, sha256: null }),
+      file('other-trip', { tripId: 'trip-2' }),
+    ])
+    await db.docBlobs.put({
+      docId: 'held',
+      sha256: BYTES_SHA,
+      size: BYTES.length,
+      mime: 'application/pdf',
+      blob: new Blob([BYTES]),
+      savedAt: '2026-11-07T00:00:00.000Z',
+    })
+    const progress: string[] = []
+
+    const result = await copies.saveAll('trip-1', (p) => progress.push(`${p.done}/${p.total}`))
+
+    expect(result).toEqual({ saved: ['doc-1'], failed: ['missing-bytes'] })
+    expect(progress).toEqual(['0/2', '1/2', '2/2'])
+    expect(api.calls).toEqual(['download:trip-1/doc-1', 'download:trip-1/missing-bytes'])
   })
 
   it('storage warning above half the free quota', async () => {

@@ -9,9 +9,11 @@ import type {
   SeatRecord,
   SegmentRecord,
   StopRecord,
+  TaskRecord,
   TravellerRecord,
   TripRecord,
 } from './records'
+import { weatherKey, type TripWeather } from './weather'
 
 /**
  * Live reads of one trip's content from the device, keyed by a trip id
@@ -53,6 +55,10 @@ export function tripTravellers(tripId: Signal<string>): Signal<TravellerRecord[]
   )
 }
 
+export function tripTasks(tripId: Signal<string>): Signal<TaskRecord[]> {
+  return liveSignalFor(tripId, (db, id) => db.tasks.where('tripId').equals(id).toArray(), [])
+}
+
 export function tripExpenses(tripId: Signal<string>): Signal<ExpenseRecord[]> {
   return liveSignalFor(tripId, (db, id) => db.expenses.where('tripId').equals(id).toArray(), [])
 }
@@ -88,6 +94,16 @@ export function documentRecord(
   return liveSignalFor(
     docId,
     async (db, id) => ({ document: (await db.docs.get(id)) ?? null }),
+    null
+  )
+}
+
+/** The weather cached for a trip, or null: Today hides the row without it. */
+export function tripWeather(tripId: Signal<string>): Signal<TripWeather | null> {
+  return liveSignalFor(
+    tripId,
+    async (db, id) =>
+      ((await db.meta.get(weatherKey(id)))?.value as TripWeather | undefined) ?? null,
     null
   )
 }
