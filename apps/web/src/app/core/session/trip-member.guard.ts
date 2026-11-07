@@ -1,7 +1,7 @@
 import { inject } from '@angular/core'
 import { Router, type CanActivateFn } from '@angular/router'
 import { TRIPS_API } from '../api/trips-api'
-import { OFFLINE_DB } from '../offline/db'
+import { OFFLINE_DB } from '../offline/offline-db'
 import { OnlineStore } from '../offline/online.store'
 import { toTripRecord } from '../offline/trip-record'
 import { SessionStore } from './session.store'
@@ -19,7 +19,7 @@ export const TRIP_NOT_FOUND_URL = '/not-found'
 export const tripMemberGuard: CanActivateFn = async (route, state) => {
   const tripId = route.paramMap.get('tripId')
   const router = inject(Router)
-  const db = inject(OFFLINE_DB)
+  const database = inject(OFFLINE_DB)
   const online = inject(OnlineStore)
   const api = inject(TRIPS_API)
   const session = inject(SessionStore)
@@ -27,6 +27,7 @@ export const tripMemberGuard: CanActivateFn = async (route, state) => {
     return router.createUrlTree(['/trips'])
   }
 
+  const db = await database
   const cached = await db.trips.get(tripId)
   if (cached || !online.online()) {
     return true

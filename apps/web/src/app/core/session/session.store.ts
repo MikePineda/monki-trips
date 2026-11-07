@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { Router } from '@angular/router'
 import { ApiFailure } from '../api/api-failure'
-import { OFFLINE_DB } from '../offline/db'
+import { OFFLINE_DB } from '../offline/offline-db'
 import { META_SESSION, MetaStore } from '../offline/meta.store'
 import { OnlineStore } from '../offline/online.store'
 import { SESSION_API, type LoginInput, type SessionUser } from './session-api'
@@ -21,7 +21,7 @@ export const RETURN_URL_PARAM = 'returnUrl'
 export class SessionStore {
   private readonly api = inject(SESSION_API)
   private readonly meta = inject(MetaStore)
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly onlineStore = inject(OnlineStore)
   private readonly router = inject(Router)
   private readonly current = signal<SessionUser | null>(null)
@@ -145,8 +145,9 @@ export class SessionStore {
   }
 
   private async forgetDevice(): Promise<void> {
-    await this.db.transaction('rw', this.db.tables, async () => {
-      await Promise.all(this.db.tables.map((table) => table.clear()))
+    const db = await this.database
+    await db.transaction('rw', db.tables, async () => {
+      await Promise.all(db.tables.map((table) => table.clear()))
     })
     this.current.set(null)
     this.phase.set('anonymous')

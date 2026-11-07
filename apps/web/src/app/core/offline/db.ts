@@ -1,4 +1,3 @@
-import { InjectionToken } from '@angular/core'
 import { Dexie, type DexieOptions, type Table } from 'dexie'
 import type {
   ChecklistRecord,
@@ -22,6 +21,10 @@ export const OFFLINE_DB_NAME = 'monki-trips'
  *
  * Schema changes are additive: add a `this.version(n)` block below, never
  * edit version 1 once it has shipped.
+ *
+ * Only `offline-db.ts` loads this file, with a dynamic import: Dexie stays
+ * out of the initial bundle. Everything else imports its types only and
+ * reaches the instance through `OFFLINE_DB`.
  */
 export class MonkiTripsDb extends Dexie {
   declare trips: Table<TripRecord, string>
@@ -54,8 +57,3 @@ export class MonkiTripsDb extends Dexie {
     })
   }
 }
-
-export const OFFLINE_DB = new InjectionToken<MonkiTripsDb>('OFFLINE_DB', {
-  providedIn: 'root',
-  factory: () => new MonkiTripsDb(),
-})

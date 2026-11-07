@@ -3,7 +3,7 @@ import type { CreateTripInput, Trip } from '@monkitrips/shared'
 import { v7 as uuidv7 } from 'uuid'
 import { ApiFailure } from '../../core/api/api-failure'
 import { TRIPS_API } from '../../core/api/trips-api'
-import { OFFLINE_DB } from '../../core/offline/db'
+import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { liveSignal } from '../../core/offline/live'
 import { OnlineStore } from '../../core/offline/online.store'
 import type { TripRecord } from '../../core/offline/records'
@@ -22,13 +22,13 @@ export type NewTripInput = Omit<CreateTripInput, 'id'>
  */
 @Injectable({ providedIn: 'root' })
 export class TripsStore {
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly api = inject(TRIPS_API)
   private readonly online = inject(OnlineStore)
   private readonly session = inject(SessionStore)
 
   readonly trips = liveSignal<TripRecord[]>(
-    () => this.db.trips.orderBy('updatedAt').reverse().toArray(),
+    (db) => db.trips.orderBy('updatedAt').reverse().toArray(),
     []
   )
   readonly refreshing = signal(false)
@@ -44,12 +44,11 @@ export class TripsStore {
     try {
       const list = await this.api.list()
       const ids = new Set(list.map((trip) => trip.id))
-      await this.db.transaction('rw', this.db.trips, async () => {
-        const stale = (await this.db.trips.toCollection().primaryKeys()).filter(
-          (id) => !ids.has(id)
-        )
-        await this.db.trips.bulkDelete(stale)
-        await this.db.trips.bulkPut(list.map(toTripRecord))
+      const db = await this.database
+      await db.transaction('rw', db.trips, async () => {
+        const stale = (await db.trips.toCollection().primaryKeys()).filter((id) => !ids.has(id))
+        await db.trips.bulkDelete(stale)
+        await db.trips.bulkPut(list.map(toTripRecord))
       })
       this.failure.set(null)
     } catch (error) {
@@ -65,7 +64,7 @@ export class TripsStore {
   /** Creates the trip on the server and on the device; the ApiFailure reaches the caller. */
   async create(input: NewTripInput): Promise<Trip> {
     const trip = await this.api.create({ id: uuidv7(), ...input })
-    await this.db.trips.put(toTripRecord(trip))
+    await (await this.database).trips.put(toTripRecord(trip))
     return trip
   }
 }

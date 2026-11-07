@@ -1,5 +1,5 @@
 import { Injectable, Injector, inject, type Signal } from '@angular/core'
-import { OFFLINE_DB } from './db'
+import { OFFLINE_DB } from './offline-db'
 import { liveSignal } from './live'
 
 /** Known meta keys. */
@@ -13,19 +13,22 @@ export const META_LAST_OFFLINE_BOOT_AT = 'offline.lastBootAt'
 /** Small key/value facts the device keeps about itself, in the `meta` table. */
 @Injectable({ providedIn: 'root' })
 export class MetaStore {
-  private readonly db = inject(OFFLINE_DB)
+  private readonly database = inject(OFFLINE_DB)
   private readonly injector = inject(Injector)
 
   async get<T>(key: string): Promise<T | undefined> {
-    return (await this.db.meta.get(key))?.value as T | undefined
+    const db = await this.database
+    return (await db.meta.get(key))?.value as T | undefined
   }
 
   async set<T>(key: string, value: T): Promise<void> {
-    await this.db.meta.put({ key, value })
+    const db = await this.database
+    await db.meta.put({ key, value })
   }
 
   async remove(key: string): Promise<void> {
-    await this.db.meta.delete(key)
+    const db = await this.database
+    await db.meta.delete(key)
   }
 
   /**
@@ -35,8 +38,8 @@ export class MetaStore {
    */
   watch<T>(key: string, initial: T): Signal<T> {
     return liveSignal(
-      async () => {
-        const record = await this.db.meta.get(key)
+      async (db) => {
+        const record = await db.meta.get(key)
         return record ? (record.value as T) : initial
       },
       initial,

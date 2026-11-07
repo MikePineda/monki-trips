@@ -1,7 +1,11 @@
 import 'fake-indexeddb/auto'
 import { Injector, runInInjectionContext } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
-import { freshOfflineDb, resetOfflineTesting } from '../../../testing/offline-testing'
+import {
+  freshOfflineDb,
+  provideOfflineTesting,
+  resetOfflineTesting,
+} from '../../../testing/offline-testing'
 import type { MonkiTripsDb } from './db'
 import { liveSignal } from './live'
 
@@ -10,6 +14,7 @@ describe('liveSignal', () => {
 
   beforeEach(() => {
     db = freshOfflineDb()
+    TestBed.configureTestingModule({ providers: provideOfflineTesting({ db }) })
   })
 
   afterEach(async () => {
