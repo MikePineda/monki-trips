@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
-  "navigationUrls": ["/**", "!/**/*.*", "!/**/*__*", "!/**/*__*/**", "!/api/**"],
+  "navigationUrls": ["/**", "!/**/*.*", "!/**/*__*", "!/**/*__*/**", "!/api/**", "!/share-target"],
   "assetGroups": [
     {
       "name": "app",
@@ -13,7 +13,11 @@
           "/theme-boot.js",
           "/*.css",
           "/*.js",
-          "/i18n/*.json"
+          "!/sw.js",
+          "/i18n/*.json",
+          "/sprite/*.svg",
+          "/fonts/**",
+          "/mascot/**"
         ]
       }
     },

@@ -1,0 +1,30 @@
+{
+  "title": "Ajustes",
+  "language": {
+    "label": "Idioma",
+    "en": "English",
+    "es": "Español"
+  },
+  "theme": {
+    "label": "Tema",
+    "system": "Dispositivo",
+    "light": "Claro",
+    "dark": "Oscuro"
+  },
+  "install": {
+    "label": "Instalar",
+    "action": "Instalar la app",
+    "installed": "Instalada en este dispositivo.",
+    "unavailable": "Tu navegador ofrecerá instalarla desde su menú.",
+    "iosTitle": "Añadir a la pantalla de inicio",
+    "iosStep1": "Toca el botón Compartir en Safari.",
+    "iosStep2": "Elige «Añadir a pantalla de inicio».",
+    "iosStep3": "Toca Añadir. La app se abre a pantalla completa y guarda sus datos sin conexión."
+  },
+  "version": {
+    "label": "Versión de la app",
+    "value": "{{version}} · {{sha}}",
+    "unknown": "Sin comprobar todavía",
+    "refresh": "Comprobar"
+  }
+}
