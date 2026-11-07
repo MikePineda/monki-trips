@@ -1,25 +1,34 @@
-import type { EventKind } from './event.ts'
+/**
+ * The view DTOs of `GET /trips/:tripId/{nights,budget,today}`: what the API
+ * returns, with minor units as JSON numbers. They carry a `Trip` prefix so
+ * they never collide with the results of the domain pipelines for the same
+ * screens (`NightCoverage`, `BudgetStatus`, `TodayView` in `domain/`).
+ */
+import type { IsoDate } from './domain/iso_date.ts'
+import type { TaskUrgency } from './domain/task_urgency.ts'
+import type { EventKind } from './domain/trip_event.ts'
+import type { IsoInstant } from './domain/zoned_instant.ts'
 
 /**
  * One night of the trip (`GET /trips/:tripId/nights`): the date the night
  * starts on and what covers it. An uncovered night is the alert "where do we
  * sleep?".
  */
-export interface NightCoverage {
+export interface TripNight {
   /** The day the night starts (`YYYY-MM-DD`), from `startsOn` to `endsOn - 1`. */
-  date: string
+  date: IsoDate
   covered: boolean
   /** The lodging or transport that covers it, if any. */
   coveredBy: { eventId: string; kind: EventKind; title: string } | null
 }
 
-export interface NightsView {
-  nights: NightCoverage[]
+export interface TripNightsView {
+  nights: TripNight[]
   uncoveredCount: number
 }
 
 /** Budget position in base minor units (`GET /trips/:tripId/budget`). */
-export interface BudgetStatus {
+export interface TripBudgetView {
   baseCurrency: string
   budgetMinor: number | null
   /** Sum of every converted expense (refunds subtract). */
@@ -38,16 +47,14 @@ export interface BudgetStatus {
   perCategory: { categoryId: string | null; budgetMinor: number | null; spentMinor: number }[]
 }
 
-export type TaskUrgency = 'overdue' | 'today' | 'this_week' | 'later' | 'no_date'
-
 /** What Today shows (`GET /trips/:tripId/today?at=`). */
-export interface TodayView {
+export interface TripTodayView {
   /** The instant the view was computed for. */
-  at: string
+  at: IsoInstant
   /** Zone Today follows: the stop covering `at`, else the last started event, else `homeTz`. */
   tz: string
   /** Local date in `tz`. */
-  date: string
+  date: IsoDate
   nextEvent: {
     eventId: string
     segmentId: string | null

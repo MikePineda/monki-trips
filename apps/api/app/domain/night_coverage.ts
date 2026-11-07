@@ -3,7 +3,7 @@ import {
   TRANSPORT_KINDS,
   type EventKind,
   type EventStatus,
-  type NightCoverage,
+  type TripNight,
 } from '@monkitrips/shared'
 
 /** The slice of an event the night rules read. */
@@ -79,7 +79,7 @@ export function eventCoversNight(event: NightEvent, date: string, homeTz: string
 }
 
 /** Where everyone sleeps each night of the trip, lodging first when both a hotel and a train apply. */
-export function nightCoverage(input: NightCoverageInput): NightCoverage[] {
+export function nightCoverage(input: NightCoverageInput): TripNight[] {
   const live = input.events.filter((event) => !NEVER_COVERS.has(event.status))
   return nightsOf(input.startsOn, input.endsOn).map((date) => {
     const lodging = live.find(

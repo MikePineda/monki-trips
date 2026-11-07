@@ -1,9 +1,10 @@
+import { LWW_MAX_AGE_MS, type LwwOp } from './domain/lww_merge.ts'
 import type { BudgetCategory, Expense, ExpenseShare } from './expense.ts'
-import type { TripDocument } from './document.ts'
+import type { TripDocumentRow } from './document.ts'
 import type { EmergencyInfo, PhraseCards } from './emergency_info.ts'
-import type { EventSegment, SegmentSeat, TripEvent } from './event.ts'
-import type { Stop } from './stop.ts'
-import type { Task } from './task.ts'
+import type { EventSegmentRow, SegmentSeat, TripEventRow } from './event.ts'
+import type { TripStopRow } from './stop.ts'
+import type { TripTaskRow } from './task.ts'
 import type { Traveller } from './traveller.ts'
 import type { Trip } from './trip.ts'
 import type { TripMember } from './trip_member.ts'
@@ -35,17 +36,18 @@ export const SYNC_ENTITIES = [...SYNC_PUSH_ENTITIES, 'member', 'phrase_card'] as
 
 export type SyncEntity = (typeof SYNC_ENTITIES)[number]
 
-export const SYNC_OPS = ['upsert', 'delete'] as const
+/** The operations of a mutation: the domain merge's own (`LwwOp`), listed for validation. */
+export const SYNC_OPS = ['upsert', 'delete'] as const satisfies readonly LwwOp[]
 
-export type SyncOp = (typeof SYNC_OPS)[number]
+export type SyncOp = LwwOp
 
 /** Outcome of one mutation (also the CHECK on `sync_mutations.status`). */
 export const SYNC_RESULT_STATUSES = ['applied', 'partial', 'duplicate', 'rejected'] as const
 
 export type SyncResultStatus = (typeof SYNC_RESULT_STATUSES)[number]
 
-/** How far back a client clock may claim a change happened (skewed devices). */
-export const SYNC_CHANGED_AT_WINDOW_DAYS = 45
+/** How far back a client clock may claim a change happened (skewed devices): the domain merge's clamp, in days. */
+export const SYNC_CHANGED_AT_WINDOW_DAYS = LWW_MAX_AGE_MS / 86_400_000
 
 /** Tombstones older than this are purged; a pull cursor older than this answers 410. */
 export const SYNC_PURGE_HORIZON_DAYS = 90
@@ -61,12 +63,12 @@ export interface SyncRowByEntity {
   trip: Trip
   member: TripMember
   traveller: Traveller
-  stop: Stop
-  event: TripEvent
-  segment: EventSegment
+  stop: TripStopRow
+  event: TripEventRow
+  segment: EventSegmentRow
   seat: SegmentSeat
-  document: TripDocument
-  task: Task
+  document: TripDocumentRow
+  task: TripTaskRow
   budget_category: BudgetCategory
   expense: Expense
   expense_share: ExpenseShare

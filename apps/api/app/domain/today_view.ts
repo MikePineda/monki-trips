@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import type { DocumentTag, EventKind, EventStatus, TodayView } from '@monkitrips/shared'
+import type { DocumentTag, EventKind, EventStatus, TripTodayView } from '@monkitrips/shared'
 import { eventCoversNight, type NightEvent } from '#domain/night_coverage'
 import { taskUrgency } from '#domain/task_urgency'
 
@@ -101,7 +101,7 @@ export function todayZone(
  * (`print`, `show_on_phone`) or on any flight day (`requires_passport`).
  * Mirrors the shared `today_view`.
  */
-export function todayView(input: TodayViewInput): TodayView {
+export function todayView(input: TodayViewInput): TripTodayView {
   const tz = todayZone(input)
   const at = DateTime.fromISO(input.at)
   const date = at.setZone(tz).toISODate()!

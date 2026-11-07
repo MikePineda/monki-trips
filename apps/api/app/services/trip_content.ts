@@ -2,15 +2,15 @@ import db from '@adonisjs/lucid/services/db'
 import type {
   BudgetCategory,
   EmergencyInfo,
-  EventSegment,
+  EventSegmentRow,
   Expense,
   ExpenseShare,
   PhraseCards,
   SegmentSeat,
-  Stop,
-  Task,
-  TripDocument,
-  TripEvent,
+  TripStopRow,
+  TripTaskRow,
+  TripDocumentRow,
+  TripEventRow,
 } from '@monkitrips/shared'
 import { PULL_ENTITIES } from '#services/sync/entity_registry'
 import type { DbRow, EntitySpec } from '#services/sync/entity_spec'
@@ -18,12 +18,12 @@ import { rowToWire } from '#services/sync/row_wire'
 
 /** Every live content row of one trip, in wire shape. */
 export interface TripContentRows {
-  stops: Stop[]
-  events: TripEvent[]
-  segments: EventSegment[]
+  stops: TripStopRow[]
+  events: TripEventRow[]
+  segments: EventSegmentRow[]
   seats: SegmentSeat[]
-  documents: TripDocument[]
-  tasks: Task[]
+  documents: TripDocumentRow[]
+  tasks: TripTaskRow[]
   budgetCategories: BudgetCategory[]
   expenses: Expense[]
   expenseShares: ExpenseShare[]
@@ -35,12 +35,15 @@ export interface TripContentRows {
 export class TripContent {
   async load(tripId: string): Promise<TripContentRows> {
     // One query at a time: inside a transaction the connection is shared.
-    const stops = await this.rows<Stop>(PULL_ENTITIES.stop, tripId, ['position', 'arrive_on'])
-    const events = await this.rows<TripEvent>(PULL_ENTITIES.event, tripId, [
+    const stops = await this.rows<TripStopRow>(PULL_ENTITIES.stop, tripId, [
+      'position',
+      'arrive_on',
+    ])
+    const events = await this.rows<TripEventRow>(PULL_ENTITIES.event, tripId, [
       'starts_at',
       'created_at',
     ])
-    const segments = await this.rows<EventSegment>(PULL_ENTITIES.segment, tripId, [
+    const segments = await this.rows<EventSegmentRow>(PULL_ENTITIES.segment, tripId, [
       'event_id',
       'position',
     ])
@@ -48,8 +51,10 @@ export class TripContent {
       'segment_id',
       'created_at',
     ])
-    const documents = await this.rows<TripDocument>(PULL_ENTITIES.document, tripId, ['created_at'])
-    const tasks = await this.rows<Task>(PULL_ENTITIES.task, tripId, ['due_on', 'created_at'])
+    const documents = await this.rows<TripDocumentRow>(PULL_ENTITIES.document, tripId, [
+      'created_at',
+    ])
+    const tasks = await this.rows<TripTaskRow>(PULL_ENTITIES.task, tripId, ['due_on', 'created_at'])
     const budgetCategories = await this.rows<BudgetCategory>(
       PULL_ENTITIES.budget_category,
       tripId,

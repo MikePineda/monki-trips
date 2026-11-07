@@ -40,8 +40,8 @@ export interface EventSegment {
   /** IATA/UIC-style codes for the route chip; names are for display only. */
   originCode?: string | null
   originName?: string | null
-  destinationCode?: string | null
-  destinationName?: string | null
+  destCode?: string | null
+  destName?: string | null
   departs: ZonedInstant
   arrives: ZonedInstant | null
 }

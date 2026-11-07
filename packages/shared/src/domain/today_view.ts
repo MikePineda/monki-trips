@@ -201,8 +201,8 @@ function nextCandidate(events: readonly TripEvent[], nowMs: number): Candidate |
     }
     for (const segment of segments) {
       const route =
-        segment.originCode && segment.destinationCode
-          ? { from: segment.originCode, to: segment.destinationCode }
+        segment.originCode && segment.destCode
+          ? { from: segment.originCode, to: segment.destCode }
           : null
       consider({ event, segmentId: segment.id, starts: segment.departs, route })
     }
