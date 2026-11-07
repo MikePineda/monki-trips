@@ -10,6 +10,8 @@ import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
 import { ACCOUNT_ERROR_CODES, provideAccountI18n } from './account-i18n'
 
@@ -26,46 +28,58 @@ const PASSWORD_MIN_LENGTH = 10
     MkFieldComponent,
     MkButtonComponent,
     MkApiErrorComponent,
+    MkInputDirective,
+    MkStackComponent,
   ],
   providers: [provideAccountI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-sheet [title]="'account.password.title' | transloco">
-      <form class="flex flex-col gap-4" novalidate (submit)="change($event)">
-        <mk-field
-          [label]="'account.password.current' | transloco"
-          [required]="true"
-          [error]="fieldError(form.currentPassword)"
-        >
-          <input
-            type="password"
-            autocomplete="current-password"
-            [formField]="form.currentPassword"
-            data-testid="account.password.current"
+      <form novalidate (submit)="change($event)">
+        <mk-stack gap="2">
+          <mk-field
+            [label]="'account.password.current' | transloco"
+            [required]="true"
+            [error]="fieldError(form.currentPassword)"
+          >
+            <input
+              mkInput
+              type="password"
+              autocomplete="current-password"
+              [formField]="form.currentPassword"
+              data-testid="account.password.current"
+            />
+          </mk-field>
+          <mk-field
+            [label]="'account.password.new' | transloco"
+            [hint]="'account.password.newHint' | transloco"
+            [required]="true"
+            [error]="fieldError(form.password)"
+          >
+            <input
+              mkInput
+              type="password"
+              autocomplete="new-password"
+              [formField]="form.password"
+              data-testid="account.password.new"
+            />
+          </mk-field>
+          <mk-api-error
+            [failure]="failure()"
+            scope="account"
+            [knownCodes]="codes"
+            testId="account.password.error"
           />
-        </mk-field>
-        <mk-field
-          [label]="'account.password.new' | transloco"
-          [hint]="'account.password.newHint' | transloco"
-          [required]="true"
-          [error]="fieldError(form.password)"
-        >
-          <input
-            type="password"
-            autocomplete="new-password"
-            [formField]="form.password"
-            data-testid="account.password.new"
-          />
-        </mk-field>
-        <mk-api-error
-          [failure]="failure()"
-          scope="account"
-          [knownCodes]="codes"
-          testId="account.password.error"
-        />
-        <button mk-button type="submit" [loading]="busy()" data-testid="account.password.submit">
-          {{ 'account.password.submit' | transloco }}
-        </button>
+          <button
+            mk-button
+            size="block"
+            type="submit"
+            [loading]="busy()"
+            data-testid="account.password.submit"
+          >
+            {{ 'account.password.submit' | transloco }}
+          </button>
+        </mk-stack>
       </form>
     </mk-sheet>
   `,

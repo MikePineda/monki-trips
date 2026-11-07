@@ -19,8 +19,13 @@ import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
+import { MkRowComponent } from '../../shared/ui/layout/row.component'
+import { MkSectionComponent } from '../../shared/ui/layout/section.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
 import { ACCOUNT_ERROR_CODES, provideAccountI18n } from './account-i18n'
 import { ChangePasswordSheet } from './change-password.sheet'
@@ -47,115 +52,140 @@ export const EXPORT_FILE_NAME = 'monki-trips-export.json'
     MkButtonComponent,
     MkIconComponent,
     MkApiErrorComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkRowComponent,
+    MkSectionComponent,
+    MkTextComponent,
   ],
   providers: [provideAccountI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
     @if (session.user(); as user) {
-      <section class="mt-6" data-testid="account.section">
-        <h2 class="text-sm font-medium text-ink-2">{{ 'account.title' | transloco }}</h2>
+      <mk-section [eyebrow]="'account.title' | transloco" data-testid="account.section">
+        <mk-stack gap="3">
+          <form novalidate (submit)="saveName($event)">
+            <mk-stack gap="2" align="start">
+              <mk-field
+                [label]="'account.profile.displayName' | transloco"
+                [hint]="'account.profile.displayNameHint' | transloco"
+                [required]="true"
+                [error]="fieldError(nameForm.displayName)"
+              >
+                <input
+                  mkInput
+                  type="text"
+                  autocomplete="name"
+                  [formField]="nameForm.displayName"
+                  data-testid="account.displayName"
+                />
+              </mk-field>
+              <mk-api-error
+                [failure]="nameFailure()"
+                scope="account"
+                [knownCodes]="codes"
+                testId="account.displayName.error"
+              />
+              <button
+                mk-button
+                variant="secondary"
+                type="submit"
+                [loading]="savingName()"
+                [disabled]="!nameChanged()"
+                data-testid="account.displayName.save"
+              >
+                {{ 'account.profile.save' | transloco }}
+              </button>
+            </mk-stack>
+          </form>
 
-        <form class="mt-3 flex flex-col gap-3" novalidate (submit)="saveName($event)">
-          <mk-field
-            [label]="'account.profile.displayName' | transloco"
-            [hint]="'account.profile.displayNameHint' | transloco"
-            [required]="true"
-            [error]="fieldError(nameForm.displayName)"
-          >
-            <input
-              type="text"
-              autocomplete="name"
-              [formField]="nameForm.displayName"
-              data-testid="account.displayName"
-            />
-          </mk-field>
-          <mk-api-error
-            [failure]="nameFailure()"
-            scope="account"
-            [knownCodes]="codes"
-            testId="account.displayName.error"
-          />
-          <div>
+          <mk-stack gap="half">
+            <mk-field
+              [label]="'account.profile.email' | transloco"
+              [hint]="'account.profile.emailHint' | transloco"
+            >
+              <input
+                mkInput
+                type="email"
+                readonly
+                [value]="user.email"
+                data-testid="account.email"
+              />
+            </mk-field>
+            <mk-row gap="half" data-testid="account.emailState">
+              @if (user.emailVerifiedAt) {
+                <span mk-text variant="caption" tone="status-good">
+                  <mk-icon name="circle-check" [size]="16" />
+                </span>
+                <span mk-text variant="caption" tone="ink-2">
+                  {{ 'account.profile.verified' | transloco }}
+                </span>
+              } @else {
+                <span mk-text variant="caption" tone="status-warning">
+                  <mk-icon name="circle-alert" [size]="16" />
+                </span>
+                <span mk-text variant="caption" tone="ink-2">
+                  {{ 'account.profile.unverified' | transloco }}
+                </span>
+                <a
+                  mk-text
+                  variant="label"
+                  tone="accent"
+                  routerLink="/verify-email"
+                  data-testid="account.verify"
+                >
+                  {{ 'account.profile.verify' | transloco }}
+                </a>
+              }
+            </mk-row>
+          </mk-stack>
+
+          <mk-stack gap="2" align="start">
             <button
               mk-button
               variant="secondary"
-              type="submit"
-              [loading]="savingName()"
-              [disabled]="!nameChanged()"
-              data-testid="account.displayName.save"
+              type="button"
+              data-testid="account.password.change"
+              (click)="changePassword()"
             >
-              {{ 'account.profile.save' | transloco }}
+              <mk-icon name="key-round" [size]="18" />
+              {{ 'account.password.action' | transloco }}
             </button>
-          </div>
-        </form>
-
-        <mk-field
-          class="mt-4"
-          [label]="'account.profile.email' | transloco"
-          [hint]="'account.profile.emailHint' | transloco"
-        >
-          <input type="email" readonly [value]="user.email" data-testid="account.email" />
-        </mk-field>
-        <p class="mt-1 flex items-center gap-1 text-sm" data-testid="account.emailState">
-          @if (user.emailVerifiedAt) {
-            <mk-icon name="circle-check" class="text-status-good" [size]="16" />
-            <span class="text-ink-2">{{ 'account.profile.verified' | transloco }}</span>
-          } @else {
-            <mk-icon name="circle-alert" class="text-status-warning" [size]="16" />
-            <span class="text-ink-2">{{ 'account.profile.unverified' | transloco }}</span>
-            <a
-              routerLink="/verify-email"
-              class="ml-1 font-medium text-accent"
-              data-testid="account.verify"
+            <button
+              mk-button
+              variant="secondary"
+              type="button"
+              [loading]="signingOutEverywhere()"
+              data-testid="account.signOutEverywhere"
+              (click)="signOutEverywhere()"
             >
-              {{ 'account.profile.verify' | transloco }}
-            </a>
-          }
-        </p>
+              {{ 'account.sessions.signOutEverywhere' | transloco }}
+            </button>
+            <button
+              mk-button
+              variant="secondary"
+              type="button"
+              [loading]="exporting()"
+              data-testid="account.export"
+              (click)="exportData()"
+            >
+              <mk-icon name="download" [size]="18" />
+              {{ 'account.export.action' | transloco }}
+            </button>
+            <p mk-text variant="caption" tone="ink-3">{{ 'account.export.body' | transloco }}</p>
+            <mk-api-error
+              [failure]="actionFailure()"
+              scope="account"
+              [knownCodes]="codes"
+              testId="account.error"
+            />
+          </mk-stack>
+        </mk-stack>
+      </mk-section>
 
-        <div class="mt-6 flex flex-col items-start gap-3">
-          <button
-            mk-button
-            variant="secondary"
-            type="button"
-            data-testid="account.password.change"
-            (click)="changePassword()"
-          >
-            <mk-icon name="key-round" [size]="18" />
-            {{ 'account.password.action' | transloco }}
-          </button>
-          <button
-            mk-button
-            variant="secondary"
-            type="button"
-            [loading]="signingOutEverywhere()"
-            data-testid="account.signOutEverywhere"
-            (click)="signOutEverywhere()"
-          >
-            {{ 'account.sessions.signOutEverywhere' | transloco }}
-          </button>
-          <button
-            mk-button
-            variant="secondary"
-            type="button"
-            [loading]="exporting()"
-            data-testid="account.export"
-            (click)="exportData()"
-          >
-            <mk-icon name="download" [size]="18" />
-            {{ 'account.export.action' | transloco }}
-          </button>
-          <p class="text-xs text-ink-3">{{ 'account.export.body' | transloco }}</p>
-          <mk-api-error
-            [failure]="actionFailure()"
-            scope="account"
-            [knownCodes]="codes"
-            testId="account.error"
-          />
-        </div>
-
-        <div class="mt-8 flex flex-col items-start gap-3 border-t border-line pt-6">
+      <mk-section>
+        <mk-stack gap="2" align="start">
           <button
             mk-button
             variant="secondary"
@@ -175,17 +205,16 @@ export const EXPORT_FILE_NAME = 'monki-trips-export.json'
           />
           <button
             mk-button
-            variant="ghost"
+            variant="destructive"
             type="button"
-            class="text-status-critical"
             data-testid="account.delete"
             (click)="deleteAccount()"
           >
             <mk-icon name="trash-2" [size]="18" />
             {{ 'account.delete.action' | transloco }}
           </button>
-        </div>
-      </section>
+        </mk-stack>
+      </mk-section>
     }
   `,
 })

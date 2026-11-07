@@ -10,6 +10,9 @@ import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.compone
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
 
 /**
@@ -26,13 +29,15 @@ import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
     MkButtonComponent,
     MkApiErrorComponent,
     MkEmptyStateComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkTextComponent,
   ],
   providers: [provideAuthI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (sentTo(); as sentTo) {
       <mk-empty-state
-        class="rounded-lg border border-line bg-surface-1"
         icon="inbox"
         [title]="'auth.forgot.sentTitle' | transloco"
         [body]="'auth.forgot.sentBody' | transloco: { email: sentTo }"
@@ -49,38 +54,49 @@ import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
         </a>
       </mk-empty-state>
     } @else {
-      <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.forgot.title' | transloco }}</h1>
-      <p class="mt-3 text-sm text-ink-2">{{ 'auth.forgot.body' | transloco }}</p>
-      <form class="mt-6 flex flex-col gap-4" novalidate (submit)="send($event)">
-        <mk-field
-          [label]="'auth.forgot.email' | transloco"
-          [required]="true"
-          [error]="fieldError(form.email)"
+      <mk-stack gap="3">
+        <mk-stack gap="1">
+          <h1 mk-text variant="title">{{ 'auth.forgot.title' | transloco }}</h1>
+          <p mk-text tone="ink-2">{{ 'auth.forgot.body' | transloco }}</p>
+        </mk-stack>
+        <form novalidate (submit)="send($event)">
+          <mk-stack gap="2">
+            <mk-field
+              [label]="'auth.forgot.email' | transloco"
+              [required]="true"
+              [error]="fieldError(form.email)"
+            >
+              <input
+                mkInput
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                autocapitalize="none"
+                [formField]="form.email"
+                data-testid="auth.forgot.email"
+              />
+            </mk-field>
+            <mk-api-error
+              [failure]="failure()"
+              scope="auth"
+              [knownCodes]="codes"
+              testId="auth.forgot.error"
+            />
+            <button mk-button type="submit" [loading]="busy()" data-testid="auth.forgot.submit">
+              {{ 'auth.forgot.submit' | transloco }}
+            </button>
+          </mk-stack>
+        </form>
+        <a
+          mk-text
+          variant="body-strong"
+          tone="accent"
+          routerLink="/login"
+          data-testid="auth.forgot.back"
         >
-          <input
-            type="email"
-            autocomplete="email"
-            inputmode="email"
-            autocapitalize="none"
-            [formField]="form.email"
-            data-testid="auth.forgot.email"
-          />
-        </mk-field>
-        <mk-api-error
-          [failure]="failure()"
-          scope="auth"
-          [knownCodes]="codes"
-          testId="auth.forgot.error"
-        />
-        <button mk-button type="submit" [loading]="busy()" data-testid="auth.forgot.submit">
-          {{ 'auth.forgot.submit' | transloco }}
-        </button>
-      </form>
-      <p class="mt-6 text-sm">
-        <a routerLink="/login" class="font-medium text-accent" data-testid="auth.forgot.back">
           {{ 'auth.forgot.back' | transloco }}
         </a>
-      </p>
+      </mk-stack>
     }
   `,
 })

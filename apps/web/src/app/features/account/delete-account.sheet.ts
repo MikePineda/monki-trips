@@ -1,7 +1,6 @@
 import { DialogRef } from '@angular/cdk/dialog'
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
 import { form, FormField, required, submit } from '@angular/forms/signals'
-import { RouterLink } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { ACCOUNT_API } from '../../core/api/account-api'
 import { ApiFailure } from '../../core/api/api-failure'
@@ -12,7 +11,12 @@ import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkListRowComponent } from '../../shared/ui/list/list-row.component'
+import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { ACCOUNT_ERROR_CODES, provideAccountI18n } from './account-i18n'
 
 /**
@@ -25,61 +29,73 @@ import { ACCOUNT_ERROR_CODES, provideAccountI18n } from './account-i18n'
 @Component({
   selector: 'app-delete-account-sheet',
   imports: [
-    RouterLink,
     TranslocoPipe,
     FormField,
     MkSheetComponent,
     MkFieldComponent,
     MkButtonComponent,
     MkApiErrorComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkTextComponent,
+    MkListComponent,
+    MkListRowComponent,
   ],
   providers: [provideAccountI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-sheet [title]="'account.delete.title' | transloco">
       @if (blockingTrips(); as blocking) {
-        <div data-testid="account.delete.blocked">
-          <p class="font-medium text-ink-1">{{ 'account.delete.blockedTitle' | transloco }}</p>
-          <p class="mt-1 text-sm text-ink-2">{{ 'account.delete.blockedBody' | transloco }}</p>
-          <ul class="mt-3 divide-y divide-line">
+        <mk-stack gap="2" data-testid="account.delete.blocked">
+          <mk-stack gap="half">
+            <p mk-text variant="body-strong">{{ 'account.delete.blockedTitle' | transloco }}</p>
+            <p mk-text tone="ink-2">{{ 'account.delete.blockedBody' | transloco }}</p>
+          </mk-stack>
+          <mk-list>
             @for (trip of blocking; track trip.id) {
-              <li class="py-2">
-                <a
-                  [routerLink]="['/t', trip.id, 'more', 'members']"
-                  class="font-medium text-accent"
-                  data-testid="account.delete.blockingTrip"
-                  (click)="ref.close(false)"
-                >
-                  {{ trip.name ?? ('account.delete.unknownTrip' | transloco) }}
-                </a>
-              </li>
+              <mk-list-row
+                [title]="trip.name ?? ('account.delete.unknownTrip' | transloco)"
+                [link]="['/t', trip.id, 'more', 'members']"
+                testId="account.delete.blockingTrip"
+                (click)="ref.close(false)"
+              />
             }
-          </ul>
-        </div>
+          </mk-list>
+        </mk-stack>
       } @else {
-        <p class="text-sm text-ink-2">{{ 'account.delete.body' | transloco }}</p>
-        <form class="mt-4 flex flex-col gap-4" novalidate (submit)="remove($event)">
-          <mk-field
-            [label]="'account.delete.password' | transloco"
-            [required]="true"
-            [error]="fieldError(form.password)"
-          >
-            <input
-              type="password"
-              autocomplete="current-password"
-              [formField]="form.password"
-              data-testid="account.delete.password"
+        <form novalidate (submit)="remove($event)">
+          <mk-stack gap="2">
+            <p mk-text tone="ink-2">{{ 'account.delete.body' | transloco }}</p>
+            <mk-field
+              [label]="'account.delete.password' | transloco"
+              [required]="true"
+              [error]="fieldError(form.password)"
+            >
+              <input
+                mkInput
+                type="password"
+                autocomplete="current-password"
+                [formField]="form.password"
+                data-testid="account.delete.password"
+              />
+            </mk-field>
+            <mk-api-error
+              [failure]="failure()"
+              scope="account"
+              [knownCodes]="codes"
+              testId="account.delete.error"
             />
-          </mk-field>
-          <mk-api-error
-            [failure]="failure()"
-            scope="account"
-            [knownCodes]="codes"
-            testId="account.delete.error"
-          />
-          <button mk-button type="submit" [loading]="busy()" data-testid="account.delete.confirm">
-            {{ 'account.delete.confirm' | transloco }}
-          </button>
+            <button
+              mk-button
+              variant="destructive"
+              size="block"
+              type="submit"
+              [loading]="busy()"
+              data-testid="account.delete.confirm"
+            >
+              {{ 'account.delete.confirm' | transloco }}
+            </button>
+          </mk-stack>
         </form>
       }
     </mk-sheet>

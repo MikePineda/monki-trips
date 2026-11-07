@@ -15,12 +15,17 @@ import { ApiFailure } from '../../core/api/api-failure'
 import { TRIPS_API } from '../../core/api/trips-api'
 import { OnlineStore } from '../../core/offline/online.store'
 import { SessionStore } from '../../core/session/session.store'
+import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
+import { MkSectionComponent } from '../../shared/ui/layout/section.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkListRowComponent } from '../../shared/ui/list/list-row.component'
+import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
-import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
 
 /**
  * The trip's members (owner first) and, for the owner, an invitation by
@@ -35,90 +40,97 @@ import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
     MkIconComponent,
     MkApiErrorComponent,
     MkSkeletonComponent,
+    MkStackComponent,
+    MkSectionComponent,
+    MkTextComponent,
+    MkListComponent,
+    MkListRowComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-xl font-semibold text-ink-1" data-testid="trip.members.title">
-      {{ 'shell.trip.members.title' | transloco }}
-    </h1>
-    @if (loading()) {
-      <mk-skeleton class="mt-4" [rows]="2" />
-    } @else if (loadFailure(); as failure) {
-      <mk-api-error class="mt-4" [failure]="failure" scope="shell" [knownCodes]="codes" />
-    } @else {
-      <ul class="mt-4 divide-y divide-line" data-testid="trip.members.list">
-        @for (member of members(); track member.id) {
-          <li class="flex items-center gap-3 py-3" data-testid="trip.members.item">
-            <span class="min-w-0 flex-1 truncate font-medium text-ink-1">
-              {{ member.displayName }}
-              @if (member.userId === session.user()?.id) {
-                <span class="text-ink-3">({{ 'shell.trip.members.you' | transloco }})</span>
-              }
-            </span>
-            <span class="text-sm text-ink-2">{{
-              'shell.trip.members.role.' + member.role | transloco
-            }}</span>
-          </li>
-        }
-      </ul>
-    }
-    @if (owner()) {
-      <section class="mt-8" data-testid="trip.members.inviteSection">
-        <h2 class="text-sm font-medium text-ink-2">
-          {{ 'shell.trip.members.invite' | transloco }}
-        </h2>
-        <p class="mt-1 text-sm text-ink-2">{{ 'shell.trip.members.inviteBody' | transloco }}</p>
-        @if (link(); as link) {
-          <div
-            class="mt-3 rounded-lg border border-line bg-surface-1 p-3"
-            data-testid="trip.members.link"
-          >
-            <p class="text-sm font-medium text-ink-1">
-              {{ 'shell.trip.members.linkTitle' | transloco }}
-            </p>
-            <p class="mt-1 text-xs text-ink-3">{{ 'shell.trip.members.linkBody' | transloco }}</p>
-            <code
-              class="mt-2 block break-all font-mono text-sm text-ink-1"
-              data-testid="trip.members.linkUrl"
-              >{{ link }}</code
-            >
-            <button
-              mk-button
-              variant="secondary"
-              type="button"
-              class="mt-3"
-              data-testid="trip.members.copy"
-              (click)="copy(link)"
-            >
-              <mk-icon name="share" [size]="18" />
-              {{ 'shell.trip.members.copy' | transloco }}
-            </button>
-          </div>
-        } @else {
-          <mk-api-error
-            class="mt-3"
-            [failure]="inviteFailure()"
-            scope="shell"
-            [knownCodes]="codes"
-            testId="trip.members.inviteError"
-          />
-          @if (!online.online()) {
-            <p class="mt-3 text-sm text-ink-2">{{ 'shell.trip.members.offline' | transloco }}</p>
+    <mk-stack gap="2">
+      <h1 mk-text variant="title" data-testid="trip.members.title">
+        {{ 'shell.trip.members.title' | transloco }}
+      </h1>
+      @if (loading()) {
+        <mk-skeleton [rows]="2" />
+      } @else if (loadFailure(); as failure) {
+        <mk-api-error [failure]="failure" scope="shell" [knownCodes]="codes" />
+      } @else {
+        <mk-list data-testid="trip.members.list">
+          @for (member of members(); track member.id) {
+            <mk-list-row
+              [title]="
+                member.userId === session.user()?.id
+                  ? member.displayName + ' (' + ('shell.trip.members.you' | transloco) + ')'
+                  : member.displayName
+              "
+              [value]="'shell.trip.members.role.' + member.role | transloco"
+              testId="trip.members.item"
+            />
           }
-          <button
-            mk-button
-            type="button"
-            class="mt-3"
-            [loading]="inviting()"
-            [disabled]="!online.online()"
-            data-testid="trip.members.inviteLink"
-            (click)="invite()"
-          >
-            {{ 'shell.trip.members.invite' | transloco }}
-          </button>
-        }
-      </section>
-    }
+        </mk-list>
+      }
+      @if (owner()) {
+        <mk-section
+          [eyebrow]="'shell.trip.members.invite' | transloco"
+          data-testid="trip.members.inviteSection"
+        >
+          <mk-stack gap="2" align="start">
+            <p mk-text tone="ink-2">{{ 'shell.trip.members.inviteBody' | transloco }}</p>
+            @if (link(); as link) {
+              <mk-stack gap="1" align="start" data-testid="trip.members.link">
+                <mk-stack gap="0">
+                  <p mk-text variant="body-strong">
+                    {{ 'shell.trip.members.linkTitle' | transloco }}
+                  </p>
+                  <p mk-text variant="caption" tone="ink-3">
+                    {{ 'shell.trip.members.linkBody' | transloco }}
+                  </p>
+                </mk-stack>
+                <code
+                  mk-text
+                  variant="code"
+                  [breakAnywhere]="true"
+                  data-testid="trip.members.linkUrl"
+                  >{{ link }}</code
+                >
+                <button
+                  mk-button
+                  variant="secondary"
+                  type="button"
+                  data-testid="trip.members.copy"
+                  (click)="copy(link)"
+                >
+                  <mk-icon name="share" [size]="18" />
+                  {{ 'shell.trip.members.copy' | transloco }}
+                </button>
+              </mk-stack>
+            } @else {
+              <mk-api-error
+                [failure]="inviteFailure()"
+                scope="shell"
+                [knownCodes]="codes"
+                testId="trip.members.inviteError"
+              />
+              @if (!online.online()) {
+                <p mk-text tone="ink-2">{{ 'shell.trip.members.offline' | transloco }}</p>
+              }
+              <button
+                mk-button
+                type="button"
+                [loading]="inviting()"
+                [disabled]="!online.online()"
+                data-testid="trip.members.inviteLink"
+                (click)="invite()"
+              >
+                {{ 'shell.trip.members.invite' | transloco }}
+              </button>
+            }
+          </mk-stack>
+        </mk-section>
+      }
+    </mk-stack>
   `,
 })
 export default class MembersPage {

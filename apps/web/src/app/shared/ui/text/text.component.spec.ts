@@ -17,6 +17,9 @@ import { MkTextComponent, TEXT_VARIANTS } from './text.component'
       Updated 3 h ago
     </p>
     <span mk-text data-testid="probe.default">body</span>
+    <code mk-text variant="code" [breakAnywhere]="true" data-testid="probe.link">
+      https://trips.example.com/invite/0123456789abcdef0123456789abcdef
+    </code>
   `,
 })
 class Host {}
@@ -46,6 +49,15 @@ describe('mk-text', () => {
     expect(caption.getAttribute('data-tone')).toBe('ink-3')
     expect(caption.getAttribute('data-align')).toBe('center')
     expect(caption.hasAttribute('data-truncate')).toBe(true)
+  })
+
+  it('lets a long unbroken value (a link, a token) wrap anywhere instead of overflowing', () => {
+    const host = render()
+
+    expect(host.querySelector('[data-testid="probe.link"]')!.hasAttribute('data-break')).toBe(true)
+    expect(host.querySelector('[data-testid="probe.default"]')!.hasAttribute('data-break')).toBe(
+      false
+    )
   })
 
   it('defaults to body text in ink-1', () => {

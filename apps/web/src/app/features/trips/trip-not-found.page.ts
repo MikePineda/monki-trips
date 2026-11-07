@@ -15,7 +15,6 @@ import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.c
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-empty-state
-      class="rounded-lg border border-line bg-surface-1"
       icon="map-pin"
       [title]="'shell.notFound.title' | transloco"
       [body]="'shell.notFound.body' | transloco"

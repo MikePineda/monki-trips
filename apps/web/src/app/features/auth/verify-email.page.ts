@@ -20,7 +20,10 @@ import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.compone
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { provideUiI18n } from '../../shared/ui/ui-i18n'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
 import { HOME_URL } from './login.page'
@@ -57,18 +60,22 @@ type VerifyState =
     MkApiErrorComponent,
     MkEmptyStateComponent,
     MkSkeletonComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkTextComponent,
   ],
   providers: [provideAuthI18n(), provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @switch (state()) {
       @case ('checking-link') {
-        <p class="text-sm text-ink-2">{{ 'auth.verify.checkingLink' | transloco }}</p>
-        <mk-skeleton class="mt-4" [rows]="2" data-testid="auth.verify.loading" />
+        <mk-stack gap="2">
+          <p mk-text tone="ink-2">{{ 'auth.verify.checkingLink' | transloco }}</p>
+          <mk-skeleton [rows]="2" data-testid="auth.verify.loading" />
+        </mk-stack>
       }
       @case ('verified') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-check"
           [title]="'auth.verify.verifiedTitle' | transloco"
           [body]="'auth.verify.verifiedBody' | transloco"
@@ -86,7 +93,6 @@ type VerifyState =
       }
       @case ('already-verified') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-check"
           [title]="'auth.verify.alreadyVerified' | transloco"
           data-testid="auth.verify.already"
@@ -103,7 +109,6 @@ type VerifyState =
       }
       @case ('link-expired') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-alert"
           [title]="'auth.verify.linkExpiredTitle' | transloco"
           [body]="'auth.verify.linkExpiredBody' | transloco"
@@ -115,14 +120,15 @@ type VerifyState =
         </mk-empty-state>
       }
       @case ('link-failed') {
-        <mk-api-error [failure]="linkFailure()" scope="auth" [knownCodes]="codes" />
-        <button mk-button variant="secondary" class="mt-4" type="button" (click)="redeemLink()">
-          {{ 'ui.actions.retry' | transloco }}
-        </button>
+        <mk-stack gap="2" align="start">
+          <mk-api-error [failure]="linkFailure()" scope="auth" [knownCodes]="codes" />
+          <button mk-button variant="secondary" type="button" (click)="redeemLink()">
+            {{ 'ui.actions.retry' | transloco }}
+          </button>
+        </mk-stack>
       }
       @case ('anonymous') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="info"
           [title]="'auth.verify.title' | transloco"
           [body]="'auth.verify.signInFirst' | transloco"
@@ -140,56 +146,63 @@ type VerifyState =
         </mk-empty-state>
       }
       @case ('code') {
-        <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.verify.title' | transloco }}</h1>
-        <p class="mt-3 text-sm text-ink-2">
-          {{ 'auth.verify.body' | transloco: { email: session.user()?.email } }}
-        </p>
-        <form class="mt-6 flex flex-col gap-4" novalidate (submit)="verify($event)">
-          <mk-field
-            [label]="'auth.verify.code' | transloco"
-            [hint]="'auth.verify.codeHint' | transloco"
-            [required]="true"
-            [error]="fieldError(form.code)"
-          >
-            <input
-              type="text"
-              inputmode="numeric"
-              autocomplete="one-time-code"
-              class="font-mono tracking-widest tabular-nums"
-              [formField]="form.code"
-              (input)="keepDigits($event)"
-              data-testid="auth.verify.code"
-            />
-          </mk-field>
-          <mk-api-error
-            [failure]="failure()"
-            scope="auth"
-            [knownCodes]="codes"
-            testId="auth.verify.error"
-          />
-          <button mk-button type="submit" [loading]="busy()" data-testid="auth.verify.submit">
-            {{ 'auth.verify.submit' | transloco }}
-          </button>
-          <button
-            mk-button
-            variant="ghost"
-            type="button"
-            [disabled]="cooldown() > 0"
-            data-testid="auth.verify.resend"
-            (click)="resend()"
-          >
-            @if (cooldown() > 0) {
-              {{ 'auth.verify.resendIn' | transloco: { seconds: cooldown() } }}
-            } @else {
-              {{ 'auth.verify.resend' | transloco }}
-            }
-          </button>
-          @if (resent()) {
-            <p class="text-sm text-ink-2" role="status" data-testid="auth.verify.sent">
-              {{ 'auth.verify.sent' | transloco }}
+        <mk-stack gap="3">
+          <mk-stack gap="1">
+            <h1 mk-text variant="title">{{ 'auth.verify.title' | transloco }}</h1>
+            <p mk-text tone="ink-2">
+              {{ 'auth.verify.body' | transloco: { email: session.user()?.email } }}
             </p>
-          }
-        </form>
+          </mk-stack>
+          <form novalidate (submit)="verify($event)">
+            <mk-stack gap="2">
+              <mk-field
+                [label]="'auth.verify.code' | transloco"
+                [hint]="'auth.verify.codeHint' | transloco"
+                [required]="true"
+                [error]="fieldError(form.code)"
+              >
+                <input
+                  mkInput
+                  variant="code"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  [formField]="form.code"
+                  (input)="keepDigits($event)"
+                  data-testid="auth.verify.code"
+                />
+              </mk-field>
+              <mk-api-error
+                [failure]="failure()"
+                scope="auth"
+                [knownCodes]="codes"
+                testId="auth.verify.error"
+              />
+              <button mk-button type="submit" [loading]="busy()" data-testid="auth.verify.submit">
+                {{ 'auth.verify.submit' | transloco }}
+              </button>
+              <button
+                mk-button
+                variant="ghost"
+                type="button"
+                [disabled]="cooldown() > 0"
+                data-testid="auth.verify.resend"
+                (click)="resend()"
+              >
+                @if (cooldown() > 0) {
+                  {{ 'auth.verify.resendIn' | transloco: { seconds: cooldown() } }}
+                } @else {
+                  {{ 'auth.verify.resend' | transloco }}
+                }
+              </button>
+              @if (resent()) {
+                <p mk-text tone="ink-2" role="status" data-testid="auth.verify.sent">
+                  {{ 'auth.verify.sent' | transloco }}
+                </p>
+              }
+            </mk-stack>
+          </form>
+        </mk-stack>
       }
     }
   `,

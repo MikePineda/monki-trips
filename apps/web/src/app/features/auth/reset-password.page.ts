@@ -19,6 +19,9 @@ import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.compone
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
 import { PASSWORD_MIN_LENGTH } from './signup.page'
 
@@ -38,6 +41,9 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
     MkButtonComponent,
     MkApiErrorComponent,
     MkEmptyStateComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkTextComponent,
   ],
   providers: [provideAuthI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,7 +51,6 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
     @switch (state()) {
       @case ('missing-token') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="info"
           [title]="'auth.reset.title' | transloco"
           [body]="'auth.reset.missingToken' | transloco"
@@ -58,7 +63,6 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
       }
       @case ('expired') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-alert"
           [title]="'auth.reset.expiredTitle' | transloco"
           [body]="'auth.reset.expiredBody' | transloco"
@@ -77,7 +81,6 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
       }
       @case ('done') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-check"
           [title]="'auth.reset.doneTitle' | transloco"
           [body]="'auth.reset.doneBody' | transloco"
@@ -89,31 +92,36 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
         </mk-empty-state>
       }
       @case ('form') {
-        <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.reset.title' | transloco }}</h1>
-        <form class="mt-6 flex flex-col gap-4" novalidate (submit)="change($event)">
-          <mk-field
-            [label]="'auth.reset.password' | transloco"
-            [hint]="'auth.reset.passwordHint' | transloco"
-            [required]="true"
-            [error]="fieldError(form.password)"
-          >
-            <input
-              type="password"
-              autocomplete="new-password"
-              [formField]="form.password"
-              data-testid="auth.reset.password"
-            />
-          </mk-field>
-          <mk-api-error
-            [failure]="failure()"
-            scope="auth"
-            [knownCodes]="codes"
-            testId="auth.reset.error"
-          />
-          <button mk-button type="submit" [loading]="busy()" data-testid="auth.reset.submit">
-            {{ 'auth.reset.submit' | transloco }}
-          </button>
-        </form>
+        <mk-stack gap="3">
+          <h1 mk-text variant="title">{{ 'auth.reset.title' | transloco }}</h1>
+          <form novalidate (submit)="change($event)">
+            <mk-stack gap="2">
+              <mk-field
+                [label]="'auth.reset.password' | transloco"
+                [hint]="'auth.reset.passwordHint' | transloco"
+                [required]="true"
+                [error]="fieldError(form.password)"
+              >
+                <input
+                  mkInput
+                  type="password"
+                  autocomplete="new-password"
+                  [formField]="form.password"
+                  data-testid="auth.reset.password"
+                />
+              </mk-field>
+              <mk-api-error
+                [failure]="failure()"
+                scope="auth"
+                [knownCodes]="codes"
+                testId="auth.reset.error"
+              />
+              <button mk-button type="submit" [loading]="busy()" data-testid="auth.reset.submit">
+                {{ 'auth.reset.submit' | transloco }}
+              </button>
+            </mk-stack>
+          </form>
+        </mk-stack>
       }
     }
   `,

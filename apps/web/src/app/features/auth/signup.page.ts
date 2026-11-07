@@ -23,8 +23,11 @@ import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.compone
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { provideUiI18n } from '../../shared/ui/ui-i18n'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
 import { resolveForeignChanges } from './foreign-changes'
@@ -51,107 +54,124 @@ export const PASSWORD_MIN_LENGTH = 10
     MkApiErrorComponent,
     MkEmptyStateComponent,
     MkSkeletonComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkTextComponent,
   ],
   providers: [provideAuthI18n(), provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.signup.title' | transloco }}</h1>
-    @if (loading()) {
-      <mk-skeleton class="mt-6" [rows]="4" data-testid="auth.signup.loading" />
-    } @else if (loadFailure(); as failure) {
-      <mk-api-error class="mt-6" [failure]="failure" scope="auth" [knownCodes]="codes" />
-      <button mk-button variant="secondary" class="mt-4" type="button" (click)="load()">
-        {{ 'ui.actions.retry' | transloco }}
-      </button>
-    } @else if (!open()) {
-      <mk-empty-state
-        class="mt-6 rounded-lg border border-line bg-surface-1"
-        icon="info"
-        [title]="'auth.signup.closedTitle' | transloco"
-        [body]="'auth.signup.closedBody' | transloco"
-        data-testid="auth.signup.closed"
-      >
-        <a
-          mkEmptyAction
-          mk-button
-          variant="secondary"
-          routerLink="/login"
-          data-testid="auth.signup.login"
+    <mk-stack gap="3">
+      <h1 mk-text variant="title">{{ 'auth.signup.title' | transloco }}</h1>
+      @if (loading()) {
+        <mk-skeleton [rows]="4" data-testid="auth.signup.loading" />
+      } @else if (loadFailure(); as failure) {
+        <mk-stack gap="2" align="start">
+          <mk-api-error [failure]="failure" scope="auth" [knownCodes]="codes" />
+          <button mk-button variant="secondary" type="button" (click)="load()">
+            {{ 'ui.actions.retry' | transloco }}
+          </button>
+        </mk-stack>
+      } @else if (!open()) {
+        <mk-empty-state
+          icon="info"
+          [title]="'auth.signup.closedTitle' | transloco"
+          [body]="'auth.signup.closedBody' | transloco"
+          data-testid="auth.signup.closed"
         >
-          {{ 'auth.signup.login' | transloco }}
-        </a>
-      </mk-empty-state>
-    } @else {
-      @if (preview(); as preview) {
-        <p class="mt-3 text-sm text-ink-2" data-testid="auth.signup.invited">
-          {{
-            'auth.signup.invited'
-              | transloco
-                : { tripName: preview.tripName, role: 'auth.role.' + preview.role | transloco }
-          }}
-          @if (preview.requiresEmail) {
-            {{ 'auth.signup.invitedEmail' | transloco }}
-          }
+          <a
+            mkEmptyAction
+            mk-button
+            variant="secondary"
+            routerLink="/login"
+            data-testid="auth.signup.login"
+          >
+            {{ 'auth.signup.login' | transloco }}
+          </a>
+        </mk-empty-state>
+      } @else {
+        @if (preview(); as preview) {
+          <p mk-text tone="ink-2" data-testid="auth.signup.invited">
+            {{
+              'auth.signup.invited'
+                | transloco
+                  : { tripName: preview.tripName, role: 'auth.role.' + preview.role | transloco }
+            }}
+            @if (preview.requiresEmail) {
+              {{ 'auth.signup.invitedEmail' | transloco }}
+            }
+          </p>
+        }
+        <form novalidate (submit)="signUp($event)">
+          <mk-stack gap="2">
+            <mk-field
+              [label]="'auth.signup.displayName' | transloco"
+              [hint]="'auth.signup.displayNameHint' | transloco"
+              [required]="true"
+              [error]="fieldError(form.displayName)"
+            >
+              <input
+                mkInput
+                type="text"
+                autocomplete="name"
+                [formField]="form.displayName"
+                data-testid="auth.signup.displayName"
+              />
+            </mk-field>
+            <mk-field
+              [label]="'auth.signup.email' | transloco"
+              [required]="true"
+              [error]="fieldError(form.email)"
+            >
+              <input
+                mkInput
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                autocapitalize="none"
+                [formField]="form.email"
+                data-testid="auth.signup.email"
+              />
+            </mk-field>
+            <mk-field
+              [label]="'auth.signup.password' | transloco"
+              [hint]="'auth.signup.passwordHint' | transloco"
+              [required]="true"
+              [error]="fieldError(form.password)"
+            >
+              <input
+                mkInput
+                type="password"
+                autocomplete="new-password"
+                [formField]="form.password"
+                data-testid="auth.signup.password"
+              />
+            </mk-field>
+            <mk-api-error
+              [failure]="failure()"
+              scope="auth"
+              [knownCodes]="codes"
+              testId="auth.signup.error"
+            />
+            <button mk-button type="submit" [loading]="busy()" data-testid="auth.signup.submit">
+              {{ 'auth.signup.submit' | transloco }}
+            </button>
+          </mk-stack>
+        </form>
+        <p mk-text tone="ink-2">
+          {{ 'auth.signup.haveAccount' | transloco }}
+          <a
+            mk-text
+            variant="body-strong"
+            tone="accent"
+            routerLink="/login"
+            data-testid="auth.signup.login"
+          >
+            {{ 'auth.signup.login' | transloco }}
+          </a>
         </p>
       }
-      <form class="mt-6 flex flex-col gap-4" novalidate (submit)="signUp($event)">
-        <mk-field
-          [label]="'auth.signup.displayName' | transloco"
-          [hint]="'auth.signup.displayNameHint' | transloco"
-          [required]="true"
-          [error]="fieldError(form.displayName)"
-        >
-          <input
-            type="text"
-            autocomplete="name"
-            [formField]="form.displayName"
-            data-testid="auth.signup.displayName"
-          />
-        </mk-field>
-        <mk-field
-          [label]="'auth.signup.email' | transloco"
-          [required]="true"
-          [error]="fieldError(form.email)"
-        >
-          <input
-            type="email"
-            autocomplete="email"
-            inputmode="email"
-            autocapitalize="none"
-            [formField]="form.email"
-            data-testid="auth.signup.email"
-          />
-        </mk-field>
-        <mk-field
-          [label]="'auth.signup.password' | transloco"
-          [hint]="'auth.signup.passwordHint' | transloco"
-          [required]="true"
-          [error]="fieldError(form.password)"
-        >
-          <input
-            type="password"
-            autocomplete="new-password"
-            [formField]="form.password"
-            data-testid="auth.signup.password"
-          />
-        </mk-field>
-        <mk-api-error
-          [failure]="failure()"
-          scope="auth"
-          [knownCodes]="codes"
-          testId="auth.signup.error"
-        />
-        <button mk-button type="submit" [loading]="busy()" data-testid="auth.signup.submit">
-          {{ 'auth.signup.submit' | transloco }}
-        </button>
-      </form>
-      <p class="mt-6 text-sm text-ink-2">
-        {{ 'auth.signup.haveAccount' | transloco }}
-        <a routerLink="/login" class="font-medium text-accent" data-testid="auth.signup.login">
-          {{ 'auth.signup.login' | transloco }}
-        </a>
-      </p>
-    }
+    </mk-stack>
   `,
 })
 export default class SignupPage {

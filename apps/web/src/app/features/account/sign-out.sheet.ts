@@ -2,7 +2,9 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog'
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { provideAccountI18n } from './account-i18n'
 
 export interface SignOutSheetData {
@@ -16,18 +18,19 @@ export interface SignOutSheetData {
  */
 @Component({
   selector: 'app-sign-out-sheet',
-  imports: [TranslocoPipe, MkSheetComponent, MkButtonComponent],
+  imports: [TranslocoPipe, MkSheetComponent, MkButtonComponent, MkStackComponent, MkTextComponent],
   providers: [provideAccountI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-sheet [title]="'account.signOut.pendingTitle' | transloco">
-      <p class="text-sm text-ink-1" data-testid="account.signOut.warning">
+      <p mk-text data-testid="account.signOut.warning">
         {{ 'account.signOut.pendingBody' | transloco: { count: data.pendingCount } }}
       </p>
-      <div class="mt-6 flex flex-col gap-3">
+      <mk-stack mkSheetFooter gap="2">
         <button
           mk-button
           variant="secondary"
+          size="block"
           type="button"
           data-testid="account.signOut.cancel"
           (click)="ref.close(false)"
@@ -36,13 +39,14 @@ export interface SignOutSheetData {
         </button>
         <button
           mk-button
+          size="block"
           type="button"
           data-testid="account.signOut.confirm"
           (click)="ref.close(true)"
         >
           {{ 'account.signOut.confirm' | transloco }}
         </button>
-      </div>
+      </mk-stack>
     </mk-sheet>
   `,
 })

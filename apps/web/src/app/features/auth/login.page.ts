@@ -10,7 +10,10 @@ import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
 import { resolveForeignChanges } from './foreign-changes'
 
@@ -37,68 +40,81 @@ const INVITE_RETURN_URL = /^\/invite\/([^/?#]+)$/
     MkFieldComponent,
     MkButtonComponent,
     MkApiErrorComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkTextComponent,
   ],
   providers: [provideAuthI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.login.title' | transloco }}</h1>
-    <form class="mt-6 flex flex-col gap-4" novalidate (submit)="signIn($event)">
-      <mk-field
-        [label]="'auth.login.email' | transloco"
-        [required]="true"
-        [error]="fieldError(form.email)"
-      >
-        <input
-          type="email"
-          autocomplete="email"
-          inputmode="email"
-          autocapitalize="none"
-          [formField]="form.email"
-          data-testid="auth.login.email"
-        />
-      </mk-field>
-      <mk-field
-        [label]="'auth.login.password' | transloco"
-        [required]="true"
-        [error]="fieldError(form.password)"
-      >
-        <input
-          type="password"
-          autocomplete="current-password"
-          [formField]="form.password"
-          data-testid="auth.login.password"
-        />
-      </mk-field>
-      <mk-api-error
-        [failure]="failure()"
-        scope="auth"
-        [knownCodes]="codes"
-        testId="auth.login.error"
-      />
-      <button mk-button type="submit" [loading]="busy()" data-testid="auth.login.submit">
-        {{ 'auth.login.submit' | transloco }}
-      </button>
-    </form>
-    <p class="mt-6 text-sm">
-      <a
-        routerLink="/forgot-password"
-        class="font-medium text-accent"
-        data-testid="auth.login.forgot"
-      >
-        {{ 'auth.login.forgot' | transloco }}
-      </a>
-    </p>
-    <p class="mt-3 text-sm text-ink-2">
-      {{ 'auth.login.noAccount' | transloco }}
-      <a
-        routerLink="/signup"
-        [queryParams]="signupParams()"
-        class="font-medium text-accent"
-        data-testid="auth.login.signup"
-      >
-        {{ 'auth.login.signup' | transloco }}
-      </a>
-    </p>
+    <mk-stack gap="3">
+      <h1 mk-text variant="title">{{ 'auth.login.title' | transloco }}</h1>
+      <form novalidate (submit)="signIn($event)">
+        <mk-stack gap="2">
+          <mk-field
+            [label]="'auth.login.email' | transloco"
+            [required]="true"
+            [error]="fieldError(form.email)"
+          >
+            <input
+              mkInput
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              autocapitalize="none"
+              [formField]="form.email"
+              data-testid="auth.login.email"
+            />
+          </mk-field>
+          <mk-field
+            [label]="'auth.login.password' | transloco"
+            [required]="true"
+            [error]="fieldError(form.password)"
+          >
+            <input
+              mkInput
+              type="password"
+              autocomplete="current-password"
+              [formField]="form.password"
+              data-testid="auth.login.password"
+            />
+          </mk-field>
+          <mk-api-error
+            [failure]="failure()"
+            scope="auth"
+            [knownCodes]="codes"
+            testId="auth.login.error"
+          />
+          <button mk-button type="submit" [loading]="busy()" data-testid="auth.login.submit">
+            {{ 'auth.login.submit' | transloco }}
+          </button>
+        </mk-stack>
+      </form>
+      <mk-stack gap="1" align="start">
+        <a
+          mk-text
+          variant="body-strong"
+          tone="accent"
+          routerLink="/forgot-password"
+          data-testid="auth.login.forgot"
+        >
+          {{ 'auth.login.forgot' | transloco }}
+        </a>
+        <p mk-text tone="ink-2">
+          {{ 'auth.login.noAccount' | transloco }}
+          <a
+            mk-text
+            variant="body-strong"
+            tone="accent"
+            routerLink="/signup"
+            [queryParams]="signupParams()"
+            data-testid="auth.login.signup"
+          >
+            {{ 'auth.login.signup' | transloco }}
+          </a>
+        </p>
+      </mk-stack>
+    </mk-stack>
   `,
 })
 export default class LoginPage {
