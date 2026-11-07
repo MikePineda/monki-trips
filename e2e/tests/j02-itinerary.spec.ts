@@ -13,6 +13,9 @@ import { RAW_KEY, signIn } from '../sign-in.ts'
 test.use({ serviceWorkers: 'block' })
 
 test.describe('J02 itinerary', () => {
+  // Both tests wipe the account's trips in beforeEach: run them one after the other.
+  test.describe.configure({ mode: 'default' })
+
   let solo: E2eAccount
   let tripId: string
 

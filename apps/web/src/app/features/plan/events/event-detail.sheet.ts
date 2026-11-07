@@ -7,9 +7,9 @@ import {
   inject,
   signal,
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { intlLocale } from '../../../core/i18n/intl-locale'
+import { scopedLabels } from '../../../core/i18n/scoped-labels'
 import { TIME_ZONE } from '../../../core/offline/time-zone'
 import { liveSignalFor } from '../../../core/offline/live'
 import type { EventRecord, SeatRecord, SegmentRecord } from '../../../core/offline/records'
@@ -227,7 +227,6 @@ export class EventDetailSheet {
   private readonly sheets = inject(SheetService)
   private readonly toasts = inject(ToastService)
   private readonly transloco = inject(TranslocoService)
-  private readonly scope = inject(TRANSLOCO_SCOPE)
   private readonly document = inject(DOCUMENT)
   private readonly deviceZone = inject(TIME_ZONE)
   private readonly locale = intlLocale()
@@ -316,14 +315,11 @@ export class EventDetailSheet {
     return directionsUrl(ios ? 'ios' : 'other', event)
   })
 
-  private readonly coverLabels = toSignal(
-    this.transloco.selectTranslate<string[]>(
-      ['detail.coversNightAuto', 'detail.coversNightYes', 'detail.coversNightNo'],
-      {},
-      this.scope
-    ),
-    { initialValue: ['', '', ''] }
-  )
+  private readonly coverLabels = scopedLabels('events', [
+    'detail.coversNightAuto',
+    'detail.coversNightYes',
+    'detail.coversNightNo',
+  ])
   protected readonly coverOptions = computed(() => {
     const labels = this.coverLabels()
     return [

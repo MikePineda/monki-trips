@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core'
+import { TranslocoPipe } from '@jsverse/transloco'
 import { intlLocale } from '../../core/i18n/intl-locale'
+import { scopedLabels } from '../../core/i18n/scoped-labels'
 import { countKey } from '../../domain/count-key'
 import { formatDayDate } from '../../domain/day-date'
 import type { NightRow, NightsView } from '../../domain/nights-view'
@@ -71,19 +71,20 @@ import { EVENT_KIND_ICONS } from './events/event-kind-icon'
               "
               testId="plan.night"
             >
-              @if (row.uncovered) {
-                <button
-                  mkRowTrailing
-                  mk-button
-                  variant="secondary"
-                  size="sm"
-                  type="button"
-                  data-testid="plan.night.findStay"
-                  (click)="findStay.emit(row.date)"
-                >
-                  {{ 'plan.nights.findStay' | transloco }}
-                </button>
-              }
+              <ng-container ngProjectAs="[mkRowTrailing]">
+                @if (row.uncovered) {
+                  <button
+                    mk-button
+                    variant="secondary"
+                    size="sm"
+                    type="button"
+                    data-testid="plan.night.findStay"
+                    (click)="findStay.emit(row.date)"
+                  >
+                    {{ 'plan.nights.findStay' | transloco }}
+                  </button>
+                }
+              </ng-container>
             </mk-list-row>
           }
         </mk-list>
@@ -96,14 +97,9 @@ export class NightsComponent {
   readonly view = input.required<NightsView>()
   readonly findStay = output<string>()
 
-  private readonly transloco = inject(TranslocoService)
-  private readonly scope = inject(TRANSLOCO_SCOPE)
   private readonly locale = intlLocale()
   /** "No stay" and "On board", re-emitted when the language or its catalogue arrives. */
-  private readonly words = toSignal(
-    this.transloco.selectTranslate<string[]>(['nights.noStay', 'nights.onBoard'], {}, this.scope),
-    { initialValue: ['', ''] }
-  )
+  private readonly words = scopedLabels('plan', ['nights.noStay', 'nights.onBoard'])
 
   protected readonly uncoveredKey = computed(
     () => `plan.nights.${countKey('uncovered', this.view().uncovered)}`

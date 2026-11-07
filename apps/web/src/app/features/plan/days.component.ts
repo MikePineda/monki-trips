@@ -88,21 +88,22 @@ import { EVENT_KIND_ICONS } from './events/event-kind-icon'
                     [link]="['/t', tripId(), 'plan', 'e', item.eventId]"
                     testId="plan.event"
                   >
-                    @if (directions()[item.eventId]; as href) {
-                      <a
-                        mkRowAction
-                        mk-button
-                        variant="ghost"
-                        size="sm"
-                        [href]="href"
-                        target="_blank"
-                        rel="noopener"
-                        data-testid="plan.event.directions"
-                      >
-                        <mk-icon name="navigation" [size]="16" />
-                        {{ 'plan.days.directions' | transloco }}
-                      </a>
-                    }
+                    <ng-container ngProjectAs="[mkRowAction]">
+                      @if (directions()[item.eventId]; as href) {
+                        <a
+                          mk-button
+                          variant="ghost"
+                          size="sm"
+                          [href]="href"
+                          target="_blank"
+                          rel="noopener"
+                          data-testid="plan.event.directions"
+                        >
+                          <mk-icon name="navigation" [size]="16" />
+                          {{ 'plan.days.directions' | transloco }}
+                        </a>
+                      }
+                    </ng-container>
                   </mk-event-row>
                 }
               </mk-list>
