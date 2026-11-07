@@ -62,6 +62,20 @@ test.group('Password reset', (group) => {
     second.assertBodyContains({ code: 'E_TOKEN_EXPIRED' })
   })
 
+  test('a reset link cannot be consumed twice concurrently', async ({ client, assert }) => {
+    await makeUser({ email: 'owner@example.com' })
+    await forgot(client, 'owner@example.com')
+    const token = tokenFromMail(mailer.lastTo('owner@example.com'))
+
+    const responses = await Promise.all([
+      reset(client, token, 'first-new-passphrase').catch((e: unknown) => e),
+      reset(client, token, 'second-new-passphrase').catch((e: unknown) => e),
+    ])
+
+    const statuses = responses.map((response: any) => response.status()).sort()
+    assert.deepEqual(statuses, [204, 410])
+  })
+
   test('a reset token expires after sixty minutes', async ({ client }) => {
     await makeUser({ email: 'owner@example.com' })
     await forgot(client, 'owner@example.com')
