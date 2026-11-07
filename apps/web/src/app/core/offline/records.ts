@@ -27,6 +27,10 @@ export interface TripRecord extends SyncedRecord {
   endDate: string
   /** ISO 4217 code. */
   baseCurrency: string
+  /** `shared` pot or `split` between travellers; absent on rows written before WP 0.6b. */
+  budgetMode?: string
+  /** Integer minor units of `baseCurrency`, null for no budget. */
+  budgetTotalMinor?: number | null
 }
 
 export interface EventRecord extends TripScopedRecord {

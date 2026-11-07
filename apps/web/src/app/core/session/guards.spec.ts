@@ -2,17 +2,20 @@ import { Component } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import { Router, provideRouter } from '@angular/router'
 import { RouterTestingHarness } from '@angular/router/testing'
+import { apiFakes, provideApiTesting, type ApiFakes } from '../../../testing/api-testing'
 import {
   freshOfflineDb,
   provideOfflineTesting,
   resetOfflineTesting,
 } from '../../../testing/offline-testing'
+import { ApiFailure } from '../api/api-failure'
+import { fakeTrip } from '../api/trips-api'
 import type { MonkiTripsDb } from '../offline/db'
 import { META_ACTIVE_TRIP, META_SESSION, MetaStore } from '../offline/meta.store'
 import { OnlineStore } from '../offline/online.store'
 import { authGuard } from './auth.guard'
 import { currentTripGuard } from './current-trip.guard'
-import { FakeSessionApi, SESSION_API } from './session-api'
+import { FAKE_SESSION_USER } from './session-api'
 import { tripMemberGuard } from './trip-member.guard'
 
 @Component({ template: '<p data-testid="probe.page">page</p>' })
@@ -20,17 +23,18 @@ class Page {}
 
 describe('route guards', () => {
   let db: MonkiTripsDb
-  let api: FakeSessionApi
+  let fakes: ApiFakes
 
   beforeEach(() => {
     db = freshOfflineDb()
-    api = new FakeSessionApi()
+    fakes = apiFakes()
     TestBed.configureTestingModule({
       providers: [
         ...provideOfflineTesting({ db }),
-        { provide: SESSION_API, useValue: api },
+        ...provideApiTesting(fakes),
         provideRouter([
           { path: 'login', component: Page },
+          { path: 'not-found', component: Page },
           { path: 'trips', component: Page, canActivate: [authGuard] },
           { path: 't/current/add', canActivate: [currentTripGuard], children: [] },
           { path: 't/:tripId/today', component: Page, canActivate: [authGuard, tripMemberGuard] },
@@ -59,24 +63,25 @@ describe('route guards', () => {
       expect(await visit('/trips')).toBe('/trips')
     })
 
-    it('sends an anonymous online visitor to /login with the target', async () => {
-      api.user = null
+    it('sends an anonymous online visitor to /login with the return url', async () => {
+      fakes.session.user = null
 
-      expect(await visit('/trips')).toBe('/login?next=%2Ftrips')
+      expect(await visit('/trips')).toBe('/login?returnUrl=%2Ftrips')
     })
 
     it('never redirects to /login while offline, even with no cached session', async () => {
       goOffline()
 
       expect(await visit('/trips')).toBe('/trips')
-      expect(api.calls).toEqual([])
+      expect(fakes.session.calls).toEqual([])
     })
 
-    it('uses the cached session offline', async () => {
-      await TestBed.inject(MetaStore).set(META_SESSION, { id: 'u1', displayName: 'Cached' })
+    it('offline guard keeps the cached session', async () => {
+      await TestBed.inject(MetaStore).set(META_SESSION, { ...FAKE_SESSION_USER, id: 'u1' })
       goOffline()
 
       expect(await visit('/trips')).toBe('/trips')
+      expect(fakes.session.calls).toEqual([])
     })
   })
 
@@ -92,27 +97,43 @@ describe('route guards', () => {
       })
 
       expect(await visit('/t/trip-1/today')).toBe('/t/trip-1/today')
-      expect(api.calls.filter((call) => call.startsWith('canOpenTrip'))).toEqual([])
+      expect(fakes.trips.calls).toEqual([])
     })
 
-    it('asks the server about an unknown trip and lets a member in', async () => {
-      api.openTrips = new Set(['trip-2'])
+    it('fetches an unknown trip from the server, lets a member in and caches it', async () => {
+      fakes.trips.trips = [
+        { ...fakeTrip({ id: 'trip-2', name: 'Fetched' }), role: 'owner', memberCount: 1 },
+      ]
 
       expect(await visit('/t/trip-2/today')).toBe('/t/trip-2/today')
-      expect(api.calls).toContain('canOpenTrip:trip-2')
+      expect(fakes.trips.calls).toContain('snapshot:trip-2')
+      expect((await db.trips.get('trip-2'))?.name).toBe('Fetched')
     })
 
-    it('a foreign trip is not found: back to the list, never a forbidden screen', async () => {
-      api.openTrips = new Set(['trip-2'])
+    it('a foreign trip is not found: the not-found page, never a forbidden screen', async () => {
+      fakes.trips.trips = [{ ...fakeTrip({ id: 'trip-2' }), role: 'owner', memberCount: 1 }]
 
-      expect(await visit('/t/someone-elses/today')).toBe('/trips')
+      expect(await visit('/t/someone-elses/today')).toBe('/not-found')
     })
 
     it('offline with no copy it lets the page explain instead of redirecting', async () => {
-      await TestBed.inject(MetaStore).set(META_SESSION, { id: 'u1', displayName: 'Cached' })
+      await TestBed.inject(MetaStore).set(META_SESSION, { ...FAKE_SESSION_USER, id: 'u1' })
       goOffline()
 
       expect(await visit('/t/unknown/today')).toBe('/t/unknown/today')
+    })
+
+    it('401 online clears the session and goes to sign in with the return url', async () => {
+      await TestBed.inject(MetaStore).set(META_SESSION, { ...FAKE_SESSION_USER, id: 'u1' })
+      fakes.trips.failWith = new ApiFailure({
+        kind: 'http',
+        status: 401,
+        code: 'E_UNAUTHORIZED',
+        message: 'Sign in first',
+      })
+
+      expect(await visit('/t/trip-9/today')).toBe('/login?returnUrl=%2Ft%2Ftrip-9%2Ftoday')
+      expect(await TestBed.inject(MetaStore).get(META_SESSION)).toBeUndefined()
     })
   })
 
