@@ -115,6 +115,7 @@ export class AnthropicCompatibleProvider extends LlmProvider {
     const text: string[] = []
     const toolCalls: LlmToolCall[] = []
     const openBlocks = new Map<number, { id: string; name: string; json: string }>()
+    let stopped = false
 
     for await (const event of parseSseStream(response.body)) {
       let data: StreamEvent
@@ -167,12 +168,18 @@ export class AnthropicCompatibleProvider extends LlmProvider {
           inputTokens = data.usage?.input_tokens ?? inputTokens
           options.onUsage?.({ inputTokens, outputTokens }, model)
           break
+        case 'message_stop':
+          stopped = true
+          break
         case 'error':
+          // The input it used was reported at message_start (onUsage); the caller charges it.
           throw new LlmUnavailableError('llm stream reported an error')
         default:
           break
       }
     }
+    // A body that ends without message_stop is a cut connection, not an answer.
+    if (!stopped) throw new LlmUnavailableError('llm stream ended before message_stop')
     yield {
       type: 'done',
       completion: {

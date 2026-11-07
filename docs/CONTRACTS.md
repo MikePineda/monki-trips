@@ -361,7 +361,9 @@ answers 503 until written, `fake` answers from `tests/fixtures/llm/<purpose>/<ca
   cancelled.
 - **Errors.** A 429, 5xx, network failure or timeout (90 s) is retried twice
   with backoff (0.5 s, 2 s); what still fails answers 503 `E_LLM_UNAVAILABLE`
-  with no upstream detail.
+  with no upstream detail. A stream that ends without `message_stop` is a cut
+  connection, not an answer (503); a stream that fails midway (an `error`
+  event) is charged the input reported at `message_start`.
 - **The `<data>` rule.** Text that a person typed or a document contained
   (addresses, preferences, PDF or web text) reaches the model only inside
   `<data label="…">…</data>` in a user turn, never in the system prompt; the

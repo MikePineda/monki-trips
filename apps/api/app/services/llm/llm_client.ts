@@ -73,7 +73,7 @@ export class LlmClient {
       }
     } catch (error) {
       failed = true
-      await this.settleError(reservation, startedAt)
+      await this.settleError(reservation, startedAt, known)
       throw this.mapError(error)
     } finally {
       if (completion) {
@@ -120,11 +120,16 @@ export class LlmClient {
     })
   }
 
-  private async settleError(reservation: string, startedAt: number) {
+  /** A failed call: charged what the provider reported before failing, if anything. */
+  private async settleError(
+    reservation: string,
+    startedAt: number,
+    known: { usage: LlmUsage; model: string } | null = null
+  ) {
     await this.usage.settle(reservation, {
-      model: 'unknown',
-      inputTokens: 0,
-      outputTokens: 0,
+      model: known?.model ?? 'unknown',
+      inputTokens: known?.usage.inputTokens ?? 0,
+      outputTokens: known?.usage.outputTokens ?? 0,
       latencyMs: this.clock.now().getTime() - startedAt,
       status: 'error',
     })
