@@ -33,13 +33,19 @@ export default class HttpExceptionHandler extends ExceptionHandler {
       getDefaultHeaders?: () => Record<string, unknown>
     }
 
+    // The multipart parser's size limit is the document size limit.
+    if (httpError.code === 'E_REQUEST_ENTITY_TOO_LARGE') {
+      return this.handle(new ApiException('E_FILE_TOO_LARGE'), ctx)
+    }
+
     if (httpError.code === 'E_VALIDATION_ERROR') {
       // Always JSON: the default renderer would flash and redirect a form post.
       const { messages } = error as { messages: { field: string; rule: string; message: string }[] }
       return ctx.response.status(422).send({ errors: messages })
     }
 
-    if (httpError.status >= 400 && httpError.status < 500) {
+    // A business error keeps its shape whatever its status (503 for an unavailable provider too).
+    if ((httpError.status >= 400 && httpError.status < 500) || error instanceof ApiException) {
       const code = httpError.code ?? 'E_BAD_REQUEST'
       if (typeof httpError.getDefaultHeaders === 'function') {
         for (const [name, value] of Object.entries(httpError.getDefaultHeaders())) {
