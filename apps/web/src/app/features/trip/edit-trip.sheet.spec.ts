@@ -80,10 +80,13 @@ describe('EditTripSheet', () => {
 
     const [entry] = await db.outbox.toArray()
     expect(entry).toMatchObject({
-      entity: 'trip',
-      op: 'upsert',
-      rowId: DEMO_TRIP_ID,
-      changes: { name: 'Hills only', budgetTotalMinor: 50_000 },
+      kind: 'trip.upsert',
+      payload: {
+        entity: 'trip',
+        op: 'upsert',
+        id: DEMO_TRIP_ID,
+        changes: { name: 'Hills only', budgetTotalMinor: 50_000 },
+      },
     })
     expect(await db.trips.get(DEMO_TRIP_ID)).toMatchObject({
       name: 'Hills only',

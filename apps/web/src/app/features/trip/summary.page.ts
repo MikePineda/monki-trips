@@ -4,7 +4,7 @@ import { TranslocoPipe } from '@jsverse/transloco'
 import { nightCoverage, routeChips, tripSummary } from '@monkitrips/shared'
 import { intlLocale } from '../../core/i18n/intl-locale'
 import { CLOCK } from '../../core/offline/clock'
-import { DEVICE_TIME_ZONE } from '../../core/offline/device-zone'
+import { TIME_ZONE } from '../../core/offline/time-zone'
 import type { StopRecord } from '../../core/offline/records'
 import {
   tripEvents,
@@ -17,7 +17,7 @@ import { SessionStore } from '../../core/session/session.store'
 import { countKey } from '../../domain/count-key'
 import { formatDayDate } from '../../domain/day-date'
 import { toDomainEvents } from '../../domain/event-instants'
-import { localDateIn } from '../../domain/local-date'
+import { localToday } from '../../domain/local-today'
 import { tripRole } from '../../domain/trip-role'
 import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
@@ -204,7 +204,7 @@ export default class SummaryPage {
   private readonly sheets = inject(SheetService)
   private readonly session = inject(SessionStore)
   private readonly clock = inject(CLOCK)
-  private readonly zone = inject(DEVICE_TIME_ZONE)
+  private readonly zone = inject(TIME_ZONE)
   private readonly locale = intlLocale()
 
   protected readonly trip = tripRecord(this.tripId)
@@ -231,7 +231,7 @@ export default class SummaryPage {
     return tripSummary(
       { startsOn: trip.startDate, endsOn: trip.endDate },
       this.stops(),
-      localDateIn(this.clock(), this.zone)
+      localToday(this.clock(), this.zone)
     )
   })
 

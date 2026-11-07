@@ -1,13 +1,11 @@
 import {
   nightCoverage,
   type EventKind,
-  type EventSegmentRow,
   type IsoDate,
   type NightCoverKind,
   type TripDates,
-  type TripEventRow,
 } from '@monkitrips/shared'
-import { toDomainEvents } from './event-instants'
+import { toDomainEvents, type EventRow, type SegmentRow } from './event-instants'
 
 export interface NightCoverView {
   eventId: string
@@ -40,8 +38,8 @@ export interface NightsView {
  */
 export function nightsView(
   trip: TripDates,
-  events: readonly TripEventRow[],
-  segments: readonly EventSegmentRow[]
+  events: readonly EventRow[],
+  segments: readonly SegmentRow[]
 ): NightsView {
   const titles = new Map(events.map((event) => [event.id, event.title]))
   const report = nightCoverage(trip, toDomainEvents(events, segments))

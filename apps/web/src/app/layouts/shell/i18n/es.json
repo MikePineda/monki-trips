@@ -51,6 +51,7 @@
   },
   "trip": {
     "untitled": "Viaje",
+    "summary": "Resumen del viaje",
     "today": {
       "title": "Hoy",
       "body": "El plan del día, el próximo evento, dónde dormimos y lo que queda por gastar llegan con la fase 2."
@@ -73,6 +74,7 @@
     },
     "more": {
       "title": "Más",
+      "summary": "Resumen del viaje",
       "tasks": "Tareas",
       "checklist": "Lista previa al viaje",
       "emergency": "Emergencias",

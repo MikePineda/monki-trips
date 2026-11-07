@@ -10,7 +10,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop'
 import { TRANSLOCO_SCOPE, TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { intlLocale } from '../../../core/i18n/intl-locale'
-import { DEVICE_TIME_ZONE } from '../../../core/offline/device-zone'
+import { TIME_ZONE } from '../../../core/offline/time-zone'
 import { liveSignalFor } from '../../../core/offline/live'
 import type { EventRecord, SeatRecord, SegmentRecord } from '../../../core/offline/records'
 import { TripContentStore } from '../../../core/offline/trip-content.store'
@@ -229,7 +229,7 @@ export class EventDetailSheet {
   private readonly transloco = inject(TranslocoService)
   private readonly scope = inject(TRANSLOCO_SCOPE)
   private readonly document = inject(DOCUMENT)
-  private readonly deviceZone = inject(DEVICE_TIME_ZONE)
+  private readonly deviceZone = inject(TIME_ZONE)
   private readonly locale = intlLocale()
 
   protected readonly icons = EVENT_KIND_ICONS

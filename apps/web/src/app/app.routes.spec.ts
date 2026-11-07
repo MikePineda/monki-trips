@@ -121,11 +121,11 @@ describe('app routes', () => {
     )
   })
 
-  it('a trip opens on Today inside the trip shell with the five tabs', async () => {
+  it('a trip that has not started opens on its summary, inside the trip shell with the five tabs', async () => {
     const { url, has } = await navigate('/t/demo-trip')
 
-    expect(url).toBe('/t/demo-trip/today')
-    expect(has('trip.today.title')).toBe(true)
+    expect(url).toBe('/t/demo-trip/summary')
+    expect(has('trip.summary.title')).toBe(true)
     for (const tab of ['today', 'plan', 'docs', 'money', 'more']) {
       expect(has(`shell.tab.${tab}`), tab).toBe(true)
     }

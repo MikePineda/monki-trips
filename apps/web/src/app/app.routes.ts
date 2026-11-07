@@ -1,6 +1,7 @@
 import type { Route, Routes } from '@angular/router'
 import { authGuard } from './core/session/auth.guard'
 import { currentTripGuard } from './core/session/current-trip.guard'
+import { tripHomeGuard } from './core/session/trip-home.guard'
 import { tripMemberGuard } from './core/session/trip-member.guard'
 
 /**
@@ -72,8 +73,21 @@ export const routes: Routes = [
       import('./layouts/trip-shell/trip-shell.component').then((m) => m.TripShellComponent),
     canActivate: [authGuard, tripMemberGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'today' },
-      ...(['today', 'plan', 'docs', 'money', 'add'] as const).map((section) => ({
+      // Today while the trip is ongoing, the summary otherwise.
+      { path: '', pathMatch: 'full', canActivate: [tripHomeGuard], children: [] },
+      { path: 'summary', loadComponent: () => import('./features/trip/summary.page') },
+      {
+        path: 'plan',
+        loadComponent: () => import('./features/plan/plan.page'),
+        children: [
+          { path: 'nights', children: [] },
+          {
+            path: 'e/:eventId',
+            loadComponent: () => import('./features/plan/event-detail.outlet'),
+          },
+        ],
+      },
+      ...(['today', 'docs', 'money', 'add'] as const).map((section) => ({
         path: section,
         loadComponent: () => import('./features/trip/trip-placeholder.page'),
         data: { section },

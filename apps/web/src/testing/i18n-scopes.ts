@@ -11,8 +11,14 @@ import settingsEn from '../app/features/settings/i18n/en.json'
 import settingsEs from '../app/features/settings/i18n/es.json'
 import styleguideEn from '../app/features/styleguide/i18n/en.json'
 import styleguideEs from '../app/features/styleguide/i18n/es.json'
+import planEn from '../app/features/plan/i18n/en.json'
+import planEs from '../app/features/plan/i18n/es.json'
+import eventsEn from '../app/features/plan/events/i18n/en.json'
+import eventsEs from '../app/features/plan/events/i18n/es.json'
 import tasksEn from '../app/features/tasks/i18n/en.json'
 import tasksEs from '../app/features/tasks/i18n/es.json'
+import tripEn from '../app/features/trip/i18n/en.json'
+import tripEs from '../app/features/trip/i18n/es.json'
 import activityEn from '../app/features/trip/activity/i18n/en.json'
 import activityEs from '../app/features/trip/activity/i18n/es.json'
 import membersEn from '../app/features/trip/members/i18n/en.json'
@@ -34,12 +40,15 @@ export const SCOPE_CATALOGUES = {
   activity: { en: activityEn, es: activityEs },
   auth: { en: authEn, es: authEs },
   emergency: { en: emergencyEn, es: emergencyEs },
+  events: { en: eventsEn, es: eventsEs },
   members: { en: membersEn, es: membersEs },
   offline: { en: offlineEn, es: offlineEs },
+  plan: { en: planEn, es: planEs },
   settings: { en: settingsEn, es: settingsEs },
   shell: { en: shellEn, es: shellEs },
   styleguide: { en: styleguideEn, es: styleguideEs },
   tasks: { en: tasksEn, es: tasksEs },
+  trip: { en: tripEn, es: tripEs },
   ui: { en: uiEn, es: uiEs },
 } satisfies Record<string, Record<AppLang, Translation>>
 
