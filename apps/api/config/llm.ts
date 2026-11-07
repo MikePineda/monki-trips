@@ -24,6 +24,21 @@ export const LLM_RETRY_DELAYS_MS = [500, 2_000]
 export const LLM_STRUCTURED_MAX_TOKENS = 8_192
 
 /**
+ * The input estimate made before a call (`input_token_estimate.ts`): one
+ * token per this many characters, and a flat count per image (a phone
+ * photo is roughly 1.5k tokens on Anthropic's scale).
+ */
+export const LLM_CHARS_PER_TOKEN = 4
+export const LLM_IMAGE_TOKEN_ESTIMATE = 1_600
+
+/**
+ * A `pending` usage row reserves the tokens of a call in flight. One older
+ * than this belongs to a process that died before settling it, and stops
+ * counting against the cap.
+ */
+export const LLM_PENDING_TTL_MS = 10 * 60_000
+
+/**
  * The languages phrase cards can be generated in, as canonical tags. A
  * request for anything else answers 422 before the model is asked. Edit
  * freely: a regional form (`pt-BR`) is its own entry, so the list also

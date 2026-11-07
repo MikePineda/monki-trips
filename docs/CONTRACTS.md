@@ -336,16 +336,24 @@ answers 503 until written, `fake` answers from `tests/fixtures/llm/<purpose>/<ca
 
 - **Cap.** Tokens (input + output) per account and UTC month, from
   `config/plans.ts` (`free` 200 000, `pro` 3 000 000) or
-  `LLM_MONTHLY_TOKEN_CAP_OVERRIDE` for every account. At or over the cap the
-  call is refused before the provider is asked: 402 `E_LLM_QUOTA_EXCEEDED`
-  with `{ used, cap, resetsOn }` (`resetsOn` = first day of the next UTC
-  month). A call that starts under the cap may finish over it.
+  `LLM_MONTHLY_TOKEN_CAP_OVERRIDE` for every account. Before the provider is
+  asked, the call reserves its estimated input (characters / 4, a flat 1 600
+  per image) plus `maxTokens`: under a per-account advisory lock
+  (`pg_advisory_xact_lock(hashtext('llm:' || user_id))`) it writes a
+  `pending` `llm_usage` row, so parallel calls see each other's
+  reservations. When spent tokens plus live reservations plus this one
+  exceed the cap, the call is refused: 402 `E_LLM_QUOTA_EXCEEDED` with
+  `{ used, cap, resetsOn }` (`used` counts live reservations; `resetsOn` =
+  first day of the next UTC month). The row is settled with the real
+  numbers when the call ends; a `pending` row older than 10 minutes
+  (`LLM_PENDING_TTL_MS`, its process died) stops counting.
 - **Throttle.** Every route that can call the model uses `throttleLlm`
   (`start/limiter.ts`): 5 requests a minute and 30 a day per account, else
   429 `E_TOO_MANY_REQUESTS`, on top of the monthly cap.
 - **Usage.** Every call leaves one `llm_usage` row: user, trip, purpose
   (`chat`, `extract_booking`, `phrase_cards`), provider, model, tokens in/out,
-  latency, status (`ok`, `error`, `quota_exceeded`) and `cost_micros` from the
+  latency, status (`ok`, `error`, `quota_exceeded`, `pending` while in
+  flight, `aborted` for a stream stopped early) and `cost_micros` from the
   price table in `config/llm.ts` (null for an unlisted model). Prompts and
   answers are never stored or logged.
 - **Errors.** A 429, 5xx, network failure or timeout (90 s) is retried twice
