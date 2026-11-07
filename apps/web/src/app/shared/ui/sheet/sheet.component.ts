@@ -12,7 +12,7 @@ import { provideUiI18n } from '../ui-i18n'
 @Component({
   selector: 'mk-sheet',
   imports: [MkIconComponent, TranslocoPipe],
-  providers: [provideUiI18n()],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'mk-sheet' },
   styles: `

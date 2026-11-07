@@ -109,7 +109,11 @@ test.describe('J01 shell', () => {
     await page.getByTestId('settings.lang.es').click()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ajustes')
     await expect(page.locator('html')).toHaveAttribute('lang', 'es-MX')
+    // The account scope loads lazily after the switch: wait for its copy, including the
+    // copy projected into ui-kit buttons and fields, before reading the whole page.
+    await expect(page.getByTestId('account.section')).toContainText('Tu nombre')
     await expect(page.getByTestId('account.signOut')).toContainText('Cerrar sesión')
+    await expect(page.getByTestId('account.delete')).toContainText('Eliminar cuenta')
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
 
     await page.goto('/trips')

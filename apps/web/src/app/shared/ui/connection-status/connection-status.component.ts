@@ -21,7 +21,7 @@ const ICONS: Record<Exclude<ConnectionState, 'synced'>, IconName> = {
 @Component({
   selector: 'mk-connection-status',
   imports: [MkIconComponent, TranslocoPipe],
-  providers: [provideUiI18n()],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'mk-connection-status' },
   styles: `

@@ -14,7 +14,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost'
 @Component({
   selector: 'button[mk-button], a[mk-button]',
   imports: [MkIconComponent, TranslocoPipe],
-  providers: [provideUiI18n()],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'class': 'mk-button',

@@ -11,7 +11,7 @@ import { ToastService } from './toast.service'
 @Component({
   selector: 'mk-toast-host',
   imports: [MkIconComponent, TranslocoPipe],
-  providers: [provideUiI18n()],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'mk-toast-host' },
   styles: `
