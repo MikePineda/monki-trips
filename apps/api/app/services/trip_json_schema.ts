@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs'
-import ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020.js'
+// The named export: ajv is CommonJS and its default import is typed differently by the API's
+// NodeNext tsconfig and the web's bundler one (the web compiles this file through the typed client).
+import { Ajv2020, type ErrorObject, type ValidateFunction } from 'ajv/dist/2020.js'
 import app from '@adonisjs/core/services/app'
 import type { I18n } from '@adonisjs/i18n'
-
-// ajv is CommonJS: under NodeNext the default import is the module, the class sits on `.default`.
-const Ajv2020 = ajv2020.default
 
 /** Where the published schema lives (`GET /schemas/trip-json-v1` serves this file). */
 export const TRIP_JSON_SCHEMA_PATH = 'resources/schemas/trip-json-v1.schema.json'
