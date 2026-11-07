@@ -1,0 +1,500 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+      name="viewport"
+    />
+    <title>Trips — monki-trips</title>
+    <!-- IBM Plex Sans & IBM Plex Mono Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'background': '#f9f9f6',
+              'surface-container-low': '#f4f4f1',
+              'ink-3': '#626971',
+              'stamp-ink': '#2F5C8A',
+              'on-tertiary': '#ffffff',
+              'on-secondary-fixed-variant': '#174976',
+              'tertiary-fixed': '#d5e3ff',
+              'tertiary-fixed-dim': '#a8c8ff',
+              'on-error': '#ffffff',
+              'surface': '#f9f9f6',
+              'surface-variant': '#e2e3e0',
+              'surface-0': '#F5F5F2',
+              'outline': '#8b7168',
+              'on-surface': '#1a1c1b',
+              'status-warning': '#845600',
+              'on-secondary-fixed': '#001d36',
+              'error': '#ba1a1a',
+              'primary-fixed-dim': '#ffb598',
+              'secondary-fixed-dim': '#9fcafe',
+              'status-critical': '#A01C1C',
+              'status-serious': '#7E3418',
+              'accent': '#B5470C',
+              'tertiary': '#00519d',
+              'inverse-primary': '#ffb598',
+              'on-primary-fixed-variant': '#7e2c00',
+              'ink-1': '#111417',
+              'on-tertiary-fixed-variant': '#004689',
+              'surface-container-lowest': '#ffffff',
+              'primary-container': '#b5470c',
+              'secondary-container': '#9fcafe',
+              'on-tertiary-fixed': '#001b3c',
+              'status-good': '#2E6B3F',
+              'ink-2': '#4A5058',
+              'surface-1': '#FBFBF9',
+              'inverse-on-surface': '#f1f1ee',
+              'surface-container-high': '#e8e8e5',
+              'on-surface-variant': '#584239',
+              'outline-variant': '#dfc0b5',
+              'on-primary-container': '#ffe6dd',
+              'on-primary-fixed': '#360f00',
+              'tertiary-container': '#0069c8',
+              'secondary-fixed': '#d1e4ff',
+              'on-secondary': '#ffffff',
+              'primary': '#903400',
+              'on-tertiary-container': '#e2ebff',
+              'on-error-container': '#93000a',
+              'surface-tint': '#a53c00',
+              'accent-soft': '#F9EBE1',
+              'surface-container-highest': '#e2e3e0',
+              'inverse-surface': '#2f312f',
+              'surface-2': '#ECECE8',
+              'surface-dim': '#dadad7',
+              'on-secondary-container': '#275582',
+              'on-background': '#1a1c1b',
+              'secondary': '#34618f',
+              'primary-fixed': '#ffdbcd',
+              'surface-bright': '#f9f9f6',
+              'surface-container': '#eeeeeb',
+              'error-container': '#ffdad6',
+              'on-primary': '#ffffff',
+              'line-subtle': '#D7D8D3',
+              'line-strong': '#80868E',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '9999px',
+            },
+            spacing: {
+              'space-xl': '32px',
+              'space-lg': '24px',
+              'space-2xl': '48px',
+              'space-half': '4px',
+              'margin': '16px',
+              'gutter': '16px',
+              'space-md': '16px',
+              'space-sm': '8px',
+            },
+            fontFamily: {
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+            },
+            fontSize: {
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'caption': [
+                '13px',
+                { lineHeight: '18px', letterSpacing: '0.01em', fontWeight: '400' },
+              ],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+      /* Stamp textured ink effect without raster assets */
+      .stamp-mask {
+        mix-blend-mode: multiply;
+        opacity: 0.94;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-surface-0 text-ink-1 min-h-screen antialiased flex justify-center selection:bg-accent selection:text-surface-container-lowest"
+  >
+    <!-- Mobile Viewport Container (390 x 844 reference, max-w-[480px]) -->
+    <main
+      class="w-full max-w-[480px] min-h-screen bg-surface-0 flex flex-col justify-between pb-10"
+    >
+      <div>
+        <!-- 1. Status Bar Simulation -->
+        <header
+          class="w-full pt-3 px-6 pb-2 flex justify-between items-center select-none text-ink-1"
+        >
+          <span class="font-code text-label font-medium tracking-tight tabular-nums">09:41</span>
+          <div class="flex items-center space-x-1.5 text-ink-1">
+            <!-- Cellular -->
+            <svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+              <rect height="3.5" rx="0.5" width="2.5" x="0.5" y="8.5"></rect>
+              <rect height="6" rx="0.5" width="2.5" x="4.5" y="6"></rect>
+              <rect height="8.5" rx="0.5" width="2.5" x="8.5" y="3.5"></rect>
+              <rect height="11.5" rx="0.5" width="2.5" x="12.5" y="0.5"></rect>
+            </svg>
+            <!-- Wifi -->
+            <svg class="w-4 h-3.5 stroke-current fill-none stroke-[1.6]" viewbox="0 0 16 12">
+              <path d="M1 3.5C5 0 11 0 15 3.5" stroke-linecap="round"></path>
+              <path d="M3.5 6.5C6.5 4 9.5 4 12.5 6.5" stroke-linecap="round"></path>
+              <circle class="fill-current stroke-none" cx="8" cy="10" r="1.25"></circle>
+            </svg>
+            <!-- Battery -->
+            <svg
+              class="w-6 h-3 text-ink-1"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+              viewbox="0 0 24 12"
+            >
+              <rect height="10" rx="2.5" width="19" x="1" y="1"></rect>
+              <rect fill="currentColor" height="7" rx="1.5" width="13" x="2.5" y="2.5"></rect>
+              <path d="M22 4.5v3" stroke-linecap="round" stroke-width="1.8"></path>
+            </svg>
+          </div>
+        </header>
+        <!-- Offline Sync Sub-header Indicator -->
+        <!-- Header Row: Title & Action -->
+        <section class="px-margin pt-3 pb-6 flex items-center justify-between">
+          <h1 class="font-title text-title text-ink-1 tracking-tight">Trips</h1>
+          <!-- New Trip Button -->
+          <button
+            class="inline-flex items-center gap-1 text-accent hover:opacity-80 active:scale-95 transition-all duration-100 ease-out py-1 px-1 font-body-strong text-[15px]"
+            type="button"
+          >
+            <svg
+              class="w-4 h-4 stroke-current stroke-[2] stroke-linecap-round"
+              fill="none"
+              viewbox="0 0 24 24"
+            >
+              <line x1="12" x2="12" y1="5" y2="19"></line>
+              <line x1="5" x2="19" y1="12" y2="12"></line>
+            </svg>
+            <span class="leading-none">New trip</span>
+          </button>
+        </section>
+        <!-- 2. Section "UPCOMING" -->
+        <section class="mt-1">
+          <div class="px-margin pb-2.5">
+            <p class="font-eyebrow text-eyebrow text-ink-3 tracking-widest leading-4 uppercase">
+              UPCOMING
+            </p>
+          </div>
+          <!-- Upcoming trip item row -->
+          <article
+            class="w-full px-margin py-4 border-b border-line-subtle transition-colors duration-150 hover:bg-surface-container-high/40 active:bg-surface-container-high cursor-pointer min-h-[56px] group"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <!-- Title -->
+                <h2 class="font-heading text-body-strong text-ink-1 leading-snug truncate">
+                  Coast and islands
+                </h2>
+                <!-- Route Chip -->
+                <div class="mt-1.5 mb-2 inline-flex items-center">
+                  <span
+                    class="inline-flex items-center font-code-label text-code-label text-ink-1 rounded-lg border border-line-strong px-2 py-0.5 tracking-wide"
+                  >
+                    <span>PVM</span>
+                    <span class="mx-1 text-ink-3">→</span>
+                    <span>ALD</span>
+                    <span class="mx-1 text-ink-3">→</span>
+                    <span>KSB</span>
+                  </span>
+                </div>
+                <!-- Dates & Travellers -->
+                <p class="font-caption text-caption text-ink-2 tabular-nums">
+                  Wed 12 May – Sun 23 May · 12 days · 2 travellers
+                </p>
+                <!-- Status Line -->
+                <div class="mt-2.5 flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-ink-3 shrink-0"></span>
+                  <span class="font-caption text-caption text-ink-3 tabular-nums"
+                    >Starts in 18 days</span
+                  >
+                </div>
+              </div>
+              <!-- Trailing Chevron -->
+              <div class="pt-1 text-ink-2 group-hover:text-ink-1 transition-colors shrink-0">
+                <svg
+                  class="w-5 h-5 stroke-current stroke-[1.75] fill-none stroke-linecap-round stroke-linejoin-round"
+                  viewbox="0 0 24 24"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </div>
+          </article>
+        </section>
+        <!-- 3. Section "PAST" -->
+        <section class="mt-8">
+          <div class="px-margin pb-2.5">
+            <p class="font-eyebrow text-eyebrow text-ink-3 tracking-widest leading-4 uppercase">
+              PAST
+            </p>
+          </div>
+          <!-- Past trip item row -->
+          <article
+            class="w-full px-margin py-4 border-b border-line-subtle transition-colors duration-150 hover:bg-surface-container-high/40 active:bg-surface-container-high cursor-pointer min-h-[56px] group"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <!-- Title -->
+                <h2 class="font-heading text-body-strong text-ink-1 leading-snug truncate">
+                  Mountain weekend
+                </h2>
+                <!-- Route Chip -->
+                <div class="mt-1.5 mb-2 inline-flex items-center">
+                  <span
+                    class="inline-flex items-center font-code-label text-code-label text-ink-1 rounded-lg border border-line-strong px-2 py-0.5 tracking-wide"
+                  >
+                    <span>KSB</span>
+                    <span class="mx-1 text-ink-3">→</span>
+                    <span>TRV</span>
+                  </span>
+                </div>
+                <!-- Dates -->
+                <p class="font-caption text-caption text-ink-2 tabular-nums">
+                  Fri 6 Mar – Mon 9 Mar · 4 days
+                </p>
+              </div>
+              <!-- Trailing Chevron -->
+              <div class="pt-1 text-ink-2 group-hover:text-ink-1 transition-colors shrink-0">
+                <svg
+                  class="w-5 h-5 stroke-current stroke-[1.75] fill-none stroke-linecap-round stroke-linejoin-round"
+                  viewbox="0 0 24 24"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </div>
+          </article>
+        </section>
+        <!-- 4. Passport Stamp Reward Section -->
+        <section class="mt-9">
+          <div class="px-margin flex items-center justify-between pb-3">
+            <p class="font-eyebrow text-eyebrow text-ink-3 tracking-widest uppercase">
+              COLLECTED STAMPS
+            </p>
+            <span class="font-code text-caption text-ink-3 tabular-nums">02 / 12</span>
+          </div>
+          <!-- Horizontal scrollable stamps strip -->
+          <div class="px-margin flex items-center space-x-4 overflow-x-auto no-scrollbar py-2">
+            <!-- Stamp 1: TRAVENNA (rotated -4deg) -->
+            <div
+              class="shrink-0 w-[112px] h-[112px] rounded-full flex items-center justify-center select-none stamp-mask transform -rotate-4 hover:rotate-0 transition-transform duration-200"
+              style="transform: rotate(-6deg)"
+              title="Travenna Stamp"
+            >
+              <svg class="w-[112px] h-[112px]" fill="none" viewbox="0 0 112 112">
+                <!-- Outer 2px Ring -->
+                <circle cx="56" cy="56" r="54" stroke="#2F5C8A" stroke-width="2"></circle>
+                <!-- Inner 1px Ring -->
+                <circle cx="56" cy="56" r="48" stroke="#2F5C8A" stroke-width="1"></circle>
+                <!-- Top Arc text approximation / Center Typography -->
+                <text
+                  fill="#2F5C8A"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="9"
+                  font-weight="600"
+                  letter-spacing="0.12em"
+                  text-anchor="middle"
+                  x="56"
+                  y="32"
+                >
+                  TRAVENNA
+                </text>
+                <line stroke="#2F5C8A" stroke-width="0.8" x1="28" x2="84" y1="39" y2="39"></line>
+                <!-- Code -->
+                <text
+                  fill="#2F5C8A"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="22"
+                  font-weight="700"
+                  letter-spacing="0.06em"
+                  text-anchor="middle"
+                  x="56"
+                  y="65"
+                >
+                  TRV
+                </text>
+                <line stroke="#2F5C8A" stroke-width="0.8" x1="28" x2="84" y1="73" y2="73"></line>
+                <!-- Date -->
+                <text
+                  fill="#2F5C8A"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="10"
+                  font-weight="500"
+                  letter-spacing="0.08em"
+                  text-anchor="middle"
+                  x="56"
+                  y="87"
+                >
+                  06 MAR
+                </text>
+                <!-- Small star badges -->
+                <circle cx="21" cy="56" fill="#2F5C8A" r="1.5"></circle>
+                <circle cx="91" cy="56" fill="#2F5C8A" r="1.5"></circle>
+              </svg>
+            </div>
+            <!-- Stamp 2: ALDRIA (rotated +5deg) -->
+            <div
+              class="shrink-0 w-[112px] h-[112px] rounded-full flex items-center justify-center select-none stamp-mask transform rotate-5 hover:rotate-0 transition-transform duration-200"
+              style="transform: rotate(4deg)"
+              title="Aldria Stamp"
+            >
+              <svg class="w-[112px] h-[112px]" fill="none" viewbox="0 0 112 112">
+                <!-- Outer 2px Ring -->
+                <circle cx="56" cy="56" r="54" stroke="#2F5C8A" stroke-width="2"></circle>
+                <!-- Inner 1px Ring -->
+                <circle cx="56" cy="56" r="48" stroke="#2F5C8A" stroke-width="1"></circle>
+                <!-- Place name -->
+                <text
+                  fill="#2F5C8A"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="9.5"
+                  font-weight="600"
+                  letter-spacing="0.14em"
+                  text-anchor="middle"
+                  x="56"
+                  y="32"
+                >
+                  ALDRIA
+                </text>
+                <line stroke="#2F5C8A" stroke-width="0.8" x1="30" x2="82" y1="39" y2="39"></line>
+                <!-- Code -->
+                <text
+                  fill="#2F5C8A"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="22"
+                  font-weight="700"
+                  letter-spacing="0.06em"
+                  text-anchor="middle"
+                  x="56"
+                  y="65"
+                >
+                  ALD
+                </text>
+                <line stroke="#2F5C8A" stroke-width="0.8" x1="30" x2="82" y1="73" y2="73"></line>
+                <!-- Date -->
+                <text
+                  fill="#2F5C8A"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="10"
+                  font-weight="500"
+                  letter-spacing="0.08em"
+                  text-anchor="middle"
+                  x="56"
+                  y="87"
+                >
+                  14 OCT
+                </text>
+                <!-- Small star badges -->
+                <circle cx="21" cy="56" fill="#2F5C8A" r="1.5"></circle>
+                <circle cx="91" cy="56" fill="#2F5C8A" r="1.5"></circle>
+              </svg>
+            </div>
+            <!-- Stamp 3: Placeholder / Not yet -->
+            <div
+              class="shrink-0 w-[112px] h-[112px] rounded-full flex items-center justify-center select-none"
+              style="transform: rotate(-2deg)"
+              title="Pending Stamp"
+            >
+              <svg class="w-[112px] h-[112px]" fill="none" viewbox="0 0 112 112">
+                <!-- Dashed outer ring -->
+                <circle
+                  cx="56"
+                  cy="56"
+                  r="54"
+                  stroke="#80868E"
+                  stroke-dasharray="4 4"
+                  stroke-width="1.5"
+                ></circle>
+                <!-- Text Not yet -->
+                <text
+                  fill="#626971"
+                  font-family="'IBM Plex Mono', monospace"
+                  font-size="12"
+                  font-weight="500"
+                  letter-spacing="0.02em"
+                  text-anchor="middle"
+                  x="56"
+                  y="60"
+                >
+                  Not yet
+                </text>
+              </svg>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- Quiet Offline-first device status indicator footer -->
+    </main>
+  </body>
+</html>

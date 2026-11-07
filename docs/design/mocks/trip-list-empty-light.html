@@ -1,0 +1,113 @@
+<!doctype html>
+
+<html class="h-full" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+      name="viewport"
+    />
+    <title>Trips · Empty State · monki-trips</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'surface-0': '#F5F5F2',
+              'surface-1': '#FBFBF9',
+              'surface-2': '#ECECE8',
+              'ink-1': '#111417',
+              'ink-2': '#4A5058',
+              'ink-3': '#626971',
+              'line': '#D7D8D3',
+              'line-strong': '#80868E',
+              'accent': '#B5470C',
+              'accent-ink': '#F5F5F2',
+            },
+            fontFamily: {
+              sans: ['"IBM Plex Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      body {
+        background-color: #f5f5f2;
+        color: #111417;
+        font-family: 'IBM Plex Sans', sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .font-tabular {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  </head>
+  <body
+    class="h-full w-full bg-surface-0 flex flex-col justify-between overflow-hidden antialiased"
+  >
+    <!-- Status Bar / Header (iOS standard spacing pt-[47px]) -->
+    <header class="w-full pt-[47px] px-6 pb-0 flex flex-col justify-start shrink-0">
+      <div class="h-12 flex items-center justify-between">
+        <h1 class="text-[24px] font-semibold leading-[32px] tracking-[-0.005em] text-ink-1">
+          Trips
+        </h1>
+      </div>
+    </header>
+    <!-- Main Content: Centred Empty State -->
+    <main
+      class="flex-1 flex flex-col items-center justify-center px-6 text-center select-none pb-8"
+    >
+      <!-- Mascot Placeholder Slot (96px outlined square, radius 12, label Kiko) -->
+      <div
+        class="w-24 h-24 rounded-[12px] border border-line-strong bg-surface-2 flex items-center justify-center mb-6"
+      >
+        <span class="font-mono text-[13px] font-medium tracking-[0.04em] text-ink-2">Kiko</span>
+      </div>
+      <!-- Empty State Title -->
+      <h2 class="text-[18px] font-semibold leading-[24px] tracking-normal text-ink-1 mb-2">
+        No trips yet
+      </h2>
+      <!-- Description Sentence -->
+      <p class="text-[16px] font-normal leading-[24px] text-ink-2 max-w-[280px] mb-8">
+        Create a trip to plan the days, keep your documents offline and share the budget.
+      </p>
+      <!-- Primary Action Button (48px height, 8px radius, runway orange accent fill, off-white text) -->
+      <button
+        class="w-full max-w-[320px] h-12 bg-accent active:opacity-90 rounded-[8px] flex items-center justify-center px-6 transition-transform duration-100 ease-out active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-0 mb-12"
+      >
+        <span class="text-accent-ink text-[16px] font-medium leading-[24px]"
+          >Create your first trip</span
+        >
+      </button>
+      <!-- Passport Stamp Placeholder (112px dashed ring, slightly rotated, mono 'NOT YET') -->
+      <div
+        class="relative w-[112px] h-[112px] rounded-full border border-dashed border-line-strong flex items-center justify-center transform -rotate-3 select-none"
+      >
+        <span class="font-mono text-[13px] font-medium uppercase tracking-[0.04em] text-ink-3"
+          >Not yet</span
+        >
+      </div>
+    </main>
+    <!-- iOS Home Indicator Safe Area (34px) -->
+    <footer
+      class="w-full h-[34px] shrink-0 flex items-center justify-center pointer-events-none pb-2"
+    >
+      <div class="w-[134px] h-[5px] bg-ink-1/20 rounded-full"></div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,321 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sign in - monki-trips</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'on-tertiary': '#ffffff',
+              'on-secondary-fixed-variant': '#174976',
+              'on-secondary-container': '#275582',
+              'on-tertiary-container': '#e2ebff',
+              'background': '#f9f9f6',
+              'stamp-ink': '#2F5C8A',
+              'secondary-fixed': '#d1e4ff',
+              'outline': '#8b7168',
+              'on-error': '#ffffff',
+              'accent': '#B5470C',
+              'surface-container-low': '#f4f4f1',
+              'on-secondary': '#ffffff',
+              'primary-fixed-dim': '#ffb598',
+              'on-primary-container': '#ffe6dd',
+              'surface-variant': '#e2e3e0',
+              'on-tertiary-fixed': '#001b3c',
+              'tertiary-fixed': '#d5e3ff',
+              'on-surface-variant': '#584239',
+              'surface-container-lowest': '#ffffff',
+              'on-secondary-fixed': '#001d36',
+              'surface-container-high': '#e8e8e5',
+              'primary-container': '#b5470c',
+              'status-critical': '#A01C1C',
+              'status-serious': '#7E3418',
+              'on-error-container': '#93000a',
+              'ink-3': '#626971',
+              'secondary-fixed-dim': '#9fcafe',
+              'surface-container': '#eeeeeb',
+              'on-primary-fixed-variant': '#7e2c00',
+              'secondary-container': '#9fcafe',
+              'inverse-primary': '#ffb598',
+              'tertiary': '#00519d',
+              'status-good': '#2E6B3F',
+              'surface-container-highest': '#e2e3e0',
+              'error': '#ba1a1a',
+              'surface-1': '#FBFBF9',
+              'accent-soft': '#F9EBE1',
+              'on-tertiary-fixed-variant': '#004689',
+              'inverse-on-surface': '#f1f1ee',
+              'primary-fixed': '#ffdbcd',
+              'on-primary': '#ffffff',
+              'tertiary-container': '#0069c8',
+              'surface-2': '#ECECE8',
+              'ink-2': '#4A5058',
+              'secondary': '#34618f',
+              'on-background': '#1a1c1b',
+              'inverse-surface': '#2f312f',
+              'surface-tint': '#a53c00',
+              'ink-1': '#111417',
+              'on-primary-fixed': '#360f00',
+              'status-warning': '#845600',
+              'primary': '#903400',
+              'surface-bright': '#f9f9f6',
+              'on-surface': '#1a1c1b',
+              'outline-variant': '#dfc0b5',
+              'tertiary-fixed-dim': '#a8c8ff',
+              'surface-0': '#F5F5F2',
+              'surface-dim': '#dadad7',
+              'surface': '#f9f9f6',
+              'error-container': '#ffdad6',
+              'line': '#D7D8D3',
+              'line-strong': '#80868E',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-md': '16px',
+              'space-sm': '8px',
+              'gutter': '16px',
+              'space-half': '4px',
+              'space-xl': '32px',
+              'space-lg': '24px',
+              'space-2xl': '48px',
+              'margin': '16px',
+            },
+            fontFamily: {
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+            },
+            fontSize: {
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-surface-0 text-ink-1 min-h-screen flex flex-col justify-between selection:bg-accent-soft selection:text-accent"
+  >
+    <!-- Main Viewport Container (Constrained 390-480px, iOS Safe Margins) -->
+    <main
+      class="w-full max-w-[480px] mx-auto min-h-screen flex flex-col justify-between px-space-lg pt-[47px] pb-[34px]"
+    >
+      <!-- Content Segment -->
+      <div class="w-full pt-12">
+        <!-- 1. Mascot Placeholder Slot (96x96 px plain outlined square slot) -->
+        <div
+          aria-hidden="true"
+          class="w-[96px] h-[96px] bg-surface-2 border border-dashed border-line-strong rounded-xl flex items-center justify-center select-none"
+        >
+          <span class="font-code-label text-code-label text-ink-3">Kiko</span>
+        </div>
+        <!-- 2. Title & Subtitle -->
+        <header class="mt-6">
+          <h1 class="font-title text-title text-ink-1 tracking-tight">Sign in</h1>
+          <p class="font-body text-body text-ink-2 mt-2">
+            Your trips, documents and budget, even without a connection.
+          </p>
+        </header>
+        <!-- 3. Form Fields -->
+        <form class="mt-8 space-y-4" onsubmit="event.preventDefault()">
+          <!-- Email field -->
+          <div>
+            <label class="block font-label text-label text-ink-2 mb-1.5" for="email"> Email </label>
+            <input
+              autocomplete="email"
+              class="w-full h-12 bg-surface-1 border border-line-strong rounded-xl px-3.5 font-body text-body text-ink-1 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-offset-2 transition-all placeholder:text-ink-3"
+              id="email"
+              name="email"
+              required=""
+              type="email"
+              value="traveller@example.com"
+            />
+          </div>
+          <!-- Password field -->
+          <div>
+            <label class="block font-label text-label text-ink-2 mb-1.5" for="password">
+              Password
+            </label>
+            <div
+              class="relative flex items-center h-12 bg-surface-1 border border-line-strong rounded-xl px-3.5 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2 transition-all"
+            >
+              <input
+                autocomplete="current-password"
+                class="w-full bg-transparent border-0 p-0 font-body text-body text-ink-1 focus:outline-none focus:ring-0"
+                id="password"
+                name="password"
+                required=""
+                type="password"
+                value="••••••••••••"
+              />
+              <button
+                aria-label="Show password"
+                class="flex items-center justify-center text-ink-2 hover:text-ink-1 transition-colors p-1 ml-2 focus:outline-none"
+                id="toggle-password"
+                type="button"
+              >
+                <svg
+                  class="shrink-0 pointer-events-none"
+                  fill="none"
+                  height="20"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.75"
+                  viewbox="0 0 24 24"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <!-- Quiet Link -->
+          <div class="flex justify-end pt-1">
+            <a
+              class="font-label text-label text-accent hover:underline focus:outline-none focus:ring-1 focus:ring-accent rounded-DEFAULT"
+              href="#"
+            >
+              Forgot your password?
+            </a>
+          </div>
+          <!-- 4. Primary Action Button -->
+          <div class="pt-2">
+            <button
+              class="w-full h-12 bg-accent hover:bg-[#9c3d0a] text-surface-0 font-heading text-heading flex items-center justify-center rounded-xl transition-colors duration-150 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 cursor-pointer"
+              type="submit"
+            >
+              Sign in
+            </button>
+          </div>
+        </form>
+        <!-- 5. Divider & Invitation Note -->
+        <div class="mt-8">
+          <hr class="border-t border-line border-0" />
+          <p class="font-body text-body text-ink-2 mt-6">
+            Have an invitation?
+            <a class="text-ink-1 underline hover:text-accent transition-colors" href="#"
+              >Open the link you received.</a
+            >
+          </p>
+        </div>
+      </div>
+      <!-- 6. Footer Area -->
+      <footer class="pt-12 pb-2 text-center space-y-3">
+        <!-- Language Switch -->
+        <div class="flex items-center justify-center space-x-2 font-label text-label">
+          <button
+            class="text-ink-1 font-body-strong hover:opacity-80 transition-opacity"
+            type="button"
+          >
+            English
+          </button>
+          <span class="text-line select-none">·</span>
+          <button class="text-ink-3 font-normal hover:text-ink-2 transition-colors" type="button">
+            Español
+          </button>
+        </div>
+        <!-- Legal Links -->
+        <nav aria-label="Legal navigation">
+          <div
+            class="flex items-center justify-center space-x-2 font-caption text-caption text-ink-3"
+          >
+            <a class="hover:text-ink-2 transition-colors" href="#">Privacy</a>
+            <span class="text-line select-none">·</span>
+            <a class="hover:text-ink-2 transition-colors" href="#">Terms</a>
+          </div>
+        </nav>
+      </footer>
+    </main>
+    <!-- Interactive script for password visibility toggle -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('toggle-password')
+        const passwordInput = document.getElementById('password')
+
+        if (toggleBtn && passwordInput) {
+          toggleBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.getAttribute('type') === 'password'
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password')
+            toggleBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password')
+
+            toggleBtn.innerHTML = isPassword
+              ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 pointer-events-none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`
+              : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 pointer-events-none"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`
+          })
+        }
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,468 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Tasks // monki-trips</title>
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts: IBM Plex Sans & IBM Plex Mono -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-dim': '#17191C',
+              'stamp-ink': '#2F5C8A',
+              'surface-variant': '#2C3035',
+              'ink-1': '#ECEDEE',
+              'ink-2': '#B4B9BF',
+              'ink-3': '#8A9097',
+              'outline': '#6A7079',
+              'outline-variant': '#2C3035',
+              'status-serious': '#7E3418',
+              'surface-container-high': '#202326',
+              'on-error-container': '#ffdad6',
+              'tertiary': '#00519d',
+              'surface-container-low': '#17191C',
+              'primary': '#F08A4B',
+              'surface-1': '#17191C',
+              'surface-container-lowest': '#0F1113',
+              'secondary': '#34618f',
+              'status-critical': '#F07070',
+              'status-good': '#7CC58B',
+              'status-warning': '#845600',
+              'surface-container-highest': '#2C3035',
+              'surface-container': '#17191C',
+              'background': '#0F1113',
+              'accent': '#F08A4B',
+              'surface-2': '#202326',
+              'primary-container': '#F08A4B',
+              'surface-0': '#0F1113',
+              'error': '#F07070',
+              'surface': '#0F1113',
+              'surface-bright': '#17191C',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-2xl': '48px',
+              'space-xl': '32px',
+              'space-half': '4px',
+              'margin': '16px',
+              'gutter': '16px',
+              'space-md': '16px',
+              'space-lg': '24px',
+              'space-sm': '8px',
+            },
+            fontFamily: {
+              'code-label': ['IBM Plex Mono', 'monospace'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+            },
+            fontSize: {
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 300,
+          'GRAD' 0,
+          'opsz' 24;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 44px);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#0F1113] text-[#ECEDEE] antialiased selection:bg-[#F08A4B] selection:text-[#0F1113] flex justify-center min-h-screen"
+  >
+    <!-- Mobile View Container: 390px base frame, constrained max 480px -->
+    <div class="w-full max-w-[480px] bg-[#0F1113] min-h-screen flex flex-col relative pb-32">
+      <!-- Top Status Bar & Navigation Anchor -->
+      <header class="sticky top-0 z-40 bg-[#0F1113] pt-safe">
+        <!-- TopAppBar Shell -->
+        <div class="flex justify-between items-center w-full px-margin h-12">
+          <button
+            aria-label="Back to More menu"
+            class="flex items-center text-[#ECEDEE] hover:text-[#F08A4B] transition-colors duration-150 -ml-1 p-1"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[24px]">chevron_left</span>
+          </button>
+          <h1 class="font-title text-title text-[#ECEDEE] font-semibold tracking-tight text-center">
+            Tasks
+          </h1>
+          <button
+            class="font-body-strong text-[#F08A4B] hover:opacity-80 transition-opacity font-semibold text-right p-1 text-[15px]"
+            type="button"
+          >
+            Add task
+          </button>
+        </div>
+        <!-- Summary Metadata Line -->
+        <div
+          class="px-margin pb-3 pt-1 border-b border-[#2C3035] flex items-center justify-between"
+        >
+          <p class="font-label text-[#B4B9BF] text-[14px] leading-4">
+            5 open <span class="mx-1 text-[#8A9097]">·</span> 2 due this week
+          </p>
+          <span class="font-code-label text-[#8A9097] text-[11px] tracking-wider uppercase"
+            >SYNCED</span
+          >
+        </div>
+      </header>
+      <!-- Main Content Canvas -->
+      <main class="flex-1 w-full px-margin pt-4">
+        <!-- SECTION: OVERDUE -->
+        <section aria-labelledby="section-overdue" class="mb-5">
+          <div class="pb-2 border-b border-[#2C3035]">
+            <h2
+              class="font-eyebrow text-eyebrow text-[#8A9097] tracking-[0.08em] uppercase"
+              id="section-overdue"
+            >
+              OVERDUE
+            </h2>
+          </div>
+          <!-- Row 1: Overdue Task -->
+          <div
+            class="min-h-[56px] py-3.5 flex items-center justify-between border-b border-[#2C3035] hover:bg-[#17191C]/50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <button
+                aria-checked="false"
+                aria-label="Mark 'Buy travel insurance' completed"
+                class="w-5 h-5 rounded-[4px] border border-[#6A7079] bg-[#17191C] flex items-center justify-center transition-colors hover:border-[#F08A4B] focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]"
+                role="checkbox"
+                type="button"
+              ></button>
+              <div class="flex flex-col">
+                <span class="font-body-strong text-[#ECEDEE] text-[16px] leading-tight"
+                  >Buy travel insurance</span
+                >
+                <span class="font-label text-[#B4B9BF] text-[13px] mt-0.5">
+                  Due <span class="font-code-label text-[13px]">Mon 3 May</span> · you
+                </span>
+              </div>
+            </div>
+            <!-- Status pill right-aligned -->
+            <div class="flex items-center gap-1.5 pl-2 shrink-0">
+              <span class="material-symbols-outlined text-[#F07070] text-[16px]">cancel</span>
+              <span class="font-label text-[#ECEDEE] text-[13px] font-medium">Overdue</span>
+            </div>
+          </div>
+        </section>
+        <!-- SECTION: THIS WEEK -->
+        <section aria-labelledby="section-this-week" class="mb-5">
+          <div class="pb-2 border-b border-[#2C3035]">
+            <h2
+              class="font-eyebrow text-eyebrow text-[#8A9097] tracking-[0.08em] uppercase"
+              id="section-this-week"
+            >
+              THIS WEEK
+            </h2>
+          </div>
+          <!-- Row 2 -->
+          <div
+            class="min-h-[56px] py-3.5 flex items-center justify-between border-b border-[#2C3035] hover:bg-[#17191C]/50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <button
+                aria-checked="false"
+                aria-label="Mark 'Print rail pass' completed"
+                class="w-5 h-5 rounded-[4px] border border-[#6A7079] bg-[#17191C] flex items-center justify-center transition-colors hover:border-[#F08A4B] focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]"
+                role="checkbox"
+                type="button"
+              ></button>
+              <div class="flex flex-col">
+                <span class="font-body-strong text-[#ECEDEE] text-[16px] leading-tight"
+                  >Print rail pass</span
+                >
+                <span class="font-label text-[#B4B9BF] text-[13px] mt-0.5"
+                  >Due <span class="font-code-label text-[13px]">Tue 11 May</span> · {partner}</span
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Row 3 -->
+          <div
+            class="min-h-[56px] py-3.5 flex items-center justify-between border-b border-[#2C3035] hover:bg-[#17191C]/50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <button
+                aria-checked="false"
+                aria-label="Mark 'Confirm late check-in' completed"
+                class="w-5 h-5 rounded-[4px] border border-[#6A7079] bg-[#17191C] flex items-center justify-center transition-colors hover:border-[#F08A4B] focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]"
+                role="checkbox"
+                type="button"
+              ></button>
+              <div class="flex flex-col">
+                <span class="font-body-strong text-[#ECEDEE] text-[16px] leading-tight"
+                  >Confirm late check-in</span
+                >
+                <span class="font-label text-[#B4B9BF] text-[13px] mt-0.5">
+                  Due <span class="font-code-label text-[13px]">Wed 12 May</span> · you
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- SECTION: LATER -->
+        <section aria-labelledby="section-later" class="mb-5">
+          <div class="pb-2 border-b border-[#2C3035]">
+            <h2
+              class="font-eyebrow text-eyebrow text-[#8A9097] tracking-[0.08em] uppercase"
+              id="section-later"
+            >
+              LATER
+            </h2>
+          </div>
+          <!-- Row 4 -->
+          <div
+            class="min-h-[56px] py-3.5 flex items-center justify-between border-b border-[#2C3035] hover:bg-[#17191C]/50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <button
+                aria-checked="false"
+                aria-label="Mark 'Book ferry to Travenna' completed"
+                class="w-5 h-5 rounded-[4px] border border-[#6A7079] bg-[#17191C] flex items-center justify-center transition-colors hover:border-[#F08A4B] focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]"
+                role="checkbox"
+                type="button"
+              ></button>
+              <div class="flex flex-col">
+                <span class="font-body-strong text-[#ECEDEE] text-[16px] leading-tight"
+                  >Book ferry to Travenna</span
+                >
+                <span class="font-label text-[#B4B9BF] text-[13px] mt-0.5">
+                  Due <span class="font-code-label text-[13px]">Fri 14 May</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <!-- Row 5 -->
+          <div
+            class="min-h-[56px] py-3.5 flex items-center justify-between border-b border-[#2C3035] hover:bg-[#17191C]/50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <button
+                aria-checked="false"
+                aria-label="Mark 'Exchange €200' completed"
+                class="w-5 h-5 rounded-[4px] border border-[#6A7079] bg-[#17191C] flex items-center justify-center transition-colors hover:border-[#F08A4B] focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]"
+                role="checkbox"
+                type="button"
+              ></button>
+              <div class="flex flex-col">
+                <span class="font-body-strong text-[#ECEDEE] text-[16px] leading-tight"
+                  >Exchange €200</span
+                >
+                <span class="font-label text-[#8A9097] text-[13px] mt-0.5">No date</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- SECTION: DONE -->
+        <section aria-labelledby="section-done" class="mb-8">
+          <div class="pb-2 border-b border-[#2C3035]">
+            <h2
+              class="font-eyebrow text-eyebrow text-[#8A9097] tracking-[0.08em] uppercase"
+              id="section-done"
+            >
+              DONE
+            </h2>
+          </div>
+          <!-- Row 6: Completed Task -->
+          <div
+            class="min-h-[56px] py-3.5 flex items-center justify-between border-b border-[#2C3035] hover:bg-[#17191C]/50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <button
+                aria-checked="true"
+                aria-label="Uncheck 'Renew passport'"
+                class="w-5 h-5 rounded-[4px] bg-[#F08A4B] flex items-center justify-center text-[#0F1113] transition-colors hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]"
+                role="checkbox"
+                type="button"
+              >
+                <span class="material-symbols-outlined text-[16px] text-[#0F1113] font-bold"
+                  >check</span
+                >
+              </button>
+              <div class="flex flex-col">
+                <span class="font-body-strong text-[#8A9097] line-through text-[16px] leading-tight"
+                  >Renew passport</span
+                >
+                <span class="font-label text-[#B4B9BF] text-[13px] mt-0.5">Completed</span>
+              </div>
+            </div>
+            <div class="flex items-center pl-2 shrink-0">
+              <span class="material-symbols-outlined text-[#7CC58B] text-[18px]">check_circle</span>
+            </div>
+          </div>
+        </section>
+      </main>
+      <!-- Floating Action Button (FAB): 56x56, 12px radius, Accent Fill, subtle shadow -->
+      <button
+        aria-label="Add task or expense"
+        class="fixed bottom-20 right-5 z-40 w-14 h-14 rounded-full bg-[#F08A4B] text-[#0F1113] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.4),0_6px_20px_rgba(0,0,0,0.3)] hover:brightness-105 active:scale-95 transition-all"
+        type="button"
+      >
+        <span class="material-symbols-outlined text-[28px] leading-none text-[#0F1113] font-medium"
+          >add</span
+        >
+      </button>
+      <!-- Bottom Navigation Bar: Shared Component Blueprint -->
+      <nav
+        aria-label="Global navigation"
+        class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto z-50 flex justify-around items-center h-16 px-space-sm pb-safe bg-[#17191C] border-t border-[#2C3035]"
+      >
+        <!-- Destination 1: Today -->
+        <a
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#F08A4B] transition-colors duration-150 py-1 flex-1"
+          href="#today"
+        >
+          <span class="material-symbols-outlined text-[22px]">today</span>
+          <span class="text-[11px] leading-none mt-1">Today</span>
+        </a>
+        <!-- Destination 2: Plan -->
+        <a
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#F08A4B] transition-colors duration-150 py-1 flex-1"
+          href="#plan"
+        >
+          <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+          <span class="text-[11px] leading-none mt-1">Plan</span>
+        </a>
+        <!-- Destination 3: Docs -->
+        <a
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#F08A4B] transition-colors duration-150 py-1 flex-1"
+          href="#docs"
+        >
+          <span class="material-symbols-outlined text-[22px]">folder_open</span>
+          <span class="text-[11px] leading-none mt-1">Docs</span>
+        </a>
+        <!-- Destination 4: Money -->
+        <a
+          class="flex flex-col items-center justify-center text-[#8A9097] font-label text-label hover:text-[#F08A4B] transition-colors duration-150 py-1 flex-1"
+          href="#money"
+        >
+          <span class="material-symbols-outlined text-[22px]">payments</span>
+          <span class="text-[11px] leading-none mt-1">Money</span>
+        </a>
+        <!-- Destination 5: More (ACTIVE) -->
+        <a
+          aria-current="page"
+          class="flex flex-col items-center justify-center text-[#F08A4B] font-label text-label font-semibold py-1 flex-1"
+          href="#more"
+        >
+          <span
+            class="material-symbols-outlined text-[22px]"
+            style="font-variation-settings: 'FILL' 1"
+            >more_horiz</span
+          >
+          <span class="text-[11px] leading-none mt-1 font-semibold">More</span>
+        </a>
+      </nav>
+    </div>
+    <!-- Micro-interactions: Checkbox toggles -->
+    <script>
+      document.querySelectorAll('[role="checkbox"]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const isChecked = button.getAttribute('aria-checked') === 'true'
+          const titleSpan = button.parentElement.querySelector('span:first-child')
+
+          if (!isChecked) {
+            button.setAttribute('aria-checked', 'true')
+            button.className =
+              'w-5 h-5 rounded-[4px] bg-[#F08A4B] flex items-center justify-center text-[#0F1113] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]'
+            button.innerHTML =
+              '<span class="material-symbols-outlined text-[16px] text-[#0F1113] font-bold">check</span>'
+            if (titleSpan) {
+              titleSpan.classList.add('line-through', 'text-[#8A9097]')
+              titleSpan.classList.remove('text-[#ECEDEE]')
+            }
+          } else {
+            button.setAttribute('aria-checked', 'false')
+            button.className =
+              'w-5 h-5 rounded-[4px] border border-[#6A7079] bg-[#17191C] flex items-center justify-center transition-colors hover:border-[#F08A4B] focus:outline-none focus:ring-2 focus:ring-[#F08A4B] focus:ring-offset-1 focus:ring-offset-[#0F1113]'
+            button.innerHTML = ''
+            if (titleSpan) {
+              titleSpan.classList.remove('line-through', 'text-[#8A9097]')
+              titleSpan.classList.add('text-[#ECEDEE]')
+            }
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

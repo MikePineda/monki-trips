@@ -1,0 +1,433 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ready to fly - Checklist</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'status-critical': '#A01C1C',
+              'error-container': '#ffdad6',
+              'on-surface-variant': '#584239',
+              'background': '#f9f9f6',
+              'surface-0': '#F5F5F2',
+              'status-warning': '#845600',
+              'tertiary': '#00519d',
+              'surface-container-lowest': '#ffffff',
+              'on-secondary-container': '#275582',
+              'surface-container-high': '#e8e8e5',
+              'on-secondary-fixed': '#001d36',
+              'status-good': '#2E6B3F',
+              'ink-1': '#111417',
+              'on-primary-container': '#ffe6dd',
+              'secondary': '#34618f',
+              'on-background': '#1a1c1b',
+              'on-secondary': '#ffffff',
+              'error': '#ba1a1a',
+              'on-error-container': '#93000a',
+              'surface-container-low': '#f4f4f1',
+              'tertiary-container': '#0069c8',
+              'stamp-ink': '#2F5C8A',
+              'on-tertiary': '#ffffff',
+              'secondary-container': '#9fcafe',
+              'on-tertiary-fixed-variant': '#004689',
+              'secondary-fixed-dim': '#9fcafe',
+              'ink-3': '#626971',
+              'on-tertiary-fixed': '#001b3c',
+              'on-secondary-fixed-variant': '#174976',
+              'secondary-fixed': '#d1e4ff',
+              'surface-container': '#eeeeeb',
+              'primary-fixed-dim': '#ffb598',
+              'surface-1': '#FBFBF9',
+              'on-primary-fixed-variant': '#7e2c00',
+              'outline': '#8b7168',
+              'on-tertiary-container': '#e2ebff',
+              'primary': '#903400',
+              'inverse-surface': '#2f312f',
+              'on-primary': '#ffffff',
+              'surface': '#f9f9f6',
+              'surface-dim': '#dadad7',
+              'inverse-on-surface': '#f1f1ee',
+              'on-error': '#ffffff',
+              'outline-variant': '#dfc0b5',
+              'accent': '#B5470C',
+              'accent-ink': '#F5F5F2',
+              'surface-variant': '#e2e3e0',
+              'inverse-primary': '#ffb598',
+              'status-serious': '#7E3418',
+              'on-primary-fixed': '#360f00',
+              'primary-container': '#b5470c',
+              'accent-soft': '#F9EBE1',
+              'tertiary-fixed': '#d5e3ff',
+              'surface-2': '#ECECE8',
+              'on-surface': '#1a1c1b',
+              'surface-container-highest': '#e2e3e0',
+              'surface-bright': '#f9f9f6',
+              'ink-2': '#4A5058',
+              'surface-tint': '#a53c00',
+              'tertiary-fixed-dim': '#a8c8ff',
+              'primary-fixed': '#ffdbcd',
+              'line': '#D7D8D3',
+              'line-strong': '#80868E',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'space-xl': '32px',
+              'space-lg': '24px',
+              'margin': '16px',
+              'space-half': '4px',
+              'space-2xl': '48px',
+              'space-sm': '8px',
+              'space-md': '16px',
+              'gutter': '16px',
+            },
+            fontFamily: {
+              'eyebrow': ['IBM Plex Mono', 'monospace'],
+              'display': ['IBM Plex Sans', 'sans-serif'],
+              'heading': ['IBM Plex Sans', 'sans-serif'],
+              'body-strong': ['IBM Plex Sans', 'sans-serif'],
+              'caption': ['IBM Plex Sans', 'sans-serif'],
+              'body': ['IBM Plex Sans', 'sans-serif'],
+              'label': ['IBM Plex Sans', 'sans-serif'],
+              'code-display': ['IBM Plex Mono', 'monospace'],
+              'title': ['IBM Plex Sans', 'sans-serif'],
+              'code': ['IBM Plex Mono', 'monospace'],
+              'code-label': ['IBM Plex Mono', 'monospace'],
+            },
+            fontSize: {
+              'eyebrow': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '500' },
+              ],
+              'display': [
+                '40px',
+                { lineHeight: '48px', letterSpacing: '-0.4px', fontWeight: '600' },
+              ],
+              'heading': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+              'body-strong': [
+                '16px',
+                { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' },
+              ],
+              'caption': [
+                '12px',
+                { lineHeight: '16px', letterSpacing: '0.12px', fontWeight: '400' },
+              ],
+              'body': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+              'label': ['13px', { lineHeight: '16px', letterSpacing: '0.13px', fontWeight: '500' }],
+              'code-display': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '0.02em', fontWeight: '500' },
+              ],
+              'title': [
+                '24px',
+                { lineHeight: '32px', letterSpacing: '-0.12px', fontWeight: '600' },
+              ],
+              'code': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '500' }],
+              'code-label': [
+                '13px',
+                { lineHeight: '16px', letterSpacing: '0.04em', fontWeight: '500' },
+              ],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 1;
+      }
+      .material-symbols-outlined.fill-icon {
+        font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      }
+      /* Tabular numbers lock */
+      .tabular-mono {
+        font-feature-settings: 'tnum' 1;
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#e4e4e0] text-ink-1 antialiased selection:bg-accent-soft selection:text-accent min-h-screen flex justify-center items-start"
+  >
+    <!-- Mobile Viewport Frame (390px base width, safe areas accounted) -->
+    <div
+      class="w-full max-w-[390px] min-h-screen bg-surface-0 flex flex-col justify-between relative shadow-sm border-x border-[#e0e1dc]"
+    >
+      <!-- Top Safe Area Padding (iOS ~47px) -->
+      <div class="pt-[47px] px-space-md flex flex-col flex-1 pb-space-lg">
+        <!-- Back Navigation Row -->
+        <div class="h-10 flex items-center -ml-2 mb-2">
+          <button
+            aria-label="Go back"
+            class="h-11 w-11 flex items-center justify-center text-ink-2 hover:text-ink-1 transition-colors active:scale-95 duration-100"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[20px]" data-icon="chevron_left"
+              >chevron_left</span
+            >
+          </button>
+        </div>
+        <!-- Title & Mascot Box Row -->
+        <div class="flex items-center justify-between pb-6">
+          <div>
+            <h1 class="font-title text-title text-ink-1 tracking-tight">Ready to fly</h1>
+          </div>
+          <!-- Mascot Placeholder Box (exactly 48px square, 1px border #80868E / #D7D8D3, rounded-lg, text centered mono 12px) -->
+          <div
+            class="w-[48px] h-[48px] border border-line-strong rounded-xl flex items-center justify-center bg-surface-1"
+          >
+            <span class="font-code-label text-caption text-ink-2">Kiko</span>
+          </div>
+        </div>
+        <!-- Summary & Progress Section -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="font-code text-body-strong text-ink-1 tabular-mono tracking-tight"
+              >5 of 7 ready</span
+            >
+            <span class="font-eyebrow text-eyebrow text-ink-3 tracking-wider uppercase"
+              >STATUS CHECK</span
+            >
+          </div>
+          <!-- Stepped Progress Bar: 7 equal segments, 4px height, 2px gap, rounded ends, strictly 5 ink-1, 2 line -->
+          <div class="flex items-center gap-[2px] w-full h-[4px]">
+            <div class="h-full flex-1 bg-ink-1 rounded-l-[2px]"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-ink-1"></div>
+            <div class="h-full flex-1 bg-line"></div>
+            <div class="h-full flex-1 bg-line rounded-r-[2px]"></div>
+          </div>
+        </div>
+        <!-- Checklist Rows Container -->
+        <div class="flex flex-col border-t border-line">
+          <!-- Row 1: App installed -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1">App installed</span>
+            </div>
+          </div>
+          <!-- Row 2: Latest version cached -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1">Latest version cached</span>
+            </div>
+          </div>
+          <!-- Row 3: Trip data from today 09:12 -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1"
+                >Trip data from today
+                <span class="font-code text-body tabular-mono text-ink-1">09:12</span></span
+              >
+            </div>
+          </div>
+          <!-- Row 4: Both languages saved -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1">Both languages saved</span>
+            </div>
+          </div>
+          <!-- Row 5: Storage kept by browser · 420 MB free -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-good text-[20px] fill-icon"
+                data-icon="check_circle"
+                data-weight="fill"
+                >check_circle</span
+              >
+              <span class="font-body text-body text-ink-1"
+                >Storage kept by the browser ·
+                <span class="font-code text-body tabular-mono">420 MB</span> free</span
+              >
+            </div>
+          </div>
+          <!-- Row 6: 2 documents not saved offline (Warning + Quiet Orange Action) -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-warning text-[20px] fill-icon"
+                data-icon="warning"
+                data-weight="fill"
+                >warning</span
+              >
+              <span class="font-body text-body text-ink-1">2 documents not saved offline</span>
+            </div>
+            <button
+              class="font-label text-label text-accent font-semibold hover:opacity-80 active:scale-95 transition-transform duration-100 pl-2"
+              type="button"
+            >
+              Save them
+            </button>
+          </div>
+          <!-- Row 7: 1 expense waiting to sync -->
+          <div class="min-h-[54px] py-3.5 flex items-center justify-between border-b border-line">
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-status-warning text-[20px] fill-icon"
+                data-icon="warning"
+                data-weight="fill"
+                >warning</span
+              >
+              <span class="font-body text-body text-ink-1">1 expense waiting to sync</span>
+            </div>
+          </div>
+        </div>
+        <!-- Audit / Test timestamp line -->
+        <div class="pt-4 pb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined text-ink-3 text-[16px]" data-icon="flight"
+            >flight</span
+          >
+          <span class="font-label text-caption text-ink-3 tracking-wide"
+            >Tested offline on
+            <span class="font-code text-caption tabular-mono text-ink-3">Mon 10 May</span></span
+          >
+        </div>
+        <!-- Action Buttons Container (Stacked above bottom navigation) -->
+        <div class="mt-auto space-y-2.5 pt-2">
+          <!-- Secondary outlined button -->
+          <button
+            class="w-full h-[44px] rounded-xl border border-line-strong bg-surface-1 text-ink-1 font-body-strong text-[15px] flex items-center justify-center active:scale-[0.98] transition-transform duration-100 hover:bg-surface-2"
+            type="button"
+          >
+            Test in airplane mode
+          </button>
+          <!-- Primary button -->
+          <button
+            class="w-full h-[48px] rounded-xl bg-accent text-accent-ink font-body-strong text-body-strong flex items-center justify-center active:scale-[0.98] transition-transform duration-100 hover:opacity-95 shadow-none"
+            type="button"
+          >
+            Download everything
+          </button>
+        </div>
+      </div>
+      <!-- Bottom Tab Bar (Docked, 56px height + iOS bottom indicator padding, 1px border-t #D7D8D3) -->
+      <nav
+        class="h-[56px] bg-surface-0 border-t border-line flex items-stretch justify-around px-2 z-30 shrink-0"
+      >
+        <!-- Tab 1: Today -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="today">today</span>
+          <span class="font-label text-[11px] leading-none">Today</span>
+        </a>
+        <!-- Tab 2: Plan -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="calendar_month"
+            >calendar_month</span
+          >
+          <span class="font-label text-[11px] leading-none">Plan</span>
+        </a>
+        <!-- Tab 3: Docs -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="folder_open"
+            >folder_open</span
+          >
+          <span class="font-label text-[11px] leading-none">Docs</span>
+        </a>
+        <!-- Tab 4: Money -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-ink-3 hover:text-ink-1 active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1" data-icon="payments"
+            >payments</span
+          >
+          <span class="font-label text-[11px] leading-none">Money</span>
+        </a>
+        <!-- Tab 5: More (ACTIVE) -->
+        <a
+          class="flex flex-col items-center justify-center flex-1 text-accent font-body-strong active:scale-95 transition-transform duration-100"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] mb-1 fill-icon" data-icon="more_horiz"
+            >more_horiz</span
+          >
+          <span class="font-label text-[11px] leading-none font-semibold">More</span>
+        </a>
+      </nav>
+      <!-- iOS Home Indicator Base Spacer (34px) -->
+      <div class="h-[34px] w-full bg-surface-0 flex items-center justify-center shrink-0">
+        <div class="w-[134px] h-[5px] bg-[#C4C4C0] rounded-full"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,342 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Event Detail · monki-trips</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'surface-0': '#F5F5F2',
+              'surface-1': '#FBFBF9',
+              'surface-2': '#ECECE8',
+              'ink-1': '#111417',
+              'ink-2': '#4A5058',
+              'ink-3': '#626971',
+              'line': '#D7D8D3',
+              'line-strong': '#80868E',
+              'accent': '#B5470C',
+              'accent-ink': '#F5F5F2',
+              'status-good': '#2E6B3F',
+              'status-warning': '#845600',
+              'status-serious': '#7E3418',
+              'status-critical': '#A01C1C',
+              'scrim': 'rgba(17, 20, 23, 0.45)',
+            },
+            fontFamily: {
+              sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+              mono: ['"IBM Plex Mono"', 'ui-monospace', 'Menlo', 'monospace'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        background-color: #f5f5f2;
+        color: #111417;
+        -webkit-font-smoothing: antialiased;
+        margin: 0;
+        padding: 0;
+      }
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+      /* Safe areas emulation for 390x844 */
+      .pb-safe {
+        padding-bottom: 34px;
+      }
+      .pt-safe {
+        padding-top: 47px;
+      }
+    </style>
+  </head>
+  <body class="bg-surface-0 min-h-screen flex justify-center">
+    <!-- Mobile Screen Container 390x844 -->
+    <div
+      class="relative w-full max-w-[390px] min-h-screen h-[844px] bg-surface-0 overflow-hidden flex flex-col"
+    >
+      <!-- BACKGROUND: Dimmed itinerary day (flat translucent dark scrim, no blur) -->
+      <div
+        aria-hidden="true"
+        class="absolute inset-0 flex flex-col bg-surface-0 pointer-events-none select-none"
+      >
+        <!-- Status bar -->
+        <div
+          class="h-[47px] w-full flex justify-between items-center px-6 pt-2 text-ink-1 text-[14px] font-semibold tabular-nums"
+        >
+          <span>09:41</span>
+          <div class="flex items-center gap-1.5 text-ink-1">
+            <i class="w-4 h-4" data-lucide="signal"></i>
+            <i class="w-4 h-4" data-lucide="wifi-off"></i>
+            <i class="w-5 h-5" data-lucide="battery"></i>
+          </div>
+        </div>
+        <!-- App Header: Subheader with connection -->
+        <div class="px-4 py-2 border-b border-line flex justify-between items-center">
+          <div>
+            <div class="text-[20px] font-semibold text-ink-1 leading-tight">
+              Wed 12 May · Day 4 of 12
+            </div>
+            <div class="text-[12px] text-ink-2 flex items-center gap-1 mt-0.5">
+              <i class="w-3.5 h-3.5 text-ink-2" data-lucide="wifi-off"></i>
+              <span>Offline · everything saved</span>
+            </div>
+          </div>
+          <div class="border border-line-strong rounded px-2 py-1 text-[11px] font-mono text-ink-2">
+            Kiko
+          </div>
+        </div>
+        <!-- Mock Itinerary Day Content -->
+        <div class="p-4 flex-1 flex flex-col gap-4 opacity-70">
+          <div class="text-[12px] font-mono font-medium text-ink-3 tracking-wider">
+            TIMELINE · ALD TO KSB
+          </div>
+          <!-- Prior event -->
+          <div class="flex gap-3 py-2 border-b border-line">
+            <div class="w-16 font-mono text-[14px] text-ink-2 tabular-nums">
+              <div>11:00</div>
+              <div class="text-[11px] text-ink-3">EEST</div>
+            </div>
+            <div>
+              <div class="text-[15px] font-medium text-ink-1">Check out · Hotel Aldria</div>
+              <div class="text-[13px] text-ink-3">Bags stored at reception</div>
+            </div>
+          </div>
+          <!-- Selected train row -->
+          <div class="flex gap-3 py-2 bg-surface-2/60 rounded px-2 border border-line-strong">
+            <div class="w-16 font-mono text-[14px] font-medium text-ink-1 tabular-nums">
+              <div>14:20</div>
+              <div class="text-[11px] text-ink-3">EEST</div>
+            </div>
+            <div class="flex-1">
+              <div class="text-[15px] font-semibold text-ink-1">Train to Kessbury</div>
+              <div class="text-[13px] text-ink-2">Platform 3 · RE-2041</div>
+            </div>
+          </div>
+          <!-- Next event -->
+          <div class="flex gap-3 py-2 border-b border-line">
+            <div class="w-16 font-mono text-[14px] text-ink-2 tabular-nums">
+              <div>18:00</div>
+              <div class="text-[11px] text-ink-3">EEST</div>
+            </div>
+            <div>
+              <div class="text-[15px] font-medium text-ink-1">Check in · Harbour Inn</div>
+              <div class="text-[13px] text-ink-3">14 Quay Street, Kessbury</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- SCRIM: Flat translucent dark scrim (no blur) -->
+      <div class="absolute inset-0 bg-scrim z-20"></div>
+      <!-- BOTTOM SHEET CONTAINER (Modal Layer) -->
+      <div
+        class="relative z-30 mt-auto w-full flex flex-col bg-surface-1 rounded-t-[16px] border-t border-line-strong shadow-[0_-4px_24px_rgba(17,20,23,0.15)] max-h-[770px] overflow-hidden"
+      >
+        <!-- Sheet Handle -->
+        <div class="w-full flex justify-center pt-3 pb-1">
+          <div class="w-[36px] h-[4px] bg-line-strong rounded-full"></div>
+        </div>
+        <!-- Sheet Header: Title & 44px Close Button -->
+        <div class="px-4 py-2 flex items-center justify-between border-b border-line">
+          <h2 class="text-[18px] font-semibold text-ink-1 leading-6">Train to Kessbury</h2>
+          <button
+            aria-label="Close"
+            class="w-[44px] h-[44px] flex items-center justify-center -mr-2 text-ink-2 hover:text-ink-1 transition-colors rounded"
+            type="button"
+          >
+            <i class="w-5 h-5" data-lucide="x" stroke-width="1.75"></i>
+          </button>
+        </div>
+        <!-- Sheet Content: Scrollable Body -->
+        <div class="px-4 pt-3 pb-2 overflow-y-auto flex flex-col">
+          <!-- Eyebrow: mono, small, grey uppercase -->
+          <div
+            class="font-mono text-[12px] font-medium tracking-[0.08em] text-ink-3 uppercase leading-4"
+          >
+            WED 12 MAY · DAY 4 OF 12
+          </div>
+          <!-- Route in IBM Plex Mono 24px (arrow grey) -->
+          <div
+            class="mt-1.5 flex items-center gap-2 font-mono text-[24px] font-medium text-ink-1 tracking-[0.02em] leading-8 tabular-nums"
+          >
+            <span>ALD</span>
+            <span class="text-ink-3 font-normal">→</span>
+            <span>KSB</span>
+          </div>
+          <!-- Two columns: Departs & Arrives in mono with tabular figures -->
+          <div class="grid grid-cols-2 gap-4 mt-3 pt-1">
+            <div class="flex flex-col">
+              <span class="text-[12px] font-mono uppercase tracking-wider text-ink-3">Departs</span>
+              <span class="font-mono text-[16px] font-medium text-ink-1 tabular-nums mt-0.5"
+                >14:20 <span class="text-[13px] text-ink-3 font-normal">EEST</span></span
+              >
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[12px] font-mono uppercase tracking-wider text-ink-3">Arrives</span>
+              <span class="font-mono text-[16px] font-medium text-ink-1 tabular-nums mt-0.5"
+                >17:05 <span class="text-[13px] text-ink-3 font-normal">EEST</span></span
+              >
+            </div>
+          </div>
+          <!-- Leave at 13:40 + meta line -->
+          <div class="mt-3.5 flex items-start gap-2 text-ink-1">
+            <i
+              class="w-[18px] h-[18px] text-ink-2 mt-0.5 shrink-0"
+              data-lucide="clock"
+              stroke-width="1.75"
+            ></i>
+            <div class="flex flex-col">
+              <span class="text-[15px] font-medium leading-5"
+                >Leave at <span class="font-mono font-medium tabular-nums">13:40</span></span
+              >
+              <span class="text-[13px] text-ink-3 leading-5 mt-0.5"
+                >40 min before departure, 18 min walk</span
+              >
+            </div>
+          </div>
+          <!-- Hairline divider -->
+          <div class="h-[1px] bg-line w-full my-4"></div>
+          <!-- Label / Value Rows -->
+          <div class="flex flex-col divide-y divide-line text-[14px]">
+            <!-- Booking Reference -->
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-ink-2">Booking reference</span>
+              <div
+                class="flex items-center gap-1.5 font-mono text-[15px] font-medium text-ink-1 tabular-nums"
+              >
+                <span>ABC123</span>
+                <button
+                  aria-label="Copy booking reference"
+                  class="w-[32px] h-[32px] -mr-1 flex items-center justify-center text-ink-2 hover:text-ink-1 rounded transition-colors"
+                  type="button"
+                >
+                  <i class="w-4 h-4" data-lucide="copy" stroke-width="1.75"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Coach and seat -->
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-ink-2">Coach and seat</span>
+              <span class="font-mono text-[15px] font-medium text-ink-1 tabular-nums">5 · 42A</span>
+            </div>
+            <!-- From -->
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-ink-2">From</span>
+              <span class="text-ink-1 font-medium text-right">Aldria Central, Platform 3</span>
+            </div>
+            <!-- Notes -->
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-ink-2">Notes</span>
+              <span class="text-ink-1 text-right">Bring the printed rail pass</span>
+            </div>
+          </div>
+          <!-- Hairline divider -->
+          <div class="h-[1px] bg-line w-full my-4"></div>
+          <!-- Status Row: Rail pass / Saved offline -->
+          <div class="py-1 flex items-center justify-between">
+            <span class="text-ink-1 text-[14px] font-medium">Rail pass</span>
+            <div class="flex items-center gap-1.5">
+              <i
+                class="w-[18px] h-[18px] text-status-good"
+                data-lucide="check-circle-2"
+                stroke-width="1.75"
+              ></i>
+              <span class="text-ink-2 text-[13px] font-medium">Saved offline</span>
+            </div>
+          </div>
+          <!-- Bottom Actions Area -->
+          <div class="mt-5 mb-2 flex flex-col items-center gap-3">
+            <!-- Quiet orange link: Edit event -->
+            <button
+              class="text-accent text-[14px] font-semibold hover:underline cursor-pointer py-1"
+              type="button"
+            >
+              Edit event
+            </button>
+            <!-- Full-width 48px orange primary button "Directions" -->
+            <button
+              class="w-full h-[48px] bg-accent active:opacity-95 text-accent-ink rounded-[8px] font-medium text-[16px] flex items-center justify-center gap-2 shadow-none cursor-pointer transition-opacity"
+              type="button"
+            >
+              <i
+                class="w-[18px] h-[18px] text-accent-ink"
+                data-lucide="navigation"
+                stroke-width="1.75"
+              ></i>
+              <span>Directions</span>
+            </button>
+          </div>
+        </div>
+        <!-- Safe area spacing spacer at bottom of sheet content -->
+        <div class="h-4"></div>
+      </div>
+      <!-- BOTTOM TAB BAR (Today · Plan · Docs · Money · More; Plan active in orange; 56px + safe area) -->
+      <div
+        class="relative z-40 w-full h-[56px] bg-surface-0 border-t border-line flex items-center justify-around px-2 mb-[34px] shrink-0"
+      >
+        <!-- Today Tab -->
+        <button
+          class="flex flex-col items-center justify-center w-14 py-1 text-ink-3"
+          type="button"
+        >
+          <i class="w-5 h-5 text-ink-3" data-lucide="calendar" stroke-width="1.75"></i>
+          <span class="text-[11px] font-medium mt-0.5">Today</span>
+        </button>
+        <!-- Plan Tab (ACTIVE) -->
+        <button
+          aria-current="page"
+          class="flex flex-col items-center justify-center w-14 py-1 text-accent"
+          type="button"
+        >
+          <i class="w-5 h-5 text-accent" data-lucide="calendar-days" stroke-width="1.75"></i>
+          <span class="text-[11px] font-semibold mt-0.5">Plan</span>
+        </button>
+        <!-- Docs Tab -->
+        <button
+          class="flex flex-col items-center justify-center w-14 py-1 text-ink-3"
+          type="button"
+        >
+          <i class="w-5 h-5 text-ink-3" data-lucide="file-text" stroke-width="1.75"></i>
+          <span class="text-[11px] font-medium mt-0.5">Docs</span>
+        </button>
+        <!-- Money Tab -->
+        <button
+          class="flex flex-col items-center justify-center w-14 py-1 text-ink-3"
+          type="button"
+        >
+          <i class="w-5 h-5 text-ink-3" data-lucide="wallet" stroke-width="1.75"></i>
+          <span class="text-[11px] font-medium mt-0.5">Money</span>
+        </button>
+        <!-- More Tab -->
+        <button
+          class="flex flex-col items-center justify-center w-14 py-1 text-ink-3"
+          type="button"
+        >
+          <i class="w-5 h-5 text-ink-3" data-lucide="more-horizontal" stroke-width="1.75"></i>
+          <span class="text-[11px] font-medium mt-0.5">More</span>
+        </button>
+      </div>
+      <!-- iOS Home Indicator -->
+      <div
+        class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-ink-1/30 rounded-full z-50 pointer-events-none"
+      ></div>
+    </div>
+    <script>
+      // Initialize Lucide icons
+      lucide.createIcons()
+    </script>
+  </body>
+</html>
