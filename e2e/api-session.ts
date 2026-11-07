@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { request, type APIRequestContext, type APIResponse } from '@playwright/test'
 import type { E2eAccount } from './accounts.ts'
 
@@ -22,6 +23,14 @@ export interface TripContentSnapshotLike {
     baseAmountMinor: number | null
     needsDetails: boolean
   }[]
+}
+
+/** One `/sync/push` mutation without the bookkeeping (`mutationId`, `tripId`, `changedAt`; `op` defaults to upsert). */
+export interface SeedMutation {
+  entity: string
+  id: string
+  op?: 'upsert' | 'delete'
+  changes: Record<string, unknown>
 }
 
 /**
@@ -92,6 +101,45 @@ export class ApiSession {
     return body.data
   }
 
+  /**
+   * Writes trip content the way the app does, through `POST /sync/push`;
+   * fails when a mutation is not applied.
+   */
+  async push(tripId: string, mutations: SeedMutation[]): Promise<void> {
+    const changedAt = new Date().toISOString()
+    const response = await this.write('post', '/api/v1/sync/push', {
+      mutations: mutations.map((mutation) => ({
+        mutationId: randomUUID(),
+        tripId,
+        op: 'upsert',
+        changedAt,
+        ...mutation,
+      })),
+    })
+    const body = (await response.json()) as {
+      data: { results: { status: string; error?: { code: string } }[] }
+    }
+    const refused = body.data.results.filter((result) => result.status !== 'applied')
+    if (refused.length > 0) {
+      throw new Error(`sync push refused: ${JSON.stringify(refused)}`)
+    }
+  }
+
+  /** Uploads a file document (multipart, like the documents screen) and answers its id. */
+  async uploadDocument(
+    tripId: string,
+    file: { name: string; mimeType: string; buffer: Buffer },
+    fields: { title?: string; eventId?: string } = {}
+  ): Promise<string> {
+    const id = randomUUID()
+    const response = await this.context.post(`/api/v1/trips/${tripId}/documents`, {
+      multipart: { file, id, ...fields },
+      headers: { 'X-XSRF-TOKEN': await this.xsrf() },
+    })
+    await this.expectOk(response, 'POST /trips/:tripId/documents')
+    return id
+  }
+
   async dispose(): Promise<void> {
     await this.context.dispose()
   }
@@ -101,14 +149,17 @@ export class ApiSession {
     path: string,
     data?: unknown
   ): Promise<APIResponse> {
-    const cookies = (await this.context.storageState()).cookies
-    const xsrf = cookies.find((cookie) => cookie.name === 'XSRF-TOKEN')?.value ?? ''
     const response = await this.context[method](path, {
       data,
-      headers: { 'X-XSRF-TOKEN': decodeURIComponent(xsrf) },
+      headers: { 'X-XSRF-TOKEN': await this.xsrf() },
     })
     await this.expectOk(response, `${method.toUpperCase()} ${path}`)
     return response
+  }
+
+  private async xsrf(): Promise<string> {
+    const cookies = (await this.context.storageState()).cookies
+    return decodeURIComponent(cookies.find((cookie) => cookie.name === 'XSRF-TOKEN')?.value ?? '')
   }
 
   private async expectOk(

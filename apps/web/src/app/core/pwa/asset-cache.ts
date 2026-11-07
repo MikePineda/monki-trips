@@ -54,6 +54,19 @@ export class AssetCache {
     }
   }
 
+  /**
+   * Registers the app's worker now instead of waiting for Angular's
+   * delayed registration (`registerWhenStable`), so "Download everything"
+   * does not race it. Registering the same script again is a no-op.
+   */
+  async ensureRegistered(script: string): Promise<void> {
+    const worker = this.worker
+    if (!worker || (await worker.getRegistration().catch(() => undefined))) {
+      return
+    }
+    await worker.register(script).catch(() => undefined)
+  }
+
   /** Waits for the worker, then fetches every asset through it. Resolves with what is cached after. */
   async warm(): Promise<CachedAssets> {
     await this.untilControlled()
