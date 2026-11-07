@@ -3,12 +3,18 @@ import { Router, RouterLink } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
 import type { Trip } from '@monkitrips/shared'
 import { SessionStore } from '../../core/session/session.store'
+import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
+import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
+import { MkRowComponent } from '../../shared/ui/layout/row.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
+import { MkListRowComponent } from '../../shared/ui/list/list-row.component'
+import { MkListComponent } from '../../shared/ui/list/list.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
-import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { CreateTripSheet } from './create-trip.sheet'
 import { TripsStore } from './trips.store'
 
@@ -27,85 +33,84 @@ import { TripsStore } from './trips.store'
     MkIconComponent,
     MkButtonComponent,
     MkApiErrorComponent,
+    MkStackComponent,
+    MkRowComponent,
+    MkTextComponent,
+    MkListComponent,
+    MkListRowComponent,
+    MkBannerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold text-ink-1">{{ 'shell.trips.title' | transloco }}</h1>
-      @if (store.trips().length > 0) {
-        <button
-          mk-button
-          variant="secondary"
-          type="button"
-          data-testid="trips.create"
-          (click)="createTrip()"
-        >
-          <mk-icon name="plus" [size]="18" />
-          {{ 'shell.trips.create.action' | transloco }}
-        </button>
-      }
-    </div>
-    @if (unverified()) {
-      <div
-        class="mt-4 flex flex-col gap-3 rounded-lg border border-status-warning bg-surface-1 p-4 text-sm text-ink-1"
-        role="status"
-        data-testid="trips.unverified"
-      >
-        <span>{{ 'shell.trips.unverified' | transloco }}</span>
-        <a mk-button variant="secondary" routerLink="/verify-email" data-testid="trips.verify">
-          {{ 'shell.trips.verify' | transloco }}
-        </a>
-      </div>
-    } @else if (store.failure(); as failure) {
-      <mk-api-error
-        class="mt-4"
-        [failure]="failure"
-        scope="shell"
-        [knownCodes]="codes"
-        testId="trips.error"
-      />
-    }
-    @if (store.trips().length === 0) {
-      <mk-empty-state
-        class="mt-6 rounded-lg border border-line bg-surface-1"
-        icon="plane"
-        [title]="'shell.trips.emptyTitle' | transloco"
-        [body]="'shell.trips.emptyBody' | transloco"
-        data-testid="trips.empty"
-      >
-        @if (!unverified()) {
+    <mk-stack gap="2">
+      <mk-row gap="2" justify="between">
+        <h1 mk-text variant="title">{{ 'shell.trips.title' | transloco }}</h1>
+        @if (store.trips().length > 0) {
           <button
-            mkEmptyAction
             mk-button
+            variant="secondary"
+            size="sm"
             type="button"
             data-testid="trips.create"
             (click)="createTrip()"
           >
-            {{ 'shell.trips.create.first' | transloco }}
+            <mk-icon name="plus" [size]="18" />
+            {{ 'shell.trips.create.action' | transloco }}
           </button>
         }
-      </mk-empty-state>
-    } @else {
-      <ul class="mt-4 divide-y divide-line" data-testid="trips.list">
-        @for (trip of store.trips(); track trip.id) {
-          <li>
-            <a
-              [routerLink]="['/t', trip.id, 'today']"
-              class="flex items-center gap-3 py-3 text-ink-1"
-              [attr.data-testid]="'trips.item'"
+      </mk-row>
+      @if (unverified()) {
+        <mk-banner
+          icon="circle-alert"
+          [title]="'shell.trips.unverified' | transloco"
+          data-testid="trips.unverified"
+        >
+          <a
+            mkBannerAction
+            mk-button
+            variant="ghost"
+            size="sm"
+            routerLink="/verify-email"
+            data-testid="trips.verify"
+          >
+            {{ 'shell.trips.verify' | transloco }}
+          </a>
+        </mk-banner>
+      } @else if (store.failure(); as failure) {
+        <mk-api-error [failure]="failure" scope="shell" [knownCodes]="codes" testId="trips.error" />
+      }
+      @if (store.trips().length === 0) {
+        <mk-empty-state
+          mascot="excited"
+          [title]="'shell.trips.emptyTitle' | transloco"
+          [body]="'shell.trips.emptyBody' | transloco"
+          data-testid="trips.empty"
+        >
+          @if (!unverified()) {
+            <button
+              mkEmptyAction
+              mk-button
+              type="button"
+              data-testid="trips.create"
+              (click)="createTrip()"
             >
-              <span class="min-w-0 flex-1">
-                <span class="block truncate font-medium">{{ trip.name }}</span>
-                <span class="block text-sm tabular-nums text-ink-2">{{
-                  'shell.trips.dates' | transloco: { start: trip.startDate, end: trip.endDate }
-                }}</span>
-              </span>
-              <mk-icon name="chevron-right" class="text-ink-3" />
-            </a>
-          </li>
-        }
-      </ul>
-    }
+              {{ 'shell.trips.create.first' | transloco }}
+            </button>
+          }
+        </mk-empty-state>
+      } @else {
+        <mk-list data-testid="trips.list">
+          @for (trip of store.trips(); track trip.id) {
+            <mk-list-row
+              [title]="trip.name"
+              [meta]="'shell.trips.dates' | transloco: { start: trip.startDate, end: trip.endDate }"
+              [link]="['/t', trip.id, 'today']"
+              testId="trips.item"
+            />
+          }
+        </mk-list>
+      }
+    </mk-stack>
   `,
 })
 export default class TripsPage {

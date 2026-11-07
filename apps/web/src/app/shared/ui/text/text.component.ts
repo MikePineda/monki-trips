@@ -47,6 +47,7 @@ export type TextAlign = 'start' | 'center' | 'end'
     '[attr.data-tone]': 'tone()',
     '[attr.data-align]': 'align()',
     '[attr.data-truncate]': 'truncate() ? "" : null',
+    '[attr.data-break]': 'breakAnywhere() ? "" : null',
   },
   styles: `
     :host {
@@ -96,6 +97,9 @@ export type TextAlign = 'start' | 'center' | 'end'
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+    :host([data-break]) {
+      overflow-wrap: anywhere;
+    }
     :host(span),
     :host(a),
     :host(code),
@@ -110,6 +114,8 @@ export class MkTextComponent {
   readonly tone = input<TextTone>('ink-1')
   readonly align = input<TextAlign>('start')
   readonly truncate = input(false)
+  /** Long unbroken values (a link, a token) wrap at any character instead of overflowing. */
+  readonly breakAnywhere = input(false)
 
   protected readonly classes = computed(() => `mk-text mk-type-${this.variant()}`)
 }

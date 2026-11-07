@@ -15,11 +15,14 @@ import { ApiFailure } from '../../core/api/api-failure'
 import { fieldError } from '../../core/forms/field-error'
 import { serverFieldErrors } from '../../core/forms/server-errors'
 import { SessionStore } from '../../core/session/session.store'
+import { TRIP_ERROR_CODES, provideShellI18n } from '../../layouts/shell/shell-i18n'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
+import { MkInputDirective } from '../../shared/ui/field/input.directive'
+import { MkRowComponent, MkRowGrowDirective } from '../../shared/ui/layout/row.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
-import { TRIP_ERROR_CODES, provideShellI18n } from '../../layouts/shell/shell-i18n'
 import { TripsStore } from './trips.store'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -46,74 +49,105 @@ export interface CreateTripModel {
     MkFieldComponent,
     MkButtonComponent,
     MkApiErrorComponent,
+    MkInputDirective,
+    MkStackComponent,
+    MkRowComponent,
+    MkRowGrowDirective,
   ],
   providers: [provideShellI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-sheet [title]="'shell.trips.create.title' | transloco">
-      <form class="flex flex-col gap-4" novalidate (submit)="save($event)">
-        <mk-field
-          [label]="'shell.trips.create.name' | transloco"
-          [required]="true"
-          [error]="fieldError(form.name)"
-        >
-          <input
-            type="text"
-            autocomplete="off"
-            [formField]="form.name"
-            data-testid="trips.create.name"
-          />
-        </mk-field>
-        <div class="grid grid-cols-2 gap-3">
+      <form novalidate (submit)="save($event)">
+        <mk-stack gap="2">
           <mk-field
-            [label]="'shell.trips.create.startsOn' | transloco"
+            [label]="'shell.trips.create.name' | transloco"
             [required]="true"
-            [error]="fieldError(form.startsOn)"
-          >
-            <input type="date" [formField]="form.startsOn" data-testid="trips.create.startsOn" />
-          </mk-field>
-          <mk-field
-            [label]="'shell.trips.create.endsOn' | transloco"
-            [required]="true"
-            [error]="fieldError(form.endsOn)"
-          >
-            <input type="date" [formField]="form.endsOn" data-testid="trips.create.endsOn" />
-          </mk-field>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <mk-field
-            [label]="'shell.trips.create.baseCurrency' | transloco"
-            [hint]="'shell.trips.create.baseCurrencyHint' | transloco"
-            [required]="true"
-            [error]="fieldError(form.baseCurrency)"
+            [error]="fieldError(form.name)"
           >
             <input
+              mkInput
               type="text"
-              autocapitalize="characters"
-              class="uppercase"
-              [formField]="form.baseCurrency"
-              data-testid="trips.create.baseCurrency"
+              autocomplete="off"
+              [formField]="form.name"
+              data-testid="trips.create.name"
             />
           </mk-field>
-          <mk-field [label]="'shell.trips.create.budgetMode' | transloco" [required]="true">
-            <select [formField]="form.budgetMode" data-testid="trips.create.budgetMode">
-              @for (mode of budgetModes; track mode) {
-                <option [value]="mode">
-                  {{ 'shell.trips.create.budget.' + mode | transloco }}
-                </option>
-              }
-            </select>
-          </mk-field>
-        </div>
-        <mk-api-error
-          [failure]="failure()"
-          scope="shell"
-          [knownCodes]="codes"
-          testId="trips.create.error"
-        />
-        <button mk-button type="submit" [loading]="busy()" data-testid="trips.create.submit">
-          {{ 'shell.trips.create.submit' | transloco }}
-        </button>
+          <mk-row gap="2" align="start">
+            <mk-field
+              mkRowGrow
+              [label]="'shell.trips.create.startsOn' | transloco"
+              [required]="true"
+              [error]="fieldError(form.startsOn)"
+            >
+              <input
+                mkInput
+                type="date"
+                [formField]="form.startsOn"
+                data-testid="trips.create.startsOn"
+              />
+            </mk-field>
+            <mk-field
+              mkRowGrow
+              [label]="'shell.trips.create.endsOn' | transloco"
+              [required]="true"
+              [error]="fieldError(form.endsOn)"
+            >
+              <input
+                mkInput
+                type="date"
+                [formField]="form.endsOn"
+                data-testid="trips.create.endsOn"
+              />
+            </mk-field>
+          </mk-row>
+          <mk-row gap="2" align="start">
+            <mk-field
+              mkRowGrow
+              [label]="'shell.trips.create.baseCurrency' | transloco"
+              [hint]="'shell.trips.create.baseCurrencyHint' | transloco"
+              [required]="true"
+              [error]="fieldError(form.baseCurrency)"
+            >
+              <input
+                mkInput
+                variant="code"
+                type="text"
+                autocapitalize="characters"
+                [formField]="form.baseCurrency"
+                data-testid="trips.create.baseCurrency"
+              />
+            </mk-field>
+            <mk-field
+              mkRowGrow
+              [label]="'shell.trips.create.budgetMode' | transloco"
+              [required]="true"
+            >
+              <select mkInput [formField]="form.budgetMode" data-testid="trips.create.budgetMode">
+                @for (mode of budgetModes; track mode) {
+                  <option [value]="mode">
+                    {{ 'shell.trips.create.budget.' + mode | transloco }}
+                  </option>
+                }
+              </select>
+            </mk-field>
+          </mk-row>
+          <mk-api-error
+            [failure]="failure()"
+            scope="shell"
+            [knownCodes]="codes"
+            testId="trips.create.error"
+          />
+          <button
+            mk-button
+            size="block"
+            type="submit"
+            [loading]="busy()"
+            data-testid="trips.create.submit"
+          >
+            {{ 'shell.trips.create.submit' | transloco }}
+          </button>
+        </mk-stack>
       </form>
     </mk-sheet>
   `,

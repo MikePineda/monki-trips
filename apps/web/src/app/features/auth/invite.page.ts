@@ -19,7 +19,9 @@ import { SessionStore } from '../../core/session/session.store'
 import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
+import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
+import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
 import { provideUiI18n } from '../../shared/ui/ui-i18n'
 import { AUTH_ERROR_CODES, provideAuthI18n } from './auth-i18n'
@@ -40,18 +42,21 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
     MkApiErrorComponent,
     MkEmptyStateComponent,
     MkSkeletonComponent,
+    MkStackComponent,
+    MkTextComponent,
   ],
   providers: [provideAuthI18n(), provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @switch (state()) {
       @case ('checking') {
-        <p class="text-sm text-ink-2">{{ 'auth.invite.checking' | transloco }}</p>
-        <mk-skeleton class="mt-4" [rows]="3" data-testid="auth.invite.loading" />
+        <mk-stack gap="2">
+          <p mk-text tone="ink-2">{{ 'auth.invite.checking' | transloco }}</p>
+          <mk-skeleton [rows]="3" data-testid="auth.invite.loading" />
+        </mk-stack>
       }
       @case ('not-found') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-alert"
           [title]="'auth.invite.notFoundTitle' | transloco"
           [body]="'auth.invite.notFoundBody' | transloco"
@@ -60,7 +65,6 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
       }
       @case ('expired') {
         <mk-empty-state
-          class="rounded-lg border border-line bg-surface-1"
           icon="circle-alert"
           [title]="'auth.invite.expiredTitle' | transloco"
           [body]="'auth.invite.expiredBody' | transloco"
@@ -68,60 +72,67 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
         />
       }
       @case ('failed') {
-        <mk-api-error [failure]="loadFailure()" scope="auth" [knownCodes]="codes" />
-        <button mk-button variant="secondary" class="mt-4" type="button" (click)="load()">
-          {{ 'ui.actions.retry' | transloco }}
-        </button>
+        <mk-stack gap="2" align="start">
+          <mk-api-error [failure]="loadFailure()" scope="auth" [knownCodes]="codes" />
+          <button mk-button variant="secondary" type="button" (click)="load()">
+            {{ 'ui.actions.retry' | transloco }}
+          </button>
+        </mk-stack>
       }
       @case ('ready') {
         @if (preview(); as preview) {
-          <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.invite.title' | transloco }}</h1>
-          <p class="mt-3 text-ink-1" data-testid="auth.invite.preview">
-            {{
-              'auth.invite.body'
-                | transloco
-                  : { tripName: preview.tripName, role: 'auth.role.' + preview.role | transloco }
-            }}
-          </p>
-          <mk-api-error
-            class="mt-4"
-            [failure]="failure()"
-            scope="auth"
-            [knownCodes]="codes"
-            testId="auth.invite.error"
-          />
-          @if (session.signedIn()) {
-            <button
-              mk-button
-              class="mt-6"
-              type="button"
-              [loading]="busy()"
-              data-testid="auth.invite.accept"
-              (click)="accept()"
-            >
-              {{ 'auth.invite.accept' | transloco }}
-            </button>
-          } @else {
-            <div class="mt-6 flex flex-col gap-3">
-              <a
+          <mk-stack gap="3">
+            <mk-stack gap="1">
+              <h1 mk-text variant="title">{{ 'auth.invite.title' | transloco }}</h1>
+              <p mk-text data-testid="auth.invite.preview">
+                {{
+                  'auth.invite.body'
+                    | transloco
+                      : {
+                          tripName: preview.tripName,
+                          role: 'auth.role.' + preview.role | transloco,
+                        }
+                }}
+              </p>
+            </mk-stack>
+            <mk-api-error
+              [failure]="failure()"
+              scope="auth"
+              [knownCodes]="codes"
+              testId="auth.invite.error"
+            />
+            @if (session.signedIn()) {
+              <button
                 mk-button
-                routerLink="/signup"
-                [queryParams]="{ invitation: token() }"
-                data-testid="auth.invite.signup"
+                type="button"
+                [loading]="busy()"
+                data-testid="auth.invite.accept"
+                (click)="accept()"
               >
-                {{ 'auth.invite.signup' | transloco }}
-              </a>
-              <a
-                mk-button
-                variant="secondary"
-                routerLink="/login"
-                [queryParams]="{ returnUrl: '/invite/' + token() }"
-                data-testid="auth.invite.login"
-              >
-                {{ 'auth.invite.login' | transloco }}
-              </a>
-            </div>
-          }
+                {{ 'auth.invite.accept' | transloco }}
+              </button>
+            } @else {
+              <mk-stack gap="2">
+                <a
+                  mk-button
+                  routerLink="/signup"
+                  [queryParams]="{ invitation: token() }"
+                  data-testid="auth.invite.signup"
+                >
+                  {{ 'auth.invite.signup' | transloco }}
+                </a>
+                <a
+                  mk-button
+                  variant="secondary"
+                  routerLink="/login"
+                  [queryParams]="{ returnUrl: '/invite/' + token() }"
+                  data-testid="auth.invite.login"
+                >
+                  {{ 'auth.invite.login' | transloco }}
+                </a>
+              </mk-stack>
+            }
+          </mk-stack>
         }
       }
     }
