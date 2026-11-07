@@ -1,0 +1,46 @@
+# Self-hosting monki-trips: the app and Postgres 17 on one machine.
+#   cp .env.selfhost.example .env   # then set APP_KEY and DB_PASSWORD
+#   docker compose up -d --build --wait
+#   open http://localhost:3333
+# See docs/SELF_HOSTING.md. The app listens on 127.0.0.1 only: put your own
+# reverse proxy (TLS) in front of it to reach it from other devices.
+name: monkitrips-selfhost
+
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+    image: monkitrips:local
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '3333'
+      SESSION_DRIVER: cookie
+      DB_HOST: db
+    ports:
+      - '127.0.0.1:3333:3333'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${DB_USER:-monkitrips}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      POSTGRES_DB: ${DB_DATABASE:-monkitrips}
+      POSTGRES_INITDB_ARGS: --data-checksums
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  pgdata:

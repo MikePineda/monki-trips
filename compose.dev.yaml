@@ -1,0 +1,53 @@
+# Local development services. Usage:
+#   npm run services:up                                  # Postgres 17 only
+#   docker compose -f compose.dev.yaml --profile s3 up -d --wait   # + MinIO
+#   DB_PORT=5434 npm run services:up                     # when 5432 is taken
+# Everything binds to 127.0.0.1. Credentials are local throwaways that match
+# apps/api/.env.example and apps/api/.env.test.
+name: monkitrips
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: monkitrips
+      POSTGRES_PASSWORD: monkitrips
+      POSTGRES_DB: monkitrips
+      POSTGRES_INITDB_ARGS: --data-checksums
+    ports:
+      # DB_PORT moves the host port when 5432 is taken (another project's
+      # Postgres); point apps/api/.env and the test run at the same value.
+      - '127.0.0.1:${DB_PORT:-5432}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U monkitrips -d monkitrips']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Optional S3-compatible storage. Upstream minio/minio images are no longer
+  # published, so this is Bitnami's frozen build. Host port 9030 because
+  # 9000-9020 are often taken on macOS.
+  minio:
+    image: bitnamilegacy/minio:2025.7.23-debian-12-r5
+    profiles: [s3]
+    environment:
+      MINIO_ROOT_USER: monkitrips
+      MINIO_ROOT_PASSWORD: monkitrips-secret
+      MINIO_DEFAULT_BUCKETS: monkitrips
+    ports:
+      - '127.0.0.1:9030:9000'
+      - '127.0.0.1:9031:9001'
+    volumes:
+      - minio-data:/bitnami/minio/data
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:9000/minio/health/live']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  db-data:
+  minio-data:
