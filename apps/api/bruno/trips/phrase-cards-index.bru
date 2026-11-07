@@ -1,0 +1,17 @@
+meta {
+  name: Phrase cards
+  type: http
+  seq: 55
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/phrase-cards
+  body: none
+  auth: none
+}
+
+docs {
+  Every live phrase card set of the trip (`PhraseCards[]`), one per
+  language, ordered by language. The same rows reach devices through
+  `GET /sync/pull` as `phrase_card`.
+}
