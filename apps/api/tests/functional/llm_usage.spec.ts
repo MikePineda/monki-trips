@@ -181,6 +181,38 @@ test.group('LLM usage and cap', (group) => {
     assert.isNull(rows[0].cost_micros)
   })
 
+  test('a stream stopped early records what it used as aborted', async ({ assert }) => {
+    const user = await makeUser()
+    const llmClient = await app.container.make(LlmClient)
+
+    const seen: string[] = []
+    for await (const delta of llmClient.stream({ user, tripId: null }, chat)) {
+      if (delta.type === 'text') seen.push(delta.text)
+      break
+    }
+
+    assert.lengthOf(seen, 1)
+    const rows = await db.from('llm_usage').where('user_id', user.id)
+    assert.lengthOf(rows, 1)
+    assert.deepEqual(
+      [rows[0].status, rows[0].tokens_in, rows[0].tokens_out, rows[0].model],
+      ['aborted', 300, 0, 'fake-chat-model'],
+      'the input the provider reported when the stream started'
+    )
+    assert.isNumber(rows[0].latency_ms)
+  })
+
+  test('a stream closed before its first step reserves nothing', async ({ assert }) => {
+    const user = await makeUser()
+    const llmClient = await app.container.make(LlmClient)
+
+    const iterator = llmClient.stream({ user, tripId: null }, chat)[Symbol.asyncIterator]()
+    await iterator.return?.()
+
+    // A generator closed before its first step never ran: no reservation, no row.
+    assert.isEmpty(await db.from('llm_usage').where('user_id', user.id))
+  })
+
   test('a priced model stores its cost in micro-dollars', async ({ assert }) => {
     const user = await makeUser()
     llm.current.script('chat', 'priced', {

@@ -355,7 +355,10 @@ answers 503 until written, `fake` answers from `tests/fixtures/llm/<purpose>/<ca
   latency, status (`ok`, `error`, `quota_exceeded`, `pending` while in
   flight, `aborted` for a stream stopped early) and `cost_micros` from the
   price table in `config/llm.ts` (null for an unlisted model). Prompts and
-  answers are never stored or logged.
+  answers are never stored or logged. A stream the consumer stops early is
+  `aborted` and charged the last usage the provider reported (the input from
+  `message_start` at least), else the input estimate; the upstream body is
+  cancelled.
 - **Errors.** A 429, 5xx, network failure or timeout (90 s) is retried twice
   with backoff (0.5 s, 2 s); what still fails answers 503 `E_LLM_UNAVAILABLE`
   with no upstream detail.

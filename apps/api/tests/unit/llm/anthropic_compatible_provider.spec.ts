@@ -358,4 +358,49 @@ test.group('Anthropic compatible provider', () => {
       await endpoint.close()
     }
   })
+
+  test('a stream reports its usage as soon as the answer starts', async ({ assert }) => {
+    let closed = false
+    const endpoint = await fakeEndpoint([
+      (_received, response) => {
+        response.writeHead(200, { 'content-type': 'text/event-stream' })
+        response.on('close', () => {
+          closed = true
+        })
+        const start = {
+          type: 'message_start',
+          message: { model: 'fake-model-1', usage: { input_tokens: 70, output_tokens: 1 } },
+        }
+        const text = {
+          type: 'content_block_delta',
+          index: 0,
+          delta: { type: 'text_delta', text: 'Hi' },
+        }
+        response.write(`event: message_start\ndata: ${JSON.stringify(start)}\n\n`)
+        response.write(`event: content_block_delta\ndata: ${JSON.stringify(text)}\n\n`)
+        // Never ends on its own: the consumer has to stop it.
+      },
+    ])
+    try {
+      const provider = new AnthropicCompatibleProvider({
+        baseUrl: endpoint.baseUrl,
+        apiKey: 'k',
+        model: 'text-model',
+      })
+      const reported: [number, number, string][] = []
+
+      for await (const delta of provider.stream(request, {
+        onUsage: (usage, model) => reported.push([usage.inputTokens, usage.outputTokens, model]),
+      })) {
+        assert.deepEqual(delta, { type: 'text', text: 'Hi' })
+        break
+      }
+
+      assert.deepEqual(reported, [[70, 1, 'fake-model-1']])
+      for (let i = 0; i < 50 && !closed; i += 1) await new Promise((r) => setTimeout(r, 10))
+      assert.isTrue(closed, 'stopping early closes the upstream connection')
+    } finally {
+      await endpoint.close()
+    }
+  })
 })

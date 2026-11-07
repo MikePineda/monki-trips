@@ -14,6 +14,7 @@ import {
   type LlmMessage,
   type LlmRequest,
   type LlmStopReason,
+  type LlmStreamOptions,
   type LlmToolCall,
 } from '#services/llm/llm_provider'
 import { parseSseStream } from '#services/llm/sse'
@@ -103,7 +104,7 @@ export class AnthropicCompatibleProvider extends LlmProvider {
     return this.completionOf(parsed, request)
   }
 
-  async *stream(request: LlmRequest): AsyncIterable<LlmDelta> {
+  async *stream(request: LlmRequest, options: LlmStreamOptions = {}): AsyncIterable<LlmDelta> {
     const response = await this.send(this.body(request, true))
     if (!response.body) throw new LlmUnavailableError('llm answered without a body')
 
@@ -127,6 +128,7 @@ export class AnthropicCompatibleProvider extends LlmProvider {
           model = data.message?.model ?? model
           inputTokens = data.message?.usage?.input_tokens ?? inputTokens
           outputTokens = data.message?.usage?.output_tokens ?? outputTokens
+          options.onUsage?.({ inputTokens, outputTokens }, model)
           break
         case 'content_block_start':
           if (data.content_block?.type === 'tool_use') {
@@ -163,6 +165,7 @@ export class AnthropicCompatibleProvider extends LlmProvider {
           stopReason = stopReasonOf(data.delta?.stop_reason)
           outputTokens = data.usage?.output_tokens ?? outputTokens
           inputTokens = data.usage?.input_tokens ?? inputTokens
+          options.onUsage?.({ inputTokens, outputTokens }, model)
           break
         case 'error':
           throw new LlmUnavailableError('llm stream reported an error')

@@ -9,6 +9,7 @@ import {
   type LlmCompletion,
   type LlmDelta,
   type LlmRequest,
+  type LlmUsage,
 } from '#services/llm/llm_provider'
 import { LlmUsageService } from '#services/llm/llm_usage_service'
 
@@ -48,21 +49,39 @@ export class LlmClient {
     return completion
   }
 
-  /** Streams the provider's deltas; the reservation is settled when the stream ends or fails. */
+  /**
+   * Streams the provider's deltas; the reservation is settled when the
+   * stream ends (`ok`), fails (`error`) or is stopped early by the consumer
+   * (`aborted`, charged the last usage the provider reported, else the
+   * input estimate).
+   */
   async *stream(caller: LlmCaller, request: LlmRequest): AsyncIterable<LlmDelta> {
     const reservation = await this.reserve(caller, request)
     const startedAt = this.clock.now().getTime()
     let completion: LlmCompletion | null = null
+    let known: { usage: LlmUsage; model: string } | null = null
+    let failed = false
     try {
-      for await (const delta of this.provider.stream(request)) {
+      const deltas = this.provider.stream(request, {
+        onUsage: (usage, model) => {
+          known = { usage, model }
+        },
+      })
+      for await (const delta of deltas) {
         if (delta.type === 'done') completion = delta.completion
         yield delta
       }
     } catch (error) {
+      failed = true
       await this.settleError(reservation, startedAt)
       throw this.mapError(error)
+    } finally {
+      if (completion) {
+        await this.settleOk(reservation, completion, startedAt)
+      } else if (!failed) {
+        await this.settleAborted(reservation, request, known, startedAt)
+      }
     }
-    if (completion) await this.settleOk(reservation, completion, startedAt)
   }
 
   /** Reserves the estimated input plus `maxTokens`; answers the usage row's id. */
@@ -83,6 +102,21 @@ export class LlmClient {
       outputTokens: completion.usage.outputTokens,
       latencyMs: this.clock.now().getTime() - startedAt,
       status: 'ok',
+    })
+  }
+
+  private async settleAborted(
+    reservation: string,
+    request: LlmRequest,
+    known: { usage: LlmUsage; model: string } | null,
+    startedAt: number
+  ) {
+    await this.usage.settle(reservation, {
+      model: known?.model ?? 'unknown',
+      inputTokens: known?.usage.inputTokens ?? estimateInputTokens(request),
+      outputTokens: known?.usage.outputTokens ?? 0,
+      latencyMs: this.clock.now().getTime() - startedAt,
+      status: 'aborted',
     })
   }
 
