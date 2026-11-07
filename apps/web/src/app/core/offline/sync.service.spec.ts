@@ -17,17 +17,18 @@ import { SyncService } from './sync.service'
 import { toEventRecord } from './event-record'
 import { blankEvent, blankStop } from '../../../testing/fake-trip-content'
 import { toStopRecord } from './stop-record'
+import { expenseRecord } from '../../../testing/money-fixtures'
 
-const EXPENSE: ExpenseRecord = {
+const EXPENSE: ExpenseRecord = expenseRecord({
   id: 'x1',
   tripId: 't1',
-  date: '2027-01-16',
+  spentOn: '2027-01-16',
   description: 'Synthetic lunch',
   amountMinor: 1250,
   currency: 'EUR',
   updatedAt: '2026-11-07T11:00:00.000Z',
   syncState: 'pending',
-}
+})
 
 const TASK: TaskRecord = {
   id: 'k1',
@@ -46,15 +47,15 @@ const TASK: TaskRecord = {
   updatedAt: '2026-11-07T11:00:00.000Z',
 }
 
-const SERVER_EXPENSE: ExpenseRecord = {
+const SERVER_EXPENSE: ExpenseRecord = expenseRecord({
   id: 'x1',
   tripId: 't1',
-  date: '2027-01-16',
+  spentOn: '2027-01-16',
   description: 'Synthetic lunch (edited by another member)',
   amountMinor: 1800,
   currency: 'EUR',
   updatedAt: '2026-11-07T11:30:00.000Z',
-}
+})
 
 describe('SyncService', () => {
   let db: MonkiTripsDb

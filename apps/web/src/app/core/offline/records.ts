@@ -1,5 +1,7 @@
 import type {
+  BudgetCategory,
   EmergencyInfoContent,
+  Expense,
   EventSegmentRow,
   SegmentSeat,
   TaskOrigin,
@@ -124,15 +126,16 @@ export interface ChecklistRecord extends TripScopedRecord {
   checked: boolean
 }
 
-export interface ExpenseRecord extends TripScopedRecord {
-  /** YYYY-MM-DD the money was spent. */
-  date: string
-  description: string
-  /** Integer minor units of `currency`. */
-  amountMinor: number
-  /** ISO 4217 code. */
-  currency: string
-}
+/**
+ * An expense as the device keeps it: the API's `Expense` without the
+ * tombstone. `baseAmountMinor` and `fxRate` stay null while the rate is
+ * missing (a quick capture made offline gets its rate when the server
+ * applies it); `needsDetails` marks a capture with only amount and category.
+ */
+export type ExpenseRecord = Omit<Expense, 'deletedAt'> & SyncedRecord
+
+/** A budget line of a trip: a default one (`key`) or a custom one (`name`), with an optional budget. */
+export type BudgetCategoryRecord = Omit<BudgetCategory, 'deletedAt'> & SyncedRecord
 
 export interface MemberRecord extends TripScopedRecord {
   userId: string
@@ -207,6 +210,7 @@ export interface SyncRowMap {
   tasks: TaskRecord
   checklist: ChecklistRecord
   expenses: ExpenseRecord
+  budgetCategories: BudgetCategoryRecord
   members: MemberRecord
   travellers: TravellerRecord
   emergency: EmergencyRecord
@@ -225,6 +229,7 @@ export const SYNC_TABLES: readonly SyncTable[] = [
   'tasks',
   'checklist',
   'expenses',
+  'budgetCategories',
   'members',
   'travellers',
   'emergency',

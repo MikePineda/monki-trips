@@ -5,6 +5,7 @@ import type { ApiClient } from './api'
 import { ApiFailure } from './api-failure'
 import { RealSyncApi } from './real-sync-api'
 import { blankEvent, blankSeat, blankSegment, blankStop } from '../../../testing/fake-trip-content'
+import { budgetCategoryRow, expenseRow } from '../../../testing/money-fixtures'
 
 const TASK_ROW: TripTaskRow = {
   id: 'k1',
@@ -242,6 +243,38 @@ describe('RealSyncApi', () => {
       { table: 'events', row: { id: 'e2' }, deleted: true },
       { table: 'segments', row: expect.objectContaining({ id: 'g1', eventId: 'e1' }) },
       { table: 'seats', row: expect.objectContaining({ id: 'st1', segmentId: 'g1' }) },
+    ])
+    for (const change of result.changes) {
+      expect(change.row).not.toHaveProperty('deletedAt')
+    }
+  })
+
+  it('pulls expenses and budget categories into their tables, tombstones included', async () => {
+    const { loader } = clientWith({
+      pull: () => ({
+        changes: [
+          { entity: 'budget_category', row: budgetCategoryRow({ id: 'c1', tripId: 't1' }) },
+          {
+            entity: 'expense',
+            row: expenseRow({ id: 'x1', tripId: 't1', baseAmountMinor: null, fxRate: null }),
+          },
+          {
+            entity: 'expense',
+            row: expenseRow({ id: 'x2', tripId: 't1', deletedAt: '2026-11-07T12:00:00.000Z' }),
+          },
+        ],
+        tripIds: ['t1'],
+        cursor: 'c2',
+        hasMore: false,
+      }),
+    })
+
+    const result = await new RealSyncApi(loader).pull(null)
+
+    expect(result.changes).toEqual([
+      { table: 'budgetCategories', row: expect.objectContaining({ id: 'c1', key: 'other' }) },
+      { table: 'expenses', row: expect.objectContaining({ id: 'x1', baseAmountMinor: null }) },
+      { table: 'expenses', row: { id: 'x2' }, deleted: true },
     ])
     for (const change of result.changes) {
       expect(change.row).not.toHaveProperty('deletedAt')

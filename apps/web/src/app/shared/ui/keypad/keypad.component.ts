@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, model } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  afterNextRender,
+  inject,
+  input,
+  model,
+} from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { MkIconComponent } from '../icon/icon.component'
 import { provideUiI18n } from '../ui-i18n'
@@ -10,13 +18,17 @@ const KEYS: readonly string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.
  * 56 px keys in mono with tabular figures (digits, the decimal separator and
  * delete) that edit `value`, a plain digit string the sheet formats as the
  * hero amount. The decimal key is a dot; the formatter localises it.
+ * `decimals` caps the fraction (0 for a currency without decimals);
+ * `autofocus` puts the focus on the first key so a sheet opens ready, and
+ * a hardware keyboard types too (digits, `.`/`,`, Backspace) while a key
+ * has the focus.
  */
 @Component({
   selector: 'mk-keypad',
   imports: [TranslocoPipe, MkIconComponent],
   viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'mk-keypad' },
+  host: { 'class': 'mk-keypad', '(keydown)': 'onKey($event)' },
   styles: `
     :host {
       display: grid;
@@ -67,18 +79,43 @@ const KEYS: readonly string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.
 export class MkKeypadComponent {
   /** Digits typed so far, at most one decimal separator and two decimals. */
   readonly value = model('')
+  /** Most digits after the separator. */
+  readonly decimals = input(2)
+  readonly autofocus = input(false)
 
   protected readonly keys = KEYS
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
+
+  constructor() {
+    afterNextRender(() => {
+      if (this.autofocus()) {
+        this.host.nativeElement.querySelector<HTMLButtonElement>('button')?.focus()
+      }
+    })
+  }
+
+  protected onKey(event: KeyboardEvent): void {
+    if (/^[0-9]$/.test(event.key)) {
+      this.press(event.key)
+    } else if (event.key === '.' || event.key === ',') {
+      this.press('.')
+    } else if (event.key === 'Backspace') {
+      this.erase()
+    } else {
+      return
+    }
+    event.preventDefault()
+  }
 
   protected press(key: string): void {
     const current = this.value()
     if (key === '.') {
-      if (current.includes('.')) return
+      if (current.includes('.') || this.decimals() === 0) return
       this.value.set(current === '' ? '0.' : `${current}.`)
       return
     }
     const decimals = current.split('.')[1]
-    if (decimals !== undefined && decimals.length >= 2) return
+    if (decimals !== undefined && decimals.length >= this.decimals()) return
     if (current === '0') {
       this.value.set(key)
       return

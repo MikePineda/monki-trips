@@ -17,6 +17,8 @@ export const ENTITY_TABLES: Partial<Record<SyncEntity, SyncTable>> = {
   seat: 'seats',
   task: 'tasks',
   emergency: 'emergency',
+  expense: 'expenses',
+  budget_category: 'budgetCategories',
 }
 
 /** The sync entity a device table holds, for mutations. */
@@ -30,4 +32,6 @@ export const TABLE_ENTITIES: Partial<Record<SyncTable, SyncEntity>> = {
   seats: 'seat',
   tasks: 'task',
   emergency: 'emergency',
+  expenses: 'expense',
+  budgetCategories: 'budget_category',
 }

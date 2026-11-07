@@ -2,6 +2,7 @@ import type { SyncChange as WireChange, SyncMutation, SyncMutationResult } from 
 import { toEmergencyRecord } from '../offline/emergency-record'
 import { ENTITY_TABLES } from '../offline/entity-tables'
 import { toEventRecord } from '../offline/event-record'
+import { toBudgetCategoryRecord, toExpenseRecord } from '../offline/expense-record'
 import { toMemberRecord } from '../offline/member-record'
 import { toSeatRecord } from '../offline/seat-record'
 import { toSegmentRecord } from '../offline/segment-record'
@@ -152,6 +153,14 @@ export function toDeviceChange(change: WireChange): SyncChange[] {
       return change.row.deletedAt
         ? [{ table: 'tasks', row: { id: change.row.id }, deleted: true }]
         : [{ table: 'tasks', row: toTaskRecord(change.row) }]
+    case 'expense':
+      return change.row.deletedAt
+        ? [{ table: 'expenses', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'expenses', row: toExpenseRecord(change.row) }]
+    case 'budget_category':
+      return change.row.deletedAt
+        ? [{ table: 'budgetCategories', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'budgetCategories', row: toBudgetCategoryRecord(change.row) }]
     case 'emergency':
       return change.row.deletedAt
         ? [{ table: 'emergency', row: { id: change.row.tripId }, deleted: true }]

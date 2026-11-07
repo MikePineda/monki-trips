@@ -1,7 +1,9 @@
 import type { Signal } from '@angular/core'
 import { liveSignalFor } from './live'
 import type {
+  BudgetCategoryRecord,
   EventRecord,
+  ExpenseRecord,
   MemberRecord,
   SeatRecord,
   SegmentRecord,
@@ -45,6 +47,22 @@ export function tripTravellers(tripId: Signal<string>): Signal<TravellerRecord[]
     async (db, id) =>
       (await db.travellers.where('tripId').equals(id).toArray()).sort(
         (a, b) => a.position - b.position
+      ),
+    []
+  )
+}
+
+export function tripExpenses(tripId: Signal<string>): Signal<ExpenseRecord[]> {
+  return liveSignalFor(tripId, (db, id) => db.expenses.where('tripId').equals(id).toArray(), [])
+}
+
+/** The trip's budget lines in position order. */
+export function tripBudgetCategories(tripId: Signal<string>): Signal<BudgetCategoryRecord[]> {
+  return liveSignalFor(
+    tripId,
+    async (db, id) =>
+      (await db.budgetCategories.where('tripId').equals(id).toArray()).sort(
+        (a, b) => a.position - b.position || a.id.localeCompare(b.id)
       ),
     []
   )
