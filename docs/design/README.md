@@ -212,3 +212,12 @@ exit 0
   and the weather beside "Left today"; with two documents or a long address
   it scrolls. Acceptable, or should weather move behind a tap?
 - IBM Plex Mono ships 400/500 only in the repo; is 600 needed for anything?
+
+## Mocks
+
+Stitch mocks of the 13 MVP screens (Today, trip list and its empty state,
+itinerary day, event detail, where we sleep, documents, budget, quick
+expense, tasks, ready to fly, sign in, settings), light and dark, live in
+[`mocks/`](mocks/) as `<screen>-{light,dark}.{html,png}`. They are a
+reference only: `DESIGN.md` wins. Project and design-system ids, the prompt
+per screen and the known deviations are in [`stitch.md`](stitch.md).
