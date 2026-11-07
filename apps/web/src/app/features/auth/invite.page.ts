@@ -47,7 +47,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
     @switch (state()) {
       @case ('checking') {
         <p class="text-sm text-ink-2">{{ 'auth.invite.checking' | transloco }}</p>
-        <mk-skeleton class="mt-4" [rows]="3" data-testid="invite.loading" />
+        <mk-skeleton class="mt-4" [rows]="3" data-testid="auth.invite.loading" />
       }
       @case ('not-found') {
         <mk-empty-state
@@ -55,7 +55,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
           icon="circle-alert"
           [title]="'auth.invite.notFoundTitle' | transloco"
           [body]="'auth.invite.notFoundBody' | transloco"
-          data-testid="invite.notFound"
+          data-testid="auth.invite.notFound"
         />
       }
       @case ('expired') {
@@ -64,7 +64,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
           icon="circle-alert"
           [title]="'auth.invite.expiredTitle' | transloco"
           [body]="'auth.invite.expiredBody' | transloco"
-          data-testid="invite.expired"
+          data-testid="auth.invite.expired"
         />
       }
       @case ('failed') {
@@ -76,7 +76,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
       @case ('ready') {
         @if (preview(); as preview) {
           <h1 class="text-xl font-semibold text-ink-1">{{ 'auth.invite.title' | transloco }}</h1>
-          <p class="mt-3 text-ink-1" data-testid="invite.preview">
+          <p class="mt-3 text-ink-1" data-testid="auth.invite.preview">
             {{
               'auth.invite.body'
                 | transloco
@@ -88,7 +88,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
             [failure]="failure()"
             scope="auth"
             [knownCodes]="codes"
-            testId="invite.error"
+            testId="auth.invite.error"
           />
           @if (session.signedIn()) {
             <button
@@ -96,7 +96,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
               class="mt-6"
               type="button"
               [loading]="busy()"
-              data-testid="invite.accept"
+              data-testid="auth.invite.accept"
               (click)="accept()"
             >
               {{ 'auth.invite.accept' | transloco }}
@@ -107,7 +107,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
                 mk-button
                 routerLink="/signup"
                 [queryParams]="{ invitation: token() }"
-                data-testid="invite.signup"
+                data-testid="auth.invite.signup"
               >
                 {{ 'auth.invite.signup' | transloco }}
               </a>
@@ -116,7 +116,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
                 variant="secondary"
                 routerLink="/login"
                 [queryParams]="{ returnUrl: '/invite/' + token() }"
-                data-testid="invite.login"
+                data-testid="auth.invite.login"
               >
                 {{ 'auth.invite.login' | transloco }}
               </a>

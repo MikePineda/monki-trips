@@ -12,11 +12,11 @@ test.describe('J01 sign in, trips, sign out', () => {
   test('a wrong password is refused with an honest message', async ({ page }) => {
     await page.goto('/login')
 
-    await page.getByTestId('login.email').fill(solo.email)
-    await page.getByTestId('login.password').fill('not-the-password')
-    await page.getByTestId('login.submit').click()
+    await page.getByTestId('auth.login.email').fill(solo.email)
+    await page.getByTestId('auth.login.password').fill('not-the-password')
+    await page.getByTestId('auth.login.submit').click()
 
-    await expect(page.getByTestId('login.error')).toHaveText(
+    await expect(page.getByTestId('auth.login.error')).toHaveText(
       'That e-mail and password do not match.'
     )
     await expect(page).toHaveURL(/\/login$/)

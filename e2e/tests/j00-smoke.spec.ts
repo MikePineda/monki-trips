@@ -6,7 +6,7 @@ test.describe('J00 smoke', () => {
 
     await expect(page).toHaveURL(/\/login\?returnUrl=%2Ftrips$/)
     await expect(page.getByTestId('shell.name')).toHaveText('monki trips')
-    await expect(page.getByTestId('login.submit')).toBeVisible()
+    await expect(page.getByTestId('auth.login.submit')).toBeVisible()
   })
 
   test('/api/health answers 200 JSON with version and sha', async ({ request }) => {

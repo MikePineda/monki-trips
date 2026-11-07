@@ -49,7 +49,7 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
           icon="info"
           [title]="'auth.reset.title' | transloco"
           [body]="'auth.reset.missingToken' | transloco"
-          data-testid="reset.missingToken"
+          data-testid="auth.reset.missingToken"
         >
           <a mkEmptyAction mk-button variant="secondary" routerLink="/forgot-password">
             {{ 'auth.reset.request' | transloco }}
@@ -62,14 +62,14 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
           icon="circle-alert"
           [title]="'auth.reset.expiredTitle' | transloco"
           [body]="'auth.reset.expiredBody' | transloco"
-          data-testid="reset.expired"
+          data-testid="auth.reset.expired"
         >
           <a
             mkEmptyAction
             mk-button
             variant="secondary"
             routerLink="/forgot-password"
-            data-testid="reset.request"
+            data-testid="auth.reset.request"
           >
             {{ 'auth.reset.request' | transloco }}
           </a>
@@ -81,9 +81,9 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
           icon="circle-check"
           [title]="'auth.reset.doneTitle' | transloco"
           [body]="'auth.reset.doneBody' | transloco"
-          data-testid="reset.done"
+          data-testid="auth.reset.done"
         >
-          <a mkEmptyAction mk-button routerLink="/login" data-testid="reset.login">
+          <a mkEmptyAction mk-button routerLink="/login" data-testid="auth.reset.login">
             {{ 'auth.reset.login' | transloco }}
           </a>
         </mk-empty-state>
@@ -101,16 +101,16 @@ type ResetState = 'missing-token' | 'form' | 'expired' | 'done'
               type="password"
               autocomplete="new-password"
               [formField]="form.password"
-              data-testid="reset.password"
+              data-testid="auth.reset.password"
             />
           </mk-field>
           <mk-api-error
             [failure]="failure()"
             scope="auth"
             [knownCodes]="codes"
-            testId="reset.error"
+            testId="auth.reset.error"
           />
-          <button mk-button type="submit" [loading]="busy()" data-testid="reset.submit">
+          <button mk-button type="submit" [loading]="busy()" data-testid="auth.reset.submit">
             {{ 'auth.reset.submit' | transloco }}
           </button>
         </form>

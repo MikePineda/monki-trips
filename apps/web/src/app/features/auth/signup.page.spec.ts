@@ -58,16 +58,16 @@ describe('SignupPage', () => {
   it('shows the form while registration is open', async () => {
     const { has } = await render()
 
-    expect(has('signup.submit')).toBe(true)
-    expect(has('signup.closed')).toBe(false)
+    expect(has('auth.signup.submit')).toBe(true)
+    expect(has('auth.signup.closed')).toBe(false)
   })
 
   it('signup is hidden while registration is closed and no invitation is present', async () => {
     fakes.auth.appConfig = { ...fakes.auth.appConfig, registrationOpen: false }
     const { has, text } = await render()
 
-    expect(has('signup.submit')).toBe(false)
-    expect(text('signup.closed')).toContain(SCOPE_CATALOGUES.auth.en.signup.closedTitle)
+    expect(has('auth.signup.submit')).toBe(false)
+    expect(text('auth.signup.closed')).toContain(SCOPE_CATALOGUES.auth.en.signup.closedTitle)
     expect(fakes.auth.calls).toEqual(['config'])
   })
 
@@ -76,9 +76,9 @@ describe('SignupPage', () => {
     fakes.auth.invitation = { tripName: 'Winter escape', role: 'editor', requiresEmail: true }
     const { has, text } = await render({ invitation: TOKEN })
 
-    expect(has('signup.submit')).toBe(true)
-    expect(text('signup.invited')).toContain('You were invited to Winter escape as editor.')
-    expect(text('signup.invited')).toContain(SCOPE_CATALOGUES.auth.en.signup.invitedEmail)
+    expect(has('auth.signup.submit')).toBe(true)
+    expect(text('auth.signup.invited')).toContain('You were invited to Winter escape as editor.')
+    expect(text('auth.signup.invited')).toContain(SCOPE_CATALOGUES.auth.en.signup.invitedEmail)
     expect(fakes.auth.calls).toContain(`invitationPreview:${TOKEN}`)
   })
 
@@ -86,9 +86,9 @@ describe('SignupPage', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
     const { type, submit } = await render()
 
-    type('signup.displayName', 'Traveller')
-    type('signup.email', 'new@example.com')
-    type('signup.password', 'a long enough password')
+    type('auth.signup.displayName', 'Traveller')
+    type('auth.signup.email', 'new@example.com')
+    type('auth.signup.password', 'a long enough password')
     await submit()
 
     expect(fakes.auth.calls).toContain('signup:new@example.com')
@@ -99,9 +99,9 @@ describe('SignupPage', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
     const { type, submit } = await render({ invitation: TOKEN })
 
-    type('signup.displayName', 'Traveller')
-    type('signup.email', 'new@example.com')
-    type('signup.password', 'a long enough password')
+    type('auth.signup.displayName', 'Traveller')
+    type('auth.signup.email', 'new@example.com')
+    type('auth.signup.password', 'a long enough password')
     await submit()
 
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/trips'))
@@ -116,11 +116,11 @@ describe('SignupPage', () => {
       message: 'taken',
     })
 
-    type('signup.displayName', 'Traveller')
-    type('signup.email', 'new@example.com')
-    type('signup.password', 'a long enough password')
+    type('auth.signup.displayName', 'Traveller')
+    type('auth.signup.email', 'new@example.com')
+    type('auth.signup.password', 'a long enough password')
     await submit()
 
-    expect(text('signup.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_EMAIL_TAKEN)
+    expect(text('auth.signup.error')).toBe(SCOPE_CATALOGUES.auth.en.errors.E_EMAIL_TAKEN)
   })
 })

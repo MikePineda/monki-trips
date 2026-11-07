@@ -38,14 +38,14 @@ test.describe('J11 invitation', () => {
     const partnerPage = await partnerContext.newPage()
     try {
       await partnerPage.goto(new URL(inviteUrl).pathname)
-      await expect(partnerPage.getByTestId('invite.preview')).toHaveText(
+      await expect(partnerPage.getByTestId('auth.invite.preview')).toHaveText(
         'Join Shared escape as editor.'
       )
-      await partnerPage.getByTestId('invite.login').click()
+      await partnerPage.getByTestId('auth.invite.login').click()
       await expect(partnerPage).toHaveURL(/\/login\?returnUrl=%2Finvite%2F/)
       await signIn(partnerPage, partner, /\/invite\//)
-      await expect(partnerPage.getByTestId('invite.preview')).toBeVisible()
-      await partnerPage.getByTestId('invite.accept').click()
+      await expect(partnerPage.getByTestId('auth.invite.preview')).toBeVisible()
+      await partnerPage.getByTestId('auth.invite.accept').click()
 
       await expect(partnerPage).toHaveURL(new RegExp(`${tripPath}/today$`))
       await expect(partnerPage.getByTestId('shell.name')).toHaveText('Shared escape')
@@ -81,7 +81,7 @@ test.describe('J11 invitation', () => {
     // Any unknown token: the preview is public and answers "not found".
     await page.goto('/invite/not-a-real-token-0123456789abcdef')
 
-    await expect(page.getByTestId('invite.notFound')).toContainText('Invitation not found')
+    await expect(page.getByTestId('auth.invite.notFound')).toContainText('Invitation not found')
     const response = await request.get('/api/v1/invitations/not-a-real-token-0123456789abcdef')
     expect(response.status()).toBe(404)
   })
