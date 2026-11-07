@@ -11,8 +11,14 @@ import type { EventRecord, SeatRecord, SegmentRecord, StopRecord, TripRecord } f
 import { SyncService } from './sync.service'
 import { applyTripChanges } from './trip-record'
 
-/** The entities the itinerary writes through this store. */
-export type ContentEntity = Extract<SyncPushEntity, 'trip' | 'stop' | 'event' | 'segment' | 'seat'>
+/**
+ * The entities the itinerary writes through this store, plus `task` for
+ * edits of a task the server made (Today's "I printed it").
+ */
+export type ContentEntity = Extract<
+  SyncPushEntity,
+  'trip' | 'stop' | 'event' | 'segment' | 'seat' | 'task'
+>
 
 /** A local change to one row: only the fields that changed, in the entity's wire shape. */
 export interface ContentWrite<E extends ContentEntity = ContentEntity> {

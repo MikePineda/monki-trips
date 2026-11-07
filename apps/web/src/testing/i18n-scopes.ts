@@ -21,6 +21,8 @@ import planEn from '../app/features/plan/i18n/en.json'
 import planEs from '../app/features/plan/i18n/es.json'
 import eventsEn from '../app/features/plan/events/i18n/en.json'
 import eventsEs from '../app/features/plan/events/i18n/es.json'
+import todayEn from '../app/features/today/i18n/en.json'
+import todayEs from '../app/features/today/i18n/es.json'
 import tasksEn from '../app/features/tasks/i18n/en.json'
 import tasksEs from '../app/features/tasks/i18n/es.json'
 import tripEn from '../app/features/trip/i18n/en.json'
@@ -57,6 +59,7 @@ export const SCOPE_CATALOGUES = {
   shell: { en: shellEn, es: shellEs },
   styleguide: { en: styleguideEn, es: styleguideEs },
   tasks: { en: tasksEn, es: tasksEs },
+  today: { en: todayEn, es: todayEs },
   trip: { en: tripEn, es: tripEs },
   ui: { en: uiEn, es: uiEs },
 } satisfies Record<string, Record<AppLang, Translation>>

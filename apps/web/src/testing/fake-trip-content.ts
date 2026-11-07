@@ -1,5 +1,6 @@
 import type {
   EventSegmentRow,
+  Expense,
   SegmentSeat,
   Trip,
   TripDocumentRow,
@@ -176,6 +177,30 @@ export function blankDocument(overrides: Partial<TripDocumentRow> = {}): TripDoc
     availableOffline: true,
     ...overrides,
   })
+}
+
+/** An expense of the demo trip, already converted to the base currency. */
+export function blankExpense(overrides: Partial<Expense> = {}): Expense {
+  return {
+    id: 'expense-1',
+    tripId: DEMO_TRIP_ID,
+    categoryId: null,
+    eventId: null,
+    amountMinor: 1250,
+    currency: 'AUD',
+    fxRate: '1',
+    fxRateDate: '2027-01-20',
+    fxSource: 'identity',
+    baseAmountMinor: 1250,
+    spentOn: '2027-01-20',
+    description: 'Synthetic lunch',
+    paidByTravellerId: null,
+    needsDetails: false,
+    createdBy: 'local-traveller',
+    deletedAt: null,
+    updatedAt: '2026-11-07T00:00:00.000Z',
+    ...overrides,
+  }
 }
 
 /** The instant of a local time in a zone, with the offsets the fixtures use (no DST in them). */
