@@ -87,8 +87,15 @@ export const routes: Routes = [
           },
         ],
       },
-      { path: 'money', loadComponent: () => import('./features/money/money.page') },
-      { path: 'add', loadComponent: () => import('./features/money/quick-expense.page') },
+      {
+        path: 'money',
+        loadComponent: () => import('./features/money/money-pages').then((m) => m.MoneyPage),
+      },
+      {
+        path: 'add',
+        loadComponent: () =>
+          import('./features/money/money-pages').then((m) => m.QuickExpensePage),
+      },
       ...(['today', 'docs'] as const).map((section) => ({
         path: section,
         loadComponent: () => import('./features/trip/trip-placeholder.page'),
