@@ -60,9 +60,9 @@ a dated one-liner (what, where: laptop/cloud/CI, what changed).
   of answers **404, never 403**.
 - **Money is integer minor units** (`*Minor`) with ISO 4217 exponents from
   `@monkitrips/shared`; dates are `YYYY-MM-DD`.
-- **Conventional Commits** (commitlint via lefthook). release-please owns
-  `CHANGELOG.md`: never edit it. Extra type: `security`. Linear history,
-  rebase merges only.
+- **Conventional Commits** (commitlint via lefthook; pre-push runs the privacy
+  and commit-identity guards). release-please owns `CHANGELOG.md`: never edit
+  it. Extra type: `security`. Linear history, rebase merges only.
 - **No PR without `npm run verify` green.** Never skip, delete or loosen a
   test to get there.
 
@@ -71,17 +71,21 @@ a dated one-liner (what, where: laptop/cloud/CI, what changed).
 Node 24 (`nvm use`, exact version in `.nvmrc`), Docker.
 
 ```bash
-npm install                                # also installs the commit-msg hook
+npm ci                                     # exact lockfile install; also installs the git hooks (lefthook)
 npm run services:up                        # Postgres 17 (compose.dev.yaml) on 127.0.0.1:5432
 DB_PORT=5434 npm run services:up           # same, when 5432 is taken; export DB_PORT for tests too
 cp apps/api/.env.example apps/api/.env && (cd apps/api && node ace generate:key)
 (cd apps/api && node ace migration:run)
 npm run dev                                # api :3333 + web :4200 (proxies /api)
-npm run test                               # Japa + Vitest + shared node:test
-npm run e2e                                # Playwright vs compose.test.yaml (slot 0: API 3334, Postgres 5433)
-npm run e2e -- -- --project=mobile-chromium   # pass flags to Playwright after turbo's --
+npm test                                   # Japa + Vitest + shared node:test (network guard on)
 npm run verify:quick                       # lint + typecheck + test + build
 npm run verify                             # verify:quick + e2e (the PR gate)
+npm run e2e                                # Playwright vs compose.test.yaml (slot 0: API 3334, Postgres 5433)
+npm run e2e -- -- --project=mobile-chromium   # pass flags to Playwright after turbo's --
+npm run build                              # production builds of every workspace
+bash scripts/test-offline.sh               # the suite on a Docker network with no route out (Linux hosts only)
+bash scripts/ci/privacy-check.sh           # privacy gate (PRIVACY_PATTERNS_FILE=docs/internal/privacy-patterns.txt locally)
+npm run test:guards                        # self-tests of the CI guards and the network guard
 npm run codegen                            # regenerate .adonisjs (Tuyau registry) after route changes
 docker build --target runtime -t monkitrips:local .   # production image rehearsal
 ```
@@ -100,10 +104,28 @@ and done criterion, files to read, the contract, the rules above, the
 mandatory verification command and a report of at most 25 lines.
 Subagents commit and stop; only the master opens and merges pull requests.
 
-## Cloud sessions (Claude Code on the web)
+## Cloud sessions
 
-Placeholder: WP 0.1b fills this section (SessionStart hook, services in the
-VM, network guard, what runs where).
+This repo works the same from a laptop and from a Claude Code cloud session.
+Details, environment variables and the first-session smoke: `docs/CLOUD.md`.
+
+- A SessionStart hook (`scripts/cloud-setup.sh`, cloud only) puts Node from
+  `/opt/node24` on PATH, installs dependencies the CI way when the lockfile
+  changed, creates `apps/api/.env`, starts Postgres and prints status lines.
+  Read them; a `WARN` line needs fixing first (`.claude/cloud-setup.log`).
+- E2E uses Chrome for Testing from `CHROME_PATH`; never run
+  `playwright install` in the VM. WebKit runs in CI only.
+- Tests never reach the internet: `scripts/test/no-network.mjs` is loaded
+  first by every runner, and `npm run test:offline` runs the suite on a
+  Docker network with no route out.
+- GitHub: `gh api` (REST) only; `gh pr`, `gh issue` and GraphQL answer 403.
+  PRs are opened and merged by the master agent with the `ship` skill
+  scripts (rebase merge).
+- Limits: at most 2 implementer subagents, one full `npm run verify` at a
+  time. An idle VM loses background processes; reread `docs/BACKLOG.md`,
+  `git log` and the open PRs after a resume.
+- Working mode and privacy rules: `.claude/rules/master-agent.md` and
+  `.claude/rules/privacy.md`. Never print `$PRIVACY_PATTERNS`.
 
 ## Known traps (each one already cost time)
 
