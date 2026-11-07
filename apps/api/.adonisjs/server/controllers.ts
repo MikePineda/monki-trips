@@ -16,6 +16,7 @@ export const controllers = {
   PushSubscriptions: () => import('#controllers/push_subscriptions_controller'),
   Spa: () => import('#controllers/spa_controller'),
   Sync: () => import('#controllers/sync_controller'),
+  Tasks: () => import('#controllers/tasks_controller'),
   TripInvitations: () => import('#controllers/trip_invitations_controller'),
   TripJson: () => import('#controllers/trip_json_controller'),
   TripMembers: () => import('#controllers/trip_members_controller'),

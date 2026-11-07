@@ -1,0 +1,17 @@
+{
+  "template": {
+    "documents": {
+      "passport": "Check the passport is valid 6+ months after the trip",
+      "visa": "Check visa requirements",
+      "insurance": "Buy travel insurance"
+    },
+    "gear": {
+      "esim": "Get an eSIM or local SIM",
+      "adapter": "Pack a power adapter",
+      "cash": "Get some local cash"
+    },
+    "before_leaving": {
+      "print": "Print the documents"
+    }
+  }
+}

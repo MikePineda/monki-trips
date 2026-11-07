@@ -1,0 +1,17 @@
+{
+  "template": {
+    "documents": {
+      "passport": "Comprobar que el pasaporte vale 6+ meses tras el viaje",
+      "visa": "Revisar los requisitos de visado",
+      "insurance": "Contratar el seguro de viaje"
+    },
+    "gear": {
+      "esim": "Conseguir una eSIM o SIM local",
+      "adapter": "Meter un adaptador de corriente",
+      "cash": "Conseguir algo de efectivo local"
+    },
+    "before_leaving": {
+      "print": "Imprimir los documentos"
+    }
+  }
+}

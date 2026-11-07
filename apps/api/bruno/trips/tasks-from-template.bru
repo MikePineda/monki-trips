@@ -1,0 +1,22 @@
+meta {
+  name: Tasks from template
+  type: http
+  seq: 52
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/tasks/from-template
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+docs {
+  Adds the pre-trip checklist items the trip is still missing (origin
+  `template`, one task per `templateItemKey`, due relative to the start
+  date) and answers the whole checklist with how many were created.
+  Idempotent: a second call creates nothing.
+}

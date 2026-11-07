@@ -6,6 +6,7 @@ import {
   EVENT_KINDS,
   EVENT_STATUSES,
   FX_SOURCES,
+  PRE_TRIP_TEMPLATE_KEYS,
   TASK_PRIORITIES,
 } from '@monkitrips/shared'
 import {
@@ -138,6 +139,13 @@ export const documentChanges = vine.compile(
   })
 )
 
+/**
+ * Origins a client may give a task it creates: its own (`manual`) or a
+ * checklist item (`template`, with the item's key). `document` and `ai`
+ * tasks are made by the server (print tasks, accepted AI actions).
+ */
+export const CLIENT_TASK_ORIGINS = ['manual', 'template'] as const
+
 export const taskChanges = vine.compile(
   vine.object({
     eventId: refField.nullable().optional(),
@@ -146,6 +154,10 @@ export const taskChanges = vine.compile(
     dueOn: dateField.nullable().optional(),
     priority: vine.enum(TASK_PRIORITIES).optional(),
     doneAt: instantField.nullable().optional(),
+    origin: vine.enum(CLIENT_TASK_ORIGINS).optional(),
+    // Only with origin `template`; the entity enforces it and derives `titleKey` from the key.
+    templateItemKey: vine.enum(PRE_TRIP_TEMPLATE_KEYS).optional(),
+    titleKey: vine.string().trim().minLength(1).maxLength(120).optional(),
   })
 )
 
@@ -202,7 +214,7 @@ const contact = vine.object({
 
 export const emergencyChanges = vine.compile(
   vine.object({
-    contacts: vine.array(contact).maxLength(20).optional(),
+    contacts: vine.array(contact).maxLength(20).nullable().optional(),
     insurance: vine
       .object({
         provider: shortText,

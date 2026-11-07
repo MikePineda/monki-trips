@@ -57,6 +57,9 @@ export interface ApiDefinition {
       store: typeof routes['trips.documents.store']
       file: typeof routes['trips.documents.file']
     }
+    tasks: {
+      fromTemplate: typeof routes['trips.tasks.fromTemplate']
+    }
     members: {
       index: typeof routes['trips.members.index']
       destroy: typeof routes['trips.members.destroy']
