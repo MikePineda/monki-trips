@@ -77,25 +77,6 @@
       "offline": "Offline",
       "members": "Members",
       "activity": "Activity"
-    },
-    "members": {
-      "title": "Members",
-      "role": {
-        "owner": "Owner",
-        "editor": "Editor"
-      },
-      "you": "you",
-      "invite": "Invite by link",
-      "inviteBody": "Anyone with the link can join as an editor. It works once, for 7 days.",
-      "linkTitle": "Share this link",
-      "linkBody": "It is shown only now: copy it before leaving.",
-      "copy": "Copy link",
-      "copied": "Link copied",
-      "offline": "You need a connection to invite someone."
-    },
-    "activity": {
-      "title": "Activity",
-      "body": "Who changed what, and when, arrives with phase 2."
     }
   },
   "notFound": {

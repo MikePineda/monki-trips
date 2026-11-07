@@ -82,10 +82,13 @@ export const routes: Routes = [
         path: 'more',
         children: [
           { path: '', pathMatch: 'full', loadComponent: () => import('./features/trip/more.page') },
-          { path: 'members', loadComponent: () => import('./features/trip/members.page') },
+          {
+            path: 'members',
+            loadComponent: () => import('./features/trip/members/members.page'),
+          },
           {
             path: 'activity',
-            loadComponent: () => import('./features/trip/activity-placeholder.page'),
+            loadComponent: () => import('./features/trip/activity/activity.page'),
           },
           settingsRoute('settings'),
           { path: 'offline', loadComponent: () => import('./features/offline/offline.page') },

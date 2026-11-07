@@ -16,7 +16,8 @@ export function provideShellI18n() {
 
 /**
  * Error codes the shell catalogue explains (`shell.errors.<code>`) for the
- * trip screens it frames: the list, creating a trip, members.
+ * trip screens it frames: the list and creating a trip (members and the
+ * activity feed carry their own scopes).
  */
 export const TRIP_ERROR_CODES = [
   'E_EMAIL_NOT_VERIFIED',
