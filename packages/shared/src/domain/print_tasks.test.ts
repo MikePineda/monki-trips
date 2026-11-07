@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { printTaskDueOn, reconcilePrintTask } from './print_tasks.ts'
+import { PRINT_TASK_TITLE_KEY, printTaskDueOn, reconcilePrintTask } from './print_tasks.ts'
+import { PRINT_DOCUMENT_TASK_KEY } from '../task.ts'
 import type { TripDocument } from './trip_document.ts'
 import type { TripTask } from './trip_task.ts'
 
@@ -15,13 +16,18 @@ const voucher: TripDocument = {
 const openTask: TripTask = {
   id: 'task-print',
   title: 'Ferry voucher',
-  titleKey: 'tasks.print_document',
+  titleKey: 'print_document',
   dueOn: '2026-01-09',
   priority: 'normal',
   doneAt: null,
   origin: 'document',
   sourceDocumentId: 'doc-voucher',
 }
+
+test('the print task key is the one the API stores', () => {
+  assert.equal(PRINT_TASK_TITLE_KEY, 'print_document')
+  assert.equal(PRINT_DOCUMENT_TASK_KEY, PRINT_TASK_TITLE_KEY)
+})
 
 test('print tag creates one print task due the day before departure', () => {
   const result = reconcilePrintTask({
@@ -33,7 +39,7 @@ test('print tag creates one print task due the day before departure', () => {
   assert.deepEqual(result, {
     create: {
       title: 'Ferry voucher',
-      titleKey: 'tasks.print_document',
+      titleKey: 'print_document',
       origin: 'document',
       sourceDocumentId: 'doc-voucher',
       eventId: 'event-ferry',

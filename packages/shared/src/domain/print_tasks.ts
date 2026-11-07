@@ -10,8 +10,13 @@ import { addDays, compareIsoDate, type IsoDate } from './iso_date.ts'
 import { hasTag, type TripDocument } from './trip_document.ts'
 import { isDone, type TripTask } from './trip_task.ts'
 
-/** i18n key of the generated title; `title` carries the document's title for interpolation. */
-export const PRINT_TASK_TITLE_KEY = 'tasks.print_document'
+/**
+ * Translation key of the generated title, stored as `tasks.title_key`;
+ * `title` carries the document's title for interpolation. The API stores
+ * this exact value (`PRINT_DOCUMENT_TASK_KEY` on the wire is the same
+ * constant), so stored rows and the domain agree.
+ */
+export const PRINT_TASK_TITLE_KEY = 'print_document'
 
 export interface PrintTaskDraft {
   title: string
