@@ -14,12 +14,28 @@
     "title": "Trips",
     "emptyTitle": "No trips yet",
     "emptyBody": "Trips you plan or are invited to will show up here.",
-    "dates": "{{start}} to {{end}}"
+    "dates": "{{start}} to {{end}}",
+    "unverified": "Verify your e-mail to see and create trips.",
+    "verify": "Verify now",
+    "create": {
+      "action": "New trip",
+      "first": "Create your first trip",
+      "title": "New trip",
+      "name": "Name",
+      "startsOn": "Starts",
+      "endsOn": "Ends",
+      "baseCurrency": "Base currency",
+      "baseCurrencyHint": "3-letter code, e.g. EUR",
+      "budgetMode": "Budget",
+      "budget": {
+        "shared": "One shared pot",
+        "split": "Split between travellers"
+      },
+      "submit": "Create trip"
+    }
   },
   "login": {
-    "title": "Sign in",
-    "body": "Signing in arrives with the API (work package 0.6b). Until then the app runs for a local traveller.",
-    "continue": "Go to trips"
+    "title": "Sign in"
   },
   "share": {
     "title": "Shared with monki trips",
@@ -58,7 +74,28 @@
     "more": {
       "title": "More",
       "settings": "Settings",
-      "offline": "Offline"
+      "offline": "Offline",
+      "members": "Members",
+      "activity": "Activity"
+    },
+    "members": {
+      "title": "Members",
+      "role": {
+        "owner": "Owner",
+        "editor": "Editor"
+      },
+      "you": "you",
+      "invite": "Invite by link",
+      "inviteBody": "Anyone with the link can join as an editor. It works once, for 7 days.",
+      "linkTitle": "Share this link",
+      "linkBody": "It is shown only now: copy it before leaving.",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "offline": "You need a connection to invite someone."
+    },
+    "activity": {
+      "title": "Activity",
+      "body": "Who changed what, and when, arrives with phase 2."
     }
   },
   "styleguide": {
@@ -102,5 +139,20 @@
       "emptyBody": "An honest empty state has one action at most.",
       "emptyAction": "Do the one thing"
     }
+  },
+  "notFound": {
+    "title": "Trip not found",
+    "body": "This trip does not exist, or you are not one of its members.",
+    "back": "Back to trips"
+  },
+  "errors": {
+    "E_EMAIL_NOT_VERIFIED": "Verify your e-mail first.",
+    "E_VALIDATION_ERROR": "Check the highlighted fields.",
+    "E_TOO_MANY_REQUESTS": "Too many attempts. Try again in {{minutes}} min.",
+    "E_UNAUTHORIZED": "Your session ended. Sign in again.",
+    "E_BAD_CSRF_TOKEN": "This page is out of date. Reload and try again.",
+    "E_TRIP_ROLE": "Only the trip owner can do this.",
+    "network": "No connection. Showing what this device has.",
+    "unknown": "Something went wrong. Try again."
   }
 }

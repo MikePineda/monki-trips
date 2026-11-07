@@ -5,7 +5,7 @@ import { MkIconComponent } from '../../shared/ui/icon/icon.component'
 import type { IconName } from '../../shared/ui/icon/icon-names'
 
 interface MoreItem {
-  id: 'settings' | 'offline'
+  id: 'members' | 'activity' | 'settings' | 'offline'
   icon: IconName
 }
 
@@ -35,6 +35,8 @@ interface MoreItem {
 })
 export default class MorePage {
   protected readonly items: readonly MoreItem[] = [
+    { id: 'members', icon: 'users' },
+    { id: 'activity', icon: 'activity' },
     { id: 'settings', icon: 'settings' },
     { id: 'offline', icon: 'wifi-off' },
   ]

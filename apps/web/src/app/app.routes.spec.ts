@@ -8,23 +8,32 @@ import {
   provideOfflineTesting,
   resetOfflineTesting,
 } from '../testing/offline-testing'
+import { apiFakes, provideApiTesting, type ApiFakes } from '../testing/api-testing'
+import { fakeTrip } from './core/api/trips-api'
 import type { MonkiTripsDb } from './core/offline/db'
 import { META_ACTIVE_TRIP, MetaStore } from './core/offline/meta.store'
-import { FakeSessionApi, SESSION_API } from './core/session/session-api'
 import { routes } from './app.routes'
+
+/** A trip the fake server knows, so the trip shell opens it. */
+const DEMO_TRIP = {
+  ...fakeTrip({ id: 'demo-trip', name: 'Demo trip' }),
+  role: 'owner' as const,
+  memberCount: 1,
+}
 
 describe('app routes', () => {
   let db: MonkiTripsDb
-  let api: FakeSessionApi
+  let fakes: ApiFakes
 
   beforeEach(() => {
     db = freshOfflineDb()
-    api = new FakeSessionApi()
+    fakes = apiFakes()
+    fakes.trips.trips = [DEMO_TRIP]
     TestBed.configureTestingModule({
       imports: [i18nTesting()],
       providers: [
         ...provideOfflineTesting({ db }),
-        { provide: SESSION_API, useValue: api },
+        ...provideApiTesting(fakes),
         providePwaTesting(),
         provideRouter(routes, withComponentInputBinding()),
       ],
@@ -60,19 +69,47 @@ describe('app routes', () => {
     expect(has('shell.tab.today')).toBe(false)
   })
 
-  it('the sign-in placeholder lives in the auth layout', async () => {
+  it('the sign-in form lives in the auth layout', async () => {
+    fakes.session.user = null
     const { has } = await navigate('/login')
 
-    expect(has('login.placeholder')).toBe(true)
+    expect(has('login.email')).toBe(true)
     expect(has('shell.nav.settings')).toBe(false)
   })
 
-  it('an anonymous online visitor is sent to /login', async () => {
-    api.user = null
+  it('an anonymous online visitor is sent to /login with the return url', async () => {
+    fakes.session.user = null
 
     const { url } = await navigate('/trips')
 
-    expect(url).toBe('/login?next=%2Ftrips')
+    expect(url).toBe('/login?returnUrl=%2Ftrips')
+  })
+
+  it('the public account screens live in the auth layout', async () => {
+    fakes.session.user = null
+    const screens: [string, string][] = [
+      ['/signup', 'signup.submit'],
+      ['/invite/invitation-token-0123456789abcdef', 'invite.preview'],
+      ['/verify-email', 'verify.anonymous'],
+      ['/forgot-password', 'forgot.email'],
+      ['/reset-password?token=reset-token-0123456789', 'reset.password'],
+    ]
+    for (const [path, testId] of screens) {
+      const page = await navigate(path)
+      // Some screens ask the (fake) server first: give them a moment.
+      await vi.waitFor(() => {
+        page.harness.detectChanges()
+        expect(page.has(testId), `${path} shows ${testId}`).toBe(true)
+      })
+      expect(page.has('shell.nav.settings')).toBe(false)
+    }
+  })
+
+  it('a trip you are not a member of is not found, never forbidden', async () => {
+    const { url, has } = await navigate('/t/someone-elses-trip')
+
+    expect(url).toBe('/not-found')
+    expect(has('trips.notFound')).toBe(true)
   })
 
   it('the style guide is public and marked noindex', async () => {
@@ -105,8 +142,11 @@ describe('app routes', () => {
     expect(url).toBe('/t/demo-trip/add')
   })
 
-  it('more lists settings and offline, each reachable', async () => {
+  it('more lists members, activity, settings and offline, each reachable', async () => {
     expect((await navigate('/t/demo-trip/more')).has('trip.more.settings')).toBe(true)
+    expect((await navigate('/t/demo-trip/more')).has('trip.more.members')).toBe(true)
+    expect((await navigate('/t/demo-trip/more/members')).has('trip.members.title')).toBe(true)
+    expect((await navigate('/t/demo-trip/more/activity')).has('trip.activity.title')).toBe(true)
     expect((await navigate('/t/demo-trip/more/settings')).has('settings.theme.dark')).toBe(true)
     expect((await navigate('/t/demo-trip/more/offline')).has('offline.ready')).toBe(true)
   })
