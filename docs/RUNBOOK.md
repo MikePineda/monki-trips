@@ -27,7 +27,7 @@ relevant ones:
 | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`, `DB_POOL_MAX` | `DB_PASSWORD` is a secret.                                                 |
 | `DRIVE_DISK`, `S3_*`                                                         | `fs` until storage is configured; `s3` requires every `S3_*` value.        |
 | `MAIL_DRIVER`, `MAIL_FROM`, `RESEND_API_KEY`                                 | `log` never sends; `resend` requires the key and the sender.               |
-| `LLM_PROVIDER`, `LLM_*`                                                      | `fake` needs nothing; `anthropic` requires `LLM_API_KEY` and `LLM_MODEL`.  |
+| `LLM_PROVIDER`, `LLM_*`                                                      | See "LLM" below. `anthropic` requires `LLM_API_KEY` and `LLM_MODEL`.       |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`                     | Web push. All three or none; the private key is a secret.                  |
 | `SCHEDULER`                                                                  | `on` (default) runs the in-process jobs; `off` on a replica that must not. |
 | `APP_VERSION`, `GIT_SHA`                                                     | Leave empty: the image carries them.                                       |
@@ -62,3 +62,24 @@ relevant ones:
   yourself; the file is yours, so it never goes through a cloud VM, a prompt
   or a repository. `node ace trip:export <tripId> <file>` writes a backup of
   one trip; `GET /api/v1/me/export` takes every trip of an account.
+- **LLM: provider, model and cap variables; cost query.**
+  - `LLM_PROVIDER=anthropic` for any Anthropic Messages compatible endpoint.
+    `LLM_BASE_URL` is the endpoint's origin without `/v1/messages` (empty =
+    Anthropic; for MiniMax, its Anthropic-compatible base URL from the
+    provider's docs). `LLM_API_KEY` is a secret. `LLM_MODEL` is the model id
+    the endpoint expects; `LLM_VISION_MODEL` (optional) takes requests that
+    carry an image. `fake` answers 503 in production (no fixtures in the
+    image); `openai` is a reserved seam that answers 503.
+  - Cap: tokens per account and UTC month from `config/plans.ts` (`free`,
+    `pro`; `node ace users:plan <e-mail> pro` moves an account), or
+    `LLM_MONTHLY_TOKEN_CAP_OVERRIDE` for every account. Over it the API
+    answers 402 `E_LLM_QUOTA_EXCEEDED`; `GET /api/v1/auth/me` reports
+    `llmTokensLeft`.
+  - Usage and cost: `node ace llm:usage` (this month) or
+    `node ace llm:usage --month 2027-01` prints calls, tokens, cap and cost
+    per account (ids and masked addresses). In SQL:
+    `SELECT user_id, count(*), sum(tokens_in), sum(tokens_out), sum(cost_micros) / 1e6 AS usd FROM llm_usage WHERE created_at >= date_trunc('month', now() at time zone 'utc') GROUP BY user_id ORDER BY 3 DESC;`
+    A null `cost_micros` means the model is missing from the price table in
+    `config/llm.ts`: add it there. Many `error` rows mean the provider is
+    failing (check the key, the base URL and the model id); the logs carry
+    the status, never the prompt.
