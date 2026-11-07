@@ -46,6 +46,7 @@ export default defineConfig({
     () => import('@adonisjs/auth/auth_provider'),
     () => import('@adonisjs/limiter/limiter_provider'),
     () => import('#providers/mail_provider'),
+    () => import('#providers/deferred_tasks_provider'),
   ],
 
   /*

@@ -8,6 +8,7 @@ import { apiClient } from '@japa/api-client'
 import { shieldApiClient } from '@adonisjs/shield/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
 import { authApiClient } from '@adonisjs/auth/plugins/api_client'
+import { settleDeferred } from '#tests/helpers/settle_deferred'
 
 /**
  * Imported by the "bin/test.ts" entrypoint.
@@ -39,14 +40,22 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
 /**
  * Laravel's `RefreshDatabase` for the functional suite: migrate the test
  * database once per suite (rolled back at the end) and wrap every test in a
- * global transaction that is rolled back after it. Every functional test
- * lives inside a `test.group` so the hook reaches it.
+ * global transaction that is rolled back after it (once the work its
+ * requests deferred has finished). Every functional test lives inside a
+ * `test.group` so the hook reaches it.
  */
 export const configureSuite: Config['configureSuite'] = (suite) => {
   if (suite.name === 'functional') {
     suite.setup(() => testUtils.db().migrate())
     suite.onGroup((group) => {
-      group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
+      group.each.setup(async () => {
+        const rollback = await testUtils.db().wrapInGlobalTransaction()
+        // Work deferred past a response still writes inside this test's transaction.
+        return async () => {
+          await settleDeferred()
+          await rollback()
+        }
+      })
     })
     return suite.setup(() => testUtils.httpServer().start())
   }

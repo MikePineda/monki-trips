@@ -2,6 +2,7 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import { AuthMails } from '#services/auth_mails'
+import { DeferredTasks } from '#services/deferred_tasks'
 import { UserTokens } from '#services/user_tokens'
 import { forgotPasswordValidator, resetPasswordValidator } from '#validators/auth'
 
@@ -14,16 +15,24 @@ import { forgotPasswordValidator, resetPasswordValidator } from '#validators/aut
 export default class PasswordResetController {
   constructor(
     private readonly tokens: UserTokens,
-    private readonly mails: AuthMails
+    private readonly mails: AuthMails,
+    private readonly deferred: DeferredTasks
   ) {}
 
+  /**
+   * The lookup, the token and the mail all run after the answer, so a known
+   * and an unknown address answer in the same time and a slow mail provider
+   * never holds the request.
+   */
   async forgot(ctx: HttpContext) {
     const { email } = await ctx.request.validateUsing(forgotPasswordValidator)
-    const user = await User.findBy('email', email)
-    if (user && user.status === 'active') {
-      const { token } = await this.tokens.issue(user, 'reset_password')
-      await this.mails.sendPasswordReset(user, token)
-    }
+    this.deferred.defer('password reset mail', async () => {
+      const user = await User.findBy('email', email)
+      if (user && user.status === 'active') {
+        const { token } = await this.tokens.issue(user, 'reset_password')
+        await this.mails.sendPasswordReset(user, token)
+      }
+    })
     return ctx.response.accepted({ data: { accepted: true } })
   }
 
