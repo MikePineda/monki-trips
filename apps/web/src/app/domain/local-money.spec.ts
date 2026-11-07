@@ -1,22 +1,24 @@
 import { fromBaseMinor, localRate } from './local-money'
 
 describe('local money', () => {
-  it('the local currency is the latest foreign expense with a frozen rate', () => {
-    expect(
-      localRate(
-        [
-          { currency: 'EUR', fxRate: '0.6', spentOn: '2027-01-20', updatedAt: 'a' },
-          { currency: 'JPY', fxRate: '98.5', spentOn: '2027-01-22', updatedAt: 'a' },
-          { currency: 'THB', fxRate: null, spentOn: '2027-01-23', updatedAt: 'a' },
-          { currency: 'AUD', fxRate: '1', spentOn: '2027-01-24', updatedAt: 'a' },
-        ],
-        'AUD'
-      )
-    ).toEqual({ currency: 'JPY', rate: '98.5' })
+  it('the local currency is the country one, at the rate of its latest expense', () => {
+    const expenses = [
+      { currency: 'JPY', fxRate: '97.1', spentOn: '2027-01-20', updatedAt: 'a' },
+      { currency: 'JPY', fxRate: '98.5', spentOn: '2027-01-22', updatedAt: 'a' },
+      { currency: 'EUR', fxRate: '0.6', spentOn: '2027-01-23', updatedAt: 'a' },
+      { currency: 'JPY', fxRate: null, spentOn: '2027-01-24', updatedAt: 'a' },
+    ]
+
+    expect(localRate(expenses, 'AUD', 'JP')).toEqual({ currency: 'JPY', rate: '98.5' })
   })
 
-  it('no foreign expense means no local amount', () => {
-    expect(localRate([], 'AUD')).toBeNull()
+  it('no local amount without a known country, in the base country, or before any expense in it', () => {
+    const expenses = [{ currency: 'EUR', fxRate: '0.6', spentOn: '2027-01-23', updatedAt: 'a' }]
+
+    expect(localRate(expenses, 'AUD', 'XA')).toBeNull()
+    expect(localRate(expenses, 'AUD', null)).toBeNull()
+    expect(localRate(expenses, 'AUD', 'AU')).toBeNull()
+    expect(localRate(expenses, 'AUD', 'JP')).toBeNull()
   })
 
   it('converts base minor units to a zero-decimal currency', () => {

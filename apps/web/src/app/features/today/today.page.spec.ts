@@ -7,11 +7,11 @@ import {
   DEMO_TRIP_ID,
   DEMO_TRIP_RECORD,
   blankDocument,
-  blankExpense,
   blankStop,
   placedEvent,
 } from '../../../testing/fake-trip-content'
 import { FakeWeatherProvider } from '../../../testing/fake-weather-provider'
+import { expenseRecord } from '../../../testing/money-fixtures'
 import { i18nTesting } from '../../../testing/i18n-testing'
 import {
   TestClock,
@@ -23,7 +23,6 @@ import { settle } from '../../../testing/settle'
 import type { MonkiTripsDb } from '../../core/offline/db'
 import { toDocumentRecord } from '../../core/offline/document-record'
 import { toEventRecord } from '../../core/offline/event-record'
-import { toExpenseRecord } from '../../core/offline/expense-record'
 import { outboxMutation } from '../../core/offline/mutation'
 import type { TaskRecord } from '../../core/offline/records'
 import { toStopRecord } from '../../core/offline/stop-record'
@@ -143,14 +142,7 @@ describe('TodayPage', () => {
   it('renders the day, the next event, the documents, tonight and what is left, with no network', async () => {
     await seedDay()
     await db.expenses.put({
-      ...toExpenseRecord(
-        blankExpense({
-          id: 'lunch',
-          amountMinor: 2_000,
-          baseAmountMinor: 2_000,
-          spentOn: '2027-01-21',
-        })
-      ),
+      ...expenseRecord({ id: 'lunch', amountMinor: 2_000, baseAmountMinor: 2_000 }),
       syncState: 'pending',
     })
     const { host, text, until } = await render()
@@ -214,23 +206,22 @@ describe('TodayPage', () => {
 
   it('says over budget in words, and shows the local currency with the base below', async () => {
     await seedDay()
+    // Today's stop is in a euro country: the hero follows it, at the dinner's rate.
+    await db.stops.put(toStopRecord(blankStop({ countryCode: 'GR' })))
     await db.expenses.put(
-      toExpenseRecord(
-        blankExpense({
-          id: 'dinner',
-          amountMinor: 18_000,
-          currency: 'EUR',
-          fxRate: '0.6',
-          baseAmountMinor: 30_000,
-          spentOn: '2027-01-21',
-        })
-      )
+      expenseRecord({
+        id: 'dinner',
+        amountMinor: 18_000,
+        currency: 'EUR',
+        fxRate: '0.6',
+        baseAmountMinor: 30_000,
+      })
     )
     const { text, until } = await render()
 
     // 25 000 allowed today minus 30 000 spent: A$50 over, €30 at the trip's rate.
     await until(() => expect(text('today.money.hero')).toBe('−€30.00'))
-    expect(text('today.money.base')).toBe('−$50.00')
+    expect(text('today.money.base')).toBe('−A$50.00')
     expect(text('today.money.over')).toBe("Over today's budget by €30.00")
   })
 

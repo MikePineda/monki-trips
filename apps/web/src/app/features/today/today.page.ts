@@ -557,17 +557,16 @@ export default class TodayPage {
     }
     const locale = this.locale()
     const base = trip.baseCurrency
-    const rate = localRate(this.expenses(), base)
-    const baseText = formatMoney(Number(left), base, locale)
-    const hero = rate
-      ? formatMoney(Number(fromBaseMinor(left, base, rate)), rate.currency, locale)
-      : baseText
-    const over =
-      left < 0n
-        ? rate
-          ? formatMoney(Number(fromBaseMinor(-left, base, rate)), rate.currency, locale)
-          : formatMoney(Number(-left), base, locale)
-        : null
+    const rate = localRate(this.expenses(), base, screen.view.stop?.countryCode)
+    // Two currencies on one line need the disambiguated symbol (A$, MX$).
+    const options = { disambiguate: rate !== null }
+    const local = (baseMinor: bigint) =>
+      rate
+        ? formatMoney(fromBaseMinor(baseMinor, base, rate), rate.currency, locale, options)
+        : formatMoney(baseMinor, base, locale, options)
+    const hero = local(left)
+    const baseText = formatMoney(left, base, locale, options)
+    const over = left < 0n ? local(-left) : null
     return { hero, base: rate ? baseText : null, over }
   })
 
