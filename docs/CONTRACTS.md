@@ -106,7 +106,8 @@ legs: moving a leg onto a taken position swaps the two, so a reorder sent
 one leg at a time never conflicts), `seat`, `document` (metadata; files are created
 by the upload route and a `file` cannot be created here), `task`,
 `budget_category`, `expense` (an optional `shares` array replaces the whole
-split and must sum to the amount), `expense_share`, `emergency` (one row per
+split and must sum to the amount; an `amountMinor` change without `shares`
+must still match the live split), `expense_share`, `emergency` (one row per
 trip, merged per top-level key of `content`). Derived values are never
 accepted from a client and are recomputed after every merge: `startsAt`,
 `startsOn`, `endsAt` from the local times and zones (a nonexistent local
