@@ -32,5 +32,8 @@
   "E_FILE_TOO_LARGE": "El archivo es demasiado grande",
   "E_UNSUPPORTED_FILE": "Este tipo de archivo no está soportado. Usa un PDF o una imagen",
   "E_STORAGE_UNAVAILABLE": "El almacenamiento de archivos no está disponible ahora. Inténtalo de nuevo en un momento",
-  "E_FX_UNAVAILABLE": "Los tipos de cambio no están disponibles ahora. Inténtalo de nuevo en un momento"
+  "E_FX_UNAVAILABLE": "Los tipos de cambio no están disponibles ahora. Inténtalo de nuevo en un momento",
+  "E_LLM_QUOTA_EXCEEDED": "Has gastado la cuota de IA de este mes. Se renueva el día uno del mes que viene",
+  "E_LLM_UNAVAILABLE": "El asistente de IA no está disponible ahora. Inténtalo de nuevo en un momento",
+  "E_LLM_BAD_OUTPUT": "El asistente de IA dio una respuesta que no pudimos usar. Inténtalo de nuevo"
 }

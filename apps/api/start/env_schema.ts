@@ -56,11 +56,13 @@ export const envSchema = {
   S3_KEY: Env.schema.secret.optional(),
   S3_SECRET: Env.schema.secret.optional(),
 
-  // LLM (Anthropic Messages compatible)
-  LLM_PROVIDER: Env.schema.enum.optional(['fake', 'anthropic'] as const),
+  // LLM (Anthropic Messages compatible; `openai` is a reserved seam that answers 503)
+  LLM_PROVIDER: Env.schema.enum.optional(['fake', 'anthropic', 'openai'] as const),
   LLM_BASE_URL: Env.schema.string.optional({ format: 'url', tld: false }),
   LLM_API_KEY: Env.schema.secret.optional(),
   LLM_MODEL: Env.schema.string.optional(),
+  LLM_VISION_MODEL: Env.schema.string.optional(),
+  LLM_MONTHLY_TOKEN_CAP_OVERRIDE: Env.schema.number.optional(),
 
   // Other external providers
   FX_PROVIDER: Env.schema.enum.optional(['fake', 'frankfurter'] as const),

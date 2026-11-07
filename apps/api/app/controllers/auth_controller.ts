@@ -10,6 +10,7 @@ import { AuthMails } from '#services/auth_mails'
 import { UserTokens } from '#services/user_tokens'
 import { RegistrationPolicy } from '#services/registration_policy'
 import { InvitationAcceptance } from '#services/invitation_acceptance'
+import { LlmUsageService } from '#services/llm/llm_usage_service'
 import { loginUser, stampSessionVersion } from '#services/session_login'
 import { loginAttempts } from '#start/limiter'
 import { ApiException } from '#exceptions/api_exception'
@@ -25,7 +26,8 @@ export default class AuthController {
     private readonly registration: RegistrationPolicy,
     private readonly invitations: InvitationAcceptance,
     private readonly tokens: UserTokens,
-    private readonly mails: AuthMails
+    private readonly mails: AuthMails,
+    private readonly llmUsage: LlmUsageService
   ) {}
 
   /**
@@ -104,8 +106,10 @@ export default class AuthController {
     return { data: toUserProfile(user) }
   }
 
+  /** The profile plus `llmTokensLeft`: what is left of this UTC month's LLM cap. */
   async me(ctx: HttpContext): Promise<ApiEnvelope<UserProfile>> {
-    return { data: toUserProfile(ctx.auth.use('web').getUserOrFail()) }
+    const user = ctx.auth.use('web').getUserOrFail()
+    return { data: { ...toUserProfile(user), llmTokensLeft: await this.llmUsage.tokensLeft(user) } }
   }
 
   async logout(ctx: HttpContext) {

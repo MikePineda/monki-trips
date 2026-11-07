@@ -1,0 +1,23 @@
+{
+  "model": "fake-chat-model",
+  "responses": [
+    {
+      "content": "Let me add that expense for you to confirm.",
+      "toolCalls": [
+        {
+          "id": "toolu_fake_1",
+          "name": "add_expense",
+          "input": {
+            "amountMinor": 45000,
+            "currency": "AUD",
+            "category": "food"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    }
+  ]
+}

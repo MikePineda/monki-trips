@@ -18,3 +18,5 @@ docs/internal
 *.csv
 *.ics
 *.eml
+# LLM fixtures are test-only: a production image left on LLM_PROVIDER=fake answers 503.
+apps/api/tests/fixtures/llm
