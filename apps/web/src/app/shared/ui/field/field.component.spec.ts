@@ -4,9 +4,10 @@ import { TranslocoService } from '@jsverse/transloco'
 import { i18nTesting } from '../../../../testing/i18n-testing'
 import type { FieldError } from '../../../core/i18n/form-messages'
 import { MkFieldComponent } from './field.component'
+import { MkInputDirective } from './input.directive'
 
 @Component({
-  imports: [MkFieldComponent],
+  imports: [MkFieldComponent, MkInputDirective],
   template: `
     <mk-field
       label="Trip name"
@@ -14,7 +15,7 @@ import { MkFieldComponent } from './field.component'
       [required]="true"
       [error]="error()"
     >
-      <input type="text" data-testid="probe.input" />
+      <input mkInput variant="code" type="text" data-testid="probe.input" />
     </mk-field>
   `,
 })
@@ -35,7 +36,10 @@ describe('mk-field', () => {
     const host = render().nativeElement as HTMLElement
     const label = host.querySelector('label')
 
-    expect(label?.querySelector('[data-testid="probe.input"]')).not.toBeNull()
+    const control = label?.querySelector('[data-testid="probe.input"]')
+    expect(control).not.toBeNull()
+    expect(control?.classList.contains('mk-input')).toBe(true)
+    expect(control?.getAttribute('data-variant')).toBe('code')
     expect(label?.textContent).toContain('Trip name')
     expect(host.querySelector('.mk-field__hint')?.textContent).toBe('Something you will recognise')
     expect(host.querySelector('[role="alert"]')).toBeNull()
@@ -46,6 +50,9 @@ describe('mk-field', () => {
 
     expect(host.querySelector('[role="alert"]')?.textContent?.trim()).toBe(
       'Use at least 3 characters'
+    )
+    expect(host.querySelector('[role="alert"] mk-icon use')?.getAttribute('href')).toBe(
+      'sprite/lucide.svg#circle-x'
     )
     expect(host.querySelector('.mk-field__hint')).toBeNull()
   })

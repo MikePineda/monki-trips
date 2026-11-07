@@ -1,67 +1,62 @@
 import { DialogRef } from '@angular/cdk/dialog'
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
+import { MkIconButtonComponent } from '../icon-button/icon-button.component'
 import { MkIconComponent } from '../icon/icon.component'
 import { provideUiI18n } from '../ui-i18n'
 
 /**
- * The frame of a bottom sheet opened through SheetService: grab handle,
- * title and a close button, then the projected content. Closing goes
- * through the CDK DialogRef when one is in scope.
+ * The frame of a bottom sheet opened through SheetService: the 36 × 4
+ * handle in `line-strong`, the title in heading with a 44 px close button,
+ * then the projected content; at most one `block` primary button at the end
+ * (`[mkSheetFooter]`), 16 px above the safe area. Closing goes through the
+ * CDK DialogRef when one is in scope.
  */
 @Component({
   selector: 'mk-sheet',
-  imports: [MkIconComponent, TranslocoPipe],
+  imports: [MkIconComponent, MkIconButtonComponent, TranslocoPipe],
   viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'mk-sheet' },
   styles: `
     :host {
       display: block;
-      padding: 0.5rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+      padding: var(--space-1) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+      color: var(--ink-1);
     }
     .mk-sheet__handle {
-      width: 2.5rem;
-      height: 0.25rem;
-      margin: 0 auto 0.75rem;
-      border-radius: 999px;
+      width: 36px;
+      height: 4px;
+      margin: 0 auto var(--space-2);
+      border-radius: var(--radius-full);
       background: var(--line-strong);
     }
     .mk-sheet__header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.75rem;
+      gap: var(--space-2);
+      min-height: var(--tap-target);
+      margin-bottom: var(--space-1);
     }
     .mk-sheet__title {
       margin: 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--ink-1);
     }
-    .mk-sheet__close {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.75rem;
-      height: 2.75rem;
-      margin-right: -0.75rem;
-      border: 0;
-      border-radius: 999px;
-      background: transparent;
-      color: var(--ink-2);
-      cursor: pointer;
+    .mk-sheet__footer {
+      margin-top: var(--space-2);
+    }
+    .mk-sheet__footer:empty {
+      display: none;
     }
   `,
   template: `
     <div class="mk-sheet__handle" aria-hidden="true"></div>
     <header class="mk-sheet__header">
-      <h2 class="mk-sheet__title">{{ title() }}</h2>
+      <h2 class="mk-sheet__title mk-type-heading">{{ title() }}</h2>
       @if (ref) {
         <button
+          mk-icon-button
           type="button"
-          class="mk-sheet__close"
           data-testid="ui.sheet.close"
           [attr.aria-label]="'ui.sheet.close' | transloco"
           (click)="ref.close()"
@@ -71,6 +66,7 @@ import { provideUiI18n } from '../ui-i18n'
       }
     </header>
     <ng-content />
+    <div class="mk-sheet__footer"><ng-content select="[mkSheetFooter]" /></div>
   `,
 })
 export class MkSheetComponent {

@@ -11,61 +11,68 @@ export interface TabItem {
   link: string | readonly string[]
 }
 
+/** fixed: the real shell. static: in flow (the style guide's mock screens). */
+export type TabBarPlacement = 'fixed' | 'static'
+
 /**
- * The bottom tab bar of the trip shell: one link per tab, the active one
- * marked with `aria-current="page"`. Fixed to the bottom with the safe
- * area; exposes its height as `--mk-tab-bar-height` for toasts and FABs.
+ * The bottom tab bar of the trip shell: five links, 56 px plus the bottom
+ * safe area on `surface-0` with a `line` hairline on top; a 24 px icon over
+ * a 12 px label, inactive in ink-3, the active one in accent at 600 with
+ * `aria-current="page"`. No badges: pending work shows in the connection
+ * status.
  */
 @Component({
   selector: 'mk-tab-bar',
   imports: [RouterLink, RouterLinkActive, MkIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'mk-tab-bar' },
+  host: { 'class': 'mk-tab-bar', '[attr.data-placement]': 'placement()' },
   styles: `
     :host {
+      display: block;
+      border-top: 1px solid var(--line);
+      background: var(--surface-0);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    :host([data-placement='fixed']) {
       position: fixed;
       inset-inline: 0;
       bottom: 0;
       z-index: 40;
-      display: block;
-      border-top: 1px solid var(--line);
-      background: var(--surface-1);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     nav {
       display: grid;
       grid-auto-flow: column;
       grid-auto-columns: 1fr;
-      max-width: 40rem;
+      max-width: var(--container-max);
       margin: 0 auto;
-      height: var(--mk-tab-bar-height, 3.5rem);
+      height: var(--tab-bar-height);
     }
     .mk-tab {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.125rem;
+      gap: 2px;
       color: var(--ink-3);
-      font-size: 0.6875rem;
       font-weight: 500;
       text-decoration: none;
     }
     .mk-tab--active {
       color: var(--accent);
+      font-weight: 600;
     }
   `,
   template: `
     <nav [attr.aria-label]="label()">
       @for (tab of tabs(); track tab.id) {
         <a
-          class="mk-tab"
+          class="mk-tab mk-type-caption"
           [routerLink]="tab.link"
           routerLinkActive="mk-tab--active"
           ariaCurrentWhenActive="page"
           [attr.data-testid]="'shell.tab.' + tab.id"
         >
-          <mk-icon [name]="tab.icon" />
+          <mk-icon [name]="tab.icon" [size]="24" />
           <span>{{ tab.label }}</span>
         </a>
       }
@@ -75,4 +82,5 @@ export interface TabItem {
 export class MkTabBarComponent {
   readonly tabs = input.required<readonly TabItem[]>()
   readonly label = input.required<string>()
+  readonly placement = input<TabBarPlacement>('fixed')
 }

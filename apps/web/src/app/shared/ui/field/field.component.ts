@@ -11,21 +11,23 @@ import {
   formMessageParams,
   type FieldError,
 } from '../../../core/i18n/form-messages'
+import { MkIconComponent } from '../icon/icon.component'
 import { provideUiI18n } from '../ui-i18n'
 
 /**
- * Label + projected control + hint or translated error, for Signal Forms or
- * any native control. The control is projected inside the `<label>`, so it
- * is labelled without ids. Pass the first error of the field (`kind` plus
+ * Label above (never placeholder-only) + projected control (`<input
+ * mkInput>`) + hint or translated error, for Signal Forms or any native
+ * control. The control is projected inside the `<label>`, so it is
+ * labelled without ids. Pass the first error of the field (`kind` plus
  * details): the message comes from the `ui` catalogue, or from the error's
- * own `message` when the validator produced one.
+ * own `message` when the validator produced one; it ships with circle-x.
  *
- * Styles are global (prefixed with `.mk-field`) so the projected control
- * gets the field look without `::ng-deep`.
+ * Styles are global (prefixed with `.mk-field` / `.mk-input`) so the
+ * projected control gets the field look without `::ng-deep`.
  */
 @Component({
   selector: 'mk-field',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, MkIconComponent],
   viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -37,37 +39,44 @@ import { provideUiI18n } from '../ui-i18n'
     .mk-field > label {
       display: flex;
       flex-direction: column;
-      gap: 0.375rem;
+      gap: var(--space-half);
     }
     .mk-field__label {
-      font-size: 0.875rem;
-      font-weight: 500;
       color: var(--ink-2);
     }
     .mk-field__hint {
-      font-size: 0.75rem;
       color: var(--ink-3);
     }
     .mk-field__error {
       display: inline-flex;
-      gap: 0.25rem;
-      font-size: 0.75rem;
+      align-items: center;
+      gap: var(--space-half);
       color: var(--status-critical);
     }
-    .mk-field input,
-    .mk-field select,
-    .mk-field textarea {
-      min-height: 2.75rem;
-      padding: 0 0.75rem;
+    .mk-field .mk-input {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: var(--space-6);
+      padding: 0 var(--space-2);
       border: 1px solid var(--line-strong);
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       background: var(--surface-1);
       color: var(--ink-1);
-      font: inherit;
+      font: 400 16px/24px var(--font-sans);
+      font-variant-numeric: tabular-nums;
     }
-    .mk-field--invalid input,
-    .mk-field--invalid select,
-    .mk-field--invalid textarea {
+    .mk-field textarea.mk-input {
+      min-height: calc(var(--space-6) * 2);
+      padding: var(--space-1) var(--space-2);
+    }
+    .mk-field .mk-input::placeholder {
+      color: var(--ink-3);
+    }
+    .mk-field .mk-input[data-variant='code'] {
+      font: 500 16px/24px var(--font-mono);
+      letter-spacing: 0.02em;
+    }
+    .mk-field--invalid .mk-input {
       border-color: var(--status-critical);
     }
   `,
@@ -75,20 +84,21 @@ import { provideUiI18n } from '../ui-i18n'
     <!-- The control is projected into the label (implicit association), which the lint rule cannot see. -->
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
-      <span class="mk-field__label">
+      <span class="mk-field__label mk-type-label">
         {{ label() }}
         @if (required()) {
           <span aria-hidden="true">*</span>
-          <span class="sr-only">({{ 'ui.field.required' | transloco }})</span>
+          <span class="mk-sr-only">({{ 'ui.field.required' | transloco }})</span>
         }
       </span>
       <ng-content />
       @if (error(); as error) {
-        <span class="mk-field__error" role="alert">
+        <span class="mk-field__error mk-type-caption" role="alert">
+          <mk-icon name="circle-x" [size]="16" />
           {{ error.message || (errorKey() | transloco: errorParams()) }}
         </span>
       } @else if (hint(); as hint) {
-        <span class="mk-field__hint">{{ hint }}</span>
+        <span class="mk-field__hint mk-type-caption">{{ hint }}</span>
       }
     </label>
   `,

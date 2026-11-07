@@ -1,16 +1,19 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
+import { MkIconButtonComponent } from '../icon-button/icon-button.component'
 import { MkIconComponent } from '../icon/icon.component'
 import { provideUiI18n } from '../ui-i18n'
 import { ToastService } from './toast.service'
 
 /**
- * Renders the toast queue above the tab bar, one status region per toast
- * (polite: toasts never steal focus). Place it once in the root component.
+ * Renders the toast queue 16 px above the tab bar, one status region per
+ * toast (polite: toasts never steal focus): `surface-1`, 1px `line`, radius
+ * 12, level-1 elevation, one sentence and one quiet action ("Undo"). Place
+ * it once in the root component.
  */
 @Component({
   selector: 'mk-toast-host',
-  imports: [MkIconComponent, TranslocoPipe],
+  imports: [MkIconComponent, MkIconButtonComponent, TranslocoPipe],
   viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'mk-toast-host' },
@@ -18,54 +21,61 @@ import { ToastService } from './toast.service'
     :host {
       position: fixed;
       inset-inline: 0;
-      bottom: calc(var(--mk-tab-bar-height, 0px) + env(safe-area-inset-bottom, 0px) + 0.75rem);
+      bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + var(--space-2));
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0 1rem;
+      gap: var(--space-1);
+      padding: 0 var(--space-2);
       pointer-events: none;
       z-index: 50;
     }
     .mk-toast {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-1);
       width: 100%;
-      max-width: 28rem;
-      min-height: 2.75rem;
-      padding: 0.5rem 0.5rem 0.5rem 1rem;
+      max-width: calc(var(--container-max) - 2 * var(--space-2));
+      min-height: var(--tap-target);
+      padding: var(--space-half) var(--space-half) var(--space-half) var(--space-2);
+      box-sizing: border-box;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: var(--radius-lg);
       background: var(--surface-1);
       color: var(--ink-1);
-      font-size: 0.875rem;
-      box-shadow: 0 1px 2px color-mix(in srgb, var(--ink-1) 12%, transparent);
+      box-shadow: var(--elevation-1);
       pointer-events: auto;
-      transition: opacity 150ms ease-out;
+      animation: mk-toast-in var(--duration-fast) var(--ease-out);
     }
     .mk-toast__message {
-      flex: 1;
-    }
-    .mk-toast__action,
-    .mk-toast__dismiss {
-      border: 0;
-      background: transparent;
-      font: inherit;
-      cursor: pointer;
-      min-height: 2.25rem;
+      flex: 1 1 0;
+      font: 500 14px/20px var(--font-sans);
     }
     .mk-toast__action {
-      padding: 0 0.5rem;
-      font-weight: 500;
+      min-height: 36px;
+      padding: 0 var(--space-1);
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
       color: var(--accent);
+      font: 600 14px/20px var(--font-sans);
+      cursor: pointer;
     }
-    .mk-toast__dismiss {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.25rem;
-      color: var(--ink-3);
+    @keyframes mk-toast-in {
+      from {
+        opacity: 0;
+        transform: translateY(var(--space-1));
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mk-toast {
+        animation: mk-toast-fade 100ms linear;
+      }
+      @keyframes mk-toast-fade {
+        from {
+          opacity: 0;
+        }
+      }
     }
   `,
   template: `
@@ -83,8 +93,9 @@ import { ToastService } from './toast.service'
           </button>
         }
         <button
+          mk-icon-button
+          size="sm"
           type="button"
-          class="mk-toast__dismiss"
           data-testid="ui.toast.dismiss"
           [attr.aria-label]="'ui.toast.dismiss' | transloco"
           (click)="toasts.dismiss(toast.id)"
