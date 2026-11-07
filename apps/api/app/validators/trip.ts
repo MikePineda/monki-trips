@@ -1,12 +1,14 @@
 import vine from '@vinejs/vine'
 import { BUDGET_MODES } from '@monkitrips/shared'
 import { timezoneSchema } from '#validators/auth'
+import { calendarDate } from '#validators/calendar_date'
 
-/** `YYYY-MM-DD`, kept as a string: trip dates are plain dates in the trip's zone. */
+/** `YYYY-MM-DD` of a real day, kept as a string: trip dates are plain dates in the trip's zone. */
 export const isoDateSchema = vine
   .string()
   .trim()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .use(calendarDate())
 
 export const createTripValidator = vine.compile(
   vine.object({

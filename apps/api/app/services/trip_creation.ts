@@ -28,8 +28,20 @@ export class TripCreation {
   constructor(private readonly clock: Clock) {}
 
   async create(owner: User, input: NewTrip): Promise<Trip> {
+    const { trip } = await this.createOrFind(owner, input)
+    return trip
+  }
+
+  /**
+   * Like `create`, but a client `id` that already names a trip returns that
+   * trip untouched (`created: false`); the caller decides who may see it.
+   * The lookup runs inside the transaction, right before the insert.
+   */
+  async createOrFind(owner: User, input: NewTrip): Promise<{ trip: Trip; created: boolean }> {
     const now = DateTime.fromJSDate(this.clock.now())
     return db.transaction(async (trx) => {
+      const existing = input.id ? await Trip.find(input.id, { client: trx }) : null
+      if (existing) return { trip: existing, created: false }
       const trip = await Trip.create(
         {
           id: input.id,
@@ -59,7 +71,7 @@ export class TripCreation {
         },
         { client: trx }
       )
-      return trip
+      return { trip, created: true }
     })
   }
 }

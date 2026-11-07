@@ -76,7 +76,11 @@ in step.
 a unit test requires a message per code per locale. Some codes add fields
 (`E_SOLE_OWNER_OF_SHARED_TRIPS` adds `tripIds`). Validation errors answer 422
 `{ errors: [{ field, rule, message }] }` with messages from
-`validator.json` (`shared.messages.<rule>`, `shared.fields.<field>`). 429
+`validator.json` (`shared.messages.<rule>`, `shared.fields.<field>`); dates
+must be real calendar days (rule `calendarDate`, so `2026-02-30` is a 422).
+Two requests that create the same row at once never answer 500: a taken
+e-mail is 409 `E_EMAIL_TAKEN`, a repeated `POST /trips` id answers the
+existing trip, any other duplicate key is 409 `E_CONFLICT`. 429
 carries `Retry-After` and the `X-RateLimit-*` headers. Throttles key on the
 socket address; `CF-Connecting-IP` counts only with `TRUSTED_PROXY=cloudflare`.
 Login allows 5 failures per address from one IP and 10 per address from any

@@ -5,6 +5,7 @@
   "E_VALIDATION_ERROR": "Algunos campos no son válidos",
   "E_BAD_CSRF_TOKEN": "Tu sesión expiró. Recarga la página e inténtalo de nuevo",
   "E_TOO_MANY_REQUESTS": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo",
+  "E_CONFLICT": "Otra solicitud acaba de cambiar esto. Recarga e inténtalo de nuevo",
   "E_INTERNAL_SERVER_ERROR": "Algo salió mal de nuestro lado. Inténtalo de nuevo en un momento",
   "E_UNAUTHORIZED": "Necesitas iniciar sesión",
   "E_UNAUTHORIZED_ACCESS": "Necesitas iniciar sesión",

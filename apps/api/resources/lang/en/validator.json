@@ -7,6 +7,7 @@
       "minLength": "{field} must have at least {min} characters",
       "maxLength": "{field} must have at most {max} characters",
       "regex": "{field} has an invalid format",
+      "calendarDate": "{field} must be a real date",
       "enum": "{field} must be one of {choices}",
       "in": "{field} is not a known value",
       "uuid": "{field} must be a valid id",

@@ -11,11 +11,13 @@ import type {
   TripSnapshot as TripSnapshotWire,
 } from '@monkitrips/shared'
 import Trip from '#models/trip'
+import type User from '#models/user'
 import { Clock } from '#services/clock'
 import { TripCreation } from '#services/trip_creation'
 import { TripMembership } from '#services/trip_membership'
 import { TripSnapshot } from '#services/trip_snapshot'
 import { ApiException } from '#exceptions/api_exception'
+import { isUniqueViolation } from '#exceptions/unique_violation'
 import { tripPurgeDate } from '#domain/trip_lifecycle'
 import { toTripListItem, toTripWire } from '#transformers/trip_wire'
 import { toTripMemberWire } from '#transformers/trip_member_wire'
@@ -61,16 +63,30 @@ export default class TripsController {
       ])
     }
     if (body.id) {
-      const existing = await Trip.find(body.id)
-      if (existing) {
-        const membership = await this.memberships.find(user, existing.id)
-        if (!membership) throw new ApiException('E_ROW_NOT_FOUND')
-        return { data: toTripWire(existing) }
-      }
+      const existing = await this.existingTrip(user, body.id)
+      if (existing) return { data: toTripWire(existing) }
     }
-    const trip = await this.creation.create(user, body)
-    ctx.response.status(201)
-    return { data: toTripWire(trip) }
+    try {
+      const { trip, created } = await this.creation.createOrFind(user, body)
+      if (!created) return { data: toTripWire((await this.existingTrip(user, trip.id))!) }
+      ctx.response.status(201)
+      return { data: toTripWire(trip) }
+    } catch (error) {
+      // The same id posted twice at once: the request that lost the insert answers like a retry.
+      if (!body.id || !isUniqueViolation(error, 'trips_pkey')) throw error
+      const existing = await this.existingTrip(user, body.id)
+      if (!existing) throw error
+      return { data: toTripWire(existing) }
+    }
+  }
+
+  /** The trip behind a client id, if the person is a member; 404 when it is someone else's. */
+  private async existingTrip(user: User, id: string): Promise<Trip | null> {
+    const existing = await Trip.find(id)
+    if (!existing) return null
+    const membership = await this.memberships.find(user, existing.id)
+    if (!membership) throw new ApiException('E_ROW_NOT_FOUND')
+    return existing
   }
 
   async snapshot(ctx: HttpContext): Promise<ApiEnvelope<TripSnapshotWire>> {
