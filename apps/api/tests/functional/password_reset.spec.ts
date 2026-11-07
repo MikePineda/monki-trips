@@ -1,5 +1,8 @@
 import { test } from '@japa/runner'
+import app from '@adonisjs/core/services/app'
 import limiter from '@adonisjs/limiter/services/main'
+import { Mailer, type MailMessage } from '#services/mailer'
+import { settleDeferred } from '#tests/helpers/settle_deferred'
 import { actingAs } from '#tests/helpers/acting_as'
 import { expectStatus } from '#tests/helpers/expect_status'
 import { makeUser, TEST_PASSWORD } from '#tests/helpers/make_user'
@@ -8,13 +11,36 @@ import { tokenFromMail, useRecordingMailer } from '#tests/helpers/recording_mail
 
 const NEW_PASSWORD = 'a-brand-new-passphrase'
 
+/** A mailer that holds every message until `open()`: a mail provider having a slow day. */
+class GatedMailer extends Mailer {
+  readonly sent: MailMessage[] = []
+  #open!: () => void
+  readonly #gate = new Promise<void>((resolve) => (this.#open = resolve))
+
+  async send(message: MailMessage): Promise<void> {
+    await this.#gate
+    this.sent.push(message)
+  }
+
+  open() {
+    this.#open()
+  }
+}
+
 test.group('Password reset', (group) => {
   const mailer = useRecordingMailer(group)
   const clock = useFixedClock(group)
   group.each.setup(() => limiter.clear())
 
-  const forgot = (client: any, email: string) =>
-    client.post('/api/v1/auth/password/forgot').withCsrfToken().json({ email })
+  /** Asks for a reset mail and waits for the mail work the answer no longer waits for. */
+  const forgot = async (client: any, email: string) => {
+    const response = await client
+      .post('/api/v1/auth/password/forgot')
+      .withCsrfToken()
+      .json({ email })
+    await settleDeferred()
+    return response
+  }
   const reset = (client: any, token: string, password = NEW_PASSWORD) =>
     client.post('/api/v1/auth/password/reset').withCsrfToken().json({ token, password })
   const login = (client: any, email: string, password: string) =>
@@ -30,6 +56,26 @@ test.group('Password reset', (group) => {
     const unknown = await forgot(client, 'nobody@example.com')
     unknown.assertStatus(202)
     assert.lengthOf(mailer.sent, 1)
+  })
+
+  test('forgot answers without waiting for the mailer', async ({ client, assert, cleanup }) => {
+    await makeUser({ email: 'owner@example.com' })
+    const slow = new GatedMailer()
+    app.container.swap(Mailer, () => slow)
+    // Never leave a request parked on the gate, even when the test fails.
+    cleanup(() => slow.open())
+
+    const response = await client
+      .post('/api/v1/auth/password/forgot')
+      .withCsrfToken()
+      .json({ email: 'owner@example.com' })
+
+    response.assertStatus(202)
+    assert.isEmpty(slow.sent, 'the mail is still on its way when the answer arrives')
+    slow.open()
+    await settleDeferred()
+    assert.lengthOf(slow.sent, 1)
+    assert.equal(slow.sent[0].to, 'owner@example.com')
   })
 
   test('password reset revokes every session', async ({ client, assert }) => {
