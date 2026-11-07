@@ -11,7 +11,7 @@ import {
 import { settle, typeInto } from '../../../testing/settle'
 import { ApiFailure } from '../../core/api/api-failure'
 import type { MonkiTripsDb } from '../../core/offline/db'
-import { FAKE_SESSION_USER } from '../../core/session/session-api'
+import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
 import { SessionStore } from '../../core/session/session.store'
 import VerifyEmailPage from './verify-email.page'
 

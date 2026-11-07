@@ -126,6 +126,20 @@ describe('architecture', () => {
     expect(bad).toEqual([])
   })
 
+  it('fakes live in src/testing, not next to the production tokens', () => {
+    // FakeSyncApi is the production SYNC_API until the real sync client lands.
+    const allowed = ['core/offline/sync-api.ts']
+    const offenders = sources
+      .filter((file) => !allowed.includes(file.rel))
+      .filter((file) =>
+        /\bclass Fake[A-Z]|\bfunction fake[A-Z]|\bFAKE_[A-Z_]+\s*[:=]/.test(
+          readFileSync(file.path, 'utf8')
+        )
+      )
+      .map((file) => file.rel)
+    expect(offenders).toEqual([])
+  })
+
   it('ui-kit components give the ui scope to their own view only (viewProviders)', () => {
     const leaking = /\bproviders:\s*\[[^\]]*provideUiI18n\(/
     const offenders = sources

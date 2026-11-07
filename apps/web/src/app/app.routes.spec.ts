@@ -9,7 +9,7 @@ import {
   resetOfflineTesting,
 } from '../testing/offline-testing'
 import { apiFakes, provideApiTesting, type ApiFakes } from '../testing/api-testing'
-import { fakeTrip } from './core/api/trips-api'
+import { fakeTrip } from '../testing/fake-trips-api'
 import type { MonkiTripsDb } from './core/offline/db'
 import { META_ACTIVE_TRIP, MetaStore } from './core/offline/meta.store'
 import { routes } from './app.routes'

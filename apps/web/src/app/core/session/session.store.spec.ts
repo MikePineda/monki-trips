@@ -10,7 +10,7 @@ import { ApiFailure } from '../api/api-failure'
 import type { MonkiTripsDb } from '../offline/db'
 import { META_SESSION, MetaStore } from '../offline/meta.store'
 import { OnlineStore } from '../offline/online.store'
-import { FAKE_SESSION_USER } from './session-api'
+import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
 import { SessionStore } from './session.store'
 
 const CACHED = { ...FAKE_SESSION_USER, id: 'u1', displayName: 'Cached' }

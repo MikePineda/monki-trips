@@ -1,8 +1,12 @@
 import type { Provider } from '@angular/core'
-import { FakeAccountApi, ACCOUNT_API } from '../app/core/api/account-api'
-import { FakeAuthApi, AUTH_API } from '../app/core/api/auth-api'
-import { FakeTripsApi, TRIPS_API } from '../app/core/api/trips-api'
-import { FakeSessionApi, SESSION_API } from '../app/core/session/session-api'
+import { ACCOUNT_API } from '../app/core/api/account-api'
+import { AUTH_API } from '../app/core/api/auth-api'
+import { TRIPS_API } from '../app/core/api/trips-api'
+import { SESSION_API } from '../app/core/session/session-api'
+import { FakeAccountApi } from './fake-account-api'
+import { FakeAuthApi } from './fake-auth-api'
+import { FakeSessionApi } from './fake-session-api'
+import { FakeTripsApi } from './fake-trips-api'
 
 export interface ApiFakes {
   session: FakeSessionApi
