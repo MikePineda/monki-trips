@@ -43,6 +43,20 @@ export const ERROR_CODES = {
   // Notifications
   /** The server has no VAPID keys: nothing can be sent. */
   E_PUSH_DISABLED: 409,
+
+  // Sync
+  /** The pull cursor is older than the purge horizon: clear the cache and pull again without one. */
+  E_SYNC_CURSOR_EXPIRED: 410,
+  /** The row was deleted; a tombstone always wins over a later edit. */
+  E_ROW_DELETED: 410,
+
+  // Documents
+  E_FILE_TOO_LARGE: 413,
+  E_UNSUPPORTED_FILE: 415,
+  E_STORAGE_UNAVAILABLE: 503,
+
+  // Exchange rates
+  E_FX_UNAVAILABLE: 503,
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES

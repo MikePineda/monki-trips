@@ -9,4 +9,7 @@ export interface TripMember {
   /** Display name of the account, denormalised for the members screen. */
   displayName: string
   joinedAt: string
+  /** ISO instant while the membership is soft-deleted (sync tombstone), absent on the REST routes. */
+  deletedAt?: string | null
+  updatedAt?: string
 }
