@@ -4,7 +4,7 @@ import { rm } from 'node:fs/promises'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import drive from '@adonisjs/drive/services/main'
-import type { Task, TripDocument } from '@monkitrips/shared'
+import type { TripTaskRow, TripDocumentRow } from '@monkitrips/shared'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
@@ -44,7 +44,7 @@ test.group('Documents', (group) => {
       .file('file', PDF, { filename: 'voucher.pdf' })
 
     response.assertStatus(201)
-    const document: TripDocument = response.body().data
+    const document: TripDocumentRow = response.body().data
     assert.include(document, {
       id,
       tripId: trip.id,
@@ -148,7 +148,7 @@ test.group('Documents', (group) => {
   test('a link document has no file to download', async ({ client }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner)
-    const link = await pushApplied<TripDocument>(
+    const link = await pushApplied<TripDocumentRow>(
       client,
       owner,
       mutation(trip.id, 'document', {
@@ -182,7 +182,7 @@ test.group('Documents', (group) => {
       owner,
       mutation(trip.id, 'document', { kind: 'file', title: 'No bytes' })
     )
-    const edited = await pushApplied<TripDocument>(
+    const edited = await pushApplied<TripDocumentRow>(
       client,
       owner,
       mutation(
@@ -285,13 +285,13 @@ test.group('Documents', (group) => {
     const editor = await makeUser()
     const trip = await makeTrip(owner)
     await addMember(trip, editor)
-    const task = await pushApplied<Task>(
+    const task = await pushApplied<TripTaskRow>(
       client,
       owner,
       mutation(trip.id, 'task', { title: 'Book the train' })
     )
 
-    const done = await pushApplied<Task>(
+    const done = await pushApplied<TripTaskRow>(
       client,
       editor,
       mutation(
@@ -301,7 +301,7 @@ test.group('Documents', (group) => {
         { id: task.id, changedAt: '2026-11-07T09:30:00.000Z' }
       )
     )
-    const reopened = await pushApplied<Task>(
+    const reopened = await pushApplied<TripTaskRow>(
       client,
       owner,
       mutation(

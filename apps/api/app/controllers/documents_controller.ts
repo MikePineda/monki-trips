@@ -7,7 +7,7 @@ import drive from '@adonisjs/drive/services/main'
 import db from '@adonisjs/lucid/services/db'
 import { errors as vineErrors } from '@vinejs/vine'
 import { fileTypeFromFile } from 'file-type'
-import type { ApiEnvelope, TripDocument } from '@monkitrips/shared'
+import type { ApiEnvelope, TripDocumentRow } from '@monkitrips/shared'
 import { Clock } from '#services/clock'
 import { ApiException } from '#exceptions/api_exception'
 import {
@@ -36,7 +36,7 @@ const SIGNED_URL_TTL = '300s'
 export default class DocumentsController {
   constructor(private readonly clock: Clock) {}
 
-  async store(ctx: HttpContext): Promise<ApiEnvelope<TripDocument>> {
+  async store(ctx: HttpContext): Promise<ApiEnvelope<TripDocumentRow>> {
     const user = ctx.auth.use('web').getUserOrFail()
     const body = await ctx.request.validateUsing(uploadDocumentValidator)
     const file = ctx.request.file('file', { size: MAX_DOCUMENT_BYTES })
@@ -68,7 +68,7 @@ export default class DocumentsController {
     if (existing) {
       if (existing.trip_id !== tripId || existing.deleted_at)
         throw new ApiException('E_ROW_NOT_FOUND')
-      return { data: rowToWire(PULL_ENTITIES.document, existing) as unknown as TripDocument }
+      return { data: rowToWire(PULL_ENTITIES.document, existing) as unknown as TripDocumentRow }
     }
     if (body.eventId && !(await liveRowInTrip(db.connection(), 'events', body.eventId, tripId))) {
       throw new ApiException('E_ROW_NOT_FOUND')
@@ -125,7 +125,7 @@ export default class DocumentsController {
       return fresh
     })
     ctx.response.status(201)
-    return { data: rowToWire(PULL_ENTITIES.document, row) as unknown as TripDocument }
+    return { data: rowToWire(PULL_ENTITIES.document, row) as unknown as TripDocumentRow }
   }
 
   /** 302 to a signed URL that works for five minutes; images and PDFs open inline, the rest download. */

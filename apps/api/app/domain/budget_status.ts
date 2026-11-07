@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import type { BudgetStatus, EventStatus } from '@monkitrips/shared'
+import type { TripBudgetView, EventStatus } from '@monkitrips/shared'
 
 export interface BudgetExpense {
   categoryId: string | null
@@ -49,7 +49,7 @@ function daysBetween(from: string, to: string): number {
  * currency (foreign costs need a rate the event does not store).
  * Mirrors the shared `budget_status`.
  */
-export function budgetStatus(input: BudgetStatusInput): BudgetStatus {
+export function budgetStatus(input: BudgetStatusInput): TripBudgetView {
   const converted = input.expenses.filter(
     (expense): expense is BudgetExpense & { baseAmountMinor: number } =>
       expense.baseAmountMinor !== null

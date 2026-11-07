@@ -5,10 +5,19 @@ web app (`apps/web`). Compiled to `dist/` because Node does not load `.ts`
 from `node_modules`; tested with `node:test` (`npm test -w @monkitrips/shared`).
 
 - `src/*.ts`: the shapes the API returns and accepts (`Trip`, `UserProfile`,
-  `ERROR_CODES`, API paths, locales...).
+  `ERROR_CODES`, API paths, locales, sync envelopes, view DTOs...).
 - `src/domain/*.ts`: every business rule both sides need, computed once and
   the same offline: nights, budget, Today, tasks, mascot, FX, sync merge,
   offline readiness.
+
+**One definition per concept.** Entity shapes and their enums live in
+`src/domain/` (`TripEvent`, `EventSegment`, `TripDocument`, `TripTask`,
+`TripStop`, `EVENT_KINDS`, `DOCUMENT_TAGS`, `TASK_ORIGINS`...). A wire
+module never redefines them: the stored row is `<Entity>Row` (`TripEventRow`,
+`TripDocumentRow`...), built from the domain type plus the columns only the
+API holds, with minor units as JSON numbers; the endpoint views carry a
+`Trip` prefix (`TripTodayView`) so they never collide with the domain
+results.
 
 ## The domain is pure
 

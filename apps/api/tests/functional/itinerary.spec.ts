@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { randomUUID } from 'node:crypto'
 import db from '@adonisjs/lucid/services/db'
-import type { EventSegment, TripEvent } from '@monkitrips/shared'
+import type { EventSegmentRow, TripEventRow } from '@monkitrips/shared'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { makeTrip } from '#tests/helpers/make_trip'
@@ -15,7 +15,7 @@ test.group('Itinerary', (group) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner)
 
-    const event = await pushApplied<TripEvent>(
+    const event = await pushApplied<TripEventRow>(
       client,
       owner,
       mutation(trip.id, 'event', {
@@ -65,7 +65,7 @@ test.group('Itinerary', (group) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner)
 
-    const event = await pushApplied<TripEvent>(
+    const event = await pushApplied<TripEventRow>(
       client,
       owner,
       mutation(trip.id, 'event', {
@@ -167,7 +167,7 @@ test.group('Itinerary', (group) => {
       )
     )
 
-    const leg2 = await pushApplied<EventSegment>(
+    const leg2 = await pushApplied<EventSegmentRow>(
       client,
       owner,
       mutation(trip.id, 'segment', {
@@ -179,7 +179,7 @@ test.group('Itinerary', (group) => {
         arrivesTz: 'Australia/Sydney',
       })
     )
-    const leg1 = await pushApplied<EventSegment>(
+    const leg1 = await pushApplied<EventSegmentRow>(
       client,
       owner,
       mutation(trip.id, 'segment', {
@@ -201,7 +201,7 @@ test.group('Itinerary', (group) => {
     assert.equal(event.end_tz, 'Australia/Sydney')
 
     // A client edit of the start loses against the segments.
-    const edited = await pushApplied<TripEvent>(
+    const edited = await pushApplied<TripEventRow>(
       client,
       owner,
       mutation(
@@ -228,17 +228,17 @@ test.group('Itinerary', (group) => {
   test('a segment never moves to another event', async ({ client, assert }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner)
-    const a = await pushApplied<TripEvent>(
+    const a = await pushApplied<TripEventRow>(
       client,
       owner,
       mutation(trip.id, 'event', { kind: 'train', title: 'A' })
     )
-    const b = await pushApplied<TripEvent>(
+    const b = await pushApplied<TripEventRow>(
       client,
       owner,
       mutation(trip.id, 'event', { kind: 'train', title: 'B' })
     )
-    const segment = await pushApplied<EventSegment>(
+    const segment = await pushApplied<EventSegmentRow>(
       client,
       owner,
       mutation(trip.id, 'segment', {

@@ -1,6 +1,11 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
-import type { BudgetStatus, NightsView, TodayView, TripEvent } from '@monkitrips/shared'
+import type {
+  TripBudgetView,
+  TripNightsView,
+  TripTodayView,
+  TripEventRow,
+} from '@monkitrips/shared'
 import type Trip from '#models/trip'
 import { Clock } from '#services/clock'
 import { TripContent, type TripContentRows } from '#services/trip_content'
@@ -9,7 +14,7 @@ import { nightCoverage, type NightEvent } from '#domain/night_coverage'
 import { todayView, todayZone, type TodayEvent } from '#domain/today_view'
 
 /** The slice of an event the night and Today rules read. */
-function nightEvent(event: TripEvent): NightEvent {
+function nightEvent(event: TripEventRow): NightEvent {
   return {
     id: event.id,
     kind: event.kind,
@@ -36,7 +41,7 @@ export class TripViews {
     private readonly content: TripContent
   ) {}
 
-  async nights(trip: Trip): Promise<NightsView> {
+  async nights(trip: Trip): Promise<TripNightsView> {
     const { events } = await this.content.load(trip.id)
     const nights = nightCoverage({
       startsOn: trip.startsOn.toISODate()!,
@@ -47,7 +52,7 @@ export class TripViews {
     return { nights, uncoveredCount: nights.filter((night) => !night.covered).length }
   }
 
-  async budget(trip: Trip, today?: string, content?: TripContentRows): Promise<BudgetStatus> {
+  async budget(trip: Trip, today?: string, content?: TripContentRows): Promise<TripBudgetView> {
     const rows = content ?? (await this.content.load(trip.id))
     return budgetStatus({
       baseCurrency: trip.baseCurrency,
@@ -72,7 +77,7 @@ export class TripViews {
     })
   }
 
-  async today(trip: Trip, at?: Date): Promise<TodayView> {
+  async today(trip: Trip, at?: Date): Promise<TripTodayView> {
     const rows = await this.content.load(trip.id)
     const instant = (at ?? this.clock.now()).toISOString()
     const events: TodayEvent[] = rows.events.map((event) => ({

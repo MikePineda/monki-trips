@@ -1,21 +1,25 @@
 /**
- * A place the trip stays at or passes through, in order. Stops feed the
- * route chips, the map and the passport stamps; their zone is the one Today
- * follows while the trip is there.
+ * Stops on the wire. The entity shape lives in `domain/trip_stop.ts`
+ * (`TripStop`); this module adds the stored columns.
  */
-export interface Stop {
-  id: string
+import type { IsoDate } from './domain/iso_date.ts'
+import type { TripStop } from './domain/trip_stop.ts'
+import type { IsoInstant } from './domain/zoned_instant.ts'
+
+/**
+ * A stop as the API returns it. Unlike the domain's `TripStop` (a stop the
+ * pipelines can locate), a stored stop may still lack its zone and dates
+ * while it is being planned; `offsetMin` is resolved by the caller at `now`
+ * and never stored.
+ */
+export interface TripStopRow extends Omit<TripStop, 'tz' | 'arriveOn' | 'departOn' | 'offsetMin'> {
   tripId: string
-  position: number
-  name: string
-  /** ISO 3166-1 alpha-2, uppercase, or null when unknown. */
-  countryCode: string | null
   lat: number | null
   lng: number | null
   /** IANA time zone of the stop. */
   tz: string | null
-  arriveOn: string | null
-  departOn: string | null
-  deletedAt: string | null
-  updatedAt: string
+  arriveOn: IsoDate | null
+  departOn: IsoDate | null
+  deletedAt: IsoInstant | null
+  updatedAt: IsoInstant
 }
