@@ -39,3 +39,7 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-07: Initial bundle is 327 kB since Dexie loads in its own chunk behind `OFFLINE_DB` (was 427 kB); the 350 kB warning holds again.
 - 2026-11-08 · design round 2 (more personality: stamps, ticket textures, motion) after the first trip.
 - 2026-11-07: Make `verify-email.page.spec` wait for the token-stripping `navigate` with `vi.waitFor` instead of one `settle`; it flaked once under a loaded `verify:quick`.
+- 2026-11-07: `today_view` returns `leftToday` in base minor units only; the Today hero in the local currency needs the stop country's currency and a rate (stops carry `countryCode`, not a currency). Decide where that mapping lives when the money screen lands.
+- 2026-11-07: `budget_status.committedMinor` converts priced events with caller-supplied `rates`; the API should pass the day's `fx_rates` so `/budget` and the device agree.
+- 2026-11-07: `night_coverage` decision to confirm with the owner: a layover between two segments is not a night on board even when the whole event spans 01:00–05:00; a `covers_night` override still forces it.
+- 2026-11-07: `lww_merge` reports `rejectedReasons` (older, derived, deleted) besides `rejectedFields`; decide whether the `/sync/push` response exposes the reason or only the field list.
