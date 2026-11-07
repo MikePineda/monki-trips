@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" role="img" aria-labelledby="t d">
+  <title id="t">Kiko, the travelling monkey: six states</title>
+  <desc id="d">Original artwork for monki-trips, AGPL-3.0-only. Happy, worried, excited, asleep, celebrating and thinking.</desc>
+  <style>
+    .label { font: 500 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #4B4B55; text-anchor: middle; }
+    .name { font: 600 22px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #16161A; }
+    .sub { font: 400 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #62626D; }
+    .fur { fill: #8B5A2B; } .skin { fill: #E8C39E; } .ink { fill: #16161A; }
+    .line { stroke: #16161A; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .arm { stroke: #8B5A2B; stroke-width: 7; stroke-linecap: round; fill: none; }
+    .thin { stroke: #62626D; stroke-width: 1.5; stroke-linecap: round; fill: none; }
+  </style>
+  <defs>
+    <!-- Base body without eyes, mouth or arms: each state adds its own. Local box 100x120. -->
+    <g id="kiko">
+      <rect x="12" y="46" width="52" height="54" rx="13" fill="#4E7A3B"/>
+      <rect x="12" y="46" width="52" height="15" rx="7.5" fill="#2F5126"/>
+      <rect x="31" y="66" width="12" height="7" rx="1.5" fill="#E0A93A"/>
+      <path d="M18 61v30M58 61v30" stroke="#2F5126" stroke-width="3" fill="none"/>
+      <g transform="rotate(14 60 40)"><rect x="54" y="30" width="15" height="21" rx="2" fill="#22508F"/><rect x="57" y="35" width="9" height="2" fill="#8FB0E0"/><rect x="57" y="40" width="9" height="2" fill="#8FB0E0"/><circle cx="61.5" cy="46" r="1.5" fill="#8FB0E0"/></g>
+      <path d="M34 98c-16 8-26-6-16-18" stroke="#8B5A2B" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <rect x="30" y="68" width="40" height="38" rx="15" class="fur"/>
+      <ellipse cx="50" cy="88" rx="12" ry="13" class="skin"/>
+      <ellipse cx="41" cy="106" rx="9" ry="5" fill="#5C3A1A"/>
+      <ellipse cx="59" cy="106" rx="9" ry="5" fill="#5C3A1A"/>
+      <circle cx="25" cy="42" r="9.5" class="fur"/><circle cx="75" cy="42" r="9.5" class="fur"/>
+      <circle cx="25" cy="42" r="4.5" class="skin"/><circle cx="75" cy="42" r="4.5" class="skin"/>
+      <circle cx="50" cy="44" r="23" class="fur"/>
+      <path d="M34 47a16 13 0 0 0 32 0a16 17 0 0 0-32 0z" class="skin"/>
+      <path d="M38 30q12-6 24 0" stroke="#5C3A1A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </g>
+    <g id="hand"><circle r="5" class="skin"/></g>
+  </defs>
+
+  <rect width="390" height="844" fill="#FAFAF7"/>
+  <text x="16" y="44" class="name">Kiko</text>
+  <text x="16" y="66" class="sub">Travelling monkey · huge backpack · passport half out</text>
+  <line x1="16" y1="82" x2="374" y2="82" stroke="#DCDCD6"/>
+
+  <!-- happy -->
+  <g transform="translate(16 96)">
+    <g transform="translate(18 6) scale(1.4)">
+      <use href="#kiko"/>
+      <path d="M34 80L20 94" class="arm"/><path d="M66 80L80 94" class="arm"/>
+      <use href="#hand" x="19" y="95"/><use href="#hand" x="81" y="95"/>
+      <circle cx="43" cy="46" r="2.8" class="ink"/><circle cx="57" cy="46" r="2.8" class="ink"/>
+      <circle cx="44" cy="45" r="0.9" fill="#FAFAF7"/><circle cx="58" cy="45" r="0.9" fill="#FAFAF7"/>
+      <path d="M43 54q7 6 14 0" class="line"/>
+    </g>
+    <text x="87" y="225" class="label">happy</text>
+  </g>
+
+  <!-- worried -->
+  <g transform="translate(199 96)">
+    <g transform="translate(18 6) scale(1.4)">
+      <use href="#kiko"/>
+      <path d="M34 80L20 94" class="arm"/><path d="M66 80C82 70 80 52 72 40" class="arm"/>
+      <use href="#hand" x="19" y="95"/><use href="#hand" x="71" y="39"/>
+      <path d="M38 38l9 3M62 38l-9 3" class="line"/>
+      <circle cx="43" cy="46" r="2.6" class="ink"/><circle cx="57" cy="46" r="2.6" class="ink"/>
+      <path d="M43 57q3.5-3 7 0t7 0" class="line"/>
+      <path d="M28 26c0-4 3-8 3-8s3 4 3 8a3 3 0 0 1-6 0z" fill="#8FB0E0"/>
+    </g>
+    <text x="87" y="225" class="label">worried</text>
+  </g>
+
+  <!-- excited -->
+  <g transform="translate(16 346)">
+    <g transform="translate(18 6) scale(1.4)">
+      <use href="#kiko"/>
+      <path d="M34 78L18 58" class="arm"/><path d="M66 78L82 58" class="arm"/>
+      <use href="#hand" x="17" y="57"/><use href="#hand" x="83" y="57"/>
+      <circle cx="43" cy="45" r="3.6" class="ink"/><circle cx="57" cy="45" r="3.6" class="ink"/>
+      <circle cx="44.3" cy="43.6" r="1.3" fill="#FAFAF7"/><circle cx="58.3" cy="43.6" r="1.3" fill="#FAFAF7"/>
+      <path d="M43 53q7 9 14 0z" class="ink"/>
+      <path d="M46 57q4 2 8 0z" fill="#9B1C1C"/>
+      <path d="M8 44l-6-2M9 36l-5-5M12 28l-3-6M92 44l6-2M91 36l5-5M88 28l3-6" class="thin"/>
+    </g>
+    <text x="87" y="225" class="label">excited</text>
+  </g>
+
+  <!-- asleep -->
+  <g transform="translate(199 346)">
+    <g transform="translate(26 14) rotate(-14 50 60) scale(1.4)">
+      <use href="#kiko"/>
+      <path d="M34 80L24 96" class="arm"/><path d="M66 80C72 90 60 96 52 92" class="arm"/>
+      <use href="#hand" x="23" y="97"/><use href="#hand" x="51" y="92"/>
+      <path d="M39 47q4 3 8 0M53 47q4 3 8 0" class="line"/>
+      <path d="M46 56h8" class="line"/>
+    </g>
+    <path d="M128 42h10l-10 10h10" class="thin" stroke="#4B4B55"/>
+    <path d="M144 24h8l-8 8h8" class="thin" stroke="#4B4B55"/>
+    <path d="M156 10h6l-6 6h6" class="thin" stroke="#4B4B55"/>
+    <text x="87" y="225" class="label">asleep</text>
+  </g>
+
+  <!-- celebrating -->
+  <g transform="translate(16 596)">
+    <g transform="translate(18 6) scale(1.4)">
+      <use href="#kiko"/>
+      <path d="M34 78L18 56" class="arm"/><path d="M66 78L82 56" class="arm"/>
+      <use href="#hand" x="17" y="55"/><use href="#hand" x="83" y="55"/>
+      <path d="M83 55v-22M83 33l12 4-12 4" stroke="#16161A" stroke-width="1.5" fill="#B5470C" stroke-linejoin="round"/>
+      <path d="M39 46q4-4 8 0M53 46q4-4 8 0" class="line"/>
+      <path d="M41 53q9 9 18 0z" class="ink"/>
+      <rect x="8" y="20" width="5" height="5" fill="#E0A93A" transform="rotate(20 10 22)"/>
+      <rect x="20" y="8" width="4" height="4" fill="#B5470C" transform="rotate(-15 22 10)"/>
+      <circle cx="34" cy="14" r="2.2" fill="#22508F"/>
+      <circle cx="70" cy="10" r="2.2" fill="#7FC08A"/>
+      <rect x="92" y="18" width="5" height="5" fill="#22508F" transform="rotate(30 94 20)"/>
+      <rect x="4" y="60" width="4" height="4" fill="#7FC08A" transform="rotate(10 6 62)"/>
+      <circle cx="96" cy="72" r="2.2" fill="#E0A93A"/>
+    </g>
+    <text x="87" y="225" class="label">celebrating</text>
+  </g>
+
+  <!-- thinking -->
+  <g transform="translate(199 596)">
+    <g transform="translate(18 6) scale(1.4)">
+      <use href="#kiko"/>
+      <path d="M34 80L20 94" class="arm"/><path d="M66 80C76 74 66 62 58 60" class="arm"/>
+      <use href="#hand" x="19" y="95"/><use href="#hand" x="56" y="59"/>
+      <path d="M37 39l10-1" class="line"/>
+      <circle cx="43" cy="45" r="2.6" class="ink"/><circle cx="57" cy="44" r="2.6" class="ink"/>
+      <path d="M44 55l8-1.5" class="line"/>
+      <circle cx="80" cy="22" r="2" fill="#B3B3B8"/><circle cx="86" cy="14" r="3" fill="#B3B3B8"/>
+      <ellipse cx="96" cy="2" rx="12" ry="8" fill="#B3B3B8"/>
+      <circle cx="91" cy="2" r="1.4" fill="#16161A"/><circle cx="96" cy="2" r="1.4" fill="#16161A"/><circle cx="101" cy="2" r="1.4" fill="#16161A"/>
+    </g>
+    <text x="87" y="225" class="label">thinking</text>
+  </g>
+</svg>
