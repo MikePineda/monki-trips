@@ -103,18 +103,15 @@ export class SessionStore {
 
   /**
    * Ends the session on the server and forgets everything on the device
-   * (trips, outbox, meta). A server that already dropped the session (4xx)
-   * still signs out locally; with no answer at all the session stays, so
-   * the person knows nothing happened.
+   * (trips, outbox, meta). Only a server that says the session is already
+   * gone (401, 419) counts as done; a stale CSRF token is refreshed with one
+   * GET and the sign-out sent once more. Anything else (a 5xx, no answer)
+   * keeps the session and the device copy and reaches the caller: the
+   * httpOnly cookie would still be valid, so wiping the device would only
+   * sign the person back in silently on the next load.
    */
   async signOut(): Promise<void> {
-    try {
-      await this.api.logout()
-    } catch (error) {
-      if (!(error instanceof ApiFailure) || error.kind !== 'http') {
-        throw error
-      }
-    }
+    await this.endServerSession()
     await this.forgetDevice()
   }
 
@@ -165,6 +162,28 @@ export class SessionStore {
       return true
     }
     return false
+  }
+
+  private async endServerSession(retried = false): Promise<void> {
+    try {
+      await this.api.logout()
+    } catch (error) {
+      if (!(error instanceof ApiFailure)) {
+        throw error
+      }
+      if (error.isStatus(401) || error.isStatus(419)) {
+        return
+      }
+      if (error.is('E_BAD_CSRF_TOKEN') && !retried) {
+        // Any GET hands out a fresh XSRF cookie; /me also says whether the session still exists.
+        if ((await this.api.me()) === null) {
+          return
+        }
+        await this.endServerSession(true)
+        return
+      }
+      throw error
+    }
   }
 
   private async restoreOnce(): Promise<SessionUser | null> {

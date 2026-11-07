@@ -101,6 +101,23 @@ describe('AccountSectionComponent', () => {
     expect(TestBed.inject(SessionStore).signedIn()).toBe(false)
   })
 
+  it('a failing sign-out stays signed in and says so next to the button, ready to retry', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
+    const { click, text, has } = await render()
+    fakes.session.failWith = new ApiFailure({ kind: 'http', status: 503, message: 'x' })
+
+    await click('account.signOut')
+
+    expect(TestBed.inject(SessionStore).signedIn()).toBe(true)
+    expect(navigate).not.toHaveBeenCalled()
+    expect(text('account.signOut.error')).toBe(SCOPE_CATALOGUES.account.en.errors.unknown)
+    expect(has('account.signOut')).toBe(true)
+
+    await click('account.signOut')
+
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/login'))
+  })
+
   it('sign-out warns when the outbox has pending items', async () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)
     const outbox = TestBed.inject(OutboxStore)
