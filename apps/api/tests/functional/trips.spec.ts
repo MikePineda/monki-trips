@@ -83,6 +83,42 @@ test.group('Trips', (group) => {
     await db.assertCount('trips', 1)
   })
 
+  test('invalid calendar date answers 422', async ({ client, db }) => {
+    const user = await makeUser()
+
+    const response = await actingAs(client.post('/api/v1/trips'), user).json({
+      ...NEW_TRIP,
+      startsOn: '2026-02-30',
+      endsOn: '2026-13-01',
+    })
+
+    response.assertStatus(422)
+    response.assertBodyContains({
+      errors: [
+        { field: 'startsOn', rule: 'calendarDate', message: 'start date must be a real date' },
+        { field: 'endsOn', rule: 'calendarDate', message: 'end date must be a real date' },
+      ],
+    })
+    await db.assertCount('trips', 0)
+  })
+
+  test('duplicate trip id from the same owner is idempotent', async ({ client, assert, db }) => {
+    const user = await makeUser()
+    const id = randomUUID()
+    const create = () =>
+      actingAs(client.post('/api/v1/trips'), user)
+        .json({ ...NEW_TRIP, id })
+        .catch((e) => e)
+
+    const responses = await Promise.all([create(), create()])
+
+    assert.deepEqual(responses.map((response) => response.status()).sort(), [200, 201])
+    for (const response of responses) {
+      assert.equal(response.body().data.id, id)
+    }
+    await db.assertCount('trips', 1)
+  })
+
   test('an end date before the start date is a validation error', async ({ client }) => {
     const user = await makeUser()
 

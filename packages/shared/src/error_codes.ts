@@ -12,6 +12,8 @@ export const ERROR_CODES = {
   E_VALIDATION_ERROR: 422,
   E_BAD_CSRF_TOKEN: 403,
   E_TOO_MANY_REQUESTS: 429,
+  /** A write lost a race on a unique key (the same thing was created twice at once). */
+  E_CONFLICT: 409,
   E_INTERNAL_SERVER_ERROR: 500,
 
   // Auth and account

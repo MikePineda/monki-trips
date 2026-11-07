@@ -12,6 +12,12 @@ class ClosedRegistration extends RegistrationPolicy {
   }
 }
 
+class OpenRegistration extends RegistrationPolicy {
+  override isOpen() {
+    return true
+  }
+}
+
 const SIGNUP = {
   email: 'newcomer@example.com',
   password: TEST_PASSWORD,
@@ -157,6 +163,23 @@ test.group('Signup with registration open', (group) => {
 
     response.assertStatus(409)
     response.assertBodyContains({ code: 'E_EMAIL_TAKEN' })
+  })
+
+  test('concurrent signups with one e-mail answer 409 not 500', async ({ client, assert, db }) => {
+    app.container.swap(RegistrationPolicy, () => new OpenRegistration())
+    const signup = () =>
+      client
+        .post('/api/v1/auth/signup')
+        .withCsrfToken()
+        .json(SIGNUP)
+        .catch((e) => e)
+
+    const responses = await Promise.all([signup(), signup()])
+
+    assert.deepEqual(responses.map((response) => response.status()).sort(), [201, 409])
+    const refused = responses.find((response) => response.status() === 409)
+    refused!.assertBodyContains({ code: 'E_EMAIL_TAKEN' })
+    await db.assertCount('users', 1)
   })
 
   test('validation errors list field, rule and a translated message', async ({

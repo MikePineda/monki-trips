@@ -48,11 +48,14 @@ export default class AuthController {
       unknownInvitation: !!body.invitationToken && !invitation,
     })
     if (!decision.allowed) throw new ApiException(decision.code)
-    if (await User.findBy('email', body.email)) throw new ApiException('E_EMAIL_TAKEN')
 
     const now = this.clock.now()
     // One transaction: an invitation claimed by someone else meanwhile leaves no account behind.
     const user = await db.transaction(async (trx) => {
+      // A signup that raced this one past the check still hits the unique index (409 too).
+      if (await User.query({ client: trx }).where('email', body.email).first()) {
+        throw new ApiException('E_EMAIL_TAKEN')
+      }
       const created = await User.create(
         {
           email: body.email,
