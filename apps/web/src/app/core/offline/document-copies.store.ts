@@ -25,6 +25,17 @@ export interface SaveResult {
   sha256: string
 }
 
+export interface SaveAllProgress {
+  done: number
+  total: number
+}
+
+export interface SaveAllResult {
+  saved: string[]
+  /** Files that could not be saved: the network failed, or the copy's hash is not the server's. */
+  failed: string[]
+}
+
 export interface StorageStatus extends StoragePressure {
   persisted: boolean
   estimate: StorageEstimateBytes | null
@@ -89,6 +100,37 @@ export class DocumentCopiesStore {
     } finally {
       this.inFlight.update((ids) => new Set([...ids].filter((id) => id !== document.id)))
     }
+  }
+
+  /**
+   * Saves every file of the trip the device does not hold in its current
+   * version (no copy, or a copy whose hash is not the server's), one after
+   * the other, reporting progress: "Download everything" of Ready to fly.
+   * One failure does not stop the others.
+   */
+  async saveAll(
+    tripId: string,
+    onProgress: (progress: SaveAllProgress) => void = () => undefined
+  ): Promise<SaveAllResult> {
+    const db = await this.database
+    const files = (await db.docs.where('tripId').equals(tripId).toArray()).filter(
+      (document) => document.kind === 'file'
+    )
+    const held = new Map<string, string>()
+    await db.docBlobs.each((copy) => held.set(copy.docId, copy.sha256))
+    const missing = files.filter((document) => held.get(document.id) !== document.sha256)
+    const result: SaveAllResult = { saved: [], failed: [] }
+    onProgress({ done: 0, total: missing.length })
+    for (const [index, document] of missing.entries()) {
+      try {
+        const { verified } = await this.save(document)
+        ;(verified ? result.saved : result.failed).push(document.id)
+      } catch {
+        result.failed.push(document.id)
+      }
+      onProgress({ done: index + 1, total: missing.length })
+    }
+    return result
   }
 
   /**

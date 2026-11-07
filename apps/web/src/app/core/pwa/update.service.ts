@@ -20,11 +20,28 @@ export class UpdateService {
   private readonly document = inject(DOCUMENT)
   private readonly destroyRef = inject(DestroyRef)
   private readonly unrecoverableState = signal(false)
+  private readonly versionReadyState = signal(false)
   private toast: ToastHandle | null = null
   private started = false
 
   /** The cached build is broken: only a reload helps. */
   readonly unrecoverable = this.unrecoverableState.asReadonly()
+
+  /** A new version waits for a reload (`VERSION_READY`): the running copy is not the latest. */
+  readonly versionReady = this.versionReadyState.asReadonly()
+
+  /** The service worker is registered for this build (off in development and specs). */
+  get enabled(): boolean {
+    return this.updates.isEnabled
+  }
+
+  /** Asks the worker for a newer version now; resolves whether one was found. */
+  async checkNow(): Promise<boolean> {
+    if (!this.updates.isEnabled) {
+      return false
+    }
+    return this.updates.checkForUpdate().catch(() => false)
+  }
 
   start(): void {
     if (this.started || !this.updates.isEnabled) {
@@ -37,7 +54,10 @@ export class UpdateService {
         filter((event): event is VersionReadyEvent => event.type === 'VERSION_READY'),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => this.offerReload())
+      .subscribe(() => {
+        this.versionReadyState.set(true)
+        this.offerReload()
+      })
 
     this.updates.unrecoverable
       .pipe(takeUntilDestroyed(this.destroyRef))
