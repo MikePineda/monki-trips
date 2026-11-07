@@ -7,19 +7,20 @@ import { InstallService } from '../../core/pwa/install.service'
 import { ThemeStore, type ThemePreference } from '../../core/theme/theme.store'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
+import { AccountSectionComponent } from '../account/account-section.component'
 import { InstallInstructionsSheet } from './install-instructions.sheet'
 import { provideSettingsI18n } from './settings-i18n'
 
 const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
 
 /**
- * Settings: UI language (overrides the device pick), theme, installing the
- * app and the server build the device last saw. Each choice applies at once
- * and is remembered on the device.
+ * Settings: UI language (overrides the device pick), theme, the account
+ * (features/account), installing the app and the server build the device
+ * last saw. Each choice applies at once and is remembered on the device.
  */
 @Component({
   selector: 'app-settings-page',
-  imports: [TranslocoPipe, MkButtonComponent],
+  imports: [TranslocoPipe, MkButtonComponent, AccountSectionComponent],
   providers: [provideSettingsI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -73,6 +74,8 @@ const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
         }
       </div>
     </section>
+
+    <app-account-section />
 
     <section class="mt-6">
       <h2 class="text-sm font-medium text-ink-2">{{ 'settings.install.label' | transloco }}</h2>
