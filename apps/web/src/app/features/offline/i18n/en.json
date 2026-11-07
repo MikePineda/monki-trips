@@ -1,0 +1,11 @@
+{
+  "title": "Offline",
+  "ready": {
+    "title": "Ready to fly",
+    "body": "The checklist that proves the whole trip is on this phone, with “Download everything” and the airplane-mode test, arrives with phase 2."
+  },
+  "status": {
+    "label": "Connection",
+    "synced": "Everything is in sync."
+  }
+}

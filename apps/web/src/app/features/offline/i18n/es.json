@@ -1,0 +1,11 @@
+{
+  "title": "Sin conexión",
+  "ready": {
+    "title": "Listos para volar",
+    "body": "La lista que demuestra que todo el viaje está en este teléfono, con «Descargar todo» y la prueba en modo avión, llega con la fase 2."
+  },
+  "status": {
+    "label": "Conexión",
+    "synced": "Todo está sincronizado."
+  }
+}

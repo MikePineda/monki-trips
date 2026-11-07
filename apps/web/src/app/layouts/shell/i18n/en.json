@@ -2,16 +2,105 @@
   "nav": {
     "label": "Main",
     "trips": "Trips",
-    "styleguide": "Style guide"
+    "styleguide": "Style guide",
+    "settings": "Settings",
+    "back": "Back to trips"
+  },
+  "banner": {
+    "unrecoverable": "This copy of the app is broken. Reload to repair it.",
+    "reload": "Reload"
   },
   "trips": {
     "title": "Trips",
     "emptyTitle": "No trips yet",
-    "emptyBody": "Trips you plan or are invited to will show up here."
+    "emptyBody": "Trips you plan or are invited to will show up here.",
+    "dates": "{{start}} to {{end}}"
+  },
+  "login": {
+    "title": "Sign in",
+    "body": "Signing in arrives with the API (work package 0.6b). Until then the app runs for a local traveller.",
+    "continue": "Go to trips"
+  },
+  "share": {
+    "title": "Shared with monki trips",
+    "body": "Files shared from other apps will land here (work package 2.8)."
+  },
+  "tabs": {
+    "label": "Trip",
+    "today": "Today",
+    "plan": "Plan",
+    "docs": "Docs",
+    "money": "Money",
+    "more": "More"
+  },
+  "trip": {
+    "untitled": "Trip",
+    "today": {
+      "title": "Today",
+      "body": "The day's plan, the next event, tonight's stay and what is left to spend arrive with phase 2."
+    },
+    "plan": {
+      "title": "Plan",
+      "body": "Days and where we sleep arrive with phase 1."
+    },
+    "docs": {
+      "title": "Documents",
+      "body": "Tickets, bookings and visas, saved for offline, arrive with phase 1."
+    },
+    "money": {
+      "title": "Money",
+      "body": "Budget and expenses arrive with phase 2."
+    },
+    "add": {
+      "title": "Add expense",
+      "body": "Quick expense capture in three taps arrives with phase 2."
+    },
+    "more": {
+      "title": "More",
+      "settings": "Settings",
+      "offline": "Offline"
+    }
   },
   "styleguide": {
     "title": "Style guide",
-    "intro": "Placeholder tokens until the design system is chosen.",
-    "tokens": "Colour tokens"
+    "intro": "Placeholder tokens and the ui-kit until the design system is chosen.",
+    "tokens": "Colour tokens",
+    "themes": "Both themes",
+    "light": "Light",
+    "dark": "Dark",
+    "languages": "Language",
+    "components": "Components",
+    "buttons": "Buttons",
+    "chips": "Chips",
+    "fields": "Fields",
+    "feedback": "Feedback",
+    "connection": "Connection states",
+    "empty": "Empty state",
+    "skeleton": "Skeleton",
+    "sheet": "Sheet",
+    "openSheet": "Open a sheet",
+    "showToast": "Show a toast with undo",
+    "undone": "Undone",
+    "toastMessage": "Expense saved",
+    "mascot": "Mascot (WP 0.7)",
+    "mascotBody": "The mascot and its six states arrive with the design system.",
+    "sample": {
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "ghost": "Ghost",
+      "loading": "Loading",
+      "disabled": "Disabled",
+      "chip": "Food",
+      "chipSelected": "Selected",
+      "chipRoute": "ORG → DST",
+      "fieldLabel": "Trip name",
+      "fieldHint": "Something you will recognise",
+      "fieldInvalid": "With an error",
+      "sheetTitle": "A bottom sheet",
+      "sheetBody": "Escape, the backdrop or the button close it. Focus stays inside.",
+      "emptyTitle": "Nothing here yet",
+      "emptyBody": "An honest empty state has one action at most.",
+      "emptyAction": "Do the one thing"
+    }
   }
 }

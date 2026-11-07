@@ -2,16 +2,105 @@
   "nav": {
     "label": "Principal",
     "trips": "Viajes",
-    "styleguide": "Guía de estilo"
+    "styleguide": "Guía de estilo",
+    "settings": "Ajustes",
+    "back": "Volver a los viajes"
+  },
+  "banner": {
+    "unrecoverable": "Esta copia de la app está dañada. Recarga para repararla.",
+    "reload": "Recargar"
   },
   "trips": {
     "title": "Viajes",
     "emptyTitle": "Aún no hay viajes",
-    "emptyBody": "Aquí aparecerán los viajes que planees o a los que te inviten."
+    "emptyBody": "Aquí aparecerán los viajes que planees o a los que te inviten.",
+    "dates": "Del {{start}} al {{end}}"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "body": "El inicio de sesión llega con la API (paquete de trabajo 0.6b). Hasta entonces la app funciona para una persona viajera local.",
+    "continue": "Ir a los viajes"
+  },
+  "share": {
+    "title": "Compartido con monki trips",
+    "body": "Los archivos compartidos desde otras apps aparecerán aquí (paquete de trabajo 2.8)."
+  },
+  "tabs": {
+    "label": "Viaje",
+    "today": "Hoy",
+    "plan": "Plan",
+    "docs": "Docs",
+    "money": "Dinero",
+    "more": "Más"
+  },
+  "trip": {
+    "untitled": "Viaje",
+    "today": {
+      "title": "Hoy",
+      "body": "El plan del día, el próximo evento, dónde dormimos y lo que queda por gastar llegan con la fase 2."
+    },
+    "plan": {
+      "title": "Plan",
+      "body": "Los días y dónde dormimos llegan con la fase 1."
+    },
+    "docs": {
+      "title": "Documentos",
+      "body": "Billetes, reservas y visados, guardados para usarlos sin conexión, llegan con la fase 1."
+    },
+    "money": {
+      "title": "Dinero",
+      "body": "El presupuesto y los gastos llegan con la fase 2."
+    },
+    "add": {
+      "title": "Añadir gasto",
+      "body": "Anotar un gasto en tres toques llega con la fase 2."
+    },
+    "more": {
+      "title": "Más",
+      "settings": "Ajustes",
+      "offline": "Sin conexión"
+    }
   },
   "styleguide": {
     "title": "Guía de estilo",
-    "intro": "Tokens provisionales hasta elegir el sistema de diseño.",
-    "tokens": "Tokens de color"
+    "intro": "Tokens provisionales y el ui-kit hasta elegir el sistema de diseño.",
+    "tokens": "Tokens de color",
+    "themes": "Los dos temas",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "languages": "Idioma",
+    "components": "Componentes",
+    "buttons": "Botones",
+    "chips": "Chips",
+    "fields": "Campos",
+    "feedback": "Avisos",
+    "connection": "Estados de conexión",
+    "empty": "Estado vacío",
+    "skeleton": "Esqueleto",
+    "sheet": "Hoja",
+    "openSheet": "Abrir una hoja",
+    "showToast": "Mostrar un aviso con deshacer",
+    "undone": "Deshecho",
+    "toastMessage": "Gasto guardado",
+    "mascot": "Mascota (WP 0.7)",
+    "mascotBody": "La mascota y sus seis estados llegan con el sistema de diseño.",
+    "sample": {
+      "primary": "Principal",
+      "secondary": "Secundario",
+      "ghost": "Fantasma",
+      "loading": "Cargando",
+      "disabled": "Desactivado",
+      "chip": "Comida",
+      "chipSelected": "Seleccionado",
+      "chipRoute": "ORG → DST",
+      "fieldLabel": "Nombre del viaje",
+      "fieldHint": "Algo que reconozcas",
+      "fieldInvalid": "Con un error",
+      "sheetTitle": "Una hoja inferior",
+      "sheetBody": "Escape, el fondo o el botón la cierran. El foco se queda dentro.",
+      "emptyTitle": "Aún no hay nada",
+      "emptyBody": "Un estado vacío honesto tiene una acción como máximo.",
+      "emptyAction": "Hacer lo único que hay"
+    }
   }
 }

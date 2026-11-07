@@ -1,0 +1,30 @@
+{
+  "title": "Settings",
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "Device",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "install": {
+    "label": "Install",
+    "action": "Install the app",
+    "installed": "Installed on this device.",
+    "unavailable": "Your browser will offer to install it from its menu.",
+    "iosTitle": "Add to your Home Screen",
+    "iosStep1": "Tap the Share button in Safari.",
+    "iosStep2": "Choose “Add to Home Screen”.",
+    "iosStep3": "Tap Add. The app opens full screen and keeps its data offline."
+  },
+  "version": {
+    "label": "App version",
+    "value": "{{version}} · {{sha}}",
+    "unknown": "Not checked yet",
+    "refresh": "Check"
+  }
+}
