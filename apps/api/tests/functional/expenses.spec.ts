@@ -388,6 +388,96 @@ test.group('Expenses', (group) => {
     assert.isNull(share.deleted_at)
   })
 
+  test('changing the amount alone must keep the live split adding up', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const trip = await makeTrip(owner)
+    const [traveller] = await db.from('travellers').where('trip_id', trip.id)
+    const friend = await pushApplied<{ id: string }>(
+      client,
+      owner,
+      mutation(trip.id, 'traveller', { displayName: 'Friend without the app', position: 1 })
+    )
+    const id = randomUUID()
+    await pushApplied(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        {
+          amountMinor: 3000,
+          currency: 'AUD',
+          spentOn: '2027-01-22',
+          shares: [
+            { id: randomUUID(), travellerId: traveller.id, shareMinor: 2000 },
+            { id: randomUUID(), travellerId: friend.id, shareMinor: 1000 },
+          ],
+        },
+        { id, changedAt: '2027-01-25T08:00:00.000Z' }
+      )
+    )
+    const unsplit = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', { amountMinor: 500, currency: 'AUD', spentOn: '2027-01-22' })
+    )
+
+    const alone = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        { amountMinor: 4000 },
+        { id, changedAt: '2027-01-25T09:00:00.000Z' }
+      )
+    )
+    const described = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        { description: 'Dinner' },
+        { id, changedAt: '2027-01-25T09:00:00.000Z' }
+      )
+    )
+    const together = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        {
+          amountMinor: 4000,
+          shares: [
+            { id: randomUUID(), travellerId: traveller.id, shareMinor: 2000 },
+            { id: randomUUID(), travellerId: friend.id, shareMinor: 2000 },
+          ],
+        },
+        { id, changedAt: '2027-01-25T09:00:00.000Z' }
+      )
+    )
+    const noSplit = await pushOne(
+      client,
+      owner,
+      mutation(trip.id, 'expense', { amountMinor: 700 }, { id: unsplit.id })
+    )
+
+    assert.equal(alone.status, 'rejected')
+    assert.deepEqual(
+      alone.error?.errors?.map((e) => [e.field, e.rule]),
+      [['amountMinor', 'sharesSum']]
+    )
+    assert.equal(described.status, 'applied')
+    assert.equal(together.status, 'applied')
+    assert.include(together.row as object, { amountMinor: 4000, baseAmountMinor: 4000 })
+    assert.equal(noSplit.status, 'applied')
+  })
+
   test('the budget view sums converted expenses by category', async ({ client, assert }) => {
     const owner = await makeUser()
     const trip = await makeTrip(owner, {

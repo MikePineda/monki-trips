@@ -1,6 +1,6 @@
 import app from '@adonisjs/core/services/app'
 import { minorUnitExponent } from '@monkitrips/shared'
-import type { DbRow, EntitySpec, FieldProblem } from '#services/sync/entity_spec'
+import type { DbRow, DeriveContext, EntitySpec, FieldProblem } from '#services/sync/entity_spec'
 import { convertToBaseMinor } from '#domain/convert_to_base'
 import { FxRates } from '#services/fx/fx_rates'
 import { tombstoneWhere } from '#services/sync/table_writes'
@@ -8,6 +8,27 @@ import { expenseChanges } from '#validators/sync/entities'
 
 /** The largest minor amount the wire carries exactly (the validators cap inputs the same way). */
 const MAX_MINOR = BigInt(Number.MAX_SAFE_INTEGER)
+
+/**
+ * Whether the stored split still adds up to `amount`. Only an amount that
+ * changed is checked: a split edited share by share (`expense_share`) may
+ * be mid-way, and an unrelated edit of the expense must not trip over it.
+ */
+async function liveSplitAddsUp(ctx: DeriveContext, expenseId: string, amount: number) {
+  const [stored] = (await ctx.trx
+    .from('expenses')
+    .where('id', expenseId)
+    .select('amount_minor')) as { amount_minor: string }[]
+  if (BigInt(stored.amount_minor) === BigInt(amount)) return true
+  const shares = (await ctx.trx
+    .from('expense_shares')
+    .where('expense_id', expenseId)
+    .whereNull('deleted_at')
+    .select('share_minor')) as { share_minor: string }[]
+  if (shares.length === 0) return true
+  const sum = shares.reduce((total, share) => total + BigInt(share.share_minor), 0n)
+  return sum === BigInt(amount)
+}
 
 interface ShareInput {
   id: string
@@ -77,6 +98,9 @@ export const expenseEntity: EntitySpec = {
       if (sum !== BigInt(amount)) problems.push({ field: 'shares', rule: 'sharesSum' })
       const travellers = new Set(shares.map((share) => share.travellerId))
       if (travellers.size !== shares.length) problems.push({ field: 'shares', rule: 'distinct' })
+    } else if (!ctx.inserting && !(await liveSplitAddsUp(ctx, String(merged.id), amount))) {
+      // The amount moved without a new split: the one already stored must still add up.
+      problems.push({ field: 'amountMinor', rule: 'sharesSum' })
     }
     if (problems.length > 0) return { columns, problems }
 
