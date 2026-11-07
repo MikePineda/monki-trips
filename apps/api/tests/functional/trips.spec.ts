@@ -1,5 +1,8 @@
 import { test } from '@japa/runner'
 import { randomUUID } from 'node:crypto'
+import app from '@adonisjs/core/services/app'
+import TripMember from '#models/trip_member'
+import { TripMembership } from '#services/trip_membership'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
@@ -247,6 +250,68 @@ test.group('Trips', (group) => {
 
     const formerOwner = await actingAs(client.delete(`/api/v1/trips/${trip.id}`), owner)
     formerOwner.assertStatus(403)
+  })
+
+  test('transfer ownership fails when the target left meanwhile', async ({ client, db }) => {
+    const owner = await makeUser()
+    const editor = await makeUser()
+    const trip = await makeTrip(owner)
+    const editorMembership = await addMember(trip, editor)
+    // The editor's departure commits after the request's checks, right before the lock.
+    class DepartureFirst extends TripMembership {
+      override async lockLive(...args: Parameters<TripMembership['lockLive']>) {
+        await TripMember.query()
+          .where('id', editorMembership.id)
+          .update({ deleted_at: new Date(), updated_by: editor.id })
+        return super.lockLive(...args)
+      }
+    }
+    app.container.swap(TripMembership, () => new DepartureFirst())
+
+    try {
+      const response = await actingAs(
+        client.post(`/api/v1/trips/${trip.id}/transfer-ownership`),
+        owner
+      ).json({ userId: editor.id })
+
+      response.assertStatus(404)
+      response.assertBodyContains({ code: 'E_NOT_A_MEMBER' })
+    } finally {
+      app.container.restore(TripMembership)
+    }
+    await db.assertHas('trip_members', { trip_id: trip.id, user_id: owner.id, role: 'owner' })
+    await db.assertHas('trip_members', { id: editorMembership.id, role: 'editor' })
+  })
+
+  test('a transfer racing the target leaving keeps exactly one owner', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const editor = await makeUser()
+    const trip = await makeTrip(owner)
+    const editorMembership = await addMember(trip, editor)
+
+    const [transfer, leave] = await Promise.all([
+      actingAs(client.post(`/api/v1/trips/${trip.id}/transfer-ownership`), owner)
+        .json({ userId: editor.id })
+        .catch((e) => e),
+      actingAs(
+        client.delete(`/api/v1/trips/${trip.id}/members/${editorMembership.id}`),
+        editor
+      ).catch((e) => e),
+    ])
+
+    // Whichever lands first, the other one is refused and the trip keeps one live owner.
+    assert.deepEqual(
+      [transfer.status(), leave.status()].sort(),
+      transfer.status() === 200 ? [200, 409] : [204, 404]
+    )
+    const owners = await TripMember.query()
+      .where('trip_id', trip.id)
+      .where('role', 'owner')
+      .whereNull('deleted_at')
+    assert.lengthOf(owners, 1)
   })
 
   test('ownership can only go to a live member, and only from the owner', async ({ client }) => {

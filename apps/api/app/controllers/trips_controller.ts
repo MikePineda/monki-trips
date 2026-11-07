@@ -11,7 +11,6 @@ import type {
   TripSnapshot as TripSnapshotWire,
 } from '@monkitrips/shared'
 import Trip from '#models/trip'
-import TripMember from '#models/trip_member'
 import { Clock } from '#services/clock'
 import { TripCreation } from '#services/trip_creation'
 import { TripMembership } from '#services/trip_membership'
@@ -96,27 +95,32 @@ export default class TripsController {
     return { data: toTripWire(ctx.trip) }
   }
 
-  /** Swaps the owner role with another live member, in one transaction (the one-owner index holds throughout). */
+  /**
+   * Swaps the owner role with another live member in one transaction (the
+   * one-owner index holds throughout). Both rows are locked and re-read
+   * inside it, so a target who left meanwhile answers 404 `E_NOT_A_MEMBER`.
+   */
   async transferOwnership(ctx: HttpContext): Promise<ApiEnvelope<TripMemberWire[]>> {
     const { userId } = await ctx.request.validateUsing(transferOwnershipValidator)
-    const target = await TripMember.query()
-      .where('trip_id', ctx.trip.id)
-      .where('user_id', userId)
-      .whereNull('deleted_at')
-      .first()
-    if (!target) throw new ApiException('E_NOT_A_MEMBER')
-    if (target.id !== ctx.membership.id) {
-      await db.transaction(async (trx) => {
-        ctx.membership.useTransaction(trx)
-        ctx.membership.role = 'editor'
-        ctx.membership.updatedBy = ctx.membership.userId
-        await ctx.membership.save()
-        target.useTransaction(trx)
-        target.role = 'owner'
-        target.updatedBy = ctx.membership.userId
-        await target.save()
+    const actorId = ctx.membership.id
+    await db.transaction(async (trx) => {
+      const rows = await this.memberships.lockLive(trx, ctx.trip.id, {
+        ids: [actorId],
+        userIds: [userId],
       })
-    }
+      const actor = rows.find((row) => row.id === actorId)
+      const target = rows.find((row) => row.userId === userId)
+      if (!actor) throw new ApiException('E_ROW_NOT_FOUND')
+      if (actor.role !== 'owner') throw new ApiException('E_TRIP_ROLE')
+      if (!target) throw new ApiException('E_NOT_A_MEMBER')
+      if (target.id === actor.id) return
+      actor.role = 'editor'
+      actor.updatedBy = actor.userId
+      await actor.save()
+      target.role = 'owner'
+      target.updatedBy = actor.userId
+      await target.save()
+    })
     const members = await this.memberships.membersOf(ctx.trip.id)
     return { data: members.map(toTripMemberWire) }
   }
