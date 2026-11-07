@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Spec for scripts/check-contrast.mjs: WCAG 2 contrast over a palette.md token table.
+// Spec for scripts/check-contrast.mjs: WCAG 2 contrast over a palette.md token table
+// or the color tokens of docs/design/tokens.json.
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
   checkPalette,
   contrastRatio,
+  loadTokens,
   parsePalette,
+  parseTokensJson,
   relativeLuminance,
   requiredRatio,
 } from './check-contrast.mjs'
@@ -118,4 +121,80 @@ test('check_palette_requires_text_and_graphic_tokens_to_name_a_surface', () => {
 test('check_palette_passes_a_clean_palette', () => {
   const tokens = parsePalette(SAMPLE).filter((t) => t.name !== 'ink-3')
   assert.deepEqual(checkPalette(tokens), [])
+})
+
+const TOKENS_JSON = JSON.stringify({
+  name: 'Sample',
+  color: {
+    themes: [
+      { id: 'light', name: 'Light' },
+      { id: 'dark', name: 'Dark' },
+    ],
+    tokens: [
+      { name: 'surface-0', value: { light: '#FFFFFF', dark: '#000000' }, role: 'surface' },
+      {
+        name: 'ink-1',
+        value: { light: '#000000', dark: '#FFFFFF' },
+        role: 'text',
+        against: ['surface-0'],
+        usage: 'Primary text.',
+      },
+      { name: 'series-1', value: { light: '#2a78d6', dark: '#3987e5' }, role: 'series' },
+      { name: 'scrim', value: { light: '#1114174D', dark: '#000000A3' }, role: 'overlay' },
+      { name: 'same', value: '#777777', role: 'decorative' },
+    ],
+  },
+})
+
+test('required_ratio_is_none_for_series_and_overlay_tokens', () => {
+  assert.equal(requiredRatio('series'), 0)
+  assert.equal(requiredRatio('overlay'), 0)
+})
+
+test('parse_tokens_json_reads_every_color_token_with_role_and_against', () => {
+  const tokens = parseTokensJson(TOKENS_JSON)
+  assert.deepEqual(
+    tokens.map((t) => t.name),
+    ['surface-0', 'ink-1', 'series-1', 'scrim', 'same']
+  )
+  assert.deepEqual(tokens[1], {
+    name: 'ink-1',
+    light: '#000000',
+    dark: '#FFFFFF',
+    role: 'text',
+    against: ['surface-0'],
+  })
+  assert.deepEqual(tokens[0].against, [])
+  assert.equal(tokens[3].light, '#1114174D')
+})
+
+test('parse_tokens_json_uses_a_plain_string_value_for_both_themes', () => {
+  const same = parseTokensJson(TOKENS_JSON).find((t) => t.name === 'same')
+  assert.equal(same.light, '#777777')
+  assert.equal(same.dark, '#777777')
+})
+
+test('parse_tokens_json_fails_without_color_tokens_or_a_role', () => {
+  assert.throws(() => parseTokensJson('{"name":"x"}'), /color\.tokens/)
+  const noRole = JSON.stringify({ color: { tokens: [{ name: 'a', value: '#000' }] } })
+  assert.throws(() => parseTokensJson(noRole), /role/)
+})
+
+test('check_palette_passes_a_tokens_json_with_translucent_overlays', () => {
+  assert.deepEqual(checkPalette(parseTokensJson(TOKENS_JSON)), [])
+})
+
+test('contrast_is_refused_for_a_translucent_colour', () => {
+  assert.throws(() => contrastRatio('#00000080', '#FFFFFF'), /translucent/)
+  const tokens = [
+    { name: 'surface-0', light: '#FFF', dark: '#000', role: 'surface', against: [] },
+    { name: 'ink-1', light: '#00000080', dark: '#FFF', role: 'text', against: ['surface-0'] },
+  ]
+  assert.throws(() => checkPalette(tokens), /translucent/)
+})
+
+test('load_tokens_dispatches_on_the_file_extension', () => {
+  assert.equal(loadTokens('a/palette.md', SAMPLE).length, 6)
+  assert.equal(loadTokens('a/tokens.json', TOKENS_JSON).length, 5)
+  assert.throws(() => loadTokens('a/tokens.yaml', ''), /\.md or \.json/)
 })
