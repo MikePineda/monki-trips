@@ -18,4 +18,8 @@ test('the codes the plan names keep their status', () => {
   assert.equal(ERROR_CODES.E_SOLE_OWNER_OF_SHARED_TRIPS, 409)
   assert.equal(ERROR_CODES.E_OWNER_CANNOT_LEAVE, 409)
   assert.equal(ERROR_CODES.E_BASE_CURRENCY_LOCKED, 409)
+  assert.equal(ERROR_CODES.E_SYNC_CURSOR_EXPIRED, 410)
+  assert.equal(ERROR_CODES.E_FILE_TOO_LARGE, 413)
+  assert.equal(ERROR_CODES.E_UNSUPPORTED_FILE, 415)
+  assert.equal(ERROR_CODES.E_FX_UNAVAILABLE, 503)
 })
