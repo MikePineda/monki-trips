@@ -134,6 +134,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"push-subscriptions"],[1,"id"]],
     types: placeholder as Registry['me.pushSubscriptions.destroy']['types'],
   },
+  'me.pushSubscriptions.test': {
+    methods: ["POST"],
+    pattern: '/api/v1/me/push-subscriptions/test',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"push-subscriptions"],[0,"test"]],
+    types: placeholder as Registry['me.pushSubscriptions.test']['types'],
+  },
   'invitations.accept': {
     methods: ["POST"],
     pattern: '/api/v1/invitations/:token/accept',

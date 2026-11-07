@@ -25,5 +25,6 @@
   "E_BASE_CURRENCY_LOCKED": "La moneda base no puede cambiar cuando ya hay gastos",
   "E_NOT_A_MEMBER": "Esa persona no es miembro de este viaje",
   "E_INVITATION_EXPIRED": "Esta invitación ya no es válida",
-  "E_INVITATION_EMAIL_MISMATCH": "Esta invitación se envió a otro correo"
+  "E_INVITATION_EMAIL_MISMATCH": "Esta invitación se envió a otro correo",
+  "E_PUSH_DISABLED": "Las notificaciones no están configuradas en este servidor"
 }

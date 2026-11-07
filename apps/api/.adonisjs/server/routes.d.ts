@@ -25,6 +25,7 @@ export type ScannedRoutes = {
     'me.restore': { paramsTuple?: []; params?: {} }
     'me.pushSubscriptions.store': { paramsTuple?: []; params?: {} }
     'me.pushSubscriptions.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'me.pushSubscriptions.test': { paramsTuple?: []; params?: {} }
     'invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'trips.index': { paramsTuple?: []; params?: {} }
     'trips.store': { paramsTuple?: []; params?: {} }
@@ -79,6 +80,7 @@ export type ScannedRoutes = {
     'me.delete': { paramsTuple?: []; params?: {} }
     'me.restore': { paramsTuple?: []; params?: {} }
     'me.pushSubscriptions.store': { paramsTuple?: []; params?: {} }
+    'me.pushSubscriptions.test': { paramsTuple?: []; params?: {} }
     'invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'trips.store': { paramsTuple?: []; params?: {} }
     'trips.transferOwnership': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }

@@ -72,6 +72,14 @@ export const envSchema = {
   MAIL_FROM: Env.schema.string.optional(),
   RESEND_API_KEY: Env.schema.secret.optional(),
 
+  // Web Push (VAPID). All three or none: push is disabled while they are empty.
+  VAPID_PUBLIC_KEY: Env.schema.string.optional(),
+  VAPID_PRIVATE_KEY: Env.schema.secret.optional(),
+  VAPID_SUBJECT: Env.schema.string.optional(),
+
+  // In-process scheduler: on (default) | off
+  SCHEDULER: Env.schema.enum.optional(['on', 'off'] as const),
+
   // Deploy-time bootstrap (read by docker/entrypoint.mjs and the bootstrap seeder)
   MIGRATE_ON_START: Env.schema.boolean.optional(),
   SEED_USERS: Env.schema.boolean.optional(),
@@ -100,6 +108,12 @@ const REQUIRED_BY_DRIVER: { when: [string, string]; require: string[] }[] = [
 ]
 
 /**
+ * Groups that only make sense complete: setting one of them makes the rest
+ * required (a VAPID public key without its private key sends nothing).
+ */
+const REQUIRED_TOGETHER: string[][] = [['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT']]
+
+/**
  * Problems with variables a chosen driver needs, one line per variable.
  * Names only: a value (possibly a secret) is never part of the message.
  */
@@ -111,13 +125,21 @@ export function dependentVariableProblems(values: Record<string, unknown>): stri
         : value
     return raw === undefined || raw === null || String(raw).trim() === ''
   }
-  return REQUIRED_BY_DRIVER.flatMap(({ when: [driver, choice], require }) =>
+  const byDriver = REQUIRED_BY_DRIVER.flatMap(({ when: [driver, choice], require }) =>
     values[driver] === choice
       ? require
           .filter((name) => isBlank(values[name]))
           .map((name) => `- ${name} is required when ${driver}=${choice}`)
       : []
   )
+  const together = REQUIRED_TOGETHER.flatMap((group) => {
+    const set = group.filter((name) => !isBlank(values[name]))
+    if (set.length === 0 || set.length === group.length) return []
+    return group
+      .filter((name) => isBlank(values[name]))
+      .map((name) => `- ${name} is required when ${set.join(', ')} is set`)
+  })
+  return [...byDriver, ...together]
 }
 
 /**

@@ -11,4 +11,8 @@ export interface AppConfig {
   locales: readonly Locale[]
   defaultLocale: Locale
   version: string
+  /** Whether the server can send Web Push (every `VAPID_*` variable is set). */
+  pushEnabled: boolean
+  /** The VAPID public key browsers subscribe with (`applicationServerKey`); null while push is disabled. */
+  vapidPublicKey: string | null
 }

@@ -1,0 +1,19 @@
+meta {
+  name: Send a test notification to my devices
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{baseUrl}}/api/v1/me/push-subscriptions/test
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+assert {
+  res.status: eq 200
+}

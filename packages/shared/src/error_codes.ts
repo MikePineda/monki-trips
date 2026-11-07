@@ -39,6 +39,10 @@ export const ERROR_CODES = {
   // Invitations
   E_INVITATION_EXPIRED: 410,
   E_INVITATION_EMAIL_MISMATCH: 403,
+
+  // Notifications
+  /** The server has no VAPID keys: nothing can be sent. */
+  E_PUSH_DISABLED: 409,
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES

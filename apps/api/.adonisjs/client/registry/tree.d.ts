@@ -38,6 +38,7 @@ export interface ApiDefinition {
     pushSubscriptions: {
       store: typeof routes['me.pushSubscriptions.store']
       destroy: typeof routes['me.pushSubscriptions.destroy']
+      test: typeof routes['me.pushSubscriptions.test']
     }
   }
   trips: {
