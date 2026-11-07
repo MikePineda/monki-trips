@@ -162,6 +162,11 @@ while IFS= read -r sha; do
   # committer; every other line of the message is checked as text.
   { grep -v -i -E '^co-authored-by:' "$work_dir/message" || true; } >"$work_dir/body"
   matches_personal <"$work_dir/body" && echo "${short} message" >>"$findings"
+  # Session links: a `Claude-Session:` trailer points at a private transcript
+  # of the owner's account. Public history never carries one
+  # (`attribution.sessionUrl` is off in .claude/settings.json; agents still
+  # add it sometimes).
+  grep -q -i -E '^claude-session:' "$work_dir/message" && echo "${short} session-link" >>"$findings"
 
   # Co-authors: "Co-authored-by: Name <address>" trailers, any case.
   while IFS= read -r trailer; do

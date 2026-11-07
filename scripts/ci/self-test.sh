@@ -174,10 +174,19 @@ commit 'Maintainer' "$owner_email" 'Maintainer' "$owner_email" 'chore: initial c
 git -C "$tmp/repo" tag base
 commit 'Maintainer' "$owner_email" 'Maintainer' "$owner_email" 'docs: trip to ZebraFoo'
 expect 'commits: pattern in the message fails' 1 commits_with_env base
+
 cp "$tmp/out" "$tmp/commit-out"
 expect 'commits: message kind is reported' 0 grep -q ' message$' "$tmp/commit-out"
 expect 'commits: matched text is never printed' 1 grep -qi 'zebrafoo' "$tmp/commit-out"
 expect 'commits: without patterns the synthetic word passes' 0 commits base
+
+new_repo
+commit 'Maintainer' "$owner_email" 'Maintainer' "$owner_email" 'chore: initial commit'
+git -C "$tmp/repo" tag base
+commit 'Maintainer' "$owner_email" 'Maintainer' "$owner_email" \
+  "$(printf 'fix: something\n\nClaude-Session: https://example.com/code/session_123\n')"
+expect 'commits: a session-link trailer fails' 1 commits base
+expect 'commits: session-link field kind is reported' 0 grep -q ' session-link$' "$tmp/out"
 
 new_repo
 commit 'Maintainer' "$owner_email" 'Maintainer' "$owner_email" 'chore: initial commit'
