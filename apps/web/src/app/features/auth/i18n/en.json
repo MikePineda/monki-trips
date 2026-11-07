@@ -1,0 +1,101 @@
+{
+  "login": {
+    "title": "Sign in",
+    "email": "E-mail",
+    "password": "Password",
+    "submit": "Sign in",
+    "forgot": "Forgot your password?",
+    "noAccount": "New here?",
+    "signup": "Create an account"
+  },
+  "signup": {
+    "title": "Create your account",
+    "displayName": "Your name",
+    "displayNameHint": "How your travel companions will see you",
+    "email": "E-mail",
+    "password": "Password",
+    "passwordHint": "At least 10 characters",
+    "submit": "Create account",
+    "closedTitle": "Registration is closed",
+    "closedBody": "You need an invitation from a trip owner to join.",
+    "haveAccount": "Already have an account?",
+    "login": "Sign in",
+    "invited": "You were invited to {{tripName}} as {{role}}.",
+    "invitedEmail": "Use the e-mail address the invitation was sent to."
+  },
+  "invite": {
+    "title": "You are invited",
+    "body": "Join {{tripName}} as {{role}}.",
+    "accept": "Join the trip",
+    "signup": "Create an account to join",
+    "login": "Sign in to join",
+    "checking": "Checking the invitation…",
+    "notFoundTitle": "Invitation not found",
+    "notFoundBody": "Check the link you received; it may have been copied incompletely.",
+    "expiredTitle": "This invitation is no longer valid",
+    "expiredBody": "Ask the trip owner for a new one.",
+    "joined": "You joined {{tripName}}"
+  },
+  "verify": {
+    "title": "Verify your e-mail",
+    "body": "We sent a link and a 6-digit code to {{email}}.",
+    "code": "Code",
+    "codeHint": "The six digits from the e-mail",
+    "submit": "Verify",
+    "resend": "Send a new code",
+    "resendIn": "Send a new code in {{seconds}} s",
+    "sent": "A new code is on its way.",
+    "checkingLink": "Checking the link…",
+    "verifiedTitle": "E-mail verified",
+    "verifiedBody": "You can now use every part of the app.",
+    "continue": "Continue",
+    "linkExpiredTitle": "This link is no longer valid",
+    "linkExpiredBody": "Links work once and for 15 minutes. Sign in and request a new code.",
+    "signInFirst": "Sign in to verify with the code.",
+    "alreadyVerified": "This e-mail is already verified."
+  },
+  "forgot": {
+    "title": "Forgot your password?",
+    "body": "Tell us your e-mail and we will send a link to choose a new one.",
+    "email": "E-mail",
+    "submit": "Send the link",
+    "sentTitle": "Check your inbox",
+    "sentBody": "If an account exists for {{email}}, a link is on its way. It works once, for 60 minutes.",
+    "back": "Back to sign in"
+  },
+  "reset": {
+    "title": "Choose a new password",
+    "password": "New password",
+    "passwordHint": "At least 10 characters",
+    "submit": "Change password",
+    "doneTitle": "Password changed",
+    "doneBody": "Every session was signed out. Sign in with your new password.",
+    "login": "Sign in",
+    "expiredTitle": "This link is no longer valid",
+    "expiredBody": "Reset links work once, for 60 minutes.",
+    "request": "Request a new link",
+    "missingToken": "Open this page from the link in the e-mail."
+  },
+  "role": {
+    "owner": "owner",
+    "editor": "editor"
+  },
+  "errors": {
+    "E_INVALID_CREDENTIALS": "That e-mail and password do not match.",
+    "E_ACCOUNT_DISABLED": "This account is disabled.",
+    "E_TOO_MANY_REQUESTS": "Too many attempts. Try again in {{minutes}} min.",
+    "E_REGISTRATION_CLOSED": "Registration is closed; you need an invitation.",
+    "E_EMAIL_TAKEN": "There is already an account with this e-mail.",
+    "E_TOKEN_EXPIRED": "This link or code is no longer valid.",
+    "E_INVALID_CODE": "That code is not right.",
+    "E_EMAIL_ALREADY_VERIFIED": "This e-mail is already verified.",
+    "E_INVITATION_EXPIRED": "This invitation is no longer valid.",
+    "E_INVITATION_EMAIL_MISMATCH": "This invitation was sent to a different e-mail address.",
+    "E_EMAIL_NOT_VERIFIED": "Verify your e-mail first.",
+    "E_VALIDATION_ERROR": "Check the highlighted fields.",
+    "E_BAD_CSRF_TOKEN": "This page is out of date. Reload and try again.",
+    "E_UNAUTHORIZED": "Your session ended. Sign in again.",
+    "network": "No connection. Check your network and try again.",
+    "unknown": "Something went wrong. Try again."
+  }
+}

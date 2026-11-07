@@ -1,0 +1,101 @@
+{
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "forgot": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿Eres nuevo?",
+    "signup": "Crear una cuenta"
+  },
+  "signup": {
+    "title": "Crea tu cuenta",
+    "displayName": "Tu nombre",
+    "displayNameHint": "Así te verán tus compañeros de viaje",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "passwordHint": "Al menos 10 caracteres",
+    "submit": "Crear cuenta",
+    "closedTitle": "El registro está cerrado",
+    "closedBody": "Necesitas una invitación del dueño de un viaje para unirte.",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "login": "Iniciar sesión",
+    "invited": "Te invitaron a {{tripName}} como {{role}}.",
+    "invitedEmail": "Usa el correo al que se envió la invitación."
+  },
+  "invite": {
+    "title": "Tienes una invitación",
+    "body": "Únete a {{tripName}} como {{role}}.",
+    "accept": "Unirme al viaje",
+    "signup": "Crear una cuenta para unirme",
+    "login": "Iniciar sesión para unirme",
+    "checking": "Comprobando la invitación…",
+    "notFoundTitle": "Invitación no encontrada",
+    "notFoundBody": "Revisa el enlace que recibiste; puede estar incompleto.",
+    "expiredTitle": "Esta invitación ya no es válida",
+    "expiredBody": "Pide una nueva al dueño del viaje.",
+    "joined": "Te uniste a {{tripName}}"
+  },
+  "verify": {
+    "title": "Verifica tu correo",
+    "body": "Enviamos un enlace y un código de 6 dígitos a {{email}}.",
+    "code": "Código",
+    "codeHint": "Los seis dígitos del correo",
+    "submit": "Verificar",
+    "resend": "Enviar un código nuevo",
+    "resendIn": "Enviar un código nuevo en {{seconds}} s",
+    "sent": "Un código nuevo va en camino.",
+    "checkingLink": "Comprobando el enlace…",
+    "verifiedTitle": "Correo verificado",
+    "verifiedBody": "Ya puedes usar toda la app.",
+    "continue": "Continuar",
+    "linkExpiredTitle": "Este enlace ya no es válido",
+    "linkExpiredBody": "Los enlaces sirven una vez y durante 15 minutos. Inicia sesión y pide un código nuevo.",
+    "signInFirst": "Inicia sesión para verificar con el código.",
+    "alreadyVerified": "Este correo ya está verificado."
+  },
+  "forgot": {
+    "title": "¿Olvidaste tu contraseña?",
+    "body": "Dinos tu correo y te enviaremos un enlace para elegir una nueva.",
+    "email": "Correo electrónico",
+    "submit": "Enviar el enlace",
+    "sentTitle": "Revisa tu correo",
+    "sentBody": "Si existe una cuenta para {{email}}, el enlace va en camino. Sirve una vez, durante 60 minutos.",
+    "back": "Volver a iniciar sesión"
+  },
+  "reset": {
+    "title": "Elige una contraseña nueva",
+    "password": "Contraseña nueva",
+    "passwordHint": "Al menos 10 caracteres",
+    "submit": "Cambiar contraseña",
+    "doneTitle": "Contraseña cambiada",
+    "doneBody": "Se cerraron todas las sesiones. Inicia sesión con tu contraseña nueva.",
+    "login": "Iniciar sesión",
+    "expiredTitle": "Este enlace ya no es válido",
+    "expiredBody": "Los enlaces de restablecimiento sirven una vez, durante 60 minutos.",
+    "request": "Pedir un enlace nuevo",
+    "missingToken": "Abre esta página desde el enlace del correo."
+  },
+  "role": {
+    "owner": "dueño",
+    "editor": "editor"
+  },
+  "errors": {
+    "E_INVALID_CREDENTIALS": "Ese correo y esa contraseña no coinciden.",
+    "E_ACCOUNT_DISABLED": "Esta cuenta está deshabilitada.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Prueba de nuevo en {{minutes}} min.",
+    "E_REGISTRATION_CLOSED": "El registro está cerrado; necesitas una invitación.",
+    "E_EMAIL_TAKEN": "Ya existe una cuenta con este correo.",
+    "E_TOKEN_EXPIRED": "Este enlace o código ya no es válido.",
+    "E_INVALID_CODE": "Ese código no es correcto.",
+    "E_EMAIL_ALREADY_VERIFIED": "Este correo ya está verificado.",
+    "E_INVITATION_EXPIRED": "Esta invitación ya no es válida.",
+    "E_INVITATION_EMAIL_MISMATCH": "Esta invitación se envió a otro correo.",
+    "E_EMAIL_NOT_VERIFIED": "Verifica tu correo primero.",
+    "E_VALIDATION_ERROR": "Revisa los campos marcados.",
+    "E_BAD_CSRF_TOKEN": "Esta página está desactualizada. Recarga e inténtalo de nuevo.",
+    "E_UNAUTHORIZED": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "network": "Sin conexión. Revisa tu red e inténtalo de nuevo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
+  }
+}

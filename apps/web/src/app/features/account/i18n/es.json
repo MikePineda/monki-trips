@@ -1,0 +1,63 @@
+{
+  "title": "Cuenta",
+  "profile": {
+    "displayName": "Tu nombre",
+    "displayNameHint": "Así te ven tus compañeros de viaje",
+    "save": "Guardar",
+    "saved": "Nombre guardado",
+    "email": "Correo electrónico",
+    "emailHint": "Cambiar el correo llegará más adelante.",
+    "verified": "Verificado",
+    "unverified": "Aún sin verificar",
+    "verify": "Verificar ahora"
+  },
+  "password": {
+    "title": "Cambiar contraseña",
+    "action": "Cambiar contraseña",
+    "current": "Contraseña actual",
+    "new": "Contraseña nueva",
+    "newHint": "Al menos 10 caracteres",
+    "submit": "Cambiar contraseña",
+    "changed": "Contraseña cambiada. Se cerró la sesión en los demás dispositivos."
+  },
+  "sessions": {
+    "title": "Sesiones",
+    "signOutEverywhere": "Cerrar sesión en los demás dispositivos",
+    "done": "Se cerró la sesión en los demás dispositivos."
+  },
+  "export": {
+    "title": "Tus datos",
+    "action": "Exportar mis datos",
+    "body": "Un archivo JSON con tu perfil y todos los viajes a los que perteneces.",
+    "done": "Exportación descargada"
+  },
+  "delete": {
+    "title": "Eliminar cuenta",
+    "action": "Eliminar cuenta",
+    "body": "Tu cuenta y sus datos se eliminan en 30 días. Si vuelves a iniciar sesión antes, se cancela.",
+    "password": "Tu contraseña",
+    "confirm": "Eliminar mi cuenta",
+    "blockedTitle": "Antes, cede estos viajes",
+    "blockedBody": "Eres la única persona dueña de viajes que otras personas aún usan. Transfiere la propiedad o elimínalos y vuelve a intentarlo.",
+    "unknownTrip": "Un viaje que no está en este dispositivo",
+    "done": "Tu cuenta se eliminará en 30 días."
+  },
+  "signOut": {
+    "action": "Cerrar sesión",
+    "title": "Cerrar sesión",
+    "pendingTitle": "Cambios sin enviar",
+    "pendingBody": "{{count}} cambios de este dispositivo no han llegado al servidor. Si cierras sesión ahora, se pierden.",
+    "confirm": "Cerrar sesión de todos modos",
+    "cancel": "Seguir con la sesión"
+  },
+  "errors": {
+    "E_INVALID_PASSWORD": "Esa no es tu contraseña actual.",
+    "E_SOLE_OWNER_OF_SHARED_TRIPS": "Aún eres dueño de viajes que otras personas usan.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Prueba de nuevo en {{minutes}} min.",
+    "E_VALIDATION_ERROR": "Revisa los campos marcados.",
+    "E_UNAUTHORIZED": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "E_BAD_CSRF_TOKEN": "Esta página está desactualizada. Recarga e inténtalo de nuevo.",
+    "network": "Sin conexión. Revisa tu red e inténtalo de nuevo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
+  }
+}
