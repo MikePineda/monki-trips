@@ -133,7 +133,7 @@ describe('MonkiTripsDb', () => {
     expect(day.map((event) => event.id)).toEqual(['e1'])
   })
 
-  it('opening a version 4 database drops the sync cursor so the next pull brings the money rows', async () => {
+  it('opening a version 4 database keeps its meta: the sync service, not the upgrade, forces the full pull', async () => {
     const indexedDB = new IDBFactory()
     const v4 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
     v4.version(4).stores({ trips: 'id, updatedAt', meta: 'key', outbox: 'id, state, createdAt' })
@@ -146,7 +146,10 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(await upgraded.meta.get('sync.cursor')).toBeUndefined()
+    expect(await upgraded.meta.get('sync.cursor')).toEqual({
+      key: 'sync.cursor',
+      value: 'old-cursor',
+    })
     expect(await upgraded.meta.get('trip.active')).toEqual({ key: 'trip.active', value: 't1' })
     upgraded.close()
   })

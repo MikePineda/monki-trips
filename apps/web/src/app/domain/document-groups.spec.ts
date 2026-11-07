@@ -40,9 +40,9 @@ describe('groupDocumentsByWhen', () => {
   })
 
   it('empty groups are left out', () => {
-    expect(groupDocumentsByWhen([doc('x', null)], events, '2027-01-05').map((g) => g.when)).toEqual([
-      'other',
-    ])
+    expect(groupDocumentsByWhen([doc('x', null)], events, '2027-01-05').map((g) => g.when)).toEqual(
+      ['other']
+    )
     expect(groupDocumentsByWhen([], events, '2027-01-05')).toEqual([])
   })
 })

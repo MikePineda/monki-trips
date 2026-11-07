@@ -5,6 +5,8 @@ import { liveSignal } from './live'
 /** Known meta keys. */
 export const META_CURSOR = 'sync.cursor'
 export const META_LAST_PULL_AT = 'sync.lastPullAt'
+/** The mapped sync entities the stored cursor was built with (`syncedEntitiesKey`). */
+export const META_SYNCED_ENTITIES = 'sync.entities'
 export const META_SESSION = 'session'
 export const META_APP_VERSION = 'app.version'
 export const META_ACTIVE_TRIP = 'trip.active'

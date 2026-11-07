@@ -7,6 +7,10 @@ import { MonkiTripsDb } from '../app/core/offline/db'
 import { OFFLINE_DB } from '../app/core/offline/offline-db'
 import { SYNC_API, type SyncApi } from '../app/core/offline/sync-api'
 import { FakeSyncApi } from './fake-sync-api'
+import { DOCUMENTS_API, type DocumentsApi } from '../app/core/api/documents-api'
+import { DEVICE_STORAGE, type DeviceStorage } from '../app/core/offline/device-storage'
+import { FakeDocumentsApi } from './fake-documents-api'
+import { FakeDeviceStorage } from './fake-device-storage'
 import { SYNC_NOTIFIER, type SyncNotifier } from '../app/core/offline/sync.service'
 
 /** The instant specs run at unless they move the clock. */
@@ -53,12 +57,14 @@ export interface OfflineTestingOptions {
   clock?: TestClock
   api?: SyncApi
   notifier?: SyncNotifier
+  documents?: DocumentsApi
+  storage?: DeviceStorage
 }
 
 /**
  * Providers for a spec that touches the offline core: the given fresh db,
- * a fixed clock (TEST_NOW unless given), the fake sync API and a
- * no-op notifier unless given.
+ * a fixed clock (TEST_NOW unless given), the fake sync and documents APIs,
+ * a fake storage manager and a no-op notifier unless given.
  */
 export function provideOfflineTesting(options: OfflineTestingOptions): Provider[] {
   const clock = options.clock ?? new TestClock()
@@ -67,6 +73,8 @@ export function provideOfflineTesting(options: OfflineTestingOptions): Provider[
     { provide: CLOCK, useValue: clock.read },
     { provide: SYNC_API, useValue: options.api ?? new FakeSyncApi() },
     { provide: SYNC_NOTIFIER, useValue: options.notifier ?? new RecordingSyncNotifier() },
+    { provide: DOCUMENTS_API, useValue: options.documents ?? new FakeDocumentsApi() },
+    { provide: DEVICE_STORAGE, useValue: options.storage ?? new FakeDeviceStorage() },
   ]
 }
 

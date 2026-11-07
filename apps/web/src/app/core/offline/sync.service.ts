@@ -12,8 +12,8 @@ import {
 } from '@angular/core'
 import { CLOCK } from './clock'
 import type { MonkiTripsDb } from './db'
-import { ENTITY_TABLES } from './entity-tables'
-import { META_CURSOR, META_LAST_PULL_AT, MetaStore } from './meta.store'
+import { ENTITY_TABLES, syncedEntitiesKey } from './entity-tables'
+import { META_CURSOR, META_LAST_PULL_AT, META_SYNCED_ENTITIES, MetaStore } from './meta.store'
 import { outboxMutation } from './mutation'
 import { OnlineStore } from './online.store'
 import { OFFLINE_DB } from './offline-db'
@@ -160,9 +160,13 @@ export class SyncService {
   }
 
   private async pullPages(): Promise<void> {
+    const entities = syncedEntitiesKey()
+    // A newly mapped entity: the stored cursor skipped its rows, so the first page starts from scratch.
+    let fromScratch = (await this.meta.get<string>(META_SYNCED_ENTITIES)) !== entities
     let hasMore = true
     while (hasMore) {
-      const cursor = (await this.meta.get<string>(META_CURSOR)) ?? null
+      const cursor = fromScratch ? null : ((await this.meta.get<string>(META_CURSOR)) ?? null)
+      fromScratch = false
       const result = await this.api.pull(cursor)
       const pulledAt = this.clock()
       const db = await this.database
@@ -180,6 +184,7 @@ export class SyncService {
           await db.meta.bulkPut([
             { key: META_CURSOR, value: result.cursor },
             { key: META_LAST_PULL_AT, value: pulledAt },
+            { key: META_SYNCED_ENTITIES, value: entities },
           ])
         }
       )
@@ -312,6 +317,29 @@ async function apply(
     }
   }
   await table.put(change.row)
+  if (change.table === 'tasks' && change.row.origin === 'document' && change.row.sourceDocumentId) {
+    await dropOptimisticPrintTasks(db, change.row.id, change.row.sourceDocumentId)
+  }
+}
+
+/**
+ * The server owns the one print task of a document: when its row arrives,
+ * the optimistic copy the device made when the person tagged the document
+ * (another id, never pushed) leaves.
+ */
+async function dropOptimisticPrintTasks(
+  db: MonkiTripsDb,
+  serverTaskId: string,
+  documentId: string
+): Promise<void> {
+  await db.tasks
+    .filter(
+      (task) =>
+        task.id !== serverTaskId &&
+        task.origin === 'document' &&
+        task.sourceDocumentId === documentId
+    )
+    .delete()
 }
 
 /** The server's list of trips is authoritative: anything else leaves the device. */
