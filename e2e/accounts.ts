@@ -58,6 +58,6 @@ export function soloAccount(project?: string, journey?: SoloJourney): E2eAccount
  * in parallel, and a shared account would let one journey delete another's
  * trip or show J01 a list that is not empty.
  */
-export const SOLO_JOURNEYS = ['j02', 'j03', 'j06b', 'j15'] as const
+export const SOLO_JOURNEYS = ['j02', 'j03', 'j05', 'j05b', 'j06b', 'j15'] as const
 
 export type SoloJourney = (typeof SOLO_JOURNEYS)[number]
