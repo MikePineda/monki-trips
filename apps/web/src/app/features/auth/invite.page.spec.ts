@@ -70,7 +70,10 @@ describe('InvitePage', () => {
     await click('invite.accept')
 
     expect(fakes.auth.calls).toContain(`acceptInvitation:${TOKEN}`)
-    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith(['/t', 'invited-trip', 'today']))
+    // The invitation link leaves the history: back does not land on a used token.
+    await vi.waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith(['/t', 'invited-trip', 'today'], { replaceUrl: true })
+    )
     expect((await db.trips.get('invited-trip'))?.name).toBe('Sample trip')
   })
 
@@ -80,9 +83,8 @@ describe('InvitePage', () => {
 
     expect(has('invite.accept')).toBe(false)
     expect(href('invite.signup')).toBe(`/signup?invitation=${TOKEN}`)
-    expect(href('invite.login')).toBe(
-      `/login?returnUrl=${encodeURIComponent(`/invite/${TOKEN}`)}&invitation=${TOKEN}`
-    )
+    // The token travels once, inside the return url.
+    expect(href('invite.login')).toBe(`/login?returnUrl=${encodeURIComponent(`/invite/${TOKEN}`)}`)
   })
 
   it('an unknown token is not found', async () => {

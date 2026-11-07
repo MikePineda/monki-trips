@@ -144,6 +144,14 @@ describe('LoginPage', () => {
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/trips'))
   })
 
+  it('an invitation return url hands its token to the signup link', async () => {
+    const { host } = await render({ returnUrl: '/invite/invitation-token-0123456789abcdef' })
+
+    expect(host.querySelector('[data-testid="login.signup"]')?.getAttribute('href')).toBe(
+      '/signup?invitation=invitation-token-0123456789abcdef'
+    )
+  })
+
   it('keeps the invitation token on the signup link', async () => {
     const { host } = await render({ invitation: 'invitation-token-0123456789abcdef' })
 

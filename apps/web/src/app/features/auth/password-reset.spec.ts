@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing'
-import { provideRouter } from '@angular/router'
+import { Router, provideRouter } from '@angular/router'
 import { apiFakes, provideApiTesting, type ApiFakes } from '../../../testing/api-testing'
 import { SCOPE_CATALOGUES } from '../../../testing/i18n-scopes'
 import { i18nTesting } from '../../../testing/i18n-testing'
@@ -28,6 +28,7 @@ describe('password reset screens', () => {
     await settle(fixture)
     const host = fixture.nativeElement as HTMLElement
     return {
+      fixture,
       has: (id: string) => host.querySelector(`[data-testid="${id}"]`) !== null,
       text: (id: string) => host.querySelector(`[data-testid="${id}"]`)?.textContent?.trim(),
       type: (id: string, value: string) =>
@@ -86,6 +87,24 @@ describe('password reset screens', () => {
 
       expect(fakes.auth.calls).toEqual(['resetPassword:reset-token-0123456789'])
       expect(text('reset.done')).toContain(SCOPE_CATALOGUES.auth.en.reset.doneTitle)
+    })
+
+    it('the reset token leaves the address bar and history as soon as the page holds it', async () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true)
+      const { fixture, type, submit, has } = await render(ResetPasswordPage, {
+        token: 'reset-token-0123456789',
+      })
+
+      expect(navigate).toHaveBeenCalledWith(['/reset-password'], { replaceUrl: true })
+      // The router drops the query parameter: the page still holds the token.
+      fixture.componentRef.setInput('token', undefined)
+      await settle(fixture)
+      expect(has('reset.password')).toBe(true)
+
+      type('reset.password', 'a brand new password')
+      await submit()
+
+      expect(fakes.auth.calls).toEqual(['resetPassword:reset-token-0123456789'])
     })
 
     it('a short password never reaches the server', async () => {

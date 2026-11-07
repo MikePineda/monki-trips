@@ -115,7 +115,7 @@ type InviteState = 'checking' | 'ready' | 'not-found' | 'expired' | 'failed'
                 mk-button
                 variant="secondary"
                 routerLink="/login"
-                [queryParams]="{ returnUrl: '/invite/' + token(), invitation: token() }"
+                [queryParams]="{ returnUrl: '/invite/' + token() }"
                 data-testid="invite.login"
               >
                 {{ 'auth.invite.login' | transloco }}
@@ -187,7 +187,8 @@ export default class InvitePage {
       this.toasts.show({
         message: this.transloco.translate('auth.invite.joined', { tripName: trip.name }),
       })
-      await this.router.navigate(['/t', trip.id, 'today'])
+      // The used invitation link leaves the history: back does not land on it.
+      await this.router.navigate(['/t', trip.id, 'today'], { replaceUrl: true })
     } catch (error) {
       const failure = toFailure(error)
       if (!(await this.session.handleUnauthorized(failure, `/invite/${this.token()}`))) {
