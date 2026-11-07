@@ -22,11 +22,31 @@ export function isAllowedDocumentMime(mime: string | undefined): mime is string 
   return mime !== undefined && ALLOWED_DOCUMENT_MIMES.has(mime)
 }
 
-/** Images and PDFs may open in the browser; anything else downloads. */
+/** Control characters, quotes and backslashes would break out of the quoted header value. */
+function isUnsafeInHeader(char: string): boolean {
+  const code = char.charCodeAt(0)
+  return code < 0x20 || code === 0x7f || char === '"' || char === '\\'
+}
+
+/**
+ * Images and PDFs may open in the browser; anything else downloads. The
+ * name travels twice: `filename` is an ASCII fallback (quotes, controls and
+ * non-ASCII replaced), `filename*` carries it whole (RFC 5987/6266, UTF-8
+ * percent-encoded), which every current browser prefers.
+ */
 export function contentDispositionFor(mime: string | null, filename: string): string {
   const inline = mime !== null && (mime === 'application/pdf' || mime.startsWith('image/'))
-  const safeName = filename.replace(/["\\\r\n]/g, '_').slice(0, 150) || 'document'
-  return `${inline ? 'inline' : 'attachment'}; filename="${safeName}"`
+  // By code point, so the cut never splits a surrogate pair (encodeURIComponent would throw).
+  const name =
+    Array.from(filename, (char) => (isUnsafeInHeader(char) ? '_' : char))
+      .slice(0, 150)
+      .join('') || 'document'
+  const fallback = name.replace(/[^\u0020-\u007e]/g, '_')
+  const encoded = encodeURIComponent(name).replace(
+    /['()*]/g,
+    (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`
+  )
+  return `${inline ? 'inline' : 'attachment'}; filename="${fallback}"; filename*=UTF-8''${encoded}`
 }
 
 /** The object key of a document's bytes. */

@@ -1,11 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { createReadStream } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { pipeline } from 'node:stream/promises'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import drive from '@adonisjs/drive/services/main'
 import db from '@adonisjs/lucid/services/db'
 import { errors as vineErrors } from '@vinejs/vine'
+import type { Infer } from '@vinejs/vine/types'
 import { fileTypeFromFile } from 'file-type'
 import type { ApiEnvelope, TripDocumentRow } from '@monkitrips/shared'
 import { Clock } from '#services/clock'
@@ -37,9 +39,22 @@ export default class DocumentsController {
   constructor(private readonly clock: Clock) {}
 
   async store(ctx: HttpContext): Promise<ApiEnvelope<TripDocumentRow>> {
-    const user = ctx.auth.use('web').getUserOrFail()
-    const body = await ctx.request.validateUsing(uploadDocumentValidator)
     const file = ctx.request.file('file', { size: MAX_DOCUMENT_BYTES })
+    try {
+      const body = await ctx.request.validateUsing(uploadDocumentValidator)
+      return await this.storeFile(ctx, body, file)
+    } finally {
+      // The bodyparser leaves the upload in the OS temp dir; the store has its own copy now.
+      if (file?.tmpPath) await rm(file.tmpPath, { force: true })
+    }
+  }
+
+  private async storeFile(
+    ctx: HttpContext,
+    body: Infer<typeof uploadDocumentValidator>,
+    file: ReturnType<HttpContext['request']['file']>
+  ): Promise<ApiEnvelope<TripDocumentRow>> {
+    const user = ctx.auth.use('web').getUserOrFail()
     if (!file) {
       throw new vineErrors.E_VALIDATION_ERROR([
         {

@@ -129,7 +129,7 @@ Each mutation runs in its own transaction and answers one of:
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `applied`   | every field won; `row` is the server's row.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `partial`   | at least one field lost against a newer stored change (`rejectedFields`); `row` shows what the server kept.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `duplicate` | this `mutationId` was applied before (same account); the stored result comes back. Rejections are not stored: a retry is re-evaluated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `duplicate` | this `mutationId` was applied before (same account, still a member); the stored result comes back (after leaving the trip: `rejected E_ROW_NOT_FOUND`). Rejections are not stored: a retry is re-evaluated.                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `rejected`  | nothing was written; `error: { code, message, errors? }`. `E_ROW_NOT_FOUND` (not a member, id of another trip, missing parent, unknown row), `E_ROW_DELETED` (tombstones always win; `row` is the tombstone), `E_TRIP_ROLE`, `E_BASE_CURRENCY_LOCKED`, `E_VALIDATION_ERROR` (with `errors`), `E_BAD_REQUEST` (an operation the entity does not allow), `E_CONFLICT` (a `mutationId` of another account, or a second live row where only one may exist: a seat per traveller and segment, a share per traveller and expense). A value the database cannot store is `E_VALIDATION_ERROR` too: one bad mutation never fails the batch. |
 
 A field applies when its `changedAt` is not older than the field's clock
@@ -278,9 +278,16 @@ Every route has a name; `npm run codegen` writes the Tuyau registry to
   `change_xid < pg_snapshot_xmin(pg_current_snapshot())` (plus the calling
   transaction's own rows), so a transaction still in flight can never be
   skipped.
+- Wall clocks (`timestamp without time zone`, the `*_local` columns) are
+  read as the text Postgres stores (a `pg` type parser in
+  `config/database.ts`), never through the process zone, so `TZ` cannot
+  move them.
 - Documents' bytes live in the drive disk under `trips/{tripId}/{documentId}`
   (`DRIVE_DISK=fs` under `apps/api/tmp/drive` for tests and development,
-  `s3` otherwise); `sha256`, `mime` and `size_bytes` are stored with the row.
+  `s3` otherwise); `sha256`, `mime` and `size_bytes` are stored with the row. The signed
+  download URL sets `Content-Disposition` with an ASCII `filename` and the
+  full UTF-8 name in `filename*` (RFC 5987); the upload's temp file is
+  deleted once the bytes are stored.
 - Every trip starts with the six default budget categories (`key` =
   accommodation, transport, food, activities, shopping, other).
 
