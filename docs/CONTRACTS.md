@@ -24,49 +24,52 @@ of `:tripId`, otherwise **404** `E_ROW_NOT_FOUND`, never 403); **owner**
 (member with role `owner`, otherwise 403 `E_TRIP_ROLE`). `:tripId`, `:id` are
 UUIDs (anything else is a route miss, 404 `E_ROUTE_NOT_FOUND`).
 
-| Method and path                          | Name                           | Access   | Answer                                                                                                                                                                                                                                              |
-| ---------------------------------------- | ------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /config`                            | `config.show`                  | public   | `AppConfig`: `registrationOpen`, `locales`, `defaultLocale`, `version`, `pushEnabled`, `vapidPublicKey` (null while push is disabled). Also sets the `XSRF-TOKEN` cookie.                                                                           |
-| `POST /auth/signup`                      | `auth.signup`                  | public   | 201 `UserProfile`, signed in. 403 `E_REGISTRATION_CLOSED` unless `invitationToken` is pending; 409 `E_EMAIL_TAKEN`.                                                                                                                                 |
-| `POST /auth/login`                       | `auth.login`                   | public   | 200 `UserProfile`. 401 `E_INVALID_CREDENTIALS`; 403 `E_ACCOUNT_DISABLED`; 429 after five failures (IP + e-mail) or ten (e-mail, any IP) in 15 min.                                                                                                  |
-| `POST /auth/logout`                      | `auth.logout`                  | session  | 204. Ends this session only.                                                                                                                                                                                                                        |
-| `POST /auth/logout-all`                  | `auth.logoutAll`               | session  | 204. Bumps `sessionVersion`: every other session is signed out, this one continues.                                                                                                                                                                 |
-| `GET /auth/me`                           | `auth.me`                      | session  | `UserProfile`.                                                                                                                                                                                                                                      |
-| `POST /auth/email/verify`                | `auth.email.verify`            | public   | 204 with `{ token }` from the mail link. 410 `E_TOKEN_EXPIRED` when used, expired or unknown.                                                                                                                                                       |
-| `POST /auth/email/verify-code`           | `auth.email.verifyCode`        | session  | 200 `UserProfile` with `{ code }` (6 digits). 400 `E_INVALID_CODE`; the 5th wrong code or 15 min → 410 `E_TOKEN_EXPIRED`.                                                                                                                           |
-| `POST /auth/email/resend`                | `auth.email.resend`            | session  | 202 `{ data: { accepted: true } }`; a new link and code, the previous ones stop working. 409 `E_EMAIL_ALREADY_VERIFIED`.                                                                                                                            |
-| `POST /auth/password/forgot`             | `auth.password.forgot`         | public   | 202 always, before any lookup. Mails a 60-minute single-use link to an existing active account.                                                                                                                                                     |
-| `POST /auth/password/reset`              | `auth.password.reset`          | public   | 204 with `{ token, password }`. Signs out every session. 410 `E_TOKEN_EXPIRED`.                                                                                                                                                                     |
-| `PATCH /me`                              | `me.update`                    | session  | `UserProfile`. Fields: `displayName`, `locale`, `timezone` (IANA), `theme`.                                                                                                                                                                         |
-| `PUT /me/password`                       | `me.password`                  | session  | 204 with `{ currentPassword, password }`. Other sessions end. 403 `E_INVALID_PASSWORD`.                                                                                                                                                             |
-| `GET /me/export`                         | `me.export`                    | session  | `AccountExport` as one JSON file (profile + one trip JSON v1 per live trip), `Content-Disposition: attachment`. The plan's zip is a backlog item.                                                                                                   |
-| `POST /me/delete`                        | `me.delete`                    | session  | 204 with `{ password }`: hard delete in 30 days, signed out everywhere. 409 `E_SOLE_OWNER_OF_SHARED_TRIPS` + `tripIds`.                                                                                                                             |
-| `POST /me/restore`                       | `me.restore`                   | session  | `UserProfile` with `deletionScheduledAt: null`. 409 `E_DELETION_NOT_SCHEDULED`.                                                                                                                                                                     |
-| `POST /me/push-subscriptions`            | `me.pushSubscriptions.store`   | session  | 201 (new) or 200 (same endpoint again) `PushSubscription`. Body: `RegisterPushSubscriptionInput`.                                                                                                                                                   |
-| `DELETE /me/push-subscriptions/:id`      | `me.pushSubscriptions.destroy` | session  | 204. Someone else's subscription: 404.                                                                                                                                                                                                              |
-| `POST /me/push-subscriptions/test`       | `me.pushSubscriptions.test`    | session  | `PushTestResult` `{ sent, pruned, failed }`: the test message to every subscription of the caller, in their locale; endpoints the push service reports gone (404, 410) are deleted. 409 `E_PUSH_DISABLED` without VAPID keys.                       |
-| `GET /invitations/:token`                | `invitations.show`             | public   | `TripInvitationPreview` (trip name, role, `requiresEmail`). 404 unknown; 410 `E_INVITATION_EXPIRED` otherwise.                                                                                                                                      |
-| `POST /invitations/:token/accept`        | `invitations.accept`           | session  | 201 `Trip`; creates the membership and a traveller. 403 `E_INVITATION_EMAIL_MISMATCH` / `E_EMAIL_NOT_VERIFIED` (link only).                                                                                                                         |
-| `GET /trips`                             | `trips.index`                  | verified | `TripListItem[]` (live trips, `role`, `memberCount`).                                                                                                                                                                                               |
-| `POST /trips`                            | `trips.store`                  | verified | 201 `Trip`; owner membership + traveller. Client `id` makes it idempotent (200 on repeat; someone else's id → 404).                                                                                                                                 |
-| `GET /trips/:tripId/snapshot`            | `trips.snapshot`               | member   | `TripContentSnapshot`: `trip`, `members`, `travellers` and every live content row (`stops`, `events`, `segments`, `seats`, `documents`, `tasks`, `budgetCategories`, `expenses`, `expenseShares`, `emergency`, `phraseCards`).                      |
-| `GET /trips/:tripId/nights`              | `trips.nights`                 | member   | `TripNightsView`: one entry per night (`startsOn` to the day before `endsOn`) with what covers it; `uncoveredCount` is the "where do we sleep?" alert.                                                                                              |
-| `GET /trips/:tripId/budget`              | `trips.budget`                 | member   | `TripBudgetView` in base minor units: spent, remaining, today's allowance and what is left of it, `pendingFxCount`, committed event costs, per category.                                                                                            |
-| `GET /trips/:tripId/today?at=`           | `trips.today`                  | member   | `TripTodayView` for the instant `at` (ISO 8601, default now): the zone and date Today follows, the next event or segment with `leaveAt`, today's events and documents, where we sleep, `leftTodayMinor`, open tasks by urgency.                     |
-| `POST /trips/:tripId/documents`          | `trips.documents.store`        | member   | 201 `TripDocument`. Multipart: `file` (≤ 25 MB, PDF or image decided from the bytes), `title`, `tags[]`, `eventId`, `availableOffline`, client `id` (200 on repeat). 413 `E_FILE_TOO_LARGE`, 415 `E_UNSUPPORTED_FILE`, 503 `E_STORAGE_UNAVAILABLE`. |
-| `GET /trips/:tripId/documents/:id/file`  | `trips.documents.file`         | member   | 302 to a signed URL valid for 300 s (`Cache-Control: no-store`); images and PDFs open inline, anything else is `attachment`. A link document answers 404.                                                                                           |
-| `GET /fx/rates?base=&symbols=&date=`     | `fx.rates`                     | verified | `FxRate[]`: units of each symbol per 1 `base` on `date` (default today), decimal strings, from the `fx_rates` cache or the provider; unknown symbols are left out. 503 `E_FX_UNAVAILABLE` when neither can answer.                                  |
-| `GET /sync/pull?cursor=&limit=`          | `sync.pull`                    | verified | `SyncPullOutput` over every trip the account belongs to (see Sync). 410 `E_SYNC_CURSOR_EXPIRED` for a cursor older than 90 days or not one of ours.                                                                                                 |
-| `POST /sync/push`                        | `sync.push`                    | verified | `SyncPushOutput`: one result per mutation (≤ 100), see Sync. The request itself fails (422) only when the envelope is malformed.                                                                                                                    |
-| `DELETE /trips/:tripId`                  | `trips.destroy`                | owner    | 204. Soft delete; the trip disappears from every route except restore for 30 days (`purgeAfter`).                                                                                                                                                   |
-| `POST /trips/:tripId/restore`            | `trips.restore`                | owner    | `Trip` with `deletedAt: null`.                                                                                                                                                                                                                      |
-| `GET /trips/:tripId/members`             | `trips.members.index`          | member   | `TripMember[]`, owner first.                                                                                                                                                                                                                        |
-| `PATCH /trips/:tripId/members/:id`       | `trips.members.update`         | owner    | `TripMember` with `{ role }`. The owner row and `role: 'owner'` answer 409 `E_OWNER_CANNOT_LEAVE` (use transfer-ownership).                                                                                                                         |
-| `DELETE /trips/:tripId/members/:id`      | `trips.members.destroy`        | member   | 204. The owner removes anyone else; an editor removes only themselves (else 403). Owner leaving: 409 `E_OWNER_CANNOT_LEAVE`.                                                                                                                        |
-| `POST /trips/:tripId/transfer-ownership` | `trips.transferOwnership`      | owner    | `TripMember[]` after the swap, with `{ userId }` of a live member (else 404 `E_NOT_A_MEMBER`).                                                                                                                                                      |
-| `GET /trips/:tripId/invitations`         | `trips.invitations.index`      | owner    | `TripInvitation[]` with `state`; never the token.                                                                                                                                                                                                   |
-| `POST /trips/:tripId/invitations`        | `trips.invitations.store`      | owner    | 201 `IssuedTripInvitation`. `{}`: `delivery: 'link'` with the plaintext `token` and `url` (shown once). `{ email }`: `delivery: 'email'`, mailed; the token never appears in the response (it proves the address).                                  |
-| `DELETE /trips/:tripId/invitations/:id`  | `trips.invitations.destroy`    | owner    | 204; the invitation answers 410 from then on.                                                                                                                                                                                                       |
+| Method and path                          | Name                           | Access   | Answer                                                                                                                                                                                                                                                           |
+| ---------------------------------------- | ------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /config`                            | `config.show`                  | public   | `AppConfig`: `registrationOpen`, `locales`, `defaultLocale`, `version`, `pushEnabled`, `vapidPublicKey` (null while push is disabled). Also sets the `XSRF-TOKEN` cookie.                                                                                        |
+| `POST /auth/signup`                      | `auth.signup`                  | public   | 201 `UserProfile`, signed in. 403 `E_REGISTRATION_CLOSED` unless `invitationToken` is pending; 409 `E_EMAIL_TAKEN`.                                                                                                                                              |
+| `POST /auth/login`                       | `auth.login`                   | public   | 200 `UserProfile`. 401 `E_INVALID_CREDENTIALS`; 403 `E_ACCOUNT_DISABLED`; 429 after five failures (IP + e-mail) or ten (e-mail, any IP) in 15 min.                                                                                                               |
+| `POST /auth/logout`                      | `auth.logout`                  | session  | 204. Ends this session only.                                                                                                                                                                                                                                     |
+| `POST /auth/logout-all`                  | `auth.logoutAll`               | session  | 204. Bumps `sessionVersion`: every other session is signed out, this one continues.                                                                                                                                                                              |
+| `GET /auth/me`                           | `auth.me`                      | session  | `UserProfile`.                                                                                                                                                                                                                                                   |
+| `POST /auth/email/verify`                | `auth.email.verify`            | public   | 204 with `{ token }` from the mail link. 410 `E_TOKEN_EXPIRED` when used, expired or unknown.                                                                                                                                                                    |
+| `POST /auth/email/verify-code`           | `auth.email.verifyCode`        | session  | 200 `UserProfile` with `{ code }` (6 digits). 400 `E_INVALID_CODE`; the 5th wrong code or 15 min → 410 `E_TOKEN_EXPIRED`.                                                                                                                                        |
+| `POST /auth/email/resend`                | `auth.email.resend`            | session  | 202 `{ data: { accepted: true } }`; a new link and code, the previous ones stop working. 409 `E_EMAIL_ALREADY_VERIFIED`.                                                                                                                                         |
+| `POST /auth/password/forgot`             | `auth.password.forgot`         | public   | 202 always, before any lookup. Mails a 60-minute single-use link to an existing active account.                                                                                                                                                                  |
+| `POST /auth/password/reset`              | `auth.password.reset`          | public   | 204 with `{ token, password }`. Signs out every session. 410 `E_TOKEN_EXPIRED`.                                                                                                                                                                                  |
+| `PATCH /me`                              | `me.update`                    | session  | `UserProfile`. Fields: `displayName`, `locale`, `timezone` (IANA), `theme`.                                                                                                                                                                                      |
+| `PUT /me/password`                       | `me.password`                  | session  | 204 with `{ currentPassword, password }`. Other sessions end. 403 `E_INVALID_PASSWORD`.                                                                                                                                                                          |
+| `GET /me/export`                         | `me.export`                    | session  | `AccountExport` as one JSON file (profile + one trip JSON v1 per live trip), `Content-Disposition: attachment`. The plan's zip is a backlog item.                                                                                                                |
+| `POST /me/delete`                        | `me.delete`                    | session  | 204 with `{ password }`: hard delete in 30 days, signed out everywhere. 409 `E_SOLE_OWNER_OF_SHARED_TRIPS` + `tripIds`.                                                                                                                                          |
+| `POST /me/restore`                       | `me.restore`                   | session  | `UserProfile` with `deletionScheduledAt: null`. 409 `E_DELETION_NOT_SCHEDULED`.                                                                                                                                                                                  |
+| `POST /me/push-subscriptions`            | `me.pushSubscriptions.store`   | session  | 201 (new) or 200 (same endpoint again) `PushSubscription`. Body: `RegisterPushSubscriptionInput`.                                                                                                                                                                |
+| `DELETE /me/push-subscriptions/:id`      | `me.pushSubscriptions.destroy` | session  | 204. Someone else's subscription: 404.                                                                                                                                                                                                                           |
+| `POST /me/push-subscriptions/test`       | `me.pushSubscriptions.test`    | session  | `PushTestResult` `{ sent, pruned, failed }`: the test message to every subscription of the caller, in their locale; endpoints the push service reports gone (404, 410) are deleted. 409 `E_PUSH_DISABLED` without VAPID keys.                                    |
+| `GET /invitations/:token`                | `invitations.show`             | public   | `TripInvitationPreview` (trip name, role, `requiresEmail`). 404 unknown; 410 `E_INVITATION_EXPIRED` otherwise.                                                                                                                                                   |
+| `POST /invitations/:token/accept`        | `invitations.accept`           | session  | 201 `Trip`; creates the membership and a traveller. 403 `E_INVITATION_EMAIL_MISMATCH` / `E_EMAIL_NOT_VERIFIED` (link only).                                                                                                                                      |
+| `GET /trips`                             | `trips.index`                  | verified | `TripListItem[]` (live trips, `role`, `memberCount`).                                                                                                                                                                                                            |
+| `POST /trips`                            | `trips.store`                  | verified | 201 `Trip`; owner membership + traveller. Client `id` makes it idempotent (200 on repeat; someone else's id → 404).                                                                                                                                              |
+| `GET /trips/:tripId/snapshot`            | `trips.snapshot`               | member   | `TripContentSnapshot`: `trip`, `members`, `travellers` and every live content row (`stops`, `events`, `segments`, `seats`, `documents`, `tasks`, `budgetCategories`, `expenses`, `expenseShares`, `emergency`, `phraseCards`).                                   |
+| `GET /trips/:tripId/nights`              | `trips.nights`                 | member   | `TripNightsView`: one entry per night (`startsOn` to the day before `endsOn`) with what covers it; `uncoveredCount` is the "where do we sleep?" alert.                                                                                                           |
+| `GET /trips/:tripId/budget`              | `trips.budget`                 | member   | `TripBudgetView` in base minor units: spent, remaining, today's allowance and what is left of it, `pendingFxCount`, committed event costs, per category.                                                                                                         |
+| `GET /trips/:tripId/today?at=`           | `trips.today`                  | member   | `TripTodayView` for the instant `at` (ISO 8601, default now): the zone and date Today follows, the next event or segment with `leaveAt`, today's events and documents, where we sleep, `leftTodayMinor`, open tasks by urgency.                                  |
+| `GET /trips/:tripId/export`              | `trips.export`                 | member   | The trip as one **trip JSON v1** document (see below), sent as the body itself (no `data` envelope, so the file re-imports as is) with `Content-Disposition: attachment; filename="trip-<slug>-<date>.json"` and `Cache-Control: no-store`.                      |
+| `POST /trips/import?dryRun=`             | `trips.import`                 | verified | Body: a trip JSON v1 document, 2 MB at most (413 `E_FILE_TOO_LARGE`). `dryRun=true`: 200 `TripImportResult` with `tripId: null` and nothing written. Else 201 with the new `tripId`: always a **new** trip owned by the caller. 422 `{ errors }` writes nothing. |
+| `GET /schemas/trip-json-v1`              | `schemas.tripJsonV1`           | public   | The JSON Schema (draft 2020-12) of trip JSON v1, `Cache-Control: public, max-age=3600`.                                                                                                                                                                          |
+| `POST /trips/:tripId/documents`          | `trips.documents.store`        | member   | 201 `TripDocument`. Multipart: `file` (≤ 25 MB, PDF or image decided from the bytes), `title`, `tags[]`, `eventId`, `availableOffline`, client `id` (200 on repeat). 413 `E_FILE_TOO_LARGE`, 415 `E_UNSUPPORTED_FILE`, 503 `E_STORAGE_UNAVAILABLE`.              |
+| `GET /trips/:tripId/documents/:id/file`  | `trips.documents.file`         | member   | 302 to a signed URL valid for 300 s (`Cache-Control: no-store`); images and PDFs open inline, anything else is `attachment`. A link document answers 404.                                                                                                        |
+| `GET /fx/rates?base=&symbols=&date=`     | `fx.rates`                     | verified | `FxRate[]`: units of each symbol per 1 `base` on `date` (default today), decimal strings, from the `fx_rates` cache or the provider; unknown symbols are left out. 503 `E_FX_UNAVAILABLE` when neither can answer.                                               |
+| `GET /sync/pull?cursor=&limit=`          | `sync.pull`                    | verified | `SyncPullOutput` over every trip the account belongs to (see Sync). 410 `E_SYNC_CURSOR_EXPIRED` for a cursor older than 90 days or not one of ours.                                                                                                              |
+| `POST /sync/push`                        | `sync.push`                    | verified | `SyncPushOutput`: one result per mutation (≤ 100), see Sync. The request itself fails (422) only when the envelope is malformed.                                                                                                                                 |
+| `DELETE /trips/:tripId`                  | `trips.destroy`                | owner    | 204. Soft delete; the trip disappears from every route except restore for 30 days (`purgeAfter`).                                                                                                                                                                |
+| `POST /trips/:tripId/restore`            | `trips.restore`                | owner    | `Trip` with `deletedAt: null`.                                                                                                                                                                                                                                   |
+| `GET /trips/:tripId/members`             | `trips.members.index`          | member   | `TripMember[]`, owner first.                                                                                                                                                                                                                                     |
+| `PATCH /trips/:tripId/members/:id`       | `trips.members.update`         | owner    | `TripMember` with `{ role }`. The owner row and `role: 'owner'` answer 409 `E_OWNER_CANNOT_LEAVE` (use transfer-ownership).                                                                                                                                      |
+| `DELETE /trips/:tripId/members/:id`      | `trips.members.destroy`        | member   | 204. The owner removes anyone else; an editor removes only themselves (else 403). Owner leaving: 409 `E_OWNER_CANNOT_LEAVE`.                                                                                                                                     |
+| `POST /trips/:tripId/transfer-ownership` | `trips.transferOwnership`      | owner    | `TripMember[]` after the swap, with `{ userId }` of a live member (else 404 `E_NOT_A_MEMBER`).                                                                                                                                                                   |
+| `GET /trips/:tripId/invitations`         | `trips.invitations.index`      | owner    | `TripInvitation[]` with `state`; never the token.                                                                                                                                                                                                                |
+| `POST /trips/:tripId/invitations`        | `trips.invitations.store`      | owner    | 201 `IssuedTripInvitation`. `{}`: `delivery: 'link'` with the plaintext `token` and `url` (shown once). `{ email }`: `delivery: 'email'`, mailed; the token never appears in the response (it proves the address).                                               |
+| `DELETE /trips/:tripId/invitations/:id`  | `trips.invitations.destroy`    | owner    | 204; the invitation answers 410 from then on.                                                                                                                                                                                                                    |
 
 Shapes live in `@monkitrips/shared` (`UserProfile`, `Trip`, `TripListItem`,
 `TripMember`, `Traveller`, `TripInvitation`, `IssuedTripInvitation`,
@@ -75,7 +78,8 @@ rows `TripStopRow`, `TripEventRow`, `EventSegmentRow`, `SegmentSeat`,
 `TripDocumentRow`, `TripTaskRow`, `BudgetCategory`, `Expense`,
 `ExpenseShare`, `FxRate`, `EmergencyInfo`, `PhraseCards`, the views
 `TripNightsView`, `TripBudgetView`, `TripTodayView`, the `Sync*` types,
-`TripJsonV1`, `AccountExport`, `PushSubscription`, `PushTestResult`,
+`TripJsonV1` and its parts, `TripImportResult`, `TripImportSummary`,
+`TripImportWarning`, `AccountExport`, `PushSubscription`, `PushTestResult`,
 `PushPayload`, `AppConfig`,
 `ApiEnvelope`, `ApiErrorBody`, `ValidationErrorBody`, `ERROR_CODES`). Enums
 (`USER_STATUSES`, `USER_PLANS`, `THEMES`, `BUDGET_MODES`, `TRIP_MEMBER_ROLES`,
@@ -162,6 +166,147 @@ range answers 410 `E_SYNC_CURSOR_EXPIRED`: the client
 clears its cache, keeps its outbox and pulls again without a cursor. Pages
 follow the global change order and never skip a row committed by a
 transaction that was still open when an earlier page was read.
+
+### Trip JSON v1
+
+One trip as one JSON file, what `GET /trips/:tripId/export` writes, what
+`POST /trips/import` and `node ace trip:import` read, and what each entry of
+`GET /me/export`'s `trips` is. The format is published as a JSON Schema at
+`GET /api/v1/schemas/trip-json-v1` (source:
+`apps/api/resources/schemas/trip-json-v1.schema.json`); the TypeScript shape
+is `TripJsonV1` in `@monkitrips/shared`.
+
+- **Refs, not ids.** Every row that others point at carries a `ref` (a short
+  string, unique within the file for its entity: `traveller-1`, `stop-2`,
+  `event-3`, `segment-1`, `document-1`, `category-food`); events carry
+  `stopRef`, segments nest inside their event and seats inside their
+  segment (`travellerRef`, `documentRef`), expenses carry `eventRef`,
+  `categoryRef`, `paidByTravellerRef` and `shares[].travellerRef`, tasks
+  `eventRef` and `sourceDocumentRef`, documents `eventRef`. Database ids and
+  account ids never appear: `members` keeps role and display name only.
+- **Times** are local wall clocks next to their IANA zone (`startsLocal` +
+  `startTz`, `departsLocal` + `departsTz`...), never UTC alone; the instants
+  are derived again on import. **Money** is integer minor units next to its
+  ISO 4217 code (`amountMinor` + `currency`, `costMinor` + `costCurrency`);
+  **rates** are decimal strings (`fxRate`, units of the expense currency per
+  1 base unit) with `fxRateDate` and `fxSource`; `baseAmountMinor` is
+  informational and recomputed from the rate.
+- **Files.** A `file` document keeps its metadata (`storageKey`, `mime`,
+  `sizeBytes`, `sha256`) and gets a `downloadUrl` signed for 300 s at
+  export time; the bytes are not in the file. On import a file document
+  becomes a `link` document to that `downloadUrl` (warning
+  `fileDocumentAsLink`; one without a usable address is left out,
+  `fileDocumentSkipped`). Importing the bytes (`?withFiles`) is a backlog item.
+- **Import rules.** A document must pass the schema; then the trip fields,
+  every row and every ref are checked (the same entity validators as
+  `POST /sync/push`, so a daylight-saving gap or a split that does not add
+  up is refused the same way) and the whole trip is rebuilt through the
+  sync engine in one transaction: derived values, print tasks and
+  `trip_activity` rows are the real ones. Any failure answers 422
+  `{ errors: [{ field, rule, message }] }` with `field` as a path in the
+  file (`events[2].stopRef`, rules `unresolvedRef`, `duplicateRef`, or the
+  entity's own) and nothing is written. The caller becomes the owner; the
+  file's first traveller is mapped to the caller's own traveller row
+  (position applied, the caller's name kept: `callerIsFirstTraveller`);
+  other members are not added (`membersNotImported`); default budget
+  categories (by `key`) update the new trip's own rows, custom ones are
+  created; tasks of origin `document` are recreated by their document's
+  `print` tag and only their done state is replayed, other generated
+  origins become manual tasks (`taskOriginReset`); phrase cards are left
+  out (`phraseCardsSkipped`). Row ids and mutation ids are UUID v5 names
+  derived from one fresh UUID per import, so a replay of the same request
+  never collides with another import. Optional keys may be left out of a
+  hand-written file: lists default to empty, positions to the row's index,
+  `status` to `to_book`, `priority` to `normal`, `homeTz` to the caller's
+  zone. Unknown keys are ignored.
+- **Result.** `TripImportResult` `{ tripId, dryRun, summary }` with
+  `summary: { trip: { name, startsOn, endsOn }, counts: { stops, events,
+segments, seats, expenses, tasks, documents }, warnings: [{ code, message, count }] }`
+  (messages in the request's locale, `resources/lang/<locale>/import.json`).
+
+A minimal file:
+
+```json
+{
+  "version": "trip-json-v1",
+  "trip": {
+    "name": "Weekend",
+    "baseCurrency": "EUR",
+    "startsOn": "2027-03-05",
+    "endsOn": "2027-03-07",
+    "homeTz": "Europe/Madrid"
+  },
+  "travellers": [
+    { "ref": "traveller-1", "displayName": "Owner" },
+    { "ref": "traveller-2", "displayName": "Kid" }
+  ],
+  "stops": [
+    {
+      "ref": "stop-1",
+      "name": "Harbour Town",
+      "countryCode": "AU",
+      "tz": "Australia/Sydney",
+      "arriveOn": "2027-03-05",
+      "departOn": "2027-03-07"
+    }
+  ],
+  "events": [
+    {
+      "ref": "event-1",
+      "stopRef": "stop-1",
+      "kind": "train",
+      "title": "Night train",
+      "status": "booked",
+      "startsLocal": "2027-03-05T20:30",
+      "startTz": "Australia/Sydney",
+      "endsLocal": "2027-03-06T07:15",
+      "endTz": "Australia/Sydney",
+      "costMinor": 18000,
+      "costCurrency": "EUR",
+      "segments": [
+        {
+          "ref": "segment-1",
+          "position": 1,
+          "departsLocal": "2027-03-05T20:30",
+          "departsTz": "Australia/Sydney",
+          "arrivesLocal": "2027-03-06T07:15",
+          "arrivesTz": "Australia/Sydney",
+          "seats": [
+            { "travellerRef": "traveller-1", "seat": "12A" },
+            { "travellerRef": "traveller-2", "seat": "12B" }
+          ]
+        }
+      ]
+    }
+  ],
+  "expenses": [
+    {
+      "categoryRef": "category-food",
+      "amountMinor": 4500,
+      "currency": "AUD",
+      "fxRate": "1.6",
+      "spentOn": "2027-03-06",
+      "paidByTravellerRef": "traveller-1",
+      "shares": [
+        { "travellerRef": "traveller-1", "shareMinor": 2250 },
+        { "travellerRef": "traveller-2", "shareMinor": 2250 }
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "ref": "document-1",
+      "eventRef": "event-1",
+      "kind": "link",
+      "title": "Rail tickets",
+      "url": "https://example.com/tickets/demo",
+      "tags": ["print"]
+    }
+  ]
+}
+```
+
+A full synthetic example is `apps/api/tests/fixtures/trip-json-v1/demo-loop.json`.
 
 ### Errors
 
@@ -301,6 +446,8 @@ Every route has a name; `npm run codegen` writes the Tuyau registry to
 | `node ace db:seed --files=./database/seeders/demo_trip_seeder.js`            | Development and E2E only: the accounts above plus the synthetic "Demo Loop" trip (18 days, base AUD, THB/JPY expenses, overnight train, last night on a plane, one uncovered night, a PDF tagged `print`, a two-segment flight with seats, overdue and high tasks). Idempotent by trip name and owner. |
 | `node ace vapid:generate`                                                    | Prints a fresh VAPID pair as the three `VAPID_*` lines; stores nothing.                                                                                                                                                                                                                                |
 | `node ace push:test --user <id or e-mail>`                                   | Sends the test notification to every device of the account.                                                                                                                                                                                                                                            |
+| `node ace trip:export <tripId> <file>`                                       | Writes a live trip as a trip JSON v1 file (download links of file documents valid for 300 s).                                                                                                                                                                                                          |
+| `node ace trip:import <file> --user <e-mail> [--dry-run]`                    | Loads a trip JSON v1 file (2 MB at most) as a new trip owned by that account, exactly like `POST /trips/import`; `--dry-run` only validates and prints the summary. Exit 1 with one line per problem when the file is refused.                                                                         |
 
 ## Container
 
