@@ -16,3 +16,7 @@ CHANGELOG.md
 LICENSE
 # Local-only notes (gitignored)
 docs/internal
+
+# Generated design artefacts (Stitch mocks, round proposals): not formatted by hand.
+docs/design/mocks/
+docs/design/proposals/
