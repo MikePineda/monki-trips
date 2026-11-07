@@ -14,6 +14,9 @@ import type { EmergencyRecord, ExpenseRecord, TaskRecord } from './records'
 import { SyncCursorExpired } from './sync-api'
 import { FakeSyncApi } from '../../../testing/fake-sync-api'
 import { SyncService } from './sync.service'
+import { toEventRecord } from './event-record'
+import { blankEvent, blankStop } from '../../../testing/fake-trip-content'
+import { toStopRecord } from './stop-record'
 
 const EXPENSE: ExpenseRecord = {
   id: 'x1',
@@ -122,7 +125,9 @@ describe('SyncService', () => {
       { table: 'tasks', row: { ...TASK, title: 'New', doneAt: '2026-11-07T11:00:00.000Z' } },
       {
         table: 'events',
-        row: { id: 'e1', tripId: 't1', day: '2027-01-15', title: 'Fly', updatedAt: 'y' },
+        row: toEventRecord(
+          blankEvent({ id: 'e1', tripId: 't1', startsOn: '2027-01-15', title: 'Fly' })
+        ),
       }
     )
 
@@ -388,5 +393,86 @@ describe('SyncService', () => {
     await new Promise((resolve) => setTimeout(resolve, 20))
 
     expect(api.calls).toEqual([])
+  })
+  it('pull applies changes and advances the cursor', async () => {
+    clock.now = '2026-11-07T13:14:15.000Z'
+    await db.events.put(toEventRecord(blankEvent({ id: 'old', tripId: 'trip-1', title: 'Old' })))
+    api.queuePullChanges(
+      { table: 'stops', row: toStopRecord(blankStop({ id: 's1' })) },
+      {
+        table: 'events',
+        row: toEventRecord(blankEvent({ id: 'e1', tripId: 'trip-1', title: 'Fly' })),
+      },
+      { table: 'events', row: { id: 'old' }, deleted: true }
+    )
+
+    await sync.pull()
+
+    expect(api.calls).toEqual([{ kind: 'pull', cursor: null }])
+    expect(await db.stops.get('s1')).toMatchObject({ name: 'Port Vellmar' })
+    expect(await db.events.get('e1')).toMatchObject({ title: 'Fly' })
+    expect(await db.events.get('old')).toBeUndefined()
+    expect(await meta.get(META_CURSOR)).toBe('fake-1')
+    expect(await meta.get(META_LAST_PULL_AT)).toBe('2026-11-07T13:14:15.000Z')
+
+    await sync.pull()
+    expect(api.calls[1]).toEqual({ kind: 'pull', cursor: 'fake-1' })
+  })
+
+  it('expired cursor wipes the cache but keeps the outbox', async () => {
+    await meta.set(META_CURSOR, 'stale-cursor')
+    await db.events.put(toEventRecord(blankEvent({ id: 'cached', tripId: 'trip-1' })))
+    const queued = await outbox.enqueue({
+      tripId: 'trip-1',
+      kind: 'event.upsert',
+      payload: {
+        entity: 'event',
+        op: 'upsert',
+        id: 'cached',
+        changes: { title: 'Mine' },
+        changedAt: clock.now,
+      },
+    })
+    api.failNextPullWith(new SyncCursorExpired())
+    api.queuePullChanges({
+      table: 'events',
+      row: toEventRecord(blankEvent({ id: 'fresh', tripId: 'trip-1' })),
+    })
+
+    await sync.pull()
+
+    expect(api.calls).toEqual([
+      { kind: 'pull', cursor: 'stale-cursor' },
+      { kind: 'pull', cursor: null },
+    ])
+    expect(await db.events.get('cached')).toBeUndefined()
+    expect(await db.events.get('fresh')).toBeDefined()
+    expect(await db.outbox.get(queued.id)).toMatchObject({ state: 'pending' })
+    expect(await meta.get(META_CURSOR)).toBe('fake-1')
+  })
+
+  it('rejected mutation stays visible as failed', async () => {
+    await db.events.put({
+      ...toEventRecord(blankEvent({ id: 'e1', tripId: 'trip-1', title: 'Harbour walk' })),
+      syncState: 'pending',
+    })
+    const queued = await outbox.enqueue({
+      tripId: 'trip-1',
+      kind: 'event.upsert',
+      payload: {
+        entity: 'event',
+        op: 'upsert',
+        id: 'e1',
+        changes: { title: 'Harbour walk' },
+        changedAt: clock.now,
+      },
+    })
+    api.rejectNext(queued.id, 'No such time')
+
+    await sync.push()
+
+    expect(await db.outbox.get(queued.id)).toMatchObject({ state: 'failed', error: 'No such time' })
+    expect(await db.events.get('e1')).toMatchObject({ title: 'Harbour walk', syncState: 'failed' })
+    await vi.waitFor(() => expect(outbox.failedCount()).toBe(1))
   })
 })

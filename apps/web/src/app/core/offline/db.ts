@@ -10,7 +10,10 @@ import type {
   MemberRecord,
   MetaRecord,
   OutboxRecord,
+  SeatRecord,
+  SegmentRecord,
   StayRecord,
+  StopRecord,
   TaskRecord,
   TravellerRecord,
   TripRecord,
@@ -32,6 +35,9 @@ export const OFFLINE_DB_NAME = 'monki-trips'
 export class MonkiTripsDb extends Dexie {
   declare trips: Table<TripRecord, string>
   declare events: Table<EventRecord, string>
+  declare stops: Table<StopRecord, string>
+  declare segments: Table<SegmentRecord, string>
+  declare seats: Table<SeatRecord, string>
   declare stays: Table<StayRecord, string>
   declare docs: Table<DocRecord, string>
   declare docBlobs: Table<DocBlobRecord, string>
@@ -69,6 +75,14 @@ export class MonkiTripsDb extends Dexie {
     // WP 1.6: emergency information, one row per trip (`id` = `tripId`).
     this.version(3).stores({
       emergency: 'id, tripId, updatedAt',
+    })
+    // WP 1.3: the itinerary. Events take the wire row (indexed by their local
+    // start date), with the stops, the legs of a transport and the seats.
+    this.version(4).stores({
+      events: 'id, tripId, [tripId+startsOn], updatedAt',
+      stops: 'id, tripId, updatedAt',
+      segments: 'id, tripId, eventId, updatedAt',
+      seats: 'id, tripId, segmentId, updatedAt',
     })
   }
 }

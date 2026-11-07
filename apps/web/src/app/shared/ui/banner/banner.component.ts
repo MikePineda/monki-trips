@@ -5,9 +5,10 @@ import type { IconName } from '../icon/icon-names'
 /**
  * print: the only tinted band ("Bring this printed", `print-warning`).
  * saved: `surface-2`, "Showing saved data…". critical: `surface-2` with the
- * icon in `status-critical`. info: `surface-2`, neutral icon.
+ * icon in `status-critical`. serious: `surface-2` with the icon in
+ * `status-serious` (a night without lodging). info: `surface-2`, neutral icon.
  */
-export type BannerTone = 'print' | 'saved' | 'critical' | 'info'
+export type BannerTone = 'print' | 'saved' | 'critical' | 'serious' | 'info'
 
 /**
  * A full-width band (edge to edge inside mk-page, no radius, no border):
@@ -42,6 +43,9 @@ export type BannerTone = 'print' | 'saved' | 'critical' | 'info'
     }
     :host([data-tone='critical']) .mk-banner__icon {
       color: var(--status-critical);
+    }
+    :host([data-tone='serious']) .mk-banner__icon {
+      color: var(--status-serious);
     }
     .mk-banner__text {
       flex: 1 1 0;

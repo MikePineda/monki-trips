@@ -1,7 +1,11 @@
 import type { SyncChange as WireChange, SyncMutation, SyncMutationResult } from '@monkitrips/shared'
 import { toEmergencyRecord } from '../offline/emergency-record'
 import { ENTITY_TABLES } from '../offline/entity-tables'
+import { toEventRecord } from '../offline/event-record'
 import { toMemberRecord } from '../offline/member-record'
+import { toSeatRecord } from '../offline/seat-record'
+import { toSegmentRecord } from '../offline/segment-record'
+import { toStopRecord } from '../offline/stop-record'
 import { outboxMutation } from '../offline/mutation'
 import type { OutboxRecord, SyncChange } from '../offline/records'
 import {
@@ -128,6 +132,22 @@ export function toDeviceChange(change: WireChange): SyncChange[] {
       return change.row.deletedAt
         ? [{ table: 'travellers', row: { id: change.row.id }, deleted: true }]
         : [{ table: 'travellers', row: toTravellerRecord(change.row) }]
+    case 'stop':
+      return change.row.deletedAt
+        ? [{ table: 'stops', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'stops', row: toStopRecord(change.row) }]
+    case 'event':
+      return change.row.deletedAt
+        ? [{ table: 'events', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'events', row: toEventRecord(change.row) }]
+    case 'segment':
+      return change.row.deletedAt
+        ? [{ table: 'segments', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'segments', row: toSegmentRecord(change.row) }]
+    case 'seat':
+      return change.row.deletedAt
+        ? [{ table: 'seats', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'seats', row: toSeatRecord(change.row) }]
     case 'task':
       return change.row.deletedAt
         ? [{ table: 'tasks', row: { id: change.row.id }, deleted: true }]

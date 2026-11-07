@@ -4,6 +4,7 @@ import { SyncCursorExpired } from '../offline/sync-api'
 import type { ApiClient } from './api'
 import { ApiFailure } from './api-failure'
 import { RealSyncApi } from './real-sync-api'
+import { blankEvent, blankSeat, blankSegment, blankStop } from '../../../testing/fake-trip-content'
 
 const TASK_ROW: TripTaskRow = {
   id: 'k1',
@@ -71,8 +72,8 @@ describe('RealSyncApi', () => {
           { entity: 'task', row: TASK_ROW },
           { entity: 'task', row: { ...TASK_ROW, id: 'k2', deletedAt: '2026-11-07T12:00:00.000Z' } },
           {
-            entity: 'stop',
-            row: { id: 's1', tripId: 't1' } as never,
+            entity: 'document',
+            row: { id: 'd1', tripId: 't1' } as never,
           },
         ],
         tripIds: ['t1'],
@@ -215,5 +216,35 @@ describe('RealSyncApi', () => {
       ])
     )
     expect(result.rejected).toHaveLength(2)
+  })
+  it('pulls the itinerary rows into their tables: stops, events, legs and seats', async () => {
+    const event = blankEvent({ id: 'e1', tripId: 't1', title: 'Flight out' })
+    const { loader } = clientWith({
+      pull: () => ({
+        changes: [
+          { entity: 'stop', row: blankStop({ id: 's1', tripId: 't1' }) },
+          { entity: 'event', row: event },
+          { entity: 'event', row: { ...event, id: 'e2', deletedAt: '2026-11-07T12:00:00.000Z' } },
+          { entity: 'segment', row: blankSegment({ id: 'g1', tripId: 't1', eventId: 'e1' }) },
+          { entity: 'seat', row: blankSeat({ id: 'st1', tripId: 't1', segmentId: 'g1' }) },
+        ],
+        tripIds: ['t1'],
+        cursor: 'c2',
+        hasMore: false,
+      }),
+    })
+
+    const result = await new RealSyncApi(loader).pull(null)
+
+    expect(result.changes).toEqual([
+      { table: 'stops', row: expect.objectContaining({ id: 's1', name: 'Port Vellmar' }) },
+      { table: 'events', row: expect.objectContaining({ id: 'e1', title: 'Flight out' }) },
+      { table: 'events', row: { id: 'e2' }, deleted: true },
+      { table: 'segments', row: expect.objectContaining({ id: 'g1', eventId: 'e1' }) },
+      { table: 'seats', row: expect.objectContaining({ id: 'st1', segmentId: 'g1' }) },
+    ])
+    for (const change of result.changes) {
+      expect(change.row).not.toHaveProperty('deletedAt')
+    }
   })
 })

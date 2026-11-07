@@ -1,0 +1,42 @@
+{
+  "title": "Plan",
+  "segments": {
+    "label": "Vista del plan",
+    "days": "Días",
+    "nights": "Dónde dormimos"
+  },
+  "days": {
+    "dayOf": "Día {{day}} de {{total}}",
+    "outside": "Fuera de las fechas del viaje",
+    "freeTitle": "Día libre",
+    "freeBody": "Todavía no hay nada planeado.",
+    "add": "Añadir evento",
+    "allDay": "Todo el día",
+    "checkIn": "Entrada",
+    "checkOut": "Salida",
+    "arrives": "Llega",
+    "nightOf": "Noche {{night}} de {{total}}",
+    "directions": "Cómo llegar",
+    "open": "Abrir {{title}}",
+    "pending": "Pendiente",
+    "failed": "Requiere atención"
+  },
+  "nights": {
+    "title": "Dónde dormimos",
+    "uncoveredOne": "1 noche sin dónde dormir",
+    "uncoveredOther": "{{count}} noches sin dónde dormir",
+    "uncoveredBody": "Añade alojamiento, o un transporte nocturno, para cada noche de abajo.",
+    "nightsOne": "1 noche",
+    "nightsOther": "{{count}} noches",
+    "lodgingOne": "1 en alojamiento",
+    "lodgingOther": "{{count}} en alojamiento",
+    "onTheWayOne": "1 en ruta",
+    "onTheWayOther": "{{count}} en ruta",
+    "nightOf": "Noche {{night}} de {{total}}",
+    "noStay": "Sin alojamiento",
+    "findStay": "Buscar alojamiento",
+    "onBoard": "A bordo",
+    "emptyTitle": "No hay noches que planear",
+    "emptyBody": "Un viaje de un día no tiene noche que pasar en ningún sitio."
+  }
+}

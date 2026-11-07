@@ -3,6 +3,7 @@ import { Dexie } from 'dexie'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { freshOfflineDb } from '../../../testing/offline-testing'
 import { MonkiTripsDb } from './db'
+import { blankEvent } from '../../../testing/fake-trip-content'
 
 describe('MonkiTripsDb', () => {
   let db: MonkiTripsDb
@@ -19,7 +20,7 @@ describe('MonkiTripsDb', () => {
     await db.open()
 
     expect(db.name).toBe('monki-trips')
-    expect(db.verno).toBe(3)
+    expect(db.verno).toBe(4)
   })
 
   it('holds exactly the offline tables of the plan plus travellers, the activity cache and emergency info', async () => {
@@ -37,7 +38,10 @@ describe('MonkiTripsDb', () => {
         'members',
         'meta',
         'outbox',
+        'seats',
+        'segments',
         'stays',
+        'stops',
         'tasks',
         'travellers',
         'trips',
@@ -55,7 +59,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(3)
+    expect(upgraded.verno).toBe(4)
     expect((await upgraded.trips.get('t1'))?.name).toBe('Kept')
     expect(await upgraded.travellers.count()).toBe(0)
     expect(await upgraded.emergency.count()).toBe(0)
@@ -83,7 +87,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(3)
+    expect(upgraded.verno).toBe(4)
     expect((await upgraded.travellers.get('tr1'))?.displayName).toBe('Kept')
     expect(await upgraded.emergency.count()).toBe(0)
     upgraded.close()
@@ -97,7 +101,10 @@ describe('MonkiTripsDb', () => {
     }
 
     expect(schema('trips')).toEqual(['id', 'updatedAt'])
-    expect(schema('events')).toEqual(['id', 'tripId', '[tripId+day]', 'updatedAt'])
+    expect(schema('events')).toEqual(['id', 'tripId', '[tripId+startsOn]', 'updatedAt'])
+    expect(schema('stops')).toEqual(['id', 'tripId', 'updatedAt'])
+    expect(schema('segments')).toEqual(['id', 'tripId', 'eventId', 'updatedAt'])
+    expect(schema('seats')).toEqual(['id', 'tripId', 'segmentId', 'updatedAt'])
     expect(schema('stays')).toEqual(['id', 'tripId', '[tripId+night]', 'updatedAt'])
     expect(schema('docs')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('docBlobs')).toEqual(['docId'])
@@ -112,14 +119,14 @@ describe('MonkiTripsDb', () => {
     expect(schema('outbox')).toEqual(['id', 'state', 'createdAt'])
   })
 
-  it('finds the events of one trip day through the compound index', async () => {
+  it('finds the events of one trip day through the compound index on the local start date', async () => {
     await db.events.bulkPut([
-      { id: 'e1', tripId: 't1', day: '2027-01-15', title: 'Flight', updatedAt: 'x' },
-      { id: 'e2', tripId: 't1', day: '2027-01-16', title: 'Museum', updatedAt: 'x' },
-      { id: 'e3', tripId: 't2', day: '2027-01-15', title: 'Other trip', updatedAt: 'x' },
+      blankEvent({ id: 'e1', tripId: 't1', startsOn: '2027-01-15', title: 'Flight' }),
+      blankEvent({ id: 'e2', tripId: 't1', startsOn: '2027-01-16', title: 'Museum' }),
+      blankEvent({ id: 'e3', tripId: 't2', startsOn: '2027-01-15', title: 'Other trip' }),
     ])
 
-    const day = await db.events.where('[tripId+day]').equals(['t1', '2027-01-15']).toArray()
+    const day = await db.events.where('[tripId+startsOn]').equals(['t1', '2027-01-15']).toArray()
 
     expect(day.map((event) => event.id)).toEqual(['e1'])
   })

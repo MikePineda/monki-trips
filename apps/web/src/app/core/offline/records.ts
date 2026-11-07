@@ -1,8 +1,12 @@
 import type {
   EmergencyInfoContent,
+  EventSegmentRow,
+  SegmentSeat,
   TaskOrigin,
   TaskPriority,
+  TripEventRow,
   TripMemberRole,
+  TripStopRow,
 } from '@monkitrips/shared'
 import type { OutboxState } from '../../domain/outbox-transition'
 
@@ -10,9 +14,10 @@ import type { OutboxState } from '../../domain/outbox-transition'
  * Row shapes of the offline database. Every synced row carries a UUIDv7
  * `id`, its `tripId` (except trips), an ISO `updatedAt` and `syncState:
  * 'pending'` while a local change waits in the outbox. Shapes stay minimal:
- * each feature package adds its own fields.
+ * each feature package adds its own fields. `syncState: 'failed'` marks a
+ * row whose last change the server refused (its outbox entry is failed).
  */
-export type SyncState = 'pending'
+export type SyncState = 'pending' | 'failed'
 
 interface SyncedRecord {
   id: string
@@ -39,15 +44,26 @@ export interface TripRecord extends SyncedRecord {
   budgetTotalMinor?: number | null
   /** IANA zone the trip's clocks follow; absent on rows written before WP 1.7. */
   homeTz?: string
+  /** The signed-in person's role, when the list route told us; the members table is authoritative. */
+  role?: TripMemberRole
 }
 
-export interface EventRecord extends TripScopedRecord {
-  /** YYYY-MM-DD */
-  day: string
-  title: string
-  /** ISO timestamp, absent for an all-day item. */
-  startsAt?: string
-}
+/**
+ * An itinerary event as the device keeps it: the API's `TripEventRow`
+ * without the tombstone. Local times (`startsLocal`, `endsLocal`) sit next
+ * to their IANA zones; `startsAt`, `startsOn` and `endsAt` are derived (by
+ * the server, or on the device for an optimistic row).
+ */
+export type EventRecord = Omit<TripEventRow, 'deletedAt'> & SyncedRecord
+
+/** A stop of the trip (a place you stay in): the API's `TripStopRow` without the tombstone. */
+export type StopRecord = Omit<TripStopRow, 'deletedAt'> & SyncedRecord
+
+/** One leg of a transport event: the API's `EventSegmentRow` without the tombstone. */
+export type SegmentRecord = Omit<EventSegmentRow, 'deletedAt'> & SyncedRecord
+
+/** A traveller's seat on one leg: the API's `SegmentSeat` without the tombstone. */
+export type SeatRecord = Omit<SegmentSeat, 'deletedAt'> & SyncedRecord
 
 export interface StayRecord extends TripScopedRecord {
   /** First night, YYYY-MM-DD. */
@@ -183,6 +199,9 @@ export interface OutboxRecord {
 export interface SyncRowMap {
   trips: TripRecord
   events: EventRecord
+  stops: StopRecord
+  segments: SegmentRecord
+  seats: SeatRecord
   stays: StayRecord
   docs: DocRecord
   tasks: TaskRecord
@@ -198,6 +217,9 @@ export type SyncTable = keyof SyncRowMap
 export const SYNC_TABLES: readonly SyncTable[] = [
   'trips',
   'events',
+  'stops',
+  'segments',
+  'seats',
   'stays',
   'docs',
   'tasks',
