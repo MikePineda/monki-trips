@@ -1,10 +1,11 @@
 import { divideHalfEven, minorUnitExponent, parseDecimal } from '@monkitrips/shared'
+import { currencyForCountry } from './currency-for-country'
 
 /**
- * "Left today" in the money people hold in their hands. The device keeps
- * no country-to-currency table, so the local currency is the one of the
- * latest expense paid in a foreign currency with a frozen rate (the trip's
- * own exchange rate, never a live one); without such an expense there is
+ * "Left today" in the money people hold in their hands: the currency of the
+ * country Today is in (`currency-for-country`), at the trip's own frozen
+ * rate, the one of the latest expense paid in that currency (never a live
+ * rate). Without a known currency, or before any expense in it, there is
  * no local amount and the screen shows the base currency alone. Pure.
  */
 export interface RatedExpense {
@@ -22,12 +23,17 @@ export interface LocalRate {
 
 export function localRate(
   expenses: readonly RatedExpense[],
-  baseCurrency: string
+  baseCurrency: string,
+  countryCode: string | null | undefined
 ): LocalRate | null {
+  const currency = currencyForCountry(countryCode)
+  if (!currency || currency === baseCurrency) {
+    return null
+  }
   const rated = expenses
-    .filter((expense) => expense.currency !== baseCurrency && expense.fxRate)
+    .filter((expense) => expense.currency === currency && expense.fxRate)
     .sort((a, b) => b.spentOn.localeCompare(a.spentOn) || b.updatedAt.localeCompare(a.updatedAt))[0]
-  return rated?.fxRate ? { currency: rated.currency, rate: rated.fxRate } : null
+  return rated?.fxRate ? { currency, rate: rated.fxRate } : null
 }
 
 /**
