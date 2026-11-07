@@ -31,8 +31,14 @@ export class StorageProbe {
     }
   }
 
-  /** Asks the browser to keep the data; answers whether it now does. */
+  /**
+   * Asks the browser to keep the data, unless it already does (the first
+   * offline copy may have asked); answers whether it now does.
+   */
   async persist(): Promise<boolean> {
+    if (await this.storage.persisted().catch(() => false)) {
+      return true
+    }
     return this.storage.persist().catch(() => false)
   }
 }

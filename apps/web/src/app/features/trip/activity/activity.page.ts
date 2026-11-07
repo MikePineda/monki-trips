@@ -138,7 +138,7 @@ const CLOCK_TICK_MS = 60_000
         <mk-skeleton [rows]="3" />
       } @else if (entries().length === 0) {
         <mk-empty-state
-          icon="activity"
+          mascot="happy"
           [title]="'activity.emptyTitle' | transloco"
           [body]="'activity.emptyBody' | transloco"
           data-testid="trip.activity.empty"

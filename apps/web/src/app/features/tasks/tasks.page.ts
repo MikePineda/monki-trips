@@ -142,7 +142,7 @@ interface TaskGroup {
 
       @if (open().length === 0) {
         <mk-empty-state
-          icon="list-checks"
+          mascot="happy"
           [title]="'tasks.empty.title' | transloco"
           [body]="'tasks.empty.body' | transloco"
           data-testid="tasks.empty"

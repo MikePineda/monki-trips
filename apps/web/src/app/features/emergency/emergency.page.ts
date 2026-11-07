@@ -226,7 +226,7 @@ import { EmergencyStore } from './emergency.store'
         </form>
       } @else if (!filled()) {
         <mk-empty-state
-          icon="siren"
+          mascot="worried"
           [title]="'emergency.empty.title' | transloco"
           [body]="'emergency.empty.body' | transloco"
           data-testid="emergency.empty"
