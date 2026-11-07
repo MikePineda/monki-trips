@@ -6,6 +6,13 @@ import env from '#start/env'
 import { PLANS } from '#config/plans'
 import { ApiException } from '#exceptions/api_exception'
 import { LlmClient } from '#services/llm/llm_client'
+import { estimateInputTokens } from '#services/llm/input_token_estimate'
+import {
+  LlmProvider,
+  type LlmCompletion,
+  type LlmDelta,
+  type LlmRequest,
+} from '#services/llm/llm_provider'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { makeTrip } from '#tests/helpers/make_trip'
@@ -31,6 +38,35 @@ async function spend(userId: string, tokens: number, createdAt = '2026-11-05T10:
     status: 'ok',
     created_at: createdAt,
   })
+}
+
+/** A provider that takes a while to answer, so calls overlap. */
+class SlowProvider extends LlmProvider {
+  readonly name = 'slow'
+  calls = 0
+
+  async complete(_request: LlmRequest): Promise<LlmCompletion> {
+    this.calls += 1
+    await new Promise((resolve) => setTimeout(resolve, 40))
+    return {
+      content: 'ok',
+      toolCalls: [],
+      usage: { inputTokens: 10, outputTokens: 5 },
+      model: 'slow-model',
+      stopReason: 'end_turn',
+    }
+  }
+
+  async *stream(_request: LlmRequest): AsyncIterable<LlmDelta> {
+    throw new Error('not used')
+  }
+}
+
+/** Swaps in a slow provider for one test. */
+function useSlowProvider(): { provider: SlowProvider; restore: () => void } {
+  const provider = new SlowProvider()
+  app.container.swap(LlmProvider, () => provider)
+  return { provider, restore: () => app.container.restore(LlmProvider) }
 }
 
 /** Sets the cap override for one test and puts the previous value back. */
@@ -158,6 +194,98 @@ test.group('LLM usage and cap', (group) => {
     const [row] = await db.from('llm_usage').where('user_id', user.id)
     // 1000 × 0.10 + 1000 × 0.50 micro-dollars
     assert.equal(Number(row.cost_micros), 600)
+  })
+
+  test('parallel requests cannot exceed the cap', async ({ assert, cleanup }) => {
+    const user = await makeUser()
+    const reservation = estimateInputTokens(chat) + chat.maxTokens
+    cleanup(withCapOverride(Math.floor(reservation * 2.5)))
+    const slow = useSlowProvider()
+    cleanup(slow.restore)
+
+    const results = await Promise.allSettled(
+      Array.from({ length: 6 }, async () => {
+        const llmClient = await app.container.make(LlmClient)
+        return llmClient.complete({ user, tripId: null }, chat)
+      })
+    )
+
+    assert.equal(slow.provider.calls, 2, 'only the reservations that fit reach the provider')
+    assert.equal(results.filter((result) => result.status === 'fulfilled').length, 2)
+    for (const result of results.filter((r) => r.status === 'rejected')) {
+      assert.equal((result as PromiseRejectedResult).reason.code, 'E_LLM_QUOTA_EXCEEDED')
+    }
+    const rows = await db.from('llm_usage').where('user_id', user.id)
+    assert.sameMembers(
+      rows.map((row) => row.status),
+      ['ok', 'ok', 'quota_exceeded', 'quota_exceeded', 'quota_exceeded', 'quota_exceeded']
+    )
+    const settled = rows.filter((row) => row.status === 'ok')
+    assert.deepEqual(
+      settled.map((row) => [row.tokens_in, row.tokens_out, row.model]),
+      [
+        [10, 5, 'slow-model'],
+        [10, 5, 'slow-model'],
+      ],
+      'a settled call keeps its real tokens, not the reservation'
+    )
+  })
+
+  test('a call is refused when its reservation does not fit what is left', async ({
+    assert,
+    cleanup,
+  }) => {
+    const user = await makeUser()
+    const reservation = estimateInputTokens(chat) + chat.maxTokens
+    cleanup(withCapOverride(reservation + 100))
+    await spend(user.id, 101)
+    const llmClient = await app.container.make(LlmClient)
+
+    const error = await llmClient.complete({ user, tripId: null }, chat).then(
+      () => null,
+      (thrown) => thrown
+    )
+
+    assert.equal(error?.code, 'E_LLM_QUOTA_EXCEEDED')
+    assert.lengthOf(llm.current.calls, 0)
+  })
+
+  test('pending reservations older than ten minutes no longer count', async ({
+    assert,
+    cleanup,
+  }) => {
+    const user = await makeUser()
+    cleanup(withCapOverride(20_000))
+    // Abandoned by a crashed process eleven minutes ago.
+    await db.table('llm_usage').insert({
+      user_id: user.id,
+      purpose: 'chat',
+      provider: 'fake',
+      model: 'unknown',
+      tokens_in: 20_000,
+      tokens_out: 0,
+      status: 'pending',
+      created_at: '2026-11-07T09:49:00Z',
+    })
+    const llmClient = await app.container.make(LlmClient)
+
+    await llmClient.complete({ user, tripId: null }, chat)
+
+    // A live one still counts.
+    await db.table('llm_usage').insert({
+      user_id: user.id,
+      purpose: 'chat',
+      provider: 'fake',
+      model: 'unknown',
+      tokens_in: 19_600,
+      tokens_out: 0,
+      status: 'pending',
+      created_at: '2026-11-07T09:55:00Z',
+    })
+    await assert.rejects(
+      () => llmClient.complete({ user, tripId: null }, chat),
+      /E_LLM_QUOTA_EXCEEDED/
+    )
   })
 
   test('auth me exposes the tokens left this month', async ({ client }) => {

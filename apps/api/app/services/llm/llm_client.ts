@@ -1,8 +1,8 @@
 import { inject } from '@adonisjs/core'
-import type { LlmPurpose } from '@monkitrips/shared'
 import { ApiException } from '#exceptions/api_exception'
 import type User from '#models/user'
 import { Clock } from '#services/clock'
+import { estimateInputTokens } from '#services/llm/input_token_estimate'
 import {
   LlmProvider,
   LlmUnavailableError,
@@ -19,11 +19,12 @@ export interface LlmCaller {
 }
 
 /**
- * The door every feature uses to talk to the model: checks the caller's
- * monthly cap before the call (402), hands the request to the bound
- * `LlmProvider`, records the usage whatever happens (`ok`, `error`) and
- * turns a provider failure into 503 `E_LLM_UNAVAILABLE`. Prompts and
- * answers are never logged.
+ * The door every feature uses to talk to the model: reserves the call's
+ * tokens against the caller's monthly cap before it goes out (402 when they
+ * do not fit), hands the request to the bound `LlmProvider`, settles the
+ * reservation with what really happened (`ok`, `error`) and turns a
+ * provider failure into 503 `E_LLM_UNAVAILABLE`. Prompts and answers are
+ * never logged.
  */
 @inject()
 export class LlmClient {
@@ -34,27 +35,22 @@ export class LlmClient {
   ) {}
 
   async complete(caller: LlmCaller, request: LlmRequest): Promise<LlmCompletion> {
-    await this.usage.assertWithinCap(caller.user, {
-      tripId: caller.tripId,
-      purpose: request.purpose,
-    })
+    const reservation = await this.reserve(caller, request)
     const startedAt = this.clock.now().getTime()
+    let completion: LlmCompletion
     try {
-      const completion = await this.provider.complete(request)
-      await this.recordOk(caller, request.purpose, completion, startedAt)
-      return completion
+      completion = await this.provider.complete(request)
     } catch (error) {
-      await this.recordError(caller, request.purpose, startedAt)
+      await this.settleError(reservation, startedAt)
       throw this.mapError(error)
     }
+    await this.settleOk(reservation, completion, startedAt)
+    return completion
   }
 
-  /** Streams the provider's deltas; usage is recorded when the stream ends or fails. */
+  /** Streams the provider's deltas; the reservation is settled when the stream ends or fails. */
   async *stream(caller: LlmCaller, request: LlmRequest): AsyncIterable<LlmDelta> {
-    await this.usage.assertWithinCap(caller.user, {
-      tripId: caller.tripId,
-      purpose: request.purpose,
-    })
+    const reservation = await this.reserve(caller, request)
     const startedAt = this.clock.now().getTime()
     let completion: LlmCompletion | null = null
     try {
@@ -63,23 +59,25 @@ export class LlmClient {
         yield delta
       }
     } catch (error) {
-      await this.recordError(caller, request.purpose, startedAt)
+      await this.settleError(reservation, startedAt)
       throw this.mapError(error)
     }
-    if (completion) await this.recordOk(caller, request.purpose, completion, startedAt)
+    if (completion) await this.settleOk(reservation, completion, startedAt)
   }
 
-  private async recordOk(
-    caller: LlmCaller,
-    purpose: LlmPurpose,
-    completion: LlmCompletion,
-    startedAt: number
-  ) {
-    await this.usage.record({
-      userId: caller.user.id,
+  /** Reserves the estimated input plus `maxTokens`; answers the usage row's id. */
+  private reserve(caller: LlmCaller, request: LlmRequest): Promise<string> {
+    return this.usage.reserve(caller.user, {
       tripId: caller.tripId,
-      purpose,
+      purpose: request.purpose,
       provider: this.provider.name,
+      inputTokens: estimateInputTokens(request),
+      outputTokens: request.maxTokens,
+    })
+  }
+
+  private async settleOk(reservation: string, completion: LlmCompletion, startedAt: number) {
+    await this.usage.settle(reservation, {
       model: completion.model,
       inputTokens: completion.usage.inputTokens,
       outputTokens: completion.usage.outputTokens,
@@ -88,12 +86,8 @@ export class LlmClient {
     })
   }
 
-  private async recordError(caller: LlmCaller, purpose: LlmPurpose, startedAt: number) {
-    await this.usage.record({
-      userId: caller.user.id,
-      tripId: caller.tripId,
-      purpose,
-      provider: this.provider.name,
+  private async settleError(reservation: string, startedAt: number) {
+    await this.usage.settle(reservation, {
       model: 'unknown',
       inputTokens: 0,
       outputTokens: 0,
