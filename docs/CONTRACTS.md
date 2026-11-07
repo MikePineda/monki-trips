@@ -109,7 +109,9 @@ stored rate (a missing rate is looked up for `spentOn`, in the cache then
 the provider, and stays null while nobody can tell), `doneBy` from `doneAt`.
 Parent ids (`eventId`, `segmentId`, `travellerId`, `documentId`,
 `categoryId`, `paidByTravellerId`, `expenseId`) must name live rows of the
-same trip; `eventId` of a segment, `segmentId` and `travellerId` of a seat,
+same trip; each `shares[].id` of an expense must be new or already a
+share of that expense (an id of another expense or trip answers
+`E_ROW_NOT_FOUND` and writes nothing); `eventId` of a segment, `segmentId` and `travellerId` of a seat,
 `expenseId` of a share and `kind` of a document never change.
 
 Each mutation runs in its own transaction and answers one of:

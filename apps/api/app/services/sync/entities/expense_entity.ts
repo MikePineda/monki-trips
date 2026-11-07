@@ -129,27 +129,35 @@ export const expenseEntity: EntitySpec = {
     const shares = ctx.extras['shares'] as ShareInput[] | undefined
     if (!shares) return
     // Replace the whole split: tombstone what is live, then write the new shares.
-    await tombstoneWhere(ctx.trx, 'expense_shares', 'expense_id', String(ctx.row.id), by)
+    // The applier already refused share ids of another expense or trip; the
+    // update is still fenced to this expense, and an insert of an id that
+    // lives elsewhere fails on the primary key instead of taking the row over.
+    const expenseId = String(ctx.row.id)
+    await tombstoneWhere(ctx.trx, 'expense_shares', 'expense_id', expenseId, by)
+    const clock = JSON.stringify({ shareMinor: by.changedAt, travellerId: by.changedAt })
     for (const share of shares) {
-      await ctx.trx
-        .table('expense_shares')
-        .insert({
-          id: share.id,
-          expense_id: ctx.row.id,
-          trip_id: ctx.tripId,
-          traveller_id: share.travellerId,
-          share_minor: share.shareMinor,
-          updated_by: by.userId,
-          field_clock: JSON.stringify({ shareMinor: by.changedAt, travellerId: by.changedAt }),
-        })
-        .onConflict('id')
-        .merge({
+      const updated = await ctx.trx
+        .from('expense_shares')
+        .where('id', share.id)
+        .where('trip_id', ctx.tripId)
+        .where('expense_id', expenseId)
+        .update({
           traveller_id: share.travellerId,
           share_minor: share.shareMinor,
           deleted_at: null,
           updated_by: by.userId,
-          field_clock: JSON.stringify({ shareMinor: by.changedAt, travellerId: by.changedAt }),
+          field_clock: clock,
         })
+      if (Number(updated) > 0) continue
+      await ctx.trx.table('expense_shares').insert({
+        id: share.id,
+        expense_id: expenseId,
+        trip_id: ctx.tripId,
+        traveller_id: share.travellerId,
+        share_minor: share.shareMinor,
+        updated_by: by.userId,
+        field_clock: clock,
+      })
     }
   },
 }

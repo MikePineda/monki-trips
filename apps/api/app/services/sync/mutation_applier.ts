@@ -267,7 +267,7 @@ export class MutationApplier {
       throw MutationRejected.code(i18n, 'E_ROW_DELETED', rowToWire(spec, current!))
     }
 
-    await this.checkReferences(spec, merge.applied, ctx, i18n)
+    await this.checkReferences(spec, mutation.id, merge.applied, ctx, i18n)
 
     const merged = {
       ...mergedWire(spec, current, merge.applied),
@@ -345,9 +345,15 @@ export class MutationApplier {
     if (expense) throw MutationRejected.code(i18n, 'E_BASE_CURRENCY_LOCKED')
   }
 
-  /** Every id a mutation points at must be a live row of the same trip, else the row "does not exist". */
+  /**
+   * Every id a mutation points at must be a live row of the same trip, else
+   * the row "does not exist". The ids of an expense's `shares` are rows the
+   * mutation writes: each must be new or already a share of this expense
+   * (`rowId`), never a row of another expense or another trip.
+   */
   private async checkReferences(
     spec: EntitySpec,
+    rowId: string,
     applied: Record<string, unknown>,
     ctx: DeriveContext,
     i18n: I18n
@@ -359,10 +365,23 @@ export class MutationApplier {
       const row = await liveRowInTrip(ctx.trx, column.references, String(value), ctx.tripId)
       if (!row) throw MutationRejected.code(i18n, 'E_ROW_NOT_FOUND')
     }
-    const shares = ctx.extras['shares'] as { travellerId: string }[] | undefined
+    const shares = ctx.extras['shares'] as { id: string; travellerId: string }[] | undefined
     for (const share of shares ?? []) {
       const row = await liveRowInTrip(ctx.trx, 'travellers', share.travellerId, ctx.tripId)
       if (!row) throw MutationRejected.code(i18n, 'E_ROW_NOT_FOUND')
+      // A share id is a client id too: it may only name a share of this very expense.
+      const existing = (await ctx.trx
+        .from('expense_shares')
+        .where('id', share.id)
+        .forUpdate()
+        .select('trip_id', 'expense_id')
+        .first()) as DbRow | null
+      if (
+        existing &&
+        (String(existing.trip_id) !== ctx.tripId || String(existing.expense_id) !== rowId)
+      ) {
+        throw MutationRejected.code(i18n, 'E_ROW_NOT_FOUND')
+      }
     }
   }
 

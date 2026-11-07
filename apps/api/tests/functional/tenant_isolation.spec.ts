@@ -43,6 +43,7 @@ interface VictimContent {
   document: string
   category: string
   expense: string
+  share: string
   mutationId: string
 }
 
@@ -272,65 +273,49 @@ const SYNC_ENTITY_CHANGES: Record<SyncPushEntity, (v: Victim) => Record<string, 
 
 /**
  * One push per reference field into the attacker's own trip, pointing at a
- * row of the victim's trip; `mutationId` replays the victim's mutation.
+ * row of the victim's trip; `mutationId` replays the victim's mutation. A
+ * field used by several entities has one case per use, keyed
+ * `field (where)`; every field of `BODY_SCOPED['sync.push']` needs at least
+ * one.
  */
 const SYNC_REFERENCE_CASES: Record<
   string,
   { code: string; build: (v: Victim, own: string) => object }
 > = {
-  mutationId: {
+  'mutationId': {
     code: 'E_CONFLICT',
     build: (v, own) =>
       mutation(own, 'stop', { name: 'Replay' }, { mutationId: v.content.mutationId }),
   },
-  tripId: { code: 'E_ROW_NOT_FOUND', build: (v) => mutation(v.trip.id, 'stop', { name: 'x' }) },
-  id: {
+  'tripId': { code: 'E_ROW_NOT_FOUND', build: (v) => mutation(v.trip.id, 'stop', { name: 'x' }) },
+  'id': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) => mutation(own, 'event', { title: 'Steal' }, { id: v.content.event }),
   },
-  stopId: {
+  'stopId': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) => mutation(own, 'event', { kind: 'tour', title: 'x', stopId: v.content.stop }),
   },
-  eventId: {
+  'eventId': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) => mutation(own, 'task', { title: 'x', eventId: v.content.event }),
   },
-  segmentId: {
+  'segmentId': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) =>
       mutation(own, 'seat', { segmentId: v.content.segment, travellerId: ownTravellerOf(own) }),
   },
-  travellerId: {
+  'id (expense shares)': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) =>
       mutation(own, 'expense', {
         amountMinor: 100,
         currency: 'AUD',
         spentOn: '2027-01-21',
-        paidByTravellerId: v.content.traveller,
+        shares: [{ id: v.content.share, travellerId: ownTravellerOf(own), shareMinor: 100 }],
       }),
   },
-  documentId: {
-    code: 'E_ROW_NOT_FOUND',
-    build: (v, own) =>
-      mutation(own, 'seat', {
-        segmentId: ownSegmentOf(own),
-        travellerId: ownTravellerOf(own),
-        documentId: v.content.document,
-      }),
-  },
-  categoryId: {
-    code: 'E_ROW_NOT_FOUND',
-    build: (v, own) =>
-      mutation(own, 'expense', {
-        amountMinor: 100,
-        currency: 'AUD',
-        spentOn: '2027-01-21',
-        categoryId: v.content.category,
-      }),
-  },
-  paidByTravellerId: {
+  'travellerId (expense shares)': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) =>
       mutation(own, 'expense', {
@@ -340,7 +325,50 @@ const SYNC_REFERENCE_CASES: Record<
         shares: [{ id: randomUUID(), travellerId: v.content.traveller, shareMinor: 100 }],
       }),
   },
-  expenseId: {
+  'travellerId (seat)': {
+    code: 'E_ROW_NOT_FOUND',
+    build: (v, own) =>
+      mutation(own, 'seat', { segmentId: ownSegmentOf(own), travellerId: v.content.traveller }),
+  },
+  'travellerId (expense_share)': {
+    code: 'E_ROW_NOT_FOUND',
+    build: (v, own) =>
+      mutation(own, 'expense_share', {
+        expenseId: ownExpenseOf(own),
+        travellerId: v.content.traveller,
+        shareMinor: 100,
+      }),
+  },
+  'documentId': {
+    code: 'E_ROW_NOT_FOUND',
+    build: (v, own) =>
+      mutation(own, 'seat', {
+        segmentId: ownSegmentOf(own),
+        travellerId: ownTravellerOf(own),
+        documentId: v.content.document,
+      }),
+  },
+  'categoryId': {
+    code: 'E_ROW_NOT_FOUND',
+    build: (v, own) =>
+      mutation(own, 'expense', {
+        amountMinor: 100,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        categoryId: v.content.category,
+      }),
+  },
+  'paidByTravellerId': {
+    code: 'E_ROW_NOT_FOUND',
+    build: (v, own) =>
+      mutation(own, 'expense', {
+        amountMinor: 100,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        paidByTravellerId: v.content.traveller,
+      }),
+  },
+  'expenseId': {
     code: 'E_ROW_NOT_FOUND',
     build: (v, own) =>
       mutation(own, 'expense_share', {
@@ -351,10 +379,11 @@ const SYNC_REFERENCE_CASES: Record<
   },
 }
 
-/** The attacker's own trip, traveller and segment ids, created by `makeAttacker`. */
+/** The attacker's own trip, traveller, segment and expense ids, created by `makeAttacker`. */
 const ownTrips = new Map<string, string>()
 const ownTravellers = new Map<string, string>()
 const ownSegments = new Map<string, string>()
+const ownExpenses = new Map<string, string>()
 function ownTripOf(attacker: User): string {
   return ownTrips.get(attacker.id)!
 }
@@ -363,6 +392,13 @@ function ownTravellerOf(tripId: string): string {
 }
 function ownSegmentOf(tripId: string): string {
   return ownSegments.get(tripId)!
+}
+function ownExpenseOf(tripId: string): string {
+  return ownExpenses.get(tripId)!
+}
+/** The field a reference case covers: its key without the `(where)` suffix. */
+function referenceField(caseName: string): string {
+  return caseName.split(' ')[0]
 }
 
 async function makeAttacker(): Promise<User> {
@@ -389,6 +425,19 @@ async function makeAttacker(): Promise<User> {
     })
     .returning('id')
   ownSegments.set(own.id, segment.id)
+  const [expense] = await db
+    .table('expenses')
+    .insert({
+      trip_id: own.id,
+      amount_minor: 100,
+      currency: 'AUD',
+      fx_rate: '1',
+      fx_source: 'identity',
+      base_amount_minor: 100,
+      spent_on: '2027-01-21',
+    })
+    .returning('id')
+  ownExpenses.set(own.id, expense.id)
   return attacker
 }
 
@@ -517,6 +566,15 @@ async function makeVictim(): Promise<Victim> {
       spent_on: '2027-01-21',
     })
     .returning('id')
+  const [share] = await db
+    .table('expense_shares')
+    .insert({
+      trip_id: trip.id,
+      expense_id: expense.id,
+      traveller_id: traveller.id,
+      share_minor: 1000,
+    })
+    .returning('id')
   const mutationId = randomUUID()
   await db.table('sync_mutations').insert({
     id: mutationId,
@@ -533,6 +591,7 @@ async function makeVictim(): Promise<Victim> {
     document: document.id,
     category: category.id,
     expense: expense.id,
+    share: share.id,
     mutationId,
   }
   return {
@@ -591,7 +650,10 @@ test.group('Tenant isolation', () => {
     }
     assert.deepEqual(Object.keys(BODY_CASES).sort(), Object.keys(BODY_SCOPED).sort())
     assert.deepEqual(await uuidBodyFields(), [...new Set(Object.values(BODY_SCOPED).flat())].sort())
-    assert.deepEqual(Object.keys(SYNC_REFERENCE_CASES).sort(), [...BODY_SCOPED['sync.push']].sort())
+    assert.deepEqual(
+      [...new Set(Object.keys(SYNC_REFERENCE_CASES).map(referenceField))].sort(),
+      [...BODY_SCOPED['sync.push']].sort()
+    )
     assert.deepEqual(Object.keys(SYNC_ENTITY_CHANGES).sort(), [...SYNC_PUSH_ENTITIES].sort())
   })
 
