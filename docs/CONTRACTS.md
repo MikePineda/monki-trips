@@ -114,7 +114,8 @@ accepted from a client and are recomputed after every merge: `startsAt`,
 time is a validation error, an ambiguous one is the earlier instant), an
 event's start and end from its live segments, `baseAmountMinor` from the
 stored rate (a missing rate is looked up for `spentOn`, in the cache then
-the provider, and stays null while nobody can tell), `doneBy` from `doneAt`.
+the provider, before the mutation's transaction locks anything, and stays
+null while nobody can tell), `doneBy` from `doneAt`.
 Parent ids (`eventId`, `segmentId`, `travellerId`, `documentId`,
 `categoryId`, `paidByTravellerId`, `expenseId`) must name live rows of the
 same trip; each `shares[].id` of an expense must be new or already a
