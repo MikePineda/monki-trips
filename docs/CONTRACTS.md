@@ -24,50 +24,124 @@ of `:tripId`, otherwise **404** `E_ROW_NOT_FOUND`, never 403); **owner**
 (member with role `owner`, otherwise 403 `E_TRIP_ROLE`). `:tripId`, `:id` are
 UUIDs (anything else is a route miss, 404 `E_ROUTE_NOT_FOUND`).
 
-| Method and path                          | Name                           | Access   | Answer                                                                                                                                                                                                                        |
-| ---------------------------------------- | ------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /config`                            | `config.show`                  | public   | `AppConfig`: `registrationOpen`, `locales`, `defaultLocale`, `version`, `pushEnabled`, `vapidPublicKey` (null while push is disabled). Also sets the `XSRF-TOKEN` cookie.                                                     |
-| `POST /auth/signup`                      | `auth.signup`                  | public   | 201 `UserProfile`, signed in. 403 `E_REGISTRATION_CLOSED` unless `invitationToken` is pending; 409 `E_EMAIL_TAKEN`.                                                                                                           |
-| `POST /auth/login`                       | `auth.login`                   | public   | 200 `UserProfile`. 401 `E_INVALID_CREDENTIALS`; 403 `E_ACCOUNT_DISABLED`; 429 after five failures (IP + e-mail) or ten (e-mail, any IP) in 15 min.                                                                            |
-| `POST /auth/logout`                      | `auth.logout`                  | session  | 204. Ends this session only.                                                                                                                                                                                                  |
-| `POST /auth/logout-all`                  | `auth.logoutAll`               | session  | 204. Bumps `sessionVersion`: every other session is signed out, this one continues.                                                                                                                                           |
-| `GET /auth/me`                           | `auth.me`                      | session  | `UserProfile`.                                                                                                                                                                                                                |
-| `POST /auth/email/verify`                | `auth.email.verify`            | public   | 204 with `{ token }` from the mail link. 410 `E_TOKEN_EXPIRED` when used, expired or unknown.                                                                                                                                 |
-| `POST /auth/email/verify-code`           | `auth.email.verifyCode`        | session  | 200 `UserProfile` with `{ code }` (6 digits). 400 `E_INVALID_CODE`; the 5th wrong code or 15 min → 410 `E_TOKEN_EXPIRED`.                                                                                                     |
-| `POST /auth/email/resend`                | `auth.email.resend`            | session  | 202 `{ data: { accepted: true } }`; a new link and code, the previous ones stop working. 409 `E_EMAIL_ALREADY_VERIFIED`.                                                                                                      |
-| `POST /auth/password/forgot`             | `auth.password.forgot`         | public   | 202 always, before any lookup. Mails a 60-minute single-use link to an existing active account.                                                                                                                               |
-| `POST /auth/password/reset`              | `auth.password.reset`          | public   | 204 with `{ token, password }`. Signs out every session. 410 `E_TOKEN_EXPIRED`.                                                                                                                                               |
-| `PATCH /me`                              | `me.update`                    | session  | `UserProfile`. Fields: `displayName`, `locale`, `timezone` (IANA), `theme`.                                                                                                                                                   |
-| `PUT /me/password`                       | `me.password`                  | session  | 204 with `{ currentPassword, password }`. Other sessions end. 403 `E_INVALID_PASSWORD`.                                                                                                                                       |
-| `GET /me/export`                         | `me.export`                    | session  | `AccountExport` as one JSON file (profile + one trip JSON v1 per live trip), `Content-Disposition: attachment`. The plan's zip is a backlog item.                                                                             |
-| `POST /me/delete`                        | `me.delete`                    | session  | 204 with `{ password }`: hard delete in 30 days, signed out everywhere. 409 `E_SOLE_OWNER_OF_SHARED_TRIPS` + `tripIds`.                                                                                                       |
-| `POST /me/restore`                       | `me.restore`                   | session  | `UserProfile` with `deletionScheduledAt: null`. 409 `E_DELETION_NOT_SCHEDULED`.                                                                                                                                               |
-| `POST /me/push-subscriptions`            | `me.pushSubscriptions.store`   | session  | 201 (new) or 200 (same endpoint again) `PushSubscription`. Body: `RegisterPushSubscriptionInput`.                                                                                                                             |
-| `DELETE /me/push-subscriptions/:id`      | `me.pushSubscriptions.destroy` | session  | 204. Someone else's subscription: 404.                                                                                                                                                                                        |
-| `POST /me/push-subscriptions/test`       | `me.pushSubscriptions.test`    | session  | `PushTestResult` `{ sent, pruned, failed }`: the test message to every subscription of the caller, in their locale; endpoints the push service reports gone (404, 410) are deleted. 409 `E_PUSH_DISABLED` without VAPID keys. |
-| `GET /invitations/:token`                | `invitations.show`             | public   | `TripInvitationPreview` (trip name, role, `requiresEmail`). 404 unknown; 410 `E_INVITATION_EXPIRED` otherwise.                                                                                                                |
-| `POST /invitations/:token/accept`        | `invitations.accept`           | session  | 201 `Trip`; creates the membership and a traveller. 403 `E_INVITATION_EMAIL_MISMATCH` / `E_EMAIL_NOT_VERIFIED` (link only).                                                                                                   |
-| `GET /trips`                             | `trips.index`                  | verified | `TripListItem[]` (live trips, `role`, `memberCount`).                                                                                                                                                                         |
-| `POST /trips`                            | `trips.store`                  | verified | 201 `Trip`; owner membership + traveller. Client `id` makes it idempotent (200 on repeat; someone else's id → 404).                                                                                                           |
-| `GET /trips/:tripId/snapshot`            | `trips.snapshot`               | member   | `TripSnapshot`: `trip`, `members`, `travellers` (content entities join with their phase).                                                                                                                                     |
-| `DELETE /trips/:tripId`                  | `trips.destroy`                | owner    | 204. Soft delete; the trip disappears from every route except restore for 30 days (`purgeAfter`).                                                                                                                             |
-| `POST /trips/:tripId/restore`            | `trips.restore`                | owner    | `Trip` with `deletedAt: null`.                                                                                                                                                                                                |
-| `GET /trips/:tripId/members`             | `trips.members.index`          | member   | `TripMember[]`, owner first.                                                                                                                                                                                                  |
-| `PATCH /trips/:tripId/members/:id`       | `trips.members.update`         | owner    | `TripMember` with `{ role }`. The owner row and `role: 'owner'` answer 409 `E_OWNER_CANNOT_LEAVE` (use transfer-ownership).                                                                                                   |
-| `DELETE /trips/:tripId/members/:id`      | `trips.members.destroy`        | member   | 204. The owner removes anyone else; an editor removes only themselves (else 403). Owner leaving: 409 `E_OWNER_CANNOT_LEAVE`.                                                                                                  |
-| `POST /trips/:tripId/transfer-ownership` | `trips.transferOwnership`      | owner    | `TripMember[]` after the swap, with `{ userId }` of a live member (else 404 `E_NOT_A_MEMBER`).                                                                                                                                |
-| `GET /trips/:tripId/invitations`         | `trips.invitations.index`      | owner    | `TripInvitation[]` with `state`; never the token.                                                                                                                                                                             |
-| `POST /trips/:tripId/invitations`        | `trips.invitations.store`      | owner    | 201 `IssuedTripInvitation`. `{}`: `delivery: 'link'` with the plaintext `token` and `url` (shown once). `{ email }`: `delivery: 'email'`, mailed; the token never appears in the response (it proves the address).            |
-| `DELETE /trips/:tripId/invitations/:id`  | `trips.invitations.destroy`    | owner    | 204; the invitation answers 410 from then on.                                                                                                                                                                                 |
+| Method and path                          | Name                           | Access   | Answer                                                                                                                                                                                                                                              |
+| ---------------------------------------- | ------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /config`                            | `config.show`                  | public   | `AppConfig`: `registrationOpen`, `locales`, `defaultLocale`, `version`, `pushEnabled`, `vapidPublicKey` (null while push is disabled). Also sets the `XSRF-TOKEN` cookie.                                                                           |
+| `POST /auth/signup`                      | `auth.signup`                  | public   | 201 `UserProfile`, signed in. 403 `E_REGISTRATION_CLOSED` unless `invitationToken` is pending; 409 `E_EMAIL_TAKEN`.                                                                                                                                 |
+| `POST /auth/login`                       | `auth.login`                   | public   | 200 `UserProfile`. 401 `E_INVALID_CREDENTIALS`; 403 `E_ACCOUNT_DISABLED`; 429 after five failures (IP + e-mail) or ten (e-mail, any IP) in 15 min.                                                                                                  |
+| `POST /auth/logout`                      | `auth.logout`                  | session  | 204. Ends this session only.                                                                                                                                                                                                                        |
+| `POST /auth/logout-all`                  | `auth.logoutAll`               | session  | 204. Bumps `sessionVersion`: every other session is signed out, this one continues.                                                                                                                                                                 |
+| `GET /auth/me`                           | `auth.me`                      | session  | `UserProfile`.                                                                                                                                                                                                                                      |
+| `POST /auth/email/verify`                | `auth.email.verify`            | public   | 204 with `{ token }` from the mail link. 410 `E_TOKEN_EXPIRED` when used, expired or unknown.                                                                                                                                                       |
+| `POST /auth/email/verify-code`           | `auth.email.verifyCode`        | session  | 200 `UserProfile` with `{ code }` (6 digits). 400 `E_INVALID_CODE`; the 5th wrong code or 15 min → 410 `E_TOKEN_EXPIRED`.                                                                                                                           |
+| `POST /auth/email/resend`                | `auth.email.resend`            | session  | 202 `{ data: { accepted: true } }`; a new link and code, the previous ones stop working. 409 `E_EMAIL_ALREADY_VERIFIED`.                                                                                                                            |
+| `POST /auth/password/forgot`             | `auth.password.forgot`         | public   | 202 always, before any lookup. Mails a 60-minute single-use link to an existing active account.                                                                                                                                                     |
+| `POST /auth/password/reset`              | `auth.password.reset`          | public   | 204 with `{ token, password }`. Signs out every session. 410 `E_TOKEN_EXPIRED`.                                                                                                                                                                     |
+| `PATCH /me`                              | `me.update`                    | session  | `UserProfile`. Fields: `displayName`, `locale`, `timezone` (IANA), `theme`.                                                                                                                                                                         |
+| `PUT /me/password`                       | `me.password`                  | session  | 204 with `{ currentPassword, password }`. Other sessions end. 403 `E_INVALID_PASSWORD`.                                                                                                                                                             |
+| `GET /me/export`                         | `me.export`                    | session  | `AccountExport` as one JSON file (profile + one trip JSON v1 per live trip), `Content-Disposition: attachment`. The plan's zip is a backlog item.                                                                                                   |
+| `POST /me/delete`                        | `me.delete`                    | session  | 204 with `{ password }`: hard delete in 30 days, signed out everywhere. 409 `E_SOLE_OWNER_OF_SHARED_TRIPS` + `tripIds`.                                                                                                                             |
+| `POST /me/restore`                       | `me.restore`                   | session  | `UserProfile` with `deletionScheduledAt: null`. 409 `E_DELETION_NOT_SCHEDULED`.                                                                                                                                                                     |
+| `POST /me/push-subscriptions`            | `me.pushSubscriptions.store`   | session  | 201 (new) or 200 (same endpoint again) `PushSubscription`. Body: `RegisterPushSubscriptionInput`.                                                                                                                                                   |
+| `DELETE /me/push-subscriptions/:id`      | `me.pushSubscriptions.destroy` | session  | 204. Someone else's subscription: 404.                                                                                                                                                                                                              |
+| `POST /me/push-subscriptions/test`       | `me.pushSubscriptions.test`    | session  | `PushTestResult` `{ sent, pruned, failed }`: the test message to every subscription of the caller, in their locale; endpoints the push service reports gone (404, 410) are deleted. 409 `E_PUSH_DISABLED` without VAPID keys.                       |
+| `GET /invitations/:token`                | `invitations.show`             | public   | `TripInvitationPreview` (trip name, role, `requiresEmail`). 404 unknown; 410 `E_INVITATION_EXPIRED` otherwise.                                                                                                                                      |
+| `POST /invitations/:token/accept`        | `invitations.accept`           | session  | 201 `Trip`; creates the membership and a traveller. 403 `E_INVITATION_EMAIL_MISMATCH` / `E_EMAIL_NOT_VERIFIED` (link only).                                                                                                                         |
+| `GET /trips`                             | `trips.index`                  | verified | `TripListItem[]` (live trips, `role`, `memberCount`).                                                                                                                                                                                               |
+| `POST /trips`                            | `trips.store`                  | verified | 201 `Trip`; owner membership + traveller. Client `id` makes it idempotent (200 on repeat; someone else's id → 404).                                                                                                                                 |
+| `GET /trips/:tripId/snapshot`            | `trips.snapshot`               | member   | `TripContentSnapshot`: `trip`, `members`, `travellers` and every live content row (`stops`, `events`, `segments`, `seats`, `documents`, `tasks`, `budgetCategories`, `expenses`, `expenseShares`, `emergency`, `phraseCards`).                      |
+| `GET /trips/:tripId/nights`              | `trips.nights`                 | member   | `NightsView`: one entry per night (`startsOn` to the day before `endsOn`) with what covers it; `uncoveredCount` is the "where do we sleep?" alert.                                                                                                  |
+| `GET /trips/:tripId/budget`              | `trips.budget`                 | member   | `BudgetStatus` in base minor units: spent, remaining, today's allowance and what is left of it, `pendingFxCount`, committed event costs, per category.                                                                                              |
+| `GET /trips/:tripId/today?at=`           | `trips.today`                  | member   | `TodayView` for the instant `at` (ISO, default now): the zone and date Today follows, the next event or segment with `leaveAt`, today's events and documents, where we sleep, `leftTodayMinor`, open tasks by urgency.                              |
+| `POST /trips/:tripId/documents`          | `trips.documents.store`        | member   | 201 `TripDocument`. Multipart: `file` (≤ 25 MB, PDF or image decided from the bytes), `title`, `tags[]`, `eventId`, `availableOffline`, client `id` (200 on repeat). 413 `E_FILE_TOO_LARGE`, 415 `E_UNSUPPORTED_FILE`, 503 `E_STORAGE_UNAVAILABLE`. |
+| `GET /trips/:tripId/documents/:id/file`  | `trips.documents.file`         | member   | 302 to a signed URL valid for 300 s (`Cache-Control: no-store`); images and PDFs open inline, anything else is `attachment`. A link document answers 404.                                                                                           |
+| `GET /fx/rates?base=&symbols=&date=`     | `fx.rates`                     | verified | `FxRate[]`: units of each symbol per 1 `base` on `date` (default today), decimal strings, from the `fx_rates` cache or the provider; unknown symbols are left out. 503 `E_FX_UNAVAILABLE` when neither can answer.                                  |
+| `GET /sync/pull?cursor=&limit=`          | `sync.pull`                    | verified | `SyncPullOutput` over every trip the account belongs to (see Sync). 410 `E_SYNC_CURSOR_EXPIRED` for a cursor older than 90 days or not one of ours.                                                                                                 |
+| `POST /sync/push`                        | `sync.push`                    | verified | `SyncPushOutput`: one result per mutation (≤ 100), see Sync. The request itself fails (422) only when the envelope is malformed.                                                                                                                    |
+| `DELETE /trips/:tripId`                  | `trips.destroy`                | owner    | 204. Soft delete; the trip disappears from every route except restore for 30 days (`purgeAfter`).                                                                                                                                                   |
+| `POST /trips/:tripId/restore`            | `trips.restore`                | owner    | `Trip` with `deletedAt: null`.                                                                                                                                                                                                                      |
+| `GET /trips/:tripId/members`             | `trips.members.index`          | member   | `TripMember[]`, owner first.                                                                                                                                                                                                                        |
+| `PATCH /trips/:tripId/members/:id`       | `trips.members.update`         | owner    | `TripMember` with `{ role }`. The owner row and `role: 'owner'` answer 409 `E_OWNER_CANNOT_LEAVE` (use transfer-ownership).                                                                                                                         |
+| `DELETE /trips/:tripId/members/:id`      | `trips.members.destroy`        | member   | 204. The owner removes anyone else; an editor removes only themselves (else 403). Owner leaving: 409 `E_OWNER_CANNOT_LEAVE`.                                                                                                                        |
+| `POST /trips/:tripId/transfer-ownership` | `trips.transferOwnership`      | owner    | `TripMember[]` after the swap, with `{ userId }` of a live member (else 404 `E_NOT_A_MEMBER`).                                                                                                                                                      |
+| `GET /trips/:tripId/invitations`         | `trips.invitations.index`      | owner    | `TripInvitation[]` with `state`; never the token.                                                                                                                                                                                                   |
+| `POST /trips/:tripId/invitations`        | `trips.invitations.store`      | owner    | 201 `IssuedTripInvitation`. `{}`: `delivery: 'link'` with the plaintext `token` and `url` (shown once). `{ email }`: `delivery: 'email'`, mailed; the token never appears in the response (it proves the address).                                  |
+| `DELETE /trips/:tripId/invitations/:id`  | `trips.invitations.destroy`    | owner    | 204; the invitation answers 410 from then on.                                                                                                                                                                                                       |
 
 Shapes live in `@monkitrips/shared` (`UserProfile`, `Trip`, `TripListItem`,
 `TripMember`, `Traveller`, `TripInvitation`, `IssuedTripInvitation`,
-`TripInvitationPreview`, `TripSnapshot`, `TripJsonV1`, `AccountExport`,
-`PushSubscription`, `PushTestResult`, `PushPayload`, `AppConfig`,
-`ApiEnvelope`, `ApiErrorBody`, `ValidationErrorBody`, `ERROR_CODES`). Enums (`USER_STATUSES`, `USER_PLANS`,
-`THEMES`, `BUDGET_MODES`, `TRIP_MEMBER_ROLES`, `USER_TOKEN_PURPOSES`) mirror
-the database CHECK constraints; `tests/functional/schema.spec.ts` keeps them
-in step.
+`TripInvitationPreview`, `TripSnapshot`, `TripContentSnapshot`, `Stop`,
+`TripEvent`, `EventSegment`, `SegmentSeat`, `TripDocument`, `Task`,
+`BudgetCategory`, `Expense`, `ExpenseShare`, `FxRate`, `EmergencyInfo`,
+`PhraseCards`, `NightsView`, `BudgetStatus`, `TodayView`, the `Sync*` types,
+`TripJsonV1`, `AccountExport`, `PushSubscription`, `PushTestResult`,
+`PushPayload`, `AppConfig`,
+`ApiEnvelope`, `ApiErrorBody`, `ValidationErrorBody`, `ERROR_CODES`). Enums
+(`USER_STATUSES`, `USER_PLANS`, `THEMES`, `BUDGET_MODES`, `TRIP_MEMBER_ROLES`,
+`USER_TOKEN_PURPOSES`, `EVENT_KINDS`, `EVENT_STATUSES`, `DOCUMENT_KINDS`,
+`DOCUMENT_TAGS`, `TASK_PRIORITIES`, `TASK_ORIGINS`, `FX_SOURCES`) mirror the
+database CHECK constraints; `tests/functional/schema.spec.ts` keeps them in
+step.
+
+### Sync
+
+All trip content is written through `POST /sync/push`, online too; the REST
+routes above cover auth, trips, members, invitations, files and the computed
+views. Both sync routes are per account, not per trip.
+
+**Push** body: `{ mutations: [{ mutationId, tripId, entity, op, id, changes, changedAt }] }`,
+at most 100. `mutationId`, `tripId` and `id` are client UUIDs (`id` is the
+row; for `emergency` it equals `tripId`); `op` is `upsert` or `delete`;
+`changes` carries only the fields that changed, in the entity's wire shape;
+`changedAt` is when the person made the change (ISO), clamped on the server
+to `[now − 45 days, now]`. Entities: `trip` (name, dates, budget, `homeTz`;
+`baseCurrency` is owner-only and locked once expenses exist), `traveller`,
+`stop`, `event`, `segment`, `seat`, `document` (metadata; files are created
+by the upload route and a `file` cannot be created here), `task`,
+`budget_category`, `expense` (an optional `shares` array replaces the whole
+split and must sum to the amount), `expense_share`, `emergency` (one row per
+trip, merged per top-level key of `content`). Derived values are never
+accepted from a client and are recomputed after every merge: `startsAt`,
+`startsOn`, `endsAt` from the local times and zones (a nonexistent local
+time is a validation error, an ambiguous one is the earlier instant), an
+event's start and end from its live segments, `baseAmountMinor` from the
+stored rate (a missing rate is looked up for `spentOn`, in the cache then
+the provider, and stays null while nobody can tell), `doneBy` from `doneAt`.
+Parent ids (`eventId`, `segmentId`, `travellerId`, `documentId`,
+`categoryId`, `paidByTravellerId`, `expenseId`) must name live rows of the
+same trip; `eventId` of a segment, `segmentId` and `travellerId` of a seat,
+`expenseId` of a share and `kind` of a document never change.
+
+Each mutation runs in its own transaction and answers one of:
+
+| status      | meaning                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `applied`   | every field won; `row` is the server's row.                                                                                                                                                                                                                                                                                                                                                              |
+| `partial`   | at least one field lost against a newer stored change (`rejectedFields`); `row` shows what the server kept.                                                                                                                                                                                                                                                                                              |
+| `duplicate` | this `mutationId` was applied before (same account); the stored result comes back. Rejections are not stored: a retry is re-evaluated.                                                                                                                                                                                                                                                                   |
+| `rejected`  | nothing was written; `error: { code, message, errors? }`. `E_ROW_NOT_FOUND` (not a member, id of another trip, missing parent, unknown row), `E_ROW_DELETED` (tombstones always win; `row` is the tombstone), `E_TRIP_ROLE`, `E_BASE_CURRENCY_LOCKED`, `E_VALIDATION_ERROR` (with `errors`), `E_BAD_REQUEST` (an operation the entity does not allow), `E_CONFLICT` (a `mutationId` of another account). |
+
+A field applies when its `changedAt` is not older than the field's clock
+(`field_clock`); a tie goes to the last arrival. Deleting a row tombstones
+it (`deletedAt`) and, for an event, its segments and seats; for a segment,
+its seats; for an expense, its shares. A document tagged `print` gets one
+"print this" task (`origin: document`, `titleKey: print_document`, due the
+day before departure or today), removed with the tag unless done. Every
+applied mutation leaves a `trip_activity` row with the field names only.
+
+**Pull** `GET /sync/pull?cursor=&limit=` (limit ≤ 500, default 500) answers
+`{ changes: [{ entity, row }], tripIds, cursor, hasMore }` over every trip
+the account is a live member of. Entities are the push ones plus the
+read-only `member` (with `displayName`) and `phrase_card`. Without a cursor
+the answer is a snapshot of every live row; with one, every row changed
+after it, tombstones included (`deletedAt` set). `tripIds` is
+authoritative: the client drops any trip it holds that is not listed (a
+removed member stops receiving the trip). The cursor is opaque; it encodes
+the last change stamp delivered and its issue time, and one older than the
+purge horizon (90 days) answers 410 `E_SYNC_CURSOR_EXPIRED`: the client
+clears its cache, keeps its outbox and pulls again without a cursor. Pages
+follow the global change order and never skip a row committed by a
+transaction that was still open when an earlier page was read.
 
 ### Errors
 
@@ -169,20 +243,37 @@ Every route has a name; `npm run codegen` writes the Tuyau registry to
 - Enums are `text` + CHECK; partial unique indexes apply to live rows
   (`deleted_at IS NULL`): one owner per trip, one live membership and one
   live traveller per (trip, user).
-- Tables of this package: `users`, `user_tokens`, `rate_limits`, `trips`,
-  `trip_members`, `trip_invitations`, `travellers`, `push_subscriptions`,
-  `llm_usage`, `sync_mutations`, `scheduler_runs`. Tokens are stored as
-  sha256 hashes only.
+- Tables: `users`, `user_tokens`, `rate_limits`, `trips`, `trip_members`,
+  `trip_invitations`, `travellers`, `push_subscriptions`, `llm_usage`,
+  `sync_mutations`, `scheduler_runs`, and the content tables of the sync
+  package: `stops`, `events`, `event_segments`, `segment_seats`,
+  `documents`, `tasks`, `budget_categories`, `expenses`, `expense_shares`
+  (all S, with the stamp trigger and the cursor index), `fx_rates` (cache,
+  keyed by base, quote and day), `emergency_info` (S, keyed by `trip_id`),
+  `phrase_cards` (S), `trip_activity` (field names, never values). Tokens
+  are stored as sha256 hashes only.
+- Sync stamps are read as `(change_xid, change_seq)`: `pg` returns `xid8`
+  as a decimal string and the row comparison `(change_xid, change_seq) > (?::xid8, ?::bigint)`
+  pages the change order; pull delivers only rows with
+  `change_xid < pg_snapshot_xmin(pg_current_snapshot())` (plus the calling
+  transaction's own rows), so a transaction still in flight can never be
+  skipped.
+- Documents' bytes live in the drive disk under `trips/{tripId}/{documentId}`
+  (`DRIVE_DISK=fs` under `apps/api/tmp/drive` for tests and development,
+  `s3` otherwise); `sha256`, `mime` and `size_bytes` are stored with the row.
+- Every trip starts with the six default budget categories (`key` =
+  accommodation, transport, food, activities, shopping, other).
 
 ## CLI
 
-| Command                                                                      | Effect                                                                  |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `node ace users:disable <email>`                                             | `status = disabled` and every session revoked. `--enable` reverts.      |
-| `node ace users:plan <email> <plan>`                                         | `plan` = `free` or `pro`.                                               |
-| `node ace db:seed --files=./database/seeders/production_bootstrap_seeder.js` | Owner (+ partner) from `SEED_*`, verified, `pro`, no trip. Idempotent.  |
-| `node ace vapid:generate`                                                    | Prints a fresh VAPID pair as the three `VAPID_*` lines; stores nothing. |
-| `node ace push:test --user <id or e-mail>`                                   | Sends the test notification to every device of the account.             |
+| Command                                                                      | Effect                                                                                                                                                                                                                                                                                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `node ace users:disable <email>`                                             | `status = disabled` and every session revoked. `--enable` reverts.                                                                                                                                                                                                                                     |
+| `node ace users:plan <email> <plan>`                                         | `plan` = `free` or `pro`.                                                                                                                                                                                                                                                                              |
+| `node ace db:seed --files=./database/seeders/production_bootstrap_seeder.js` | Owner (+ partner) from `SEED_*`, verified, `pro`, no trip. Idempotent.                                                                                                                                                                                                                                 |
+| `node ace db:seed --files=./database/seeders/demo_trip_seeder.js`            | Development and E2E only: the accounts above plus the synthetic "Demo Loop" trip (18 days, base AUD, THB/JPY expenses, overnight train, last night on a plane, one uncovered night, a PDF tagged `print`, a two-segment flight with seats, overdue and high tasks). Idempotent by trip name and owner. |
+| `node ace vapid:generate`                                                    | Prints a fresh VAPID pair as the three `VAPID_*` lines; stores nothing.                                                                                                                                                                                                                                |
+| `node ace push:test --user <id or e-mail>`                                   | Sends the test notification to every device of the account.                                                                                                                                                                                                                                            |
 
 ## Container
 
