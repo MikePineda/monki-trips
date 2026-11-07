@@ -13,11 +13,14 @@ import { RAW_KEY, signIn } from '../sign-in.ts'
 test.use({ serviceWorkers: 'block' })
 
 test.describe('J06b tasks offline and the pre-trip checklist', () => {
+  // Both tests start by wiping the account's trips: run them one after the other.
+  test.describe.configure({ mode: 'default' })
+
   let solo: E2eAccount
   let tripId: string
 
   test.beforeEach(async ({}, testInfo) => {
-    solo = soloAccount(testInfo.project.name)
+    solo = soloAccount(testInfo.project.name, 'j06b')
     const api = await ApiSession.signIn(solo)
     try {
       await api.deleteAllTrips()

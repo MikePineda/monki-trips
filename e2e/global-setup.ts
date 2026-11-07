@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import type { FullConfig } from '@playwright/test'
-import { soloAccount } from './accounts.ts'
+import { SOLO_JOURNEYS, soloAccount } from './accounts.ts'
 
 /**
  * Creates the suite's accounts on the run's database through the API's own
@@ -9,7 +9,8 @@ import { soloAccount } from './accounts.ts'
  * the container runs with `SEED_USERS=true`. The seeder takes one owner and
  * one optional partner per run and is idempotent by e-mail, so it runs
  * once for owner + partner (J11), then once per Playwright project for
- * that project's solo traveller (J01), plus the plain solo address (J13).
+ * that project's solo traveller (J01) and for each of its `SOLO_JOURNEYS`,
+ * plus the plain solo address (J13).
  *
  * The API build and the database are up by now: scripts/e2e.sh migrated the
  * database and exported the slot's ports before starting Playwright.
@@ -23,9 +24,15 @@ export default function globalSetup(config: FullConfig): void {
       SEED_PARTNER_EMAIL: process.env.E2E_PARTNER_EMAIL,
       SEED_PARTNER_PASSWORD: process.env.E2E_PARTNER_PASSWORD,
     },
-    ...[undefined, ...config.projects.map((project) => project.name)].map((project) => ({
-      SEED_OWNER_EMAIL: soloAccount(project).email,
-      SEED_OWNER_PASSWORD: soloAccount(project).password,
+    ...[
+      soloAccount(),
+      ...config.projects.flatMap((project) => [
+        soloAccount(project.name),
+        ...SOLO_JOURNEYS.map((journey) => soloAccount(project.name, journey)),
+      ]),
+    ].map((account) => ({
+      SEED_OWNER_EMAIL: account.email,
+      SEED_OWNER_PASSWORD: account.password,
       SEED_PARTNER_EMAIL: '',
       SEED_PARTNER_PASSWORD: '',
     })),
