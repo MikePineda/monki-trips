@@ -1,0 +1,51 @@
+{
+  "title": "Emergency",
+  "empty": {
+    "title": "Nothing saved yet",
+    "body": "Insurer, assistance line, embassy, nearest hospital and local emergency numbers, one tap away even without a connection.",
+    "add": "Add emergency info"
+  },
+  "read": {
+    "edit": "Edit",
+    "insurance": "Insurance",
+    "policy": "Policy {{number}}",
+    "embassy": "Embassy or consulate",
+    "numbers": "Numbers",
+    "medical": "Medical notes",
+    "notes": "Notes",
+    "savedOffline": "Saved on this device: it works without a connection."
+  },
+  "form": {
+    "title": "Emergency info",
+    "insurance": "Insurance",
+    "insurer": "Insurer",
+    "policyNumber": "Policy number",
+    "assistancePhone": "Assistance phone",
+    "embassy": "Embassy or consulate",
+    "embassyName": "Name",
+    "embassyPhone": "Phone",
+    "embassyAddress": "Address",
+    "numbers": "Numbers",
+    "hospital": "Nearest hospital",
+    "hospitalPhone": "Hospital phone",
+    "localEmergency": "Local emergency number",
+    "localEmergencyPhone": "Number (e.g. 112)",
+    "other": "Another contact",
+    "otherName": "Name",
+    "otherPhone": "Phone",
+    "medical": "Medical notes",
+    "medicalHint": "Allergies, medication, blood group: what a doctor should know.",
+    "notes": "Notes",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "defaults": {
+    "hospital": "Nearest hospital",
+    "localEmergency": "Local emergency number",
+    "other": "Contact"
+  },
+  "toast": {
+    "saved": "Emergency info saved",
+    "unchanged": "Nothing changed"
+  }
+}

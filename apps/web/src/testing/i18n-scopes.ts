@@ -3,12 +3,16 @@ import accountEn from '../app/features/account/i18n/en.json'
 import accountEs from '../app/features/account/i18n/es.json'
 import authEn from '../app/features/auth/i18n/en.json'
 import authEs from '../app/features/auth/i18n/es.json'
+import emergencyEn from '../app/features/emergency/i18n/en.json'
+import emergencyEs from '../app/features/emergency/i18n/es.json'
 import offlineEn from '../app/features/offline/i18n/en.json'
 import offlineEs from '../app/features/offline/i18n/es.json'
 import settingsEn from '../app/features/settings/i18n/en.json'
 import settingsEs from '../app/features/settings/i18n/es.json'
 import styleguideEn from '../app/features/styleguide/i18n/en.json'
 import styleguideEs from '../app/features/styleguide/i18n/es.json'
+import tasksEn from '../app/features/tasks/i18n/en.json'
+import tasksEs from '../app/features/tasks/i18n/es.json'
 import activityEn from '../app/features/trip/activity/i18n/en.json'
 import activityEs from '../app/features/trip/activity/i18n/es.json'
 import membersEn from '../app/features/trip/members/i18n/en.json'
@@ -29,11 +33,13 @@ export const SCOPE_CATALOGUES = {
   account: { en: accountEn, es: accountEs },
   activity: { en: activityEn, es: activityEs },
   auth: { en: authEn, es: authEs },
+  emergency: { en: emergencyEn, es: emergencyEs },
   members: { en: membersEn, es: membersEs },
   offline: { en: offlineEn, es: offlineEs },
   settings: { en: settingsEn, es: settingsEs },
   shell: { en: shellEn, es: shellEs },
   styleguide: { en: styleguideEn, es: styleguideEs },
+  tasks: { en: tasksEn, es: tasksEs },
   ui: { en: uiEn, es: uiEs },
 } satisfies Record<string, Record<AppLang, Translation>>
 

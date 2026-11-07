@@ -73,6 +73,9 @@
     },
     "more": {
       "title": "More",
+      "tasks": "Tasks",
+      "checklist": "Pre-trip checklist",
+      "emergency": "Emergency",
       "settings": "Settings",
       "offline": "Offline",
       "members": "Members",

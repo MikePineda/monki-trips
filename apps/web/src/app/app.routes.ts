@@ -82,6 +82,9 @@ export const routes: Routes = [
         path: 'more',
         children: [
           { path: '', pathMatch: 'full', loadComponent: () => import('./features/trip/more.page') },
+          { path: 'tasks', loadComponent: () => import('./features/tasks/tasks.page') },
+          { path: 'checklist', loadComponent: () => import('./features/tasks/checklist.page') },
+          { path: 'emergency', loadComponent: () => import('./features/emergency/emergency.page') },
           {
             path: 'members',
             loadComponent: () => import('./features/trip/members/members.page'),

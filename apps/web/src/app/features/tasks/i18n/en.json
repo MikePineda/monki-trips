@@ -1,0 +1,86 @@
+{
+  "title": "Tasks",
+  "add": {
+    "title": "New task",
+    "titlePlaceholder": "What needs doing?",
+    "dueOn": "Due",
+    "priority": "Priority",
+    "event": "Event",
+    "noEvent": "No event",
+    "submit": "Add"
+  },
+  "priority": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High"
+  },
+  "group": {
+    "overdue": "Overdue",
+    "today": "Today",
+    "this_week": "This week",
+    "later": "Later",
+    "no_date": "No date",
+    "done": "Done"
+  },
+  "row": {
+    "due": "Due {{date}}",
+    "edit": "Edit task",
+    "openDocument": "Open the document to print",
+    "noDate": "No date"
+  },
+  "showDone": "Show done",
+  "empty": {
+    "title": "Nothing to do",
+    "body": "Add a task above, or start from the pre-trip checklist."
+  },
+  "toast": {
+    "done": "Task done",
+    "reopened": "Task reopened",
+    "deleted": "Task deleted",
+    "saved": "Task saved",
+    "templateAdded": "{{count}} checklist items added",
+    "templateComplete": "The checklist is already complete"
+  },
+  "edit": {
+    "title": "Edit task",
+    "name": "Title",
+    "notes": "Notes",
+    "dueOn": "Due",
+    "priority": "Priority",
+    "event": "Event",
+    "noEvent": "No event",
+    "save": "Save",
+    "delete": "Delete task"
+  },
+  "titleKey": {
+    "print_document": "Print {{title}}"
+  },
+  "checklist": {
+    "title": "Pre-trip checklist",
+    "progress": "Ready to go",
+    "emptyTitle": "No checklist yet",
+    "emptyBody": "Passport, visa, insurance, eSIM, adapter, cash and what to print: one list, ticked offline.",
+    "add": "Add the pre-trip checklist",
+    "addMissing": "Add the missing items",
+    "category": {
+      "documents": "Documents",
+      "gear": "Gear",
+      "before_leaving": "Before leaving"
+    }
+  },
+  "template": {
+    "documents": {
+      "passport": "Check the passport is valid 6+ months after the trip",
+      "visa": "Check visa requirements",
+      "insurance": "Buy travel insurance"
+    },
+    "gear": {
+      "esim": "Get an eSIM or local SIM",
+      "adapter": "Pack a power adapter",
+      "cash": "Get some local cash"
+    },
+    "before_leaving": {
+      "print": "Print the documents"
+    }
+  }
+}
