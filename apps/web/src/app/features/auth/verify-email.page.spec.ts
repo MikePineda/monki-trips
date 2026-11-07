@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing'
-import { provideRouter } from '@angular/router'
+import { Router, provideRouter } from '@angular/router'
 import { apiFakes, provideApiTesting, type ApiFakes } from '../../../testing/api-testing'
 import { SCOPE_CATALOGUES } from '../../../testing/i18n-scopes'
 import { i18nTesting } from '../../../testing/i18n-testing'
@@ -151,6 +151,32 @@ describe('VerifyEmailPage', () => {
 
     expect(fakes.auth.calls).toContain('verifyEmail:verify-token-0123456789abcdef')
     expect(has('verify.done')).toBe(true)
+  })
+
+  it('a redeemed link leaves the address bar and the history without its token', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true)
+    const { has } = await render({ token: 'verify-token-0123456789abcdef' })
+
+    expect(navigate).toHaveBeenCalledWith(['/verify-email'], { replaceUrl: true })
+    expect(has('verify.done')).toBe(true)
+  })
+
+  it('an expired link keeps saying so once its token left the address bar', async () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true)
+    fakes.auth.failWith = new ApiFailure({
+      kind: 'http',
+      status: 410,
+      code: 'E_TOKEN_EXPIRED',
+      message: 'gone',
+    })
+    const { fixture, text } = await render({ token: 'verify-token-0123456789abcdef' })
+
+    // The router drops the query parameter: the bound input goes empty.
+    fixture.componentRef.setInput('token', undefined)
+    await settle(fixture)
+
+    expect(text('verify.expired')).toContain(SCOPE_CATALOGUES.auth.en.verify.linkExpiredTitle)
+    expect(fakes.auth.calls.filter((call) => call.startsWith('verifyEmail'))).toHaveLength(1)
   })
 
   it('an expired link says so and points at the code form', async () => {

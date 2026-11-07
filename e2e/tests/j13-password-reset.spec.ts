@@ -32,6 +32,8 @@ test.describe('J13 forgot and reset password', () => {
     await expect(page.getByTestId('reset.missingToken')).toBeVisible()
 
     await page.goto('/reset-password?token=not-a-real-token-0123456789abcdef')
+    // The single-use token leaves the address bar (and the history) at once.
+    await expect(page).toHaveURL(/\/reset-password$/)
     await page.getByTestId('reset.password').fill('a brand new password')
     await page.getByTestId('reset.submit').click()
 

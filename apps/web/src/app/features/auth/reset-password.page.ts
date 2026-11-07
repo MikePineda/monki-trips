@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core'
 import { form, FormField, minLength, required, submit } from '@angular/forms/signals'
-import { RouterLink } from '@angular/router'
+import { Router, RouterLink } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { ApiFailure } from '../../core/api/api-failure'
 import { AUTH_API } from '../../core/api/auth-api'
@@ -114,6 +123,10 @@ export default class ResetPasswordPage {
   readonly token = input<string>()
 
   private readonly auth = inject(AUTH_API)
+  private readonly router = inject(Router)
+  /** The link's token, held once it left the address bar. */
+  private readonly heldToken = signal<string | null>(null)
+  private readonly resetToken = computed(() => this.token() || this.heldToken())
 
   protected readonly codes = AUTH_ERROR_CODES
   protected readonly fieldError = fieldError
@@ -129,16 +142,29 @@ export default class ResetPasswordPage {
     if (this.done()) {
       return 'done'
     }
-    if (!this.token()) {
+    if (!this.resetToken()) {
       return 'missing-token'
     }
     return this.failure()?.isStatus(410) ? 'expired' : 'form'
   })
 
+  constructor() {
+    // The token is a single-use credential: the page holds it, the address bar and history do not.
+    effect(() => {
+      const token = this.token()
+      if (token) {
+        untracked(() => {
+          this.heldToken.set(token)
+          void this.router.navigate(['/reset-password'], { replaceUrl: true }).catch(() => false)
+        })
+      }
+    })
+  }
+
   protected async change(event: Event): Promise<void> {
     event.preventDefault()
     this.failure.set(null)
-    const token = this.token()
+    const token = this.resetToken()
     if (!token) {
       return
     }

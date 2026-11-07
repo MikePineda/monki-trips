@@ -10,7 +10,7 @@ import {
   untracked,
 } from '@angular/core'
 import { form, FormField, maxLength, pattern, required, submit } from '@angular/forms/signals'
-import { RouterLink } from '@angular/router'
+import { Router, RouterLink } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { ApiFailure } from '../../core/api/api-failure'
 import { AUTH_API } from '../../core/api/auth-api'
@@ -189,6 +189,7 @@ export default class VerifyEmailPage {
   readonly token = input<string>()
 
   private readonly auth = inject(AUTH_API)
+  private readonly router = inject(Router)
   private readonly destroyRef = inject(DestroyRef)
   protected readonly session = inject(SessionStore)
 
@@ -205,6 +206,8 @@ export default class VerifyEmailPage {
   protected readonly linkFailure = signal<ApiFailure | null>(null)
   protected readonly verified = signal(false)
   protected readonly linkChecked = signal(false)
+  /** The link's token, kept after it leaves the address bar so the outcome stays on screen. */
+  private readonly linkToken = signal<string | null>(null)
   protected readonly cooldown = signal(0)
   protected readonly resent = signal(false)
   private cooldownTimer: ReturnType<typeof setInterval> | null = null
@@ -213,7 +216,7 @@ export default class VerifyEmailPage {
     if (this.verified()) {
       return 'verified'
     }
-    if (this.token()) {
+    if (this.token() || this.linkToken()) {
       const failure = this.linkFailure()
       if (!this.linkChecked()) {
         return 'checking-link'
@@ -250,6 +253,7 @@ export default class VerifyEmailPage {
     if (!token) {
       return
     }
+    this.linkToken.set(token)
     this.linkChecked.set(false)
     this.linkFailure.set(null)
     try {
@@ -263,6 +267,8 @@ export default class VerifyEmailPage {
     } finally {
       this.linkChecked.set(true)
     }
+    // Single use either way: keep it out of the address bar and the history.
+    await this.router.navigate(['/verify-email'], { replaceUrl: true }).catch(() => false)
   }
 
   /** Only digits, at most six: the field never holds what the API would refuse. */

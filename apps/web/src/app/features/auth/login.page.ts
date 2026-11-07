@@ -17,6 +17,9 @@ import { resolveForeignChanges } from './foreign-changes'
 /** Where to go after signing in when nothing asked for a specific page. */
 export const HOME_URL = '/trips'
 
+/** A return url that is an invitation page: `/invite/<token>`. */
+const INVITE_RETURN_URL = /^\/invite\/([^/?#]+)$/
+
 /**
  * Sign-in: e-mail and password against `POST /auth/login`. A wrong
  * password says so (401), a throttle says how long to wait (429), no
@@ -121,7 +124,9 @@ export default class LoginPage {
   }
 
   protected signupParams(): Record<string, string> {
-    const token = this.invitation()
+    // Coming from an invitation, its token is already in the return url.
+    const fromReturnUrl = INVITE_RETURN_URL.exec(this.returnUrl() ?? '')?.[1]
+    const token = fromReturnUrl ? decodeURIComponent(fromReturnUrl) : this.invitation()
     return token ? { invitation: token } : {}
   }
 
