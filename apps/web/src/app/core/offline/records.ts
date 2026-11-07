@@ -6,6 +6,7 @@ import type {
   SegmentSeat,
   TaskOrigin,
   TaskPriority,
+  TripDocumentRow,
   TripEventRow,
   TripMemberRole,
   TripStopRow,
@@ -75,12 +76,13 @@ export interface StayRecord extends TripScopedRecord {
   nights: number
 }
 
-export interface DocRecord extends TripScopedRecord {
-  title: string
-  mime: string
-  size: number
-  sha256: string
-}
+/**
+ * A document of the trip as the device keeps it: the API's
+ * `TripDocumentRow` without the tombstone. A `file` carries the server's
+ * `mime`, `sizeBytes` and `sha256` (the copy in `docBlobs` is verified
+ * against it); a `link` carries its `url`.
+ */
+export type DocRecord = Omit<TripDocumentRow, 'deletedAt'> & SyncedRecord
 
 /** A document saved for offline use: the bytes plus what verifies them. */
 export interface DocBlobRecord {
