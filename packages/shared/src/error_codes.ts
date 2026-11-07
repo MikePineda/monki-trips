@@ -57,6 +57,14 @@ export const ERROR_CODES = {
 
   // Exchange rates
   E_FX_UNAVAILABLE: 503,
+
+  // LLM
+  /** The account spent its monthly token cap; the payload says when it resets. */
+  E_LLM_QUOTA_EXCEEDED: 402,
+  /** The model provider could not answer (network, upstream error, not configured). */
+  E_LLM_UNAVAILABLE: 503,
+  /** The model answered twice with something the schema refuses. */
+  E_LLM_BAD_OUTPUT: 422,
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES

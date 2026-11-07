@@ -23,4 +23,6 @@ export interface UserProfile {
   /** ISO instant of the scheduled hard delete (30-day grace), or null. */
   deletionScheduledAt: string | null
   createdAt: string
+  /** LLM tokens left this UTC month (`GET /api/v1/auth/me` only; absent elsewhere). */
+  llmTokensLeft?: number
 }
