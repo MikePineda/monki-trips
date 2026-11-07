@@ -2,14 +2,21 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 
 /**
  * The scrolling body of a screen: one centred column (max `--container-max`),
- * the 16 px gutter plus the safe areas, and room for the tab bar and the
- * FAB when `tabBar` is set. Children space themselves with mk-stack and
- * mk-section; full-width children (mk-banner) read `--page-gutter` to bleed.
+ * the 16 px gutter plus the safe areas, room for the tab bar when `tabBar`
+ * is set and room for the floating action when `fab` is set
+ * (`--fab-clearance`: the FAB's height plus the gap above it), so the last
+ * line of content can always scroll clear of both. Children space
+ * themselves with mk-stack and mk-section; full-width children (mk-banner)
+ * read `--page-gutter` to bleed.
  */
 @Component({
   selector: 'mk-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { 'class': 'mk-page', '[attr.data-tab-bar]': 'tabBar() ? "" : null' },
+  host: {
+    'class': 'mk-page',
+    '[attr.data-tab-bar]': 'tabBar() ? "" : null',
+    '[attr.data-fab]': 'fab() ? "" : null',
+  },
   styles: `
     :host {
       --page-gutter: var(--space-2);
@@ -24,7 +31,13 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
     }
     :host([data-tab-bar]) {
       padding-bottom: calc(
-        var(--tab-bar-height) + var(--space-6) + var(--space-3) + env(safe-area-inset-bottom, 0px)
+        var(--tab-bar-height) + var(--space-3) + env(safe-area-inset-bottom, 0px)
+      );
+    }
+    :host([data-fab]) {
+      padding-bottom: calc(
+        var(--tab-bar-height) + var(--fab-clearance) + var(--space-3) +
+          env(safe-area-inset-bottom, 0px)
       );
     }
   `,
@@ -32,4 +45,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 })
 export class MkPageComponent {
   readonly tabBar = input(false)
+  /** The screen shows the floating action (mk-fab) above its content. */
+  readonly fab = input(false)
 }

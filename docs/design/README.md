@@ -243,9 +243,11 @@ exit 0
 - Plum (`series-4`) and violet (`series-7`) are in the chart palette; the
   anti-vibe rule bans purple as a UI colour, not as a data hue. Keep, or
   swap for bronze?
-- Today fits on one 390 × 844 screen only with tight 8 px section padding
-  and the weather beside "Left today"; with two documents or a long address
-  it scrolls. Acceptable, or should weather move behind a tap?
+- Settled: the FAB covered the weather beside "Left today" when Today
+  scrolls. `mk-page [fab]` now keeps `--fab-clearance` (the FAB's height
+  plus 16 px) below the content on top of the tab bar's room, and the
+  weather has its own full-width row below "Left today", so nothing sits
+  beside the hero in the FAB's column.
 - IBM Plex Mono ships 400/500 only in the repo; is 600 needed for anything?
 
 ## Mocks

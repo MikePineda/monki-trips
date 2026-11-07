@@ -267,6 +267,8 @@
   --row-height: var(--space-7);
   --tap-target: 44px;
   --tab-bar-height: var(--space-7);
+  /* Room a page keeps below its content for the FAB: its height plus the 16 px gap above it. */
+  --fab-clearance: calc(var(--space-6) + var(--space-2));
 }
 
 /* Tailwind reads the tokens (shared/ui only: features never carry utilities). */
