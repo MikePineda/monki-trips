@@ -15,16 +15,37 @@ import { MkIconComponent } from '../icon/icon.component'
   selector: 'mk-api-error',
   imports: [TranslocoPipe, MkIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block' },
+  host: { class: 'mk-api-error' },
+  styles: `
+    :host {
+      display: block;
+    }
+    .mk-api-error__message {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-1);
+      margin: 0;
+      padding: var(--space-1) 12px;
+      border: 1px solid var(--status-critical);
+      border-radius: var(--radius-md);
+      background: var(--surface-1);
+      color: var(--ink-1);
+    }
+    .mk-api-error__icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--status-critical);
+    }
+  `,
   template: `
     @if (message(); as message) {
       <p
-        class="flex items-start gap-2 rounded-lg border border-status-critical bg-surface-1 px-3 py-2 text-sm text-ink-1"
+        class="mk-api-error__message mk-type-body"
         role="alert"
         [attr.data-testid]="testId()"
         [attr.data-code]="failure()?.code ?? failure()?.kind"
       >
-        <mk-icon name="circle-alert" class="mt-0.5 shrink-0 text-status-critical" [size]="18" />
+        <mk-icon name="circle-alert" class="mk-api-error__icon" [size]="18" />
         <span>
           @if (message.key.endsWith('.unknown') && message.fallback) {
             {{ message.fallback }}
