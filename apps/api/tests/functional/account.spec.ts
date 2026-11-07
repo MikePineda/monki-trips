@@ -69,10 +69,16 @@ test.group('Account', (group) => {
       body.trips.map((t: { trip: { name: string } }) => t.trip.name),
       ['Owned', 'Shared']
     )
-    const ownedDocument = body.trips.find((t: { trip: { id: string } }) => t.trip.id === owned.id)
+    const ownedDocument = body.trips.find(
+      (t: { trip: { name: string } }) => t.trip.name === 'Owned'
+    )
+    assert.equal(ownedDocument.version, 'trip-json-v1')
     assert.deepEqual(ownedDocument.members, [{ role: 'owner', displayName: 'Owner' }])
-    assert.lengthOf(ownedDocument.travellers, 1)
+    assert.deepEqual(ownedDocument.travellers, [
+      { ref: 'traveller-1', displayName: 'Owner', position: 0 },
+    ])
     assert.notInclude(JSON.stringify(body.trips), user.id)
+    assert.notInclude(JSON.stringify(body.trips), owned.id)
   })
 
   test('deleting an account with a shared owned trip answers 409', async ({ client, assert }) => {

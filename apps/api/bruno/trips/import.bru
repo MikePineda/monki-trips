@@ -1,0 +1,76 @@
+meta {
+  name: Import a trip (trip JSON v1)
+  type: http
+  seq: 50
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/import?dryRun=true
+  body: json
+  auth: none
+}
+
+params:query {
+  dryRun: true
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "version": "trip-json-v1",
+    "trip": {
+      "name": "Imported loop",
+      "baseCurrency": "AUD",
+      "startsOn": "2027-01-20",
+      "endsOn": "2027-01-23",
+      "homeTz": "Australia/Sydney"
+    },
+    "travellers": [{ "ref": "traveller-1", "displayName": "Owner", "position": 0 }],
+    "stops": [
+      {
+        "ref": "stop-1",
+        "position": 0,
+        "name": "Harbour Town",
+        "countryCode": "AU",
+        "tz": "Australia/Sydney",
+        "arriveOn": "2027-01-20",
+        "departOn": "2027-01-23"
+      }
+    ],
+    "events": [
+      {
+        "ref": "event-1",
+        "stopRef": "stop-1",
+        "kind": "lodging",
+        "title": "Harbour Inn",
+        "status": "booked",
+        "startsLocal": "2027-01-20T15:00",
+        "startTz": "Australia/Sydney",
+        "endsLocal": "2027-01-23T10:00",
+        "endTz": "Australia/Sydney"
+      }
+    ],
+    "expenses": [
+      {
+        "eventRef": "event-1",
+        "categoryRef": "category-food",
+        "amountMinor": 4500,
+        "currency": "AUD",
+        "spentOn": "2027-01-21",
+        "description": "Dinner",
+        "paidByTravellerRef": "traveller-1",
+        "shares": [{ "travellerRef": "traveller-1", "shareMinor": 4500 }]
+      }
+    ]
+  }
+}
+
+docs {
+  Body: a trip JSON v1 document, 2 MB at most (413 E_FILE_TOO_LARGE above).
+  `dryRun=true` validates and answers the summary without writing;
+  `dryRun=false` creates a new trip owned by the caller (201 with `tripId`).
+  A bad ref or field answers 422 with the list of errors and writes nothing.
+}

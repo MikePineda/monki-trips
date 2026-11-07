@@ -29,7 +29,7 @@
   "E_PUSH_DISABLED": "Las notificaciones no están configuradas en este servidor",
   "E_SYNC_CURSOR_EXPIRED": "Tu copia sin conexión es demasiado antigua para actualizarse. La app recargará todo",
   "E_ROW_DELETED": "Esto se borró mientras tanto",
-  "E_FILE_TOO_LARGE": "El archivo es demasiado grande (25 MB como máximo)",
+  "E_FILE_TOO_LARGE": "El archivo es demasiado grande",
   "E_UNSUPPORTED_FILE": "Este tipo de archivo no está soportado. Usa un PDF o una imagen",
   "E_STORAGE_UNAVAILABLE": "El almacenamiento de archivos no está disponible ahora. Inténtalo de nuevo en un momento",
   "E_FX_UNAVAILABLE": "Los tipos de cambio no están disponibles ahora. Inténtalo de nuevo en un momento"

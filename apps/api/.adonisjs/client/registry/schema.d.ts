@@ -47,6 +47,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/config_controller').default['show']>>>
     }
   }
+  'schemas.tripJsonV1': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/schemas/trip-json-v1'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['schema']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['schema']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['schema']>>>
+    }
+  }
   'auth.signup': {
     methods: ["POST"]
     pattern: '/api/v1/auth/signup'
@@ -333,6 +346,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trips_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'trips.import': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/import'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/trip_import').tripImportQueryValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/trip_import').tripImportQueryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['import']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['import']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['import']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'sync.pull': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/sync/pull'
@@ -422,6 +448,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
+    }
+  }
+  'trips.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/export'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['export']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['export']>>>
     }
   }
   'trips.documents.store': {

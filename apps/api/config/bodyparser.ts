@@ -33,6 +33,12 @@ const bodyParserConfig = defineConfig({
     convertEmptyStringsToNull: true,
 
     /**
+     * A trip JSON v1 file (`POST /trips/import`) may weigh up to 2 MB; the
+     * handler answers 413 `E_FILE_TOO_LARGE` above it. Sync pushes are far smaller.
+     */
+    limit: '2mb',
+
+    /**
      * Content types handled by the JSON parser.
      */
     types: [

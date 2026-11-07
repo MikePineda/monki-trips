@@ -1,0 +1,17 @@
+meta {
+  name: Export a trip (trip JSON v1)
+  type: http
+  seq: 49
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/export
+  body: none
+  auth: none
+}
+
+docs {
+  The body is the trip JSON v1 document itself (no `data` envelope), sent as
+  an attachment named trip-<slug>-<date>.json. File documents carry a
+  download link valid for 300 s. Format: GET /api/v1/schemas/trip-json-v1.
+}

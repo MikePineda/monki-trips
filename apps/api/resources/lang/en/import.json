@@ -1,0 +1,10 @@
+{
+  "warnings": {
+    "callerIsFirstTraveller": "The first traveller of the file is you: your own name is kept and the rest of that row is applied.",
+    "membersNotImported": "{count} other member(s) of the original trip were not added: invite them again.",
+    "fileDocumentAsLink": "{count} uploaded file(s) were imported as links to a download address that expires soon: upload the files again.",
+    "fileDocumentSkipped": "{count} uploaded file(s) had no download address and were left out.",
+    "taskOriginReset": "{count} generated task(s) were imported as manual tasks.",
+    "phraseCardsSkipped": "{count} set(s) of phrase cards were left out; the app can generate them again."
+  }
+}

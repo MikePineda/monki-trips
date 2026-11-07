@@ -34,7 +34,10 @@
       "timezone": "{field} debe ser una zona horaria conocida",
       "positive": "{field} debe ser mayor que cero",
       "convertedRange": "{field} es demasiado grande al convertirlo a la moneda base",
-      "storable": "{field} tiene un valor que el servidor no puede guardar"
+      "storable": "{field} tiene un valor que el servidor no puede guardar",
+      "schema": "{field} no cumple el esquema trip JSON v1",
+      "unresolvedRef": "{field} apunta a una ref que no está en el archivo",
+      "duplicateRef": "{field} repite una ref ya usada en el archivo"
     },
     "fields": {
       "email": "el correo",
@@ -148,7 +151,19 @@
       "base": "la moneda base",
       "symbols": "las monedas",
       "date": "la fecha",
-      "at": "el instante"
+      "at": "el instante",
+      "ref": "la ref",
+      "version": "la versión del formato",
+      "trip": "el viaje",
+      "document": "el archivo",
+      "stopRef": "la ref de parada",
+      "eventRef": "la ref de evento",
+      "travellerRef": "la ref de viajero",
+      "documentRef": "la ref de documento",
+      "categoryRef": "la ref de categoría",
+      "paidByTravellerRef": "la ref de quien pagó",
+      "sourceDocumentRef": "la ref del documento origen",
+      "dryRun": "el ensayo"
     }
   }
 }

@@ -26,6 +26,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"config"]],
     types: placeholder as Registry['config.show']['types'],
   },
+  'schemas.tripJsonV1': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/schemas/trip-json-v1',
+    tokens: [[0,"api"],[0,"v1"],[0,"schemas"],[0,"trip-json-v1"]],
+    types: placeholder as Registry['schemas.tripJsonV1']['types'],
+  },
   'auth.signup': {
     methods: ["POST"],
     pattern: '/api/v1/auth/signup',
@@ -158,6 +164,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"]],
     types: placeholder as Registry['trips.store']['types'],
   },
+  'trips.import': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/import',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[0,"import"]],
+    types: placeholder as Registry['trips.import']['types'],
+  },
   'sync.pull': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/sync/pull',
@@ -199,6 +211,12 @@ const routes = {
     pattern: '/api/v1/trips/:tripId/today',
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"today"]],
     types: placeholder as Registry['trips.today']['types'],
+  },
+  'trips.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/export',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"export"]],
+    types: placeholder as Registry['trips.export']['types'],
   },
   'trips.documents.store': {
     methods: ["POST"],

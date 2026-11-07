@@ -9,6 +9,9 @@ export interface ApiDefinition {
   config: {
     show: typeof routes['config.show']
   }
+  schemas: {
+    tripJsonV1: typeof routes['schemas.tripJsonV1']
+  }
   auth: {
     signup: typeof routes['auth.signup']
     login: typeof routes['auth.login']
@@ -44,10 +47,12 @@ export interface ApiDefinition {
   trips: {
     index: typeof routes['trips.index']
     store: typeof routes['trips.store']
+    import: typeof routes['trips.import']
     snapshot: typeof routes['trips.snapshot']
     nights: typeof routes['trips.nights']
     budget: typeof routes['trips.budget']
     today: typeof routes['trips.today']
+    export: typeof routes['trips.export']
     documents: {
       store: typeof routes['trips.documents.store']
       file: typeof routes['trips.documents.file']

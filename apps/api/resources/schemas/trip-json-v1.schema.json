@@ -1,0 +1,307 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:monkitrips:trip-json-v1",
+  "title": "trip JSON v1",
+  "description": "A portable trip of monki-trips. Rows reference each other through refs (strings unique within the file per entity); local times travel next to their IANA zone; money is integer minor units next to its ISO 4217 currency; rates are decimal strings. An import always creates a new trip owned by the caller.",
+  "type": "object",
+  "required": ["version", "trip"],
+  "properties": {
+    "version": { "const": "trip-json-v1" },
+    "schemaVersion": { "const": 1 },
+    "exportedAt": { "type": "string" },
+    "trip": { "$ref": "#/$defs/trip" },
+    "members": { "type": "array", "items": { "$ref": "#/$defs/member" } },
+    "travellers": { "type": "array", "items": { "$ref": "#/$defs/traveller" } },
+    "stops": { "type": "array", "items": { "$ref": "#/$defs/stop" } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+    "budgetCategories": { "type": "array", "items": { "$ref": "#/$defs/budgetCategory" } },
+    "expenses": { "type": "array", "items": { "$ref": "#/$defs/expense" } },
+    "tasks": { "type": "array", "items": { "$ref": "#/$defs/task" } },
+    "documents": { "type": "array", "items": { "$ref": "#/$defs/document" } },
+    "emergency": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/emergency" }] },
+    "phraseCards": { "type": "array", "items": { "$ref": "#/$defs/phraseCards" } },
+    "notes": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "ref": {
+      "description": "Identifies a row within the file; the importer replaces it with a fresh id.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "refOrNull": { "oneOf": [{ "$ref": "#/$defs/ref" }, { "type": "null" }] },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "dateOrNull": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "localTime": {
+      "description": "Wall-clock time without zone, YYYY-MM-DDTHH:mm[:ss]; the zone travels in the sibling *Tz field.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?$"
+    },
+    "localTimeOrNull": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?$"
+    },
+    "zone": { "description": "IANA time zone name.", "type": "string", "minLength": 1 },
+    "zoneOrNull": { "type": ["string", "null"], "minLength": 1 },
+    "currency": { "description": "ISO 4217 code.", "type": "string", "pattern": "^[A-Za-z]{3}$" },
+    "minor": {
+      "description": "Integer minor units of the sibling currency (cents, yen...).",
+      "type": "integer"
+    },
+    "minorOrNull": { "type": ["integer", "null"] },
+    "rateOrNull": {
+      "description": "Units of the expense currency per 1 base unit, as a decimal string with up to ten decimals.",
+      "type": ["string", "null"],
+      "pattern": "^\\d{1,13}(\\.\\d{1,10})?$"
+    },
+    "instantOrNull": { "type": ["string", "null"], "minLength": 1 },
+    "text": { "type": ["string", "null"] },
+    "number": { "type": ["number", "null"] },
+    "trip": {
+      "type": "object",
+      "required": ["name", "baseCurrency", "startsOn", "endsOn"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "baseCurrency": { "$ref": "#/$defs/currency" },
+        "budgetMode": { "enum": ["shared", "split"] },
+        "budgetTotalMinor": { "$ref": "#/$defs/minorOrNull" },
+        "startsOn": { "$ref": "#/$defs/date" },
+        "endsOn": { "$ref": "#/$defs/date" },
+        "homeTz": { "$ref": "#/$defs/zone" }
+      }
+    },
+    "member": {
+      "type": "object",
+      "required": ["role", "displayName"],
+      "properties": {
+        "role": { "enum": ["owner", "editor"] },
+        "displayName": { "type": "string" }
+      }
+    },
+    "traveller": {
+      "type": "object",
+      "required": ["ref", "displayName"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/ref" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "position": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "stop": {
+      "type": "object",
+      "required": ["ref", "name"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/ref" },
+        "position": { "type": "integer", "minimum": 0 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "countryCode": { "type": ["string", "null"], "pattern": "^[A-Za-z]{2}$" },
+        "lat": { "$ref": "#/$defs/number" },
+        "lng": { "$ref": "#/$defs/number" },
+        "tz": { "$ref": "#/$defs/zoneOrNull" },
+        "arriveOn": { "$ref": "#/$defs/dateOrNull" },
+        "departOn": { "$ref": "#/$defs/dateOrNull" }
+      }
+    },
+    "seat": {
+      "type": "object",
+      "required": ["travellerRef"],
+      "properties": {
+        "travellerRef": { "$ref": "#/$defs/ref" },
+        "seat": { "$ref": "#/$defs/text" },
+        "coach": { "$ref": "#/$defs/text" },
+        "ticketNumber": { "$ref": "#/$defs/text" },
+        "documentRef": { "$ref": "#/$defs/refOrNull" }
+      }
+    },
+    "segment": {
+      "type": "object",
+      "required": ["ref", "departsLocal", "departsTz", "arrivesLocal", "arrivesTz"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/ref" },
+        "position": { "type": "integer", "minimum": 0 },
+        "carrier": { "$ref": "#/$defs/text" },
+        "number": { "$ref": "#/$defs/text" },
+        "originName": { "$ref": "#/$defs/text" },
+        "originCode": { "$ref": "#/$defs/text" },
+        "originLat": { "$ref": "#/$defs/number" },
+        "originLng": { "$ref": "#/$defs/number" },
+        "destName": { "$ref": "#/$defs/text" },
+        "destCode": { "$ref": "#/$defs/text" },
+        "destLat": { "$ref": "#/$defs/number" },
+        "destLng": { "$ref": "#/$defs/number" },
+        "departsLocal": { "$ref": "#/$defs/localTime" },
+        "departsTz": { "$ref": "#/$defs/zone" },
+        "arrivesLocal": { "$ref": "#/$defs/localTime" },
+        "arrivesTz": { "$ref": "#/$defs/zone" },
+        "seats": { "type": "array", "items": { "$ref": "#/$defs/seat" } }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": ["ref", "kind", "title"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/ref" },
+        "stopRef": { "$ref": "#/$defs/refOrNull" },
+        "kind": {
+          "enum": [
+            "flight",
+            "train",
+            "ferry",
+            "bus",
+            "car",
+            "lodging",
+            "tour",
+            "meal",
+            "activity",
+            "free_time",
+            "other"
+          ]
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "status": { "enum": ["idea", "to_book", "booked", "paid", "cancelled"] },
+        "startsLocal": { "$ref": "#/$defs/localTimeOrNull" },
+        "startTz": { "$ref": "#/$defs/zoneOrNull" },
+        "endsLocal": { "$ref": "#/$defs/localTimeOrNull" },
+        "endTz": { "$ref": "#/$defs/zoneOrNull" },
+        "placeName": { "$ref": "#/$defs/text" },
+        "address": { "$ref": "#/$defs/text" },
+        "addressLocal": { "$ref": "#/$defs/text" },
+        "lat": { "$ref": "#/$defs/number" },
+        "lng": { "$ref": "#/$defs/number" },
+        "providerName": { "$ref": "#/$defs/text" },
+        "bookingCode": { "$ref": "#/$defs/text" },
+        "costMinor": { "$ref": "#/$defs/minorOrNull" },
+        "costCurrency": { "type": ["string", "null"], "pattern": "^[A-Za-z]{3}$" },
+        "notes": { "$ref": "#/$defs/text" },
+        "leaveBufferMin": { "type": ["integer", "null"], "minimum": 0 },
+        "travelMin": { "type": ["integer", "null"], "minimum": 0 },
+        "coversNight": { "type": ["boolean", "null"] },
+        "segments": { "type": "array", "items": { "$ref": "#/$defs/segment" } }
+      }
+    },
+    "budgetCategory": {
+      "type": "object",
+      "required": ["ref"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/ref" },
+        "key": { "$ref": "#/$defs/text" },
+        "name": { "$ref": "#/$defs/text" },
+        "budgetMinor": { "$ref": "#/$defs/minorOrNull" },
+        "position": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "expenseShare": {
+      "type": "object",
+      "required": ["travellerRef", "shareMinor"],
+      "properties": {
+        "travellerRef": { "$ref": "#/$defs/ref" },
+        "shareMinor": { "$ref": "#/$defs/minor" }
+      }
+    },
+    "expense": {
+      "type": "object",
+      "required": ["amountMinor", "currency", "spentOn"],
+      "properties": {
+        "eventRef": { "$ref": "#/$defs/refOrNull" },
+        "categoryRef": { "$ref": "#/$defs/refOrNull" },
+        "amountMinor": { "$ref": "#/$defs/minor" },
+        "currency": { "$ref": "#/$defs/currency" },
+        "fxRate": { "$ref": "#/$defs/rateOrNull" },
+        "fxRateDate": { "$ref": "#/$defs/dateOrNull" },
+        "fxSource": { "enum": ["frankfurter", "manual", "identity", null] },
+        "baseAmountMinor": { "$ref": "#/$defs/minorOrNull" },
+        "spentOn": { "$ref": "#/$defs/date" },
+        "description": { "$ref": "#/$defs/text" },
+        "paidByTravellerRef": { "$ref": "#/$defs/refOrNull" },
+        "needsDetails": { "type": "boolean" },
+        "shares": { "type": "array", "items": { "$ref": "#/$defs/expenseShare" } }
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "eventRef": { "$ref": "#/$defs/refOrNull" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "titleKey": { "$ref": "#/$defs/text" },
+        "notes": { "$ref": "#/$defs/text" },
+        "dueOn": { "$ref": "#/$defs/dateOrNull" },
+        "priority": { "enum": ["low", "normal", "high"] },
+        "doneAt": { "$ref": "#/$defs/instantOrNull" },
+        "origin": { "enum": ["manual", "template", "document", "ai"] },
+        "sourceDocumentRef": { "$ref": "#/$defs/refOrNull" },
+        "templateItemKey": { "$ref": "#/$defs/text" }
+      }
+    },
+    "document": {
+      "type": "object",
+      "required": ["ref", "kind", "title"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/ref" },
+        "eventRef": { "$ref": "#/$defs/refOrNull" },
+        "kind": { "enum": ["file", "link"] },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "url": { "$ref": "#/$defs/text" },
+        "tags": {
+          "type": "array",
+          "items": { "enum": ["print", "show_on_phone", "requires_passport"] },
+          "uniqueItems": true
+        },
+        "availableOffline": { "type": "boolean" },
+        "storageKey": { "$ref": "#/$defs/text" },
+        "mime": { "$ref": "#/$defs/text" },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "sha256": { "$ref": "#/$defs/text" },
+        "downloadUrl": { "$ref": "#/$defs/text" }
+      }
+    },
+    "emergency": {
+      "type": "object",
+      "properties": {
+        "contacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "phone"],
+            "properties": {
+              "name": { "type": "string" },
+              "phone": { "type": "string" },
+              "note": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "insurance": {
+          "type": ["object", "null"],
+          "required": ["provider"],
+          "properties": {
+            "provider": { "type": "string" },
+            "policyNumber": { "$ref": "#/$defs/text" },
+            "phone": { "$ref": "#/$defs/text" }
+          }
+        },
+        "embassy": {
+          "type": ["object", "null"],
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "$ref": "#/$defs/text" },
+            "address": { "$ref": "#/$defs/text" }
+          }
+        },
+        "medical": {
+          "type": ["object", "null"],
+          "properties": { "notes": { "$ref": "#/$defs/text" } }
+        },
+        "notes": { "$ref": "#/$defs/text" }
+      }
+    },
+    "phraseCards": {
+      "type": "object",
+      "required": ["language", "cards"],
+      "properties": {
+        "language": { "type": "string", "minLength": 1 },
+        "cards": { "type": "array" },
+        "model": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}

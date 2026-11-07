@@ -53,17 +53,7 @@ export class MutationApplier {
     if (replay) return replay
 
     try {
-      const changedAtDate = parseIsoInstant(mutation.changedAt)
-      if (!changedAtDate) {
-        throw MutationRejected.validation(i18n, [
-          problemMessage(i18n, { field: 'changedAt', rule: 'instant' }),
-        ])
-      }
-      const changedAt = clampChangedAt(
-        changedAtDate.getTime(),
-        now.getTime(),
-        SYNC_CHANGED_AT_WINDOW_DAYS
-      )
+      const changedAt = this.changedAtOf(mutation, now, i18n)
       await this.prepare(user, mutation)
       return await db.transaction((trx) =>
         this.applyInTransaction(trx, user, mutation, i18n, now, changedAt)
@@ -85,6 +75,35 @@ export class MutationApplier {
         ...(rejection.row ? { row: rejection.row as unknown as SyncMutationResult['row'] } : {}),
       }
     }
+  }
+
+  /**
+   * Applies one mutation inside the caller's transaction (a trip import
+   * rebuilds a whole trip in one). Nothing is caught: a rejection throws
+   * `MutationRejected` and a data error its driver exception, so the caller
+   * rolls everything back. No replay check and no `prepare` hook either:
+   * the caller's ids are fresh and it warms the rate cache itself.
+   */
+  async applyWithin(
+    trx: TransactionClientContract,
+    user: User,
+    mutation: SyncMutation,
+    i18n: I18n
+  ): Promise<SyncMutationResult> {
+    const now = this.clock.now()
+    const changedAt = this.changedAtOf(mutation, now, i18n)
+    return this.applyInTransaction(trx, user, mutation, i18n, now, changedAt)
+  }
+
+  /** The mutation's `changedAt` as epoch ms, clamped to the accepted window; not an instant → validation rejection. */
+  private changedAtOf(mutation: SyncMutation, now: Date, i18n: I18n): number {
+    const changedAtDate = parseIsoInstant(mutation.changedAt)
+    if (!changedAtDate) {
+      throw MutationRejected.validation(i18n, [
+        problemMessage(i18n, { field: 'changedAt', rule: 'instant' }),
+      ])
+    }
+    return clampChangedAt(changedAtDate.getTime(), now.getTime(), SYNC_CHANGED_AT_WINDOW_DAYS)
   }
 
   /**
