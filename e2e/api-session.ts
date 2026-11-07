@@ -5,6 +5,8 @@ import type { E2eAccount } from './accounts.ts'
 export interface TripContentSnapshotLike {
   tasks: { id: string; title: string; doneAt: string | null; origin: string }[]
   emergency: { content: Record<string, unknown> } | null
+  stops: { id: string; name: string; tz: string | null }[]
+  events: { id: string; kind: string; title: string; startsOn: string | null }[]
 }
 
 /**
