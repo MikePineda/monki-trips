@@ -37,16 +37,15 @@ function workersFromEnv(value: string | undefined): number | string | undefined 
 const chromePath = process.env.CHROME_PATH
 
 /**
- * On macOS, Playwright's Chromium headless shell reports
+ * Playwright's Chromium headless shell reports
  * `Notification.permission === 'denied'` even after `grantPermissions`
- * (J14 then sees notifications as blocked); the new headless mode of the
- * full Chromium build reports `granted`. Linux (CI) keeps the shell.
+ * (J14 then sees notifications as blocked), on macOS and on Linux CI alike.
+ * The new headless mode of the full Chromium build reports `granted`, so
+ * without a system Chrome the suite runs on `channel: 'chromium'`.
  */
 const chromiumLaunch = chromePath
   ? { launchOptions: { executablePath: chromePath } }
-  : process.platform === 'darwin'
-    ? { channel: 'chromium' }
-    : {}
+  : { channel: 'chromium' }
 
 export default defineConfig({
   testDir: './tests',
