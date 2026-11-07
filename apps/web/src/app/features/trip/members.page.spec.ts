@@ -10,7 +10,7 @@ import {
 } from '../../../testing/offline-testing'
 import { settle } from '../../../testing/settle'
 import type { MonkiTripsDb } from '../../core/offline/db'
-import { FAKE_SESSION_USER } from '../../core/session/session-api'
+import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
 import { SessionStore } from '../../core/session/session.store'
 import { provideShellI18n } from '../../layouts/shell/shell-i18n'
 import MembersPage from './members.page'

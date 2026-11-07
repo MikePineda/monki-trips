@@ -9,13 +9,13 @@ import {
   resetOfflineTesting,
 } from '../../../testing/offline-testing'
 import { ApiFailure } from '../api/api-failure'
-import { fakeTrip } from '../api/trips-api'
+import { fakeTrip } from '../../../testing/fake-trips-api'
 import type { MonkiTripsDb } from '../offline/db'
 import { META_ACTIVE_TRIP, META_SESSION, MetaStore } from '../offline/meta.store'
 import { OnlineStore } from '../offline/online.store'
 import { authGuard } from './auth.guard'
 import { currentTripGuard } from './current-trip.guard'
-import { FAKE_SESSION_USER } from './session-api'
+import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
 import { tripMemberGuard } from './trip-member.guard'
 
 @Component({ template: '<p data-testid="probe.page">page</p>' })
