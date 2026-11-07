@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { RouterOutlet } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { APP_LANGS, type AppLang } from '../../domain/locale'
 import { LangStore } from '../../core/i18n/lang.store'
@@ -7,7 +8,6 @@ import { InstallService } from '../../core/pwa/install.service'
 import { ThemeStore, type ThemePreference } from '../../core/theme/theme.store'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
-import { AccountSectionComponent } from '../account/account-section.component'
 import { InstallInstructionsSheet } from './install-instructions.sheet'
 import { provideSettingsI18n } from './settings-i18n'
 
@@ -15,12 +15,13 @@ const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
 
 /**
  * Settings: UI language (overrides the device pick), theme, the account
- * (features/account), installing the app and the server build the device
- * last saw. Each choice applies at once and is remembered on the device.
+ * (features/account, rendered as this route's child so the features stay
+ * independent), installing the app and the server build the device last
+ * saw. Each choice applies at once and is remembered on the device.
  */
 @Component({
   selector: 'app-settings-page',
-  imports: [TranslocoPipe, MkButtonComponent, AccountSectionComponent],
+  imports: [TranslocoPipe, MkButtonComponent, RouterOutlet],
   providers: [provideSettingsI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -75,7 +76,8 @@ const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
       </div>
     </section>
 
-    <app-account-section />
+    <!-- The account section (features/account) is this route's child. -->
+    <router-outlet />
 
     <section class="mt-6">
       <h2 class="text-sm font-medium text-ink-2">{{ 'settings.install.label' | transloco }}</h2>

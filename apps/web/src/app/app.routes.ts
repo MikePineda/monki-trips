@@ -1,4 +1,4 @@
-import type { Routes } from '@angular/router'
+import type { Route, Routes } from '@angular/router'
 import { authGuard } from './core/session/auth.guard'
 import { currentTripGuard } from './core/session/current-trip.guard'
 import { tripMemberGuard } from './core/session/trip-member.guard'
@@ -11,6 +11,27 @@ import { tripMemberGuard } from './core/session/trip-member.guard'
  * five tabs. `/t/current` resolves the active trip (manifest shortcut).
  * `/styleguide` is public. Unknown paths go to the trip list.
  */
+/**
+ * Settings, under the shell and under a trip's More tab. The account
+ * section is its child route, so features/settings never imports
+ * features/account.
+ */
+export function settingsRoute(path: string): Route {
+  return {
+    path,
+    loadComponent: () => import('./features/settings/settings.page'),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/account/account-section.component').then(
+            (m) => m.AccountSectionComponent
+          ),
+      },
+    ],
+  }
+}
+
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'trips' },
   {
@@ -40,7 +61,7 @@ export const routes: Routes = [
       { path: 'trips', loadComponent: () => import('./features/trips/trips.page') },
       { path: 'not-found', loadComponent: () => import('./features/trips/trip-not-found.page') },
       { path: 'share', loadComponent: () => import('./features/share/share-inbox.page') },
-      { path: 'settings', loadComponent: () => import('./features/settings/settings.page') },
+      settingsRoute('settings'),
     ],
   },
   { path: 'styleguide', loadComponent: () => import('./features/styleguide/styleguide.page') },
@@ -66,7 +87,7 @@ export const routes: Routes = [
             path: 'activity',
             loadComponent: () => import('./features/trip/activity-placeholder.page'),
           },
-          { path: 'settings', loadComponent: () => import('./features/settings/settings.page') },
+          settingsRoute('settings'),
           { path: 'offline', loadComponent: () => import('./features/offline/offline.page') },
         ],
       },

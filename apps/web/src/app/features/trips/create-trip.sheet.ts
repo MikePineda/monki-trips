@@ -19,17 +19,8 @@ import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.compone
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
-import { provideShellI18n } from '../../layouts/shell/shell-i18n'
+import { TRIP_ERROR_CODES, provideShellI18n } from '../../layouts/shell/shell-i18n'
 import { TripsStore } from './trips.store'
-
-/** Error codes the shell catalogue explains for trip creation (`shell.errors.<code>`). */
-export const TRIP_ERROR_CODES = [
-  'E_EMAIL_NOT_VERIFIED',
-  'E_VALIDATION_ERROR',
-  'E_TOO_MANY_REQUESTS',
-  'E_UNAUTHORIZED',
-  'E_BAD_CSRF_TOKEN',
-] as const
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const CURRENCY = /^[A-Za-z]{3}$/

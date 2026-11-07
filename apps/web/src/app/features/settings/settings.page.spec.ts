@@ -1,6 +1,9 @@
 import { Dialog } from '@angular/cdk/dialog'
 import { TestBed } from '@angular/core/testing'
+import { provideRouter } from '@angular/router'
+import { RouterTestingHarness } from '@angular/router/testing'
 import type { HealthReport } from '@monkitrips/shared'
+import { settingsRoute } from '../../app.routes'
 import { i18nTesting } from '../../../testing/i18n-testing'
 import {
   freshOfflineDb,
@@ -36,6 +39,7 @@ describe('SettingsPage', () => {
       providers: [
         ...provideOfflineTesting({ db }),
         ...provideApiTesting(),
+        provideRouter([settingsRoute('settings')]),
         { provide: HEALTH_API, useValue: { health: async () => report } },
       ],
     })
@@ -117,11 +121,14 @@ describe('SettingsPage', () => {
 
   it('shows the account section once the session is known', async () => {
     await TestBed.inject(SessionStore).restore()
-    const { fixture, host } = render()
-    await fixture.whenStable()
-    fixture.detectChanges()
+    // The account section is the settings route's child (features stay independent).
+    const harness = await RouterTestingHarness.create('/settings')
+    const host = harness.routeNativeElement as HTMLElement
 
-    expect(host.querySelector('[data-testid="account.section"]')).not.toBeNull()
+    await vi.waitFor(() => {
+      harness.detectChanges()
+      expect(host.querySelector('[data-testid="account.section"]')).not.toBeNull()
+    })
     expect(host.querySelector('[data-testid="account.signOut"]')).not.toBeNull()
   })
 

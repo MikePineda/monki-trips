@@ -8,7 +8,8 @@ import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
-import { CreateTripSheet, TRIP_ERROR_CODES } from './create-trip.sheet'
+import { TRIP_ERROR_CODES } from '../../layouts/shell/shell-i18n'
+import { CreateTripSheet } from './create-trip.sheet'
 import { TripsStore } from './trips.store'
 
 /**

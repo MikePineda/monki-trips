@@ -104,6 +104,16 @@ describe('architecture', () => {
     expect(bad).toEqual([])
   })
 
+  it('features never import other features', () => {
+    const featureOf = (rel: string) => /^features\/([^/]+)\//.exec(rel)?.[1] ?? null
+    const bad = violations((file, specifier) => {
+      const own = featureOf(file.rel)
+      const other = featureOf(`${target(file, specifier)}/`)
+      return own !== null && other !== null && other !== own
+    })
+    expect(bad).toEqual([])
+  })
+
   it('only core/offline imports dexie', () => {
     const bad = violations(
       (file, specifier) => !file.rel.startsWith('core/offline/') && specifier === 'dexie'
