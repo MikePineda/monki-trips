@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 import limiter from '@adonisjs/limiter/services/main'
+import UserToken from '#models/user_token'
 import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { makeTrip } from '#tests/helpers/make_trip'
@@ -91,6 +92,32 @@ test.group('E-mail verification', (group) => {
 
     const rightButLate = await attempt(codeFromMail(mail))
     rightButLate.assertStatus(410)
+  })
+
+  test('parallel wrong codes never exceed the attempt cap', async ({ client, assert }) => {
+    const { user, mail } = await unverifiedWithMail(client)
+    const right = codeFromMail(mail)
+    const wrongCode = right === '000000' ? '111111' : '000000'
+    const attempt = () =>
+      actingAs(client.post('/api/v1/auth/email/verify-code'), user)
+        .json({ code: wrongCode })
+        .catch((e) => e)
+
+    const responses = await Promise.all(Array.from({ length: 8 }, attempt))
+
+    const statuses = responses.map((response) => response.status())
+    // Five guesses are allowed: four answer 400 and the fifth exhausts the token.
+    assert.equal(statuses.filter((status) => status === 400).length, 4)
+    assert.equal(statuses.filter((status) => status === 410).length, 4)
+    const row = await UserToken.query()
+      .where('user_id', user.id)
+      .where('purpose', 'verify_email')
+      .firstOrFail()
+    assert.equal(row.attempts, 5)
+    const late = await actingAs(client.post('/api/v1/auth/email/verify-code'), user).json({
+      code: right,
+    })
+    late.assertStatus(410)
   })
 
   test('link and code expire after fifteen minutes', async ({ client }) => {

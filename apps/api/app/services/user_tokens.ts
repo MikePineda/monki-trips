@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
+import db from '@adonisjs/lucid/services/db'
 import type { UserTokenPurpose } from '@monkitrips/shared'
 import User from '#models/user'
 import UserToken from '#models/user_token'
@@ -11,7 +12,7 @@ import {
   hashCode,
   hashToken,
 } from '#domain/secure_token'
-import { userTokenExpiry, userTokenState } from '#domain/user_token_rules'
+import { USER_TOKEN_RULES, userTokenExpiry, userTokenState } from '#domain/user_token_rules'
 
 export interface IssuedUserToken {
   /** Plaintext for the link; never stored. */
@@ -49,7 +50,8 @@ export class UserTokens {
 
   /**
    * Consumes a link token. Unknown, used, exhausted or expired tokens all
-   * answer 410 `E_TOKEN_EXPIRED`: the person asks for a new mail.
+   * answer 410 `E_TOKEN_EXPIRED`: the person asks for a new mail. Of two
+   * concurrent requests with one token only one wins (see `markUsed`).
    */
   async consumeByToken(plain: string, purpose: UserTokenPurpose): Promise<User> {
     const row = await UserToken.query()
@@ -65,9 +67,11 @@ export class UserTokens {
   }
 
   /**
-   * Consumes the person's current verification code. A wrong code counts an
-   * attempt (400 `E_INVALID_CODE`); the fifth wrong one exhausts the token
-   * (410 `E_TOKEN_EXPIRED`), as does expiry.
+   * Consumes the person's current verification code. Every guess first
+   * takes one of the token's attempts in a single conditional UPDATE, so
+   * parallel guesses can never exceed the cap. A wrong code answers 400
+   * `E_INVALID_CODE`; the guess that takes the last attempt, and any after
+   * it, answer 410 `E_TOKEN_EXPIRED`, as does expiry.
    */
   async consumeByCode(user: User, code: string): Promise<void> {
     const row = await UserToken.query()
@@ -78,11 +82,19 @@ export class UserTokens {
     if (!row || userTokenState(this.facts(row), this.clock.now()) !== 'valid') {
       throw new ApiException('E_TOKEN_EXPIRED')
     }
+    const { maxAttempts } = USER_TOKEN_RULES[row.purpose]
+    const taken = await db
+      .from('user_tokens')
+      .where('id', row.id)
+      .whereNull('used_at')
+      .where('attempts', '<', maxAttempts)
+      .increment('attempts', 1)
+      .returning('attempts')
+    if (taken.length === 0) throw new ApiException('E_TOKEN_EXPIRED')
+
     if (row.codeHash !== hashCode(code, row.tokenHash)) {
-      row.attempts += 1
-      await row.save()
-      const exhausted = userTokenState(this.facts(row), this.clock.now()) === 'exhausted'
-      throw new ApiException(exhausted ? 'E_TOKEN_EXPIRED' : 'E_INVALID_CODE')
+      const attempts = Number((taken[0] as { attempts: number }).attempts)
+      throw new ApiException(attempts >= maxAttempts ? 'E_TOKEN_EXPIRED' : 'E_INVALID_CODE')
     }
     await this.markUsed(row)
   }
@@ -96,8 +108,15 @@ export class UserTokens {
     }
   }
 
+  /** Stamps `used_at` only if nobody did first; a lost race answers 410. */
   private async markUsed(row: UserToken) {
-    row.usedAt = DateTime.fromJSDate(this.clock.now())
-    await row.save()
+    const usedAt = this.clock.now()
+    const marked = await db
+      .from('user_tokens')
+      .where('id', row.id)
+      .whereNull('used_at')
+      .update({ used_at: usedAt }, ['id'])
+    if (marked.length === 0) throw new ApiException('E_TOKEN_EXPIRED')
+    row.usedAt = DateTime.fromJSDate(usedAt)
   }
 }
