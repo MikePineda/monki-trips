@@ -9,6 +9,14 @@ export const META_SESSION = 'session'
 export const META_APP_VERSION = 'app.version'
 export const META_ACTIVE_TRIP = 'trip.active'
 export const META_LAST_OFFLINE_BOOT_AT = 'offline.lastBootAt'
+/** Id of the account whose data the device holds (trips, cursor, outbox). */
+export const META_DEVICE_USER = 'device.userId'
+
+/**
+ * Facts about the device itself: they survive a change of account. Every
+ * other key belongs to the person and goes with their data.
+ */
+export const DEVICE_META_KEYS: readonly string[] = [META_APP_VERSION, META_LAST_OFFLINE_BOOT_AT]
 
 /** Small key/value facts the device keeps about itself, in the `meta` table. */
 @Injectable({ providedIn: 'root' })

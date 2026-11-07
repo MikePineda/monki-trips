@@ -80,6 +80,12 @@
     "owner": "owner",
     "editor": "editor"
   },
+  "foreignChanges": {
+    "title": "Changes from another account",
+    "body": "This device still holds {{count}} changes from another account that have not reached the server. Continuing as this account discards them.",
+    "discard": "Discard them and continue",
+    "keep": "Keep them and go back"
+  },
   "errors": {
     "E_INVALID_CREDENTIALS": "That e-mail and password do not match.",
     "E_ACCOUNT_DISABLED": "This account is disabled.",

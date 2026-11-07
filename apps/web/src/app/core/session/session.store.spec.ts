@@ -8,12 +8,28 @@ import {
 } from '../../../testing/offline-testing'
 import { ApiFailure } from '../api/api-failure'
 import type { MonkiTripsDb } from '../offline/db'
-import { META_SESSION, MetaStore } from '../offline/meta.store'
+import {
+  META_ACTIVE_TRIP,
+  META_APP_VERSION,
+  META_CURSOR,
+  META_DEVICE_USER,
+  META_SESSION,
+  MetaStore,
+} from '../offline/meta.store'
 import { OnlineStore } from '../offline/online.store'
 import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
+import { ForeignChangesError } from './foreign-changes.error'
 import { SessionStore } from './session.store'
 
 const CACHED = { ...FAKE_SESSION_USER, id: 'u1', displayName: 'Cached' }
+const SOLO_TRIP = {
+  id: 'trip-1',
+  name: 'Sample',
+  startDate: '2027-01-20',
+  endDate: '2027-02-06',
+  baseCurrency: 'EUR',
+  updatedAt: '2026-11-07T00:00:00.000Z',
+}
 
 describe('SessionStore', () => {
   let db: MonkiTripsDb
@@ -210,5 +226,150 @@ describe('SessionStore', () => {
 
     expect(handled).toBe(false)
     expect(store.signedIn()).toBe(true)
+  })
+
+  describe('one device, several accounts', () => {
+    /** The first account used the device, then its session ended (401) with the data kept. */
+    async function previousAccountExpired(): Promise<SessionStore> {
+      const meta = TestBed.inject(MetaStore)
+      await meta.set(META_SESSION, CACHED)
+      await meta.set(META_DEVICE_USER, CACHED.id)
+      await meta.set(META_CURSOR, 'cursor-of-u1')
+      await meta.set(META_ACTIVE_TRIP, SOLO_TRIP.id)
+      await meta.set(META_APP_VERSION, { version: '0.1.0', sha: 'abc1234' })
+      await db.trips.put(SOLO_TRIP)
+      await db.members.put({
+        id: 'm1',
+        tripId: SOLO_TRIP.id,
+        userId: CACHED.id,
+        role: 'owner',
+        updatedAt: 'x',
+      })
+      fakes.session.user = CACHED
+      const store = TestBed.inject(SessionStore)
+      await store.refresh()
+      vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true)
+      await store.expire('/trips')
+      return store
+    }
+
+    function pendingChange(id = 'outbox-1') {
+      return db.outbox.put({
+        id,
+        tripId: SOLO_TRIP.id,
+        kind: 'expense.create',
+        payload: {},
+        state: 'failed',
+        attempts: 1,
+        createdAt: '2026-11-07T00:00:00.000Z',
+        nextAttemptAt: null,
+        error: 'refused',
+      })
+    }
+
+    it('an expired session keeps the device copy, still owned by its account', async () => {
+      await previousAccountExpired()
+
+      expect(await db.trips.count()).toBe(1)
+      expect(await TestBed.inject(MetaStore).get(META_DEVICE_USER)).toBe(CACHED.id)
+    })
+
+    it('the same account signing in again keeps its device copy', async () => {
+      const store = await previousAccountExpired()
+      fakes.session.loginAs = CACHED
+
+      await store.login({ email: CACHED.email, password: 'correct horse' })
+
+      expect(await db.trips.count()).toBe(1)
+      expect(await TestBed.inject(MetaStore).get(META_CURSOR)).toBe('cursor-of-u1')
+    })
+
+    it("a different user signing in never sees the previous user's trips", async () => {
+      const store = await previousAccountExpired()
+
+      await store.login({ email: 'partner@example.com', password: 'correct horse' })
+
+      expect(store.user()?.email).toBe('partner@example.com')
+      expect(await db.trips.count()).toBe(0)
+      expect(await db.members.count()).toBe(0)
+      const meta = TestBed.inject(MetaStore)
+      expect(await meta.get(META_ACTIVE_TRIP)).toBeUndefined()
+      expect(await meta.get(META_DEVICE_USER)).toBe(FAKE_SESSION_USER.id)
+      // Facts about the device itself stay.
+      expect(await meta.get(META_APP_VERSION)).toEqual({ version: '0.1.0', sha: 'abc1234' })
+    })
+
+    it('sync cursor is reset when the device user changes', async () => {
+      const store = await previousAccountExpired()
+
+      await store.login({ email: 'partner@example.com', password: 'correct horse' })
+
+      expect(await TestBed.inject(MetaStore).get(META_CURSOR)).toBeUndefined()
+    })
+
+    it('a signup on a device another account used starts from a clean copy too', async () => {
+      const store = await previousAccountExpired()
+
+      await store.setUser({ ...FAKE_SESSION_USER, id: 'new-user', email: 'new@example.com' })
+
+      expect(await db.trips.count()).toBe(0)
+    })
+
+    it('unsynced changes of another account block the sign-in until the person decides', async () => {
+      const store = await previousAccountExpired()
+      await pendingChange()
+
+      const refused = store.login({ email: 'partner@example.com', password: 'correct horse' })
+
+      await expect(refused).rejects.toBeInstanceOf(ForeignChangesError)
+      await expect(refused).rejects.toMatchObject({ count: 1 })
+      expect(store.signedIn()).toBe(false)
+      expect(await db.trips.count()).toBe(1)
+      expect(await db.outbox.count()).toBe(1)
+    })
+
+    it("discarding the other account's changes signs in on a clean device", async () => {
+      const store = await previousAccountExpired()
+      await pendingChange()
+      const error = (await store
+        .login({ email: 'partner@example.com', password: 'correct horse' })
+        .then(
+          () => null,
+          (caught: unknown) => caught
+        )) as ForeignChangesError
+
+      await store.discardForeignChanges(error.user)
+
+      expect(store.user()?.email).toBe('partner@example.com')
+      expect(await db.outbox.count()).toBe(0)
+      expect(await db.trips.count()).toBe(0)
+      expect(await TestBed.inject(MetaStore).get(META_DEVICE_USER)).toBe(FAKE_SESSION_USER.id)
+    })
+
+    it("keeping the other account's changes signs the new account out again", async () => {
+      const store = await previousAccountExpired()
+      await pendingChange()
+      await store
+        .login({ email: 'partner@example.com', password: 'correct horse' })
+        .catch(() => undefined)
+
+      await store.abandonSignIn()
+
+      expect(fakes.session.calls).toContain('logout')
+      expect(store.signedIn()).toBe(false)
+      expect(await db.outbox.count()).toBe(1)
+    })
+
+    it('a device written before owners were recorded is adopted by its cached session', async () => {
+      await TestBed.inject(MetaStore).set(META_SESSION, CACHED)
+      await db.trips.put(SOLO_TRIP)
+      goOffline()
+      const store = TestBed.inject(SessionStore)
+
+      await store.restore()
+
+      expect(await TestBed.inject(MetaStore).get(META_DEVICE_USER)).toBe(CACHED.id)
+      expect(await db.trips.count()).toBe(1)
+    })
   })
 })
