@@ -26,5 +26,11 @@
   "E_NOT_A_MEMBER": "That person is not a member of this trip",
   "E_INVITATION_EXPIRED": "This invitation is no longer valid",
   "E_INVITATION_EMAIL_MISMATCH": "This invitation was sent to a different e-mail address",
-  "E_PUSH_DISABLED": "Notifications are not set up on this server"
+  "E_PUSH_DISABLED": "Notifications are not set up on this server",
+  "E_SYNC_CURSOR_EXPIRED": "Your offline copy is too old to update. The app will reload everything",
+  "E_ROW_DELETED": "This was deleted meanwhile",
+  "E_FILE_TOO_LARGE": "The file is too large (25 MB at most)",
+  "E_UNSUPPORTED_FILE": "This kind of file is not supported. Use a PDF or an image",
+  "E_STORAGE_UNAVAILABLE": "File storage is not available right now. Try again in a moment",
+  "E_FX_UNAVAILABLE": "Exchange rates are not available right now. Try again in a moment"
 }
