@@ -389,6 +389,12 @@ h4 {
   font-variant-numeric: tabular-nums;
 }
 
+/* The child of an mk-row or mk-stack that takes the remaining space (mkRowGrow). */
+.mk-grow {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* Visually hidden, still read by assistive technology. */
 .mk-sr-only {
   position: absolute;

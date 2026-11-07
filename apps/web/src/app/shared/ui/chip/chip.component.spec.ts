@@ -1,23 +1,42 @@
 import { Component, input, signal } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
-import { MkChipComponent } from './chip.component'
+import type { IconName } from '../icon/icon-names'
+import { MkChipComponent, type ChipTone, type ChipVariant } from './chip.component'
 
 @Component({
   imports: [MkChipComponent],
   template: `
-    <mk-chip [selectable]="selectable()" [disabled]="disabled()" [(selected)]="selected">
+    <mk-chip
+      [variant]="variant()"
+      [tone]="tone()"
+      [icon]="icon()"
+      [selectable]="selectable()"
+      [disabled]="disabled()"
+      [(selected)]="selected"
+    >
       Food
     </mk-chip>
   `,
 })
 class Host {
+  readonly variant = input<ChipVariant>('filter')
+  readonly tone = input<ChipTone>('neutral')
+  readonly icon = input<IconName | undefined>(undefined)
   readonly selectable = input(false)
   readonly disabled = input(false)
   readonly selected = signal(false)
 }
 
 describe('mk-chip', () => {
-  function render(inputs: Partial<{ selectable: boolean; disabled: boolean }> = {}) {
+  function render(
+    inputs: Partial<{
+      variant: ChipVariant
+      tone: ChipTone
+      icon: IconName
+      selectable: boolean
+      disabled: boolean
+    }> = {}
+  ) {
     TestBed.configureTestingModule({ imports: [Host] })
     const fixture = TestBed.createComponent(Host)
     for (const [key, value] of Object.entries(inputs)) {
@@ -55,5 +74,17 @@ describe('mk-chip', () => {
     fixture.detectChanges()
 
     expect(fixture.componentInstance.selected()).toBe(false)
+  })
+
+  it('a status chip carries its icon in the status colour and the word in ink', () => {
+    const fixture = render({ variant: 'status', tone: 'good', icon: 'circle-check' })
+    const chip = fixture.nativeElement.querySelector('mk-chip') as HTMLElement
+
+    expect(chip.getAttribute('data-variant')).toBe('status')
+    expect(chip.getAttribute('data-tone')).toBe('good')
+    expect(chip.querySelector('mk-icon use')?.getAttribute('href')).toBe(
+      'sprite/lucide.svg#circle-check'
+    )
+    expect(chip.querySelector('.mk-chip__body')?.classList.contains('mk-type-label')).toBe(true)
   })
 })

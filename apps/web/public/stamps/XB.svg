@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="112" height="112" viewBox="0 0 112 112">
+  <!-- Original artwork for monki-trips (AGPL-3.0-only): the passport stamp of
+       Xebria, a synthetic country. Monochrome on purpose: mk-stamp uses this
+       file as a CSS mask and paints it with the stamp-ink token. -->
+  <circle cx="56" cy="56" r="54" fill="none" stroke="black" stroke-width="2"/>
+  <circle cx="56" cy="56" r="48" fill="none" stroke="black" stroke-width="1"/>
+  <!-- Two mountains and a sun -->
+  <path d="M30 68l16-26 10 16 8-11 18 21z" fill="black"/>
+  <circle cx="74" cy="36" r="6" fill="none" stroke="black" stroke-width="2"/>
+  <path d="M74 26v-3M74 49v-3M84 36h3M61 36h3" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>
+</svg>

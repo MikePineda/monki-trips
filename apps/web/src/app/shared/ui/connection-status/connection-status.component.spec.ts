@@ -6,6 +6,7 @@ import { MkConnectionStatusComponent } from './connection-status.component'
 
 describe('mk-connection-status', () => {
   function render(status: ConnectionStatus, lang = 'en') {
+    TestBed.resetTestingModule()
     TestBed.configureTestingModule({ imports: [MkConnectionStatusComponent, i18nTesting()] })
     TestBed.inject(TranslocoService).setActiveLang(lang)
     const fixture = TestBed.createComponent(MkConnectionStatusComponent)
@@ -35,7 +36,21 @@ describe('mk-connection-status', () => {
     expect(element?.getAttribute('role')).toBe('status')
     expect(element?.dataset['state']).toBe(status.state)
     expect(element?.textContent?.replace(/\s+/g, ' ').trim()).toBe(copy)
-    expect(element?.querySelector('mk-icon svg')).not.toBeNull()
+    if (status.state === 'pending') {
+      expect(element?.querySelector('.mk-connection__dot')).not.toBeNull()
+    } else {
+      expect(element?.querySelector('mk-icon svg')).not.toBeNull()
+    }
+  })
+
+  it('uses circle-x for failed, wifi-off offline, refresh-cw syncing and clock for stale', () => {
+    const icon = (status: ConnectionStatus) =>
+      render(status)?.querySelector('mk-icon use')?.getAttribute('href')
+
+    expect(icon({ state: 'failed', count: 1 })).toBe('sprite/lucide.svg#circle-x')
+    expect(icon({ state: 'offline', count: 0 })).toBe('sprite/lucide.svg#wifi-off')
+    expect(icon({ state: 'syncing', count: 2 })).toBe('sprite/lucide.svg#refresh-cw')
+    expect(icon({ state: 'stale', count: 2 })).toBe('sprite/lucide.svg#clock')
   })
 
   it('speaks spanish too', () => {
