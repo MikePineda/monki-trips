@@ -1,5 +1,13 @@
 {
   "app": {
     "name": "monki trips"
+  },
+  "update": {
+    "ready": "A new version is ready",
+    "reload": "Reload",
+    "unrecoverable": "This copy of the app is broken. Reload to repair it."
+  },
+  "sync": {
+    "conflict": "Someone else changed this first; showing their version."
   }
 }
