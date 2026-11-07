@@ -7,12 +7,28 @@ import {
   PHRASE_CARDS_MAX,
   PHRASE_CARDS_MIN,
 } from '@monkitrips/shared'
-import { LANGUAGE_TAG_PATTERN } from '#domain/language_tag'
+import { PHRASE_CARD_LANGUAGES } from '#config/llm'
+import { supportedLanguageTag } from '#domain/language_tag'
 
-/** Body of `POST /trips/:tripId/phrase-cards`: a BCP 47 tag and optional food preferences. */
+/**
+ * A language tag of the shape `lang[-Script][-REGION]` that is one of
+ * `PHRASE_CARD_LANGUAGES`; anything else (variants, extensions, private
+ * use, an unlisted language) answers 422 before the model is asked.
+ */
+export const phraseCardLanguage = vine.createRule(
+  (value, _options, field) => {
+    if (typeof value !== 'string') return
+    if (!supportedLanguageTag(value, PHRASE_CARD_LANGUAGES)) {
+      field.report('{{ field }} must be a supported language', 'phraseCardLanguage', field)
+    }
+  },
+  { name: 'phraseCardLanguage' }
+)
+
+/** Body of `POST /trips/:tripId/phrase-cards`: a supported language tag and optional food preferences. */
 export const generatePhraseCardsValidator = vine.compile(
   vine.object({
-    language: vine.string().trim().maxLength(35).regex(LANGUAGE_TAG_PATTERN),
+    language: vine.string().trim().maxLength(35).use(phraseCardLanguage()),
     preferences: vine
       .array(vine.string().trim().minLength(1).maxLength(PHRASE_CARD_PREFERENCE_MAX_LENGTH))
       .maxLength(PHRASE_CARD_PREFERENCES_MAX)

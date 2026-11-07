@@ -24,6 +24,33 @@ export const LLM_RETRY_DELAYS_MS = [500, 2_000]
 export const LLM_STRUCTURED_MAX_TOKENS = 8_192
 
 /**
+ * The languages phrase cards can be generated in, as canonical tags. A
+ * request for anything else answers 422 before the model is asked. Edit
+ * freely: a regional form (`pt-BR`) is its own entry, so the list also
+ * bounds how many sets one trip can ask for.
+ */
+export const PHRASE_CARD_LANGUAGES: readonly string[] = [
+  'th',
+  'ja',
+  'ko',
+  'zh-Hans',
+  'zh-Hant',
+  'vi',
+  'id',
+  'ms',
+  'fr',
+  'de',
+  'it',
+  'es',
+  'pt',
+  'pt-BR',
+  'en',
+  'km',
+  'lo',
+  'my',
+]
+
+/**
  * Price per million tokens in USD, by model id, for the cost column. A
  * model that is not listed gets a null cost (the tokens still count against
  * the cap). Update when the provider changes its list prices.
