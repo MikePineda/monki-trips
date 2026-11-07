@@ -119,11 +119,17 @@ export abstract class LlmProvider {
   abstract stream(request: LlmRequest, options?: LlmStreamOptions): AsyncIterable<LlmDelta>
 }
 
-/** The provider could not answer: network, upstream 4xx/5xx, timeout, or not configured. Answers 503. */
+/**
+ * The provider could not answer: network, upstream 4xx/5xx, timeout, or not
+ * configured. Answers 503. `processed` is true when the provider may have
+ * done (and billed) the work anyway: it accepted the request and the answer
+ * broke, or it timed out. Such a failure is charged the input estimate.
+ */
 export class LlmUnavailableError extends Error {
   constructor(
     message = 'llm provider unavailable',
-    readonly status?: number
+    readonly status?: number,
+    readonly processed = false
   ) {
     super(message)
     this.name = 'LlmUnavailableError'

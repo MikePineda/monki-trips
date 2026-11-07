@@ -363,7 +363,10 @@ answers 503 until written, `fake` answers from `tests/fixtures/llm/<purpose>/<ca
   with backoff (0.5 s, 2 s); what still fails answers 503 `E_LLM_UNAVAILABLE`
   with no upstream detail. A stream that ends without `message_stop` is a cut
   connection, not an answer (503); a stream that fails midway (an `error`
-  event) is charged the input reported at `message_start`.
+  event) is charged the input reported at `message_start`. Any other failure
+  the provider may have processed (a 2xx with a broken body, a timeout) is
+  charged the input estimate; one it refused (an error status, a refused
+  connection, not configured) is charged nothing.
 - **The `<data>` rule.** Text that a person typed or a document contained
   (addresses, preferences, PDF or web text) reaches the model only inside
   `<data label="…">…</data>` in a user turn, never in the system prompt; the

@@ -99,14 +99,16 @@ export class AnthropicCompatibleProvider extends LlmProvider {
     try {
       parsed = (await response.json()) as MessagesResponseBody
     } catch {
-      throw new LlmUnavailableError('llm answered with a body that is not json')
+      throw new LlmUnavailableError('llm answered with a body that is not json', undefined, true)
     }
     return this.completionOf(parsed, request)
   }
 
   async *stream(request: LlmRequest, options: LlmStreamOptions = {}): AsyncIterable<LlmDelta> {
     const response = await this.send(this.body(request, true))
-    if (!response.body) throw new LlmUnavailableError('llm answered without a body')
+    if (!response.body) {
+      throw new LlmUnavailableError('llm answered without a body', undefined, true)
+    }
 
     let model = this.modelFor(request)
     let stopReason: LlmStopReason = 'end_turn'
@@ -173,13 +175,15 @@ export class AnthropicCompatibleProvider extends LlmProvider {
           break
         case 'error':
           // The input it used was reported at message_start (onUsage); the caller charges it.
-          throw new LlmUnavailableError('llm stream reported an error')
+          throw new LlmUnavailableError('llm stream reported an error', undefined, true)
         default:
           break
       }
     }
     // A body that ends without message_stop is a cut connection, not an answer.
-    if (!stopped) throw new LlmUnavailableError('llm stream ended before message_stop')
+    if (!stopped) {
+      throw new LlmUnavailableError('llm stream ended before message_stop', undefined, true)
+    }
     yield {
       type: 'done',
       completion: {
@@ -238,7 +242,13 @@ export class AnthropicCompatibleProvider extends LlmProvider {
           await this.sleep(this.retryDelaysMs[attempt])
           continue
         }
-        throw new LlmUnavailableError(`llm unreachable: ${(error as Error).name}`)
+        // A timeout may have reached the model; a refused connection did not.
+        const name = (error as Error).name
+        throw new LlmUnavailableError(
+          `llm unreachable: ${name}`,
+          undefined,
+          name === 'TimeoutError'
+        )
       }
       if (response.ok) return response
       const retryable = response.status === 429 || response.status >= 500

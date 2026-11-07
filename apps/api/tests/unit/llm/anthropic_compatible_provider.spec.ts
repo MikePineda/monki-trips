@@ -481,4 +481,44 @@ test.group('Anthropic compatible provider', () => {
       await endpoint.close()
     }
   })
+
+  test('a failure says whether the provider may have processed the request', async ({ assert }) => {
+    const failure = (promise: Promise<unknown>) =>
+      promise.then(
+        () => null,
+        (thrown) => thrown as LlmUnavailableError
+      )
+    const refused = await fakeEndpoint([json(400, { type: 'error' })])
+    const garbled = await fakeEndpoint([
+      (_received, response) => {
+        response.writeHead(200, { 'content-type': 'application/json' })
+        response.end('{"content": [')
+      },
+    ])
+    const silent = await fakeEndpoint([() => {}])
+    try {
+      const provider = (baseUrl: string, timeoutMs = 5_000) =>
+        new AnthropicCompatibleProvider({
+          baseUrl,
+          apiKey: 'k',
+          model: 'm',
+          timeoutMs,
+          retryDelaysMs: [],
+          sleep: noWait,
+        })
+
+      const rejected = await failure(provider(refused.baseUrl).complete(request))
+      const broken = await failure(provider(garbled.baseUrl).complete(request))
+      const timedOut = await failure(provider(silent.baseUrl, 50).complete(request))
+
+      assert.instanceOf(rejected, LlmUnavailableError)
+      assert.isFalse(rejected?.processed, 'an error status was refused before any work')
+      assert.isTrue(broken?.processed, 'a 2xx with a broken body was processed')
+      assert.isTrue(timedOut?.processed, 'a timeout may have been processed')
+    } finally {
+      silent.received.length = 0
+      await Promise.all([refused.close(), garbled.close()])
+      await silent.close().catch(() => undefined)
+    }
+  }).timeout(5000)
 })

@@ -256,6 +256,25 @@ test.group('LLM usage and cap', (group) => {
     )
   })
 
+  test('a failed call the provider processed is charged the input estimate', async ({ assert }) => {
+    const user = await makeUser()
+    llm.current.script('chat', 'cut-after-processing', {
+      responses: [{ error: 'connection cut', processed: true }],
+    })
+    const llmClient = await app.container.make(LlmClient)
+
+    await assert.rejects(
+      () => llmClient.complete({ user, tripId: null }, chat),
+      /E_LLM_UNAVAILABLE/
+    )
+
+    const [row] = await db.from('llm_usage').where('user_id', user.id)
+    assert.deepEqual(
+      [row.status, row.tokens_in, row.tokens_out],
+      ['error', estimateInputTokens(chat), 0]
+    )
+  })
+
   test('a priced model stores its cost in micro-dollars', async ({ assert }) => {
     const user = await makeUser()
     llm.current.script('chat', 'priced', {
