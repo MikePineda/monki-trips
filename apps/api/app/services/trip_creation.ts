@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
-import type { BudgetMode } from '@monkitrips/shared'
+import { DEFAULT_BUDGET_CATEGORY_KEYS, type BudgetMode } from '@monkitrips/shared'
 import Trip from '#models/trip'
 import TripMember from '#models/trip_member'
 import Traveller from '#models/traveller'
@@ -20,8 +20,9 @@ export interface NewTrip {
 }
 
 /**
- * Creates a trip with its owner membership and the owner's traveller row in
- * one transaction. The owner is the only member a trip starts with.
+ * Creates a trip with its owner membership, the owner's traveller row and
+ * the default budget categories in one transaction. The owner is the only
+ * member a trip starts with.
  */
 @inject()
 export class TripCreation {
@@ -70,6 +71,14 @@ export class TripCreation {
           updatedBy: owner.id,
         },
         { client: trx }
+      )
+      await trx.table('budget_categories').insert(
+        DEFAULT_BUDGET_CATEGORY_KEYS.map((key, position) => ({
+          trip_id: trip.id,
+          key,
+          position,
+          updated_by: owner.id,
+        }))
       )
       return { trip, created: true }
     })
