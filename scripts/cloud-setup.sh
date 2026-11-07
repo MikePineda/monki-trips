@@ -7,6 +7,33 @@
 # always exits 0. Its stdout (the status lines) becomes session context; the
 # details go to .claude/cloud-setup.log (gitignored). docs/CLOUD.md explains
 # each step. CI runs it too (job `cloud-parity`) and fails on any WARN line.
+# scripts/ci/self-test.sh sources this file to unit-test pin_git_identity;
+# sourcing only defines the function and runs no step.
+
+# Pins the commit identity at repository scope. The cloud harness writes its
+# own agent identity to the global git config, which beats the --system
+# identity of the environment setup script; repo scope beats both. The
+# identity is the GitHub no-reply address of the account behind `gh`, derived
+# at runtime so no person is written down. Reports through `note`.
+pin_git_identity() {
+  local login id
+  if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+    # CI has no user token (`gh api user` needs one) and makes no commits.
+    note "git identity: skipped on GitHub Actions"
+    return 0
+  fi
+  login="$(gh api user --jq .login 2>/dev/null)"
+  id="$(gh api user --jq .id 2>/dev/null)"
+  if [[ "$login" =~ ^[A-Za-z0-9-]+$ && "$id" =~ ^[0-9]+$ ]] &&
+    git config user.name "$login" 2>/dev/null &&
+    git config user.email "${id}+${login}@users.noreply.github.com" 2>/dev/null; then
+    note "git identity: ${login} (no-reply)"
+  else
+    note "WARN git identity: gh api user failed; commits would carry the harness identity"
+  fi
+}
+
+[[ "${BASH_SOURCE[0]}" == "$0" ]] || return 0
 [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/..}" || exit 0
 LOG=.claude/cloud-setup.log
@@ -49,7 +76,10 @@ else
   note "WARN chrome: nothing executable at $CHROME_PATH; E2E cannot run"
 fi
 
-# 2. Dependencies: only when an input of `npm ci` changed (same install as CI).
+# 2. Git identity at repository scope (see pin_git_identity above).
+pin_git_identity
+
+# 3. Dependencies: only when an input of `npm ci` changed (same install as CI).
 stamp=node_modules/.cloud-setup.sha256
 mapfile -t inputs < <(
   printf '%s\n' scripts/cloud-setup.sh .nvmrc package-lock.json
@@ -73,7 +103,7 @@ if ! node scripts/ci/check-lockfile.mjs >>"$LOG" 2>&1; then
   note "WARN lockfile guard failed, see $LOG"
 fi
 
-# 3. apps/api/.env for a fresh clone (tests load .env.test on top of it).
+# 4. apps/api/.env for a fresh clone (tests load .env.test on top of it).
 if [ ! -f apps/api/.env ] && [ -d node_modules ] && [ -f apps/api/.env.example ]; then
   if cp apps/api/.env.example apps/api/.env && (cd apps/api && node ace generate:key) >>"$LOG" 2>&1; then
     note ".env: created"
@@ -82,7 +112,7 @@ if [ ! -f apps/api/.env ] && [ -d node_modules ] && [ -f apps/api/.env.example ]
   fi
 fi
 
-# 4. Postgres for Japa: Docker (postgres:17) first, system Postgres 16 as
+# 5. Postgres for Japa: Docker (postgres:17) first, system Postgres 16 as
 #    fallback. Containers do not survive an idle pause, so `resume` restarts them.
 if ! docker info >/dev/null 2>&1 && command -v dockerd >/dev/null 2>&1; then
   (setsid dockerd >/tmp/dockerd.log 2>&1 &)
@@ -100,7 +130,7 @@ else
   note "WARN db: no Postgres; functional tests will fail (see $LOG)"
 fi
 
-# 5. Privacy patterns for the pre-push hook. Presence only, never the value.
+# 6. Privacy patterns for the pre-push hook. Presence only, never the value.
 if [ -n "${PRIVACY_PATTERNS:-}" ]; then
   note "privacy: patterns set (pre-push runs the full check)"
 else

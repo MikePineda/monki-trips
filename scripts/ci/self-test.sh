@@ -268,6 +268,60 @@ expect 'lockfile: the missing build is named' 0 grep -q 'no glibc linux-arm64 bu
 lockfile '{}' "${native_family}${linux_x64}${musl_arm64}"
 expect 'lockfile: a musl-only linux-arm64 build does not count' 1 lockcheck
 
+# --- cloud-setup.sh: pin_git_identity ----------------------------------------
+# A stub `gh` first on PATH answers `gh api user --jq .login|.id` with a fake
+# account (or fails), and the function runs in a fresh bash without `set -e`,
+# as in the hook, inside a throwaway repo. GITHUB_ACTIONS is unset because
+# the function skips itself on GitHub Actions, where this self-test also runs.
+mkdir -p "$tmp/bin-ok" "$tmp/bin-fail"
+cat >"$tmp/bin-ok/gh" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  'api user --jq .login') echo 'Probe-Login-1' ;;
+  'api user --jq .id') echo '424242' ;;
+  *) exit 1 ;;
+esac
+EOF
+printf '#!/usr/bin/env bash\nexit 1\n' >"$tmp/bin-fail/gh"
+chmod +x "$tmp/bin-ok/gh" "$tmp/bin-fail/gh"
+
+# pin_identity <stub-dir> [env assignments...]: runs the function in "$tmp/id-repo".
+pin_identity() {
+  local bin="$1"
+  shift
+  # shellcheck disable=SC2016 # the inner script expands its own "$1"
+  (cd "$tmp/id-repo" && env -u GITHUB_ACTIONS "$@" PATH="$bin:$PATH" bash -c \
+    'source "$1"; note() { printf "%s\n" "$1"; }; pin_git_identity' _ "$script_dir/../cloud-setup.sh")
+}
+id_repo() {
+  rm -rf "$tmp/id-repo"
+  git init -q "$tmp/id-repo"
+}
+local_email() { git -C "$tmp/id-repo" config --local user.email; }
+noreply_re='^[0-9]+\+[a-z0-9-]+@users\.noreply\.github\.com$'
+
+id_repo
+expect 'identity: sourcing cloud-setup.sh runs no step' 0 \
+  bash -c "cd '$tmp/id-repo' && CLAUDE_CODE_REMOTE=true source '$script_dir/../cloud-setup.sh' && [ ! -e .claude ]"
+expect 'identity: a gh account pins the repo-scope identity' 0 pin_identity "$tmp/bin-ok"
+expect 'identity: the status line names the no-reply identity' 0 grep -q '^git identity: Probe-Login-1 (no-reply)$' "$tmp/out"
+expect 'identity: user.email is the no-reply address' 0 bash -c \
+  "git -C '$tmp/id-repo' config --local user.email | grep -q -i -E '$noreply_re'"
+expect 'identity: user.email carries the id and the login' 0 bash -c \
+  "[ \"\$(git -C '$tmp/id-repo' config --local user.email)\" = '424242+Probe-Login-1${at}users.noreply.github.com' ]"
+expect 'identity: user.name is the login' 0 bash -c \
+  "[ \"\$(git -C '$tmp/id-repo' config --local user.name)\" = 'Probe-Login-1' ]"
+
+id_repo
+expect 'identity: a failing gh still exits 0' 0 pin_identity "$tmp/bin-fail"
+expect 'identity: a failing gh reports a WARN line' 0 grep -q '^WARN git identity: gh api user failed' "$tmp/out"
+expect 'identity: a failing gh leaves the repo config alone' 1 local_email
+
+id_repo
+expect 'identity: GitHub Actions skips the step' 0 pin_identity "$tmp/bin-ok" GITHUB_ACTIONS=true
+expect 'identity: the skip is not a WARN' 0 grep -q '^git identity: skipped on GitHub Actions$' "$tmp/out"
+expect 'identity: the skip leaves the repo config alone' 1 local_email
+
 if [[ $failures -gt 0 ]]; then
   echo "self-test: ${failures} failure(s)" >&2
   exit 1

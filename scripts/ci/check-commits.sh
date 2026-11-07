@@ -41,6 +41,10 @@ patterns="$work_dir/patterns"
 allowed_emails=(
   '^([0-9]+\+)?[a-z0-9-]+(\[bot\])?@users\.noreply\.github\.com$'
   '^noreply@github\.com$'
+  # Kept for the agent's `Co-authored-by:` trailer. It also passes as author
+  # or committer, so this gate cannot tell a commit that silently took the
+  # cloud harness's global agent identity; scripts/cloud-setup.sh therefore
+  # pins the owner's no-reply identity at repository scope.
   '^noreply@anthropic\.com$'
 )
 
