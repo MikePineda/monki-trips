@@ -28,7 +28,7 @@ export default class PhraseCardsController {
 
   async destroy(ctx: HttpContext) {
     const user = ctx.auth.use('web').getUserOrFail()
-    await this.cards.remove(user, ctx.trip, String(ctx.params.language))
+    await this.cards.remove(user, ctx.trip, String(ctx.params['language']))
     return ctx.response.noContent()
   }
 }
