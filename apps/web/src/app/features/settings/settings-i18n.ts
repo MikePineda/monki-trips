@@ -1,6 +1,6 @@
 import { provideTranslocoScope } from '@jsverse/transloco'
 
-/** The `settings` Transloco scope: language, theme, install and version copy. */
+/** The `settings` Transloco scope: language, theme, notifications, install and version copy. */
 export function provideSettingsI18n() {
   return provideTranslocoScope({
     scope: 'settings',
@@ -10,3 +10,11 @@ export function provideSettingsI18n() {
     },
   })
 }
+
+/** Error codes the `settings` catalogue has a message for (`settings.errors.<code>`). */
+export const SETTINGS_ERROR_CODES = [
+  'E_PUSH_DISABLED',
+  'E_UNAUTHORIZED',
+  'E_BAD_CSRF_TOKEN',
+  'E_VALIDATION_ERROR',
+] as const

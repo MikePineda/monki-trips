@@ -8,6 +8,9 @@ export const FAKE_APP_CONFIG: AppConfig = {
   locales: ['en', 'es'],
   defaultLocale: 'en',
   version: '0.1.0',
+  pushEnabled: true,
+  vapidPublicKey:
+    'BJT8n4mGFig1eRSRezUN_1iZzDuim2OD5KrJzqtXgR8MBLTmVl1OVY8vuhGeVv2MdAswfZtGdXtS-YSU117sKFg',
 }
 
 /** In-memory stand-in with knobs for registration and the invitation it previews. */

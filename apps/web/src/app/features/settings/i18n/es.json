@@ -11,6 +11,22 @@
     "light": "Claro",
     "dark": "Oscuro"
   },
+  "notifications": {
+    "label": "Notificaciones",
+    "toggle": "Notificaciones en este dispositivo",
+    "deviceLabel": "Nombre del dispositivo",
+    "deviceLabelHint": "Para distinguir tus dispositivos, por ejemplo «Teléfono».",
+    "enabled": "Activadas en este dispositivo. Los recordatorios llegan aunque la app esté cerrada.",
+    "sendTest": "Enviar una prueba",
+    "testSent": "Notificación de prueba enviada.",
+    "testNone": "Todavía no hay ningún dispositivo registrado.",
+    "unsupported": "Este navegador no puede mostrar notificaciones.",
+    "iosInstall": "En iPhone y iPad las notificaciones solo funcionan desde la app instalada (iOS 16.4 o posterior). Instálala primero.",
+    "iosAction": "Cómo instalarla",
+    "blocked": "Las notificaciones están bloqueadas para este sitio. Permítelas en los ajustes del navegador y vuelve aquí.",
+    "serverOff": "Las notificaciones no están configuradas en este servidor.",
+    "needsGesture": "Toca el interruptor otra vez para permitir las notificaciones."
+  },
   "install": {
     "label": "Instalar",
     "action": "Instalar la app",
@@ -26,5 +42,13 @@
     "value": "{{version}} · {{sha}}",
     "unknown": "Sin comprobar todavía",
     "refresh": "Comprobar"
+  },
+  "errors": {
+    "E_PUSH_DISABLED": "Las notificaciones no están configuradas en este servidor.",
+    "E_UNAUTHORIZED": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "E_BAD_CSRF_TOKEN": "Esta página está desactualizada. Recarga e inténtalo de nuevo.",
+    "E_VALIDATION_ERROR": "Revisa los campos marcados.",
+    "network": "Sin conexión. Revisa tu red e inténtalo de nuevo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
   }
 }

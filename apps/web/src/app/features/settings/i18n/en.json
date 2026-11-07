@@ -11,6 +11,22 @@
     "light": "Light",
     "dark": "Dark"
   },
+  "notifications": {
+    "label": "Notifications",
+    "toggle": "Notifications on this device",
+    "deviceLabel": "Device name",
+    "deviceLabelHint": "Tells your devices apart, for example “Phone”.",
+    "enabled": "Enabled on this device. Reminders arrive even when the app is closed.",
+    "sendTest": "Send a test",
+    "testSent": "Test notification sent.",
+    "testNone": "No device is registered yet.",
+    "unsupported": "This browser cannot show notifications.",
+    "iosInstall": "On iPhone and iPad, notifications work only from the installed app (iOS 16.4 or later). Install it first.",
+    "iosAction": "How to install",
+    "blocked": "Notifications are blocked for this site. Allow them in the browser settings, then come back here.",
+    "serverOff": "Notifications are not set up on this server.",
+    "needsGesture": "Tap the switch again to allow notifications."
+  },
   "install": {
     "label": "Install",
     "action": "Install the app",
@@ -26,5 +42,13 @@
     "value": "{{version}} · {{sha}}",
     "unknown": "Not checked yet",
     "refresh": "Check"
+  },
+  "errors": {
+    "E_PUSH_DISABLED": "Notifications are not set up on this server.",
+    "E_UNAUTHORIZED": "Your session ended. Sign in again.",
+    "E_BAD_CSRF_TOKEN": "This page is out of date. Reload and try again.",
+    "E_VALIDATION_ERROR": "Check the highlighted fields.",
+    "network": "No connection. Check your network and try again.",
+    "unknown": "Something went wrong. Try again."
   }
 }

@@ -18,6 +18,7 @@ import {
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { InstallInstructionsSheet } from './install-instructions.sheet'
+import { NotificationsSectionComponent } from './notifications-section.component'
 import { provideSettingsI18n } from './settings-i18n'
 
 const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
@@ -25,8 +26,9 @@ const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
 /**
  * Settings: UI language (overrides the device pick), theme, the account
  * (features/account, rendered as this route's child so the features stay
- * independent), installing the app and the server build the device last
- * saw. Each choice applies at once and is remembered on the device.
+ * independent), notifications on this device, installing the app and the
+ * server build the device last saw. Each choice applies at once and is
+ * remembered on the device.
  */
 @Component({
   selector: 'app-settings-page',
@@ -38,6 +40,7 @@ const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
     MkStackComponent,
     MkSegmentedComponent,
     MkTextComponent,
+    NotificationsSectionComponent,
     RouterOutlet,
   ],
   providers: [provideSettingsI18n()],
@@ -69,6 +72,8 @@ const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark']
 
       <!-- The account section (features/account) is this route's child. -->
       <router-outlet />
+
+      <app-notifications-section />
 
       <mk-section [eyebrow]="'settings.install.label' | transloco">
         <div mk-text data-testid="settings.install" [attr.data-mode]="install.mode()">
