@@ -1,0 +1,46 @@
+{
+  "shared": {
+    "messages": {
+      "required": "{field} is required",
+      "string": "{field} must be text",
+      "email": "{field} must be a valid e-mail address",
+      "minLength": "{field} must have at least {min} characters",
+      "maxLength": "{field} must have at most {max} characters",
+      "regex": "{field} has an invalid format",
+      "enum": "{field} must be one of {choices}",
+      "in": "{field} is not a known value",
+      "uuid": "{field} must be a valid id",
+      "url": "{field} must be a valid URL",
+      "number": "{field} must be a number",
+      "withoutDecimals": "{field} must be a whole number",
+      "min": "{field} must be at least {min}",
+      "object": "{field} must be an object",
+      "endsOn": {
+        "afterOrEqual": "The end date must not be before the start date"
+      }
+    },
+    "fields": {
+      "email": "e-mail",
+      "password": "password",
+      "currentPassword": "current password",
+      "displayName": "name",
+      "locale": "language",
+      "timezone": "time zone",
+      "theme": "theme",
+      "invitationToken": "invitation",
+      "token": "link",
+      "code": "code",
+      "name": "name",
+      "baseCurrency": "base currency",
+      "startsOn": "start date",
+      "endsOn": "end date",
+      "homeTz": "home time zone",
+      "budgetMode": "budget mode",
+      "budgetTotalMinor": "budget",
+      "role": "role",
+      "userId": "member",
+      "endpoint": "endpoint",
+      "deviceLabel": "device name"
+    }
+  }
+}

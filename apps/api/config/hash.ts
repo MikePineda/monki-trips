@@ -1,14 +1,20 @@
+import app from '@adonisjs/core/services/app'
 import { defineConfig, drivers } from '@adonisjs/core/hash'
 
 /**
- * scrypt with Node's defaults for now. WP 0.5 (auth) sets the production
- * cost parameters and cheap ones for the test suite.
+ * Passwords use scrypt. Production keeps Node's recommended cost; the test
+ * suite hashes hundreds of passwords per run and uses the cheapest valid
+ * cost (a power of two above one), which changes nothing about correctness.
  */
 const hashConfig = defineConfig({
   default: 'scrypt',
 
   list: {
-    scrypt: drivers.scrypt({}),
+    scrypt: drivers.scrypt(
+      app.inTest
+        ? { cost: 2 ** 11, blockSize: 8, parallelization: 1 }
+        : { cost: 2 ** 14, blockSize: 8, parallelization: 1 }
+    ),
   },
 })
 

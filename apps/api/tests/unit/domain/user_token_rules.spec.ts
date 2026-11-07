@@ -11,14 +11,24 @@ test.group('User token rules', () => {
   })
 
   test('a fresh token is valid until its expiry instant', ({ assert }) => {
-    const token = { purpose: 'verify_email' as const, expiresAt: minutes(15), usedAt: null, attempts: 0 }
+    const token = {
+      purpose: 'verify_email' as const,
+      expiresAt: minutes(15),
+      usedAt: null,
+      attempts: 0,
+    }
     assert.equal(userTokenState(token, now), 'valid')
     assert.equal(userTokenState(token, minutes(14)), 'valid')
     assert.equal(userTokenState(token, minutes(15)), 'expired')
   })
 
   test('a used token stays used even before it expires', ({ assert }) => {
-    const token = { purpose: 'reset_password' as const, expiresAt: minutes(60), usedAt: now, attempts: 0 }
+    const token = {
+      purpose: 'reset_password' as const,
+      expiresAt: minutes(60),
+      usedAt: now,
+      attempts: 0,
+    }
     assert.equal(userTokenState(token, minutes(1)), 'used')
   })
 

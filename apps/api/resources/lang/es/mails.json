@@ -1,0 +1,14 @@
+{
+  "verification": {
+    "subject": "Confirma tu correo para monki trips",
+    "text": "Hola {name}:\n\nConfirma tu correo abriendo este enlace:\n{url}\n\nO escribe este código en la app: {code}\n\nEl enlace y el código sirven durante 15 minutos. Si no creaste una cuenta, ignora este mensaje."
+  },
+  "password_reset": {
+    "subject": "Restablece tu contraseña de monki trips",
+    "text": "Hola {name}:\n\nAlguien pidió restablecer la contraseña de tu cuenta. Abre este enlace para elegir una nueva:\n{url}\n\nEl enlace sirve una sola vez, durante 60 minutos. Si no fuiste tú, ignora este mensaje: tu contraseña no ha cambiado."
+  },
+  "invitation": {
+    "subject": "{tripName}: te invitan a planear el viaje juntos",
+    "text": "{inviterName} te invitó a unirte al viaje \"{tripName}\" en monki trips.\n\nAbre este enlace para aceptar:\n{url}\n\nLa invitación sirve durante 7 días."
+  }
+}
