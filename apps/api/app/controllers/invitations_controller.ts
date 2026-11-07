@@ -20,7 +20,8 @@ export default class InvitationsController {
   ) {}
 
   async show(ctx: HttpContext): Promise<ApiEnvelope<TripInvitationPreview>> {
-    const invitation = await this.invitations.findPendingOrFail(ctx.params.token)
+    const { token } = ctx.params as { token: string }
+    const invitation = await this.invitations.findPendingOrFail(token)
     return {
       data: {
         tripName: invitation.trip.name,
@@ -36,7 +37,8 @@ export default class InvitationsController {
    */
   async accept(ctx: HttpContext): Promise<ApiEnvelope<TripWire>> {
     const user = ctx.auth.use('web').getUserOrFail()
-    const invitation = await this.invitations.findPendingOrFail(ctx.params.token)
+    const { token } = ctx.params as { token: string }
+    const invitation = await this.invitations.findPendingOrFail(token)
     if (invitation.email && invitation.email !== user.email) {
       throw new ApiException('E_INVITATION_EMAIL_MISMATCH')
     }

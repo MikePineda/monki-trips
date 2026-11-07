@@ -7,7 +7,7 @@ import User from '#models/user'
 
 /** A single-use token row: hashes only, see `#domain/secure_token`. */
 export default class UserToken extends BaseModel {
-  static selfAssignPrimaryKey = true
+  static override selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

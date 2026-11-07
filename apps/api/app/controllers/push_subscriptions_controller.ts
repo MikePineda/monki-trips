@@ -30,8 +30,9 @@ export default class PushSubscriptionsController {
 
   async destroy(ctx: HttpContext) {
     const user = ctx.auth.use('web').getUserOrFail()
+    const { id } = ctx.params as { id: string }
     const subscription = await PushSubscription.query()
-      .where('id', ctx.params.id)
+      .where('id', id)
       .where('user_id', user.id)
       .first()
     if (!subscription) throw new ApiException('E_ROW_NOT_FOUND')

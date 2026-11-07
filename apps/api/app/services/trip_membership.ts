@@ -46,6 +46,11 @@ export class TripMembership {
       .groupBy('trip_id')
       .select('trip_id')
       .count('* as count')
-    return new Map(rows.map((row) => [row.tripId, Number(row.$extras.count)]))
+    return new Map(
+      rows.map((row) => {
+        const { count } = row.$extras as { count: string | number }
+        return [row.tripId, Number(count)]
+      })
+    )
   }
 }

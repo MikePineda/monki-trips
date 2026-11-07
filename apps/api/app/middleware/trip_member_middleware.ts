@@ -18,7 +18,8 @@ export default class TripMemberMiddleware {
 
   async handle(ctx: HttpContext, next: NextFn, options: { allowDeleted?: boolean } = {}) {
     const user = ctx.auth.use('web').getUserOrFail()
-    const membership = await this.memberships.find(user, ctx.params.tripId)
+    const { tripId } = ctx.params as { tripId: string }
+    const membership = await this.memberships.find(user, tripId)
     if (!membership || (membership.trip.deletedAt && !options.allowDeleted)) {
       throw new ApiException('E_ROW_NOT_FOUND')
     }

@@ -83,7 +83,8 @@ export class InvitationAcceptance {
           .whereNull('deleted_at')
           .max('position as max')
           .first()
-        const position = Number(last?.$extras.max ?? -1) + 1
+        const { max } = (last?.$extras ?? {}) as { max?: string | number | null }
+        const position = Number(max ?? -1) + 1
         await Traveller.create(
           {
             tripId: invitation.tripId,
