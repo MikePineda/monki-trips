@@ -422,7 +422,11 @@ row, `throttleLlm` on the route).
   `<data label="<tool> result">`, escaped by `PromptBuilder.untrusted`, so
   event titles, notes, addresses and document titles reach the model only
   as untrusted content. Tool errors are app-written text that names fields
-  and rules, never values.
+  and rules, never values. Results are bounded by size: free text per row
+  is cut to 300 characters (notes) or 200 (addresses, place names), and a
+  result past 16 000 characters (wrapper included) drops rows from its
+  longest list and says `truncated: true` with a hint to narrow the
+  request (for `list_events`, a date range).
 - **Proposals.** A write tool runs its mutations through `MutationApplier`
   (`via: assistant`) in a transaction that is always rolled back: the
   proposal is validated by the code that will apply it, and its diff is
@@ -432,9 +436,16 @@ row, `throttleLlm` on the route).
   shared night rules; `AiExpenseProposal` with the base-currency amount and
   rate of the spend day; `AiTaskProposal`), the exact `mutations` and the
   `baseline` (each touched row's `change_seq`, or null for a new row).
-  Proposals expire 24 h after they were made.
-- **Accept.** In one transaction: the action row is locked and must be
-  `proposed`; every baseline row must still have its `change_seq` (a new
+  The dry run locks the trip row first and reads the content the plan
+  uses, the baseline and the outcome in that one state of the trip; a
+  mutation that would not apply in full (`partial`, a field that loses the
+  merge) is a tool error and nothing is proposed. Proposals expire 24 h
+  after they were made.
+- **Accept.** In one transaction, taking locks in the order every trip
+  write uses (the trip row, then the action, then the content rows): the
+  action must be `proposed` and not past `expires_at` (checked under the
+  lock; one found expired is marked `expired` and answers 409
+  `E_AI_ACTION_CLOSED`); every baseline row must still have its `change_seq` (a new
   row must still not exist); each mutation is applied with `changedAt` =
   now and must answer `applied`. Then the action is `accepted`, and
   `trip_activity` rows carry `actor_user_id` = the member and
