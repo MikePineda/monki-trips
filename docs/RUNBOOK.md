@@ -87,8 +87,10 @@ relevant ones:
 ## Inspect sent reminders
 
 The `push:reminders` job records every reminder in `sent_reminders` before
-it sends it (one row per account, kind, ref and fire time), so the table
-answers "did it go out, and when". Rows hold ids only, never titles.
+it sends it (one row per account, kind, ref and nominal fire time, the
+time before quiet hours), so the table answers "did it go out, and when".
+A row whose send reached no device for a transient reason is deleted and
+retried the next minute. Rows hold ids only, never titles.
 
 ```sql
 -- The last reminders sent, newest first.
@@ -100,7 +102,8 @@ SELECT date_trunc('day', sent_at) AS day, kind, count(*)
 FROM sent_reminders WHERE sent_at >= now() - interval '7 days'
 GROUP BY 1, 2 ORDER BY 1 DESC, 2;
 
--- Sent late (more than two minutes after the planned time).
+-- Sent late (more than two minutes after the planned time; a reminder moved
+-- by quiet hours shows its move here too).
 SELECT kind, ref_id, fire_at, sent_at - fire_at AS delay
 FROM sent_reminders WHERE sent_at - fire_at > interval '2 minutes'
 ORDER BY sent_at DESC;
