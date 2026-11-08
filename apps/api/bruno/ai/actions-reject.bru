@@ -1,0 +1,20 @@
+meta {
+  name: Reject an assistant proposal
+  type: http
+  seq: 67
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/actions/{{actionId}}/reject
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+docs {
+  Marks the proposal `rejected`; nothing is written. 409 `E_AI_ACTION_CLOSED`
+  when it was already decided or expired.
+}

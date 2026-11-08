@@ -36,5 +36,7 @@
   "E_FX_UNAVAILABLE": "Exchange rates are not available right now. Try again in a moment",
   "E_LLM_QUOTA_EXCEEDED": "You have used this month's AI allowance. It resets on the first of next month",
   "E_LLM_UNAVAILABLE": "The AI assistant is not available right now. Try again in a moment",
-  "E_LLM_BAD_OUTPUT": "The AI assistant gave an answer we could not use. Try again"
+  "E_LLM_BAD_OUTPUT": "The AI assistant gave an answer we could not use. Try again",
+  "E_AI_ACTION_CLOSED": "This proposal was already decided or has expired",
+  "E_AI_ACTION_STALE": "The trip changed since this proposal was made. Nothing was changed; ask the assistant again"
 }

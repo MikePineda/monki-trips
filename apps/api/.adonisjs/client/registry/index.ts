@@ -290,6 +290,48 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"phrase-cards"],[1,"language"]],
     types: placeholder as Registry['trips.phraseCards.destroy']['types'],
   },
+  'trips.ai.conversations.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/ai/conversations',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"conversations"]],
+    types: placeholder as Registry['trips.ai.conversations.index']['types'],
+  },
+  'trips.ai.conversations.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/ai/conversations',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"conversations"]],
+    types: placeholder as Registry['trips.ai.conversations.store']['types'],
+  },
+  'trips.ai.conversations.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/ai/conversations/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"conversations"],[1,"id"]],
+    types: placeholder as Registry['trips.ai.conversations.show']['types'],
+  },
+  'trips.ai.conversations.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/trips/:tripId/ai/conversations/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"conversations"],[1,"id"]],
+    types: placeholder as Registry['trips.ai.conversations.destroy']['types'],
+  },
+  'trips.ai.conversations.message': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/ai/conversations/:id/messages',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"conversations"],[1,"id"],[0,"messages"]],
+    types: placeholder as Registry['trips.ai.conversations.message']['types'],
+  },
+  'trips.ai.actions.accept': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/ai/actions/:id/accept',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"actions"],[1,"id"],[0,"accept"]],
+    types: placeholder as Registry['trips.ai.actions.accept']['types'],
+  },
+  'trips.ai.actions.reject': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/ai/actions/:id/reject',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"actions"],[1,"id"],[0,"reject"]],
+    types: placeholder as Registry['trips.ai.actions.reject']['types'],
+  },
   'trips.members.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/trips/:tripId/members',

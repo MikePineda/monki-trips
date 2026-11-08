@@ -1,0 +1,17 @@
+meta {
+  name: Show an assistant conversation
+  type: http
+  seq: 63
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/conversations/{{conversationId}}
+  body: none
+  auth: none
+}
+
+docs {
+  `AiConversationDetail`: the messages in order and every action the
+  assistant proposed, with its diff and status. Proposals past 24 h read as
+  `expired`. 404 for a conversation of anyone else.
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Accept an assistant proposal
+  type: http
+  seq: 66
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/actions/{{actionId}}/accept
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+docs {
+  Applies the stored mutations through the sync applier in one transaction
+  (`trip_activity.via = assistant`) and answers `{ action, results }`.
+  409 `E_AI_ACTION_CLOSED` once decided or expired; 409 `E_AI_ACTION_STALE`
+  when the trip changed since the proposal (the action becomes `failed`).
+}
