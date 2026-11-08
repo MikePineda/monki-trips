@@ -185,9 +185,9 @@ function layout(shape: StampShape): ShapeLayout {
         textArc: null,
         placeRoom: 88,
         placeY: 42,
-        iconY: 47,
-        dateY: 82,
-        codeY: 93,
+        iconY: 46,
+        dateY: 79,
+        codeY: 89,
         starSpread: 41,
       }
     case 'octagon':
@@ -195,8 +195,8 @@ function layout(shape: StampShape): ShapeLayout {
         outline: octagonPath(57),
         inner: octagonPath(50),
         textArc: null,
-        placeRoom: 76,
-        placeY: 40,
+        placeRoom: 70,
+        placeY: 42,
         iconY: 45,
         dateY: 82,
         codeY: 95,

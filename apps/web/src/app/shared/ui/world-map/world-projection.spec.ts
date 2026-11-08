@@ -11,13 +11,13 @@ describe('world projection', () => {
     expect(worldViewBox([])).toEqual({ x: 0, y: 0, width: 360, height: 180 })
   })
 
-  it('frames the places with sea around them, 2:1, never tighter than 60 degrees', () => {
+  it('frames the places with sea around them, 2:1, never tighter than 120 degrees', () => {
     const box = worldViewBox([
       { lat: 10, lng: 10 },
       { lat: 12, lng: 14 },
     ])
-    expect(box.width).toBe(60)
-    expect(box.height).toBe(30)
+    expect(box.width).toBe(120)
+    expect(box.height).toBe(60)
     expect(box.x).toBeLessThan(190)
     expect(box.x + box.width).toBeGreaterThan(194)
     expect(box.y).toBeLessThan(78)

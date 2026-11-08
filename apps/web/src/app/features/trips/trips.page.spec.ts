@@ -20,6 +20,7 @@ import { SessionStore } from '../../core/session/session.store'
 import { blankStop } from '../../../testing/fake-trip-content'
 import { expenseRecord } from '../../../testing/money-fixtures'
 import { MetaStore } from '../../core/offline/meta.store'
+import { FakeSyncApi } from '../../../testing/fake-sync-api'
 import TripsPage from './trips.page'
 
 /** TEST_NOW is 2026-11-07: one trip on the road, one coming up, one we are back from. */
@@ -69,13 +70,19 @@ const DEVICE_TRIP = {
 describe('TripsPage', () => {
   let db: MonkiTripsDb
   let fakes: ApiFakes
+  let syncApi: FakeSyncApi
 
   beforeEach(() => {
     db = freshOfflineDb()
     fakes = apiFakes()
+    syncApi = new FakeSyncApi()
     TestBed.configureTestingModule({
       imports: [TripsPage, i18nTesting()],
-      providers: [...provideOfflineTesting({ db }), ...provideApiTesting(fakes), provideRouter([])],
+      providers: [
+        ...provideOfflineTesting({ db, api: syncApi }),
+        ...provideApiTesting(fakes),
+        provideRouter([]),
+      ],
     })
   })
 
@@ -141,6 +148,13 @@ describe('TripsPage', () => {
     expect(host.textContent).not.toContain('Deleted elsewhere')
     expect(await db.trips.get('gone')).toBeUndefined()
     expect(fakes.trips.calls).toEqual(['list'])
+  })
+
+  it('after the list arrives it pulls the content of every trip, for the history and the passport', async () => {
+    fakes.trips.trips = [{ ...fakeTrip({ id: 'trip-1' }), role: 'owner', memberCount: 1 }]
+    await render()
+
+    await vi.waitFor(() => expect(syncApi.calls.some((call) => call.kind === 'pull')).toBe(true))
   })
 
   it('offline it shows the device copy and never asks the server', async () => {
