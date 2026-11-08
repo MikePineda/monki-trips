@@ -144,6 +144,9 @@ router
                   .get('trips/:tripId/export', [controllers.TripJson, 'export'])
                   .as('trips.export')
                 router
+                  .get('trips/:tripId/expenses.csv', [controllers.TripExpenses, 'csvFile'])
+                  .as('trips.expenses.csv')
+                router
                   .post('trips/:tripId/documents', [controllers.Documents, 'store'])
                   .as('trips.documents.store')
                 router

@@ -1,0 +1,18 @@
+meta {
+  name: Export the trip's expenses (CSV v1)
+  type: http
+  seq: 68
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/expenses.csv
+  body: none
+  auth: none
+}
+
+docs {
+  Trip expenses CSV v1 (docs/CONTRACTS.md): UTF-8 with a BOM, RFC 4180,
+  one record per live expense, settlements marked with kind=settlement.
+  Sent as an attachment named trip-<slug>-expenses-<date>.csv with
+  Cache-Control: no-store. Members only; anyone else gets 404.
+}

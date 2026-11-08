@@ -45,6 +45,7 @@ export type ScannedRoutes = {
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.weather': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.expenses.csv': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.documents.extract': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
@@ -95,6 +96,7 @@ export type ScannedRoutes = {
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.weather': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.expenses.csv': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -125,6 +127,7 @@ export type ScannedRoutes = {
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.weather': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.expenses.csv': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }

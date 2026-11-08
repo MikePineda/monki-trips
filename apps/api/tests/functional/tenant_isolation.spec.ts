@@ -88,6 +88,9 @@ const CASES: Record<string, IsolationCase> = {
   'trips.export': {
     request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/export`), a),
   },
+  'trips.expenses.csv': {
+    request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/expenses.csv`), a),
+  },
   'trips.documents.store': {
     request: (c, v, a) =>
       actingAs(c.post(`/api/v1/trips/${v.trip.id}/documents`), a)
