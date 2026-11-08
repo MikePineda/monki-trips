@@ -151,3 +151,6 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 3.3: the docs and money extraction clients are hand-written `fetch` (features cannot import each other); move them to `core/api` or the Tuyau client.
 - 2026-11-08: WP 3.3: `mk-api-error` cannot show the 402 `resetsOn` date, so the extraction quota message gives no reset day; let it take payload fields.
 - 2026-11-08: WP 3.3: owner probe after deploy: one real "Read this booking" on a text PDF, one on a scan and one receipt photo against the configured endpoint (MiniMax's Anthropic-compatible API may not accept `document` blocks; then a scan needs `LLM_VISION_MODEL` pointed at a model that does).
+- 2026-11-08: WP 4.3: the recap image could carry the trip's stamps (drawn from the stamp generator's SVG onto the canvas) next to Kiko.
+- 2026-11-08: WP 4.3: the recap distance is a straight line between stops; legs with real routes (flight and rail segments with coordinates) would give a truer "travelled".
+- 2026-11-08: WP 4.3: Money has no overflow menu yet, so "Export expenses (CSV)" sits in its header; move it when a menu exists.
