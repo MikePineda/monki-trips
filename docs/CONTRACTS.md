@@ -145,7 +145,8 @@ answers `duplicate` with the server's row instead of a second one),
 only: a later change is `E_VALIDATION_ERROR` `immutable`; budgets, Today and
 the mascot leave settlements out, balances count them; an optional `shares` array replaces the whole
 split and must sum to the amount; an `amountMinor` change without `shares`
-must still match the live split), `expense_share`, `emergency` (one row per
+splits the live split again equally between its participants still travelling,
+remainder on the payer, with the mutation's clock on `shares`), `expense_share`, `emergency` (one row per
 trip, merged per top-level key of `content`). Derived values are never
 accepted from a client and are recomputed after every merge: `startsAt`,
 `startsOn`, `endsAt` from the local times and zones (a nonexistent local

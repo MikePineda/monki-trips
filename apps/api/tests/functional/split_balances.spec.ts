@@ -189,6 +189,51 @@ test.group('Split budget mode', (group) => {
     }
   })
 
+  test('a stale device that changes only the amount after the switch gets an equal split again', async ({
+    client,
+    assert,
+  }) => {
+    const { owner, editor, trip, ownerTraveller, editorTraveller, friendTraveller } =
+      await tripOfThree(client)
+    const taxi = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', { amountMinor: 3000, currency: 'AUD', spentOn: '2027-01-21' })
+    )
+    await pushApplied(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'trip',
+        { budgetMode: 'split' },
+        { id: trip.id, changedAt: '2026-11-07T10:00:00.000Z' }
+      )
+    )
+
+    // The editor's device still thinks the trip is shared and only knows the amount.
+    const result = await pushOne(
+      client,
+      editor,
+      mutation(
+        trip.id,
+        'expense',
+        { amountMinor: 1000 },
+        { id: taxi.id, changedAt: '2026-11-07T11:00:00.000Z' }
+      )
+    )
+
+    assert.equal(result.status, 'applied')
+    const expected = [
+      [ownerTraveller, 334],
+      [editorTraveller, 333],
+      [friendTraveller, 333],
+    ] as [string, number][]
+    assert.sameDeepMembers(await liveShares(taxi.id), expected)
+    const row = await db.from('expenses').where('id', taxi.id).first()
+    assert.equal(row.field_clock.shares, Date.parse('2026-11-07T11:00:00.000Z'))
+  })
+
   test('switching back to shared keeps payers and shares', async ({ client, assert }) => {
     const { owner, trip, ownerTraveller } = await tripOfThree(client)
     const groceries = await pushApplied<Expense>(

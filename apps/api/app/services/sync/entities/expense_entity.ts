@@ -1,9 +1,11 @@
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
-import { minorUnitExponent } from '@monkitrips/shared'
+import { randomUUID } from 'node:crypto'
+import { equalShares, minorUnitExponent } from '@monkitrips/shared'
 import type { DbRow, DeriveContext, EntitySpec, FieldProblem } from '#services/sync/entity_spec'
 import { convertToBaseMinor } from '#domain/convert_to_base'
 import { FxRates } from '#services/fx/fx_rates'
+import { liveTravellerIds } from '#services/live_travellers'
 import { toWireValue } from '#services/sync/column_types'
 import { tombstoneWhere } from '#services/sync/table_writes'
 import { expenseChanges } from '#validators/sync/entities'
@@ -25,24 +27,36 @@ function hint(
 const MAX_MINOR = BigInt(Number.MAX_SAFE_INTEGER)
 
 /**
- * Whether the stored split still adds up to `amount`. Only an amount that
- * changed is checked: a split edited share by share (`expense_share`) may
- * be mid-way, and an unrelated edit of the expense must not trip over it.
+ * The split of an expense whose amount moved without a new split: the
+ * same live participants, equally, the remainder on the payer, with fresh
+ * share ids (a device that never saw the split, or a stale one, only knew
+ * the amount). Null when the amount did not change or there is no split.
+ * A participant no longer travelling drops out; with nobody left, every
+ * live traveller shares it.
  */
-async function liveSplitAddsUp(ctx: DeriveContext, expenseId: string, amount: number) {
+async function resplit(
+  ctx: DeriveContext,
+  expenseId: string,
+  amount: number,
+  payer: string | null
+): Promise<ShareInput[] | null> {
   const [stored] = (await ctx.trx
     .from('expenses')
     .where('id', expenseId)
     .select('amount_minor')) as { amount_minor: string }[]
-  if (BigInt(stored.amount_minor) === BigInt(amount)) return true
+  if (BigInt(stored.amount_minor) === BigInt(amount)) return null
   const shares = (await ctx.trx
     .from('expense_shares')
     .where('expense_id', expenseId)
     .whereNull('deleted_at')
-    .select('share_minor')) as { share_minor: string }[]
-  if (shares.length === 0) return true
-  const sum = shares.reduce((total, share) => total + BigInt(share.share_minor), 0n)
-  return sum === BigInt(amount)
+    .select('traveller_id')) as { traveller_id: string }[]
+  if (shares.length === 0) return null
+  const live = await liveTravellerIds(ctx.trx, ctx.tripId)
+  const sharing = live.filter((id) => shares.some((share) => share.traveller_id === id))
+  return equalShares(amount, sharing.length > 0 ? sharing : live, payer).map((share) => ({
+    id: randomUUID(),
+    ...share,
+  }))
 }
 
 interface ShareInput {
@@ -59,7 +73,8 @@ interface ShareInput {
  * asked in `prepare`, before the transaction locks the trip row; inside
  * it, `derive` reads the cache only. `baseAmountMinor`
  * is always derived here. An optional `shares` array replaces the whole
- * split atomically and must sum to the amount.
+ * split atomically and must sum to the amount; a new amount without one
+ * splits the stored split again equally (`resplit`).
  */
 export const expenseEntity: EntitySpec = {
   entity: 'expense',
@@ -141,9 +156,11 @@ export const expenseEntity: EntitySpec = {
       if (sum !== BigInt(amount)) problems.push({ field: 'shares', rule: 'sharesSum' })
       const travellers = new Set(shares.map((share) => share.travellerId))
       if (travellers.size !== shares.length) problems.push({ field: 'shares', rule: 'distinct' })
-    } else if (!ctx.inserting && !(await liveSplitAddsUp(ctx, String(merged.id), amount))) {
-      // The amount moved without a new split: the one already stored must still add up.
-      problems.push({ field: 'amountMinor', rule: 'sharesSum' })
+    } else if (!ctx.inserting) {
+      // The amount moved without a new split: split it again so the shares still add up.
+      const payer = (merged.paidByTravellerId as string | null | undefined) ?? null
+      const again = await resplit(ctx, String(merged.id), amount, payer)
+      if (again) ctx.extras['shares'] = again
     }
     if (problems.length > 0) return { columns, problems }
 
@@ -208,6 +225,16 @@ export const expenseEntity: EntitySpec = {
     // lives elsewhere fails on the primary key instead of taking the row over.
     const expenseId = String(ctx.row.id)
     await tombstoneWhere(ctx.trx, 'expense_shares', 'expense_id', expenseId, by)
+    // A split written here (sent, or split again after an amount change) owns the `shares` clock.
+    await ctx.trx
+      .from('expenses')
+      .where('id', expenseId)
+      .update({
+        field_clock: ctx.trx.raw(
+          `field_clock || jsonb_build_object('shares', greatest(coalesce((field_clock->>'shares')::bigint, 0), ?::bigint))`,
+          [by.changedAt]
+        ),
+      })
     const clock = JSON.stringify({ shareMinor: by.changedAt, travellerId: by.changedAt })
     for (const share of shares) {
       const updated = await ctx.trx
