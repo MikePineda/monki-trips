@@ -1,10 +1,16 @@
 import { inject } from '@adonisjs/core'
 import type { PushPayload, PushTestResult } from '@monkitrips/shared'
 import { DateTime } from 'luxon'
+import { isTransientPushFailure } from '#domain/transient_push_failure'
 import PushSubscription from '#models/push_subscription'
 import type User from '#models/user'
 import { Clock } from '#services/clock'
 import { PushSender } from '#services/push_sender'
+
+/** `PushTestResult` plus how many of the failures may succeed on a retry (`isTransientPushFailure`). */
+export interface PushSendReport extends PushTestResult {
+  transient: number
+}
 
 /**
  * Delivers one payload to every subscription of an account and keeps the
@@ -19,11 +25,11 @@ export class PushNotifications {
     private readonly clock: Clock
   ) {}
 
-  async sendToUser(user: User, payload: PushPayload): Promise<PushTestResult> {
+  async sendToUser(user: User, payload: PushPayload): Promise<PushSendReport> {
     const subscriptions = await PushSubscription.query()
       .where('user_id', user.id)
       .orderBy('created_at', 'asc')
-    const result: PushTestResult = { sent: 0, pruned: 0, failed: 0 }
+    const result: PushSendReport = { sent: 0, pruned: 0, failed: 0, transient: 0 }
     for (const subscription of subscriptions) {
       const delivery = await this.sender.send(subscription, payload)
       switch (delivery.status) {
@@ -40,6 +46,7 @@ export class PushNotifications {
           subscription.failures += 1
           await subscription.save()
           result.failed += 1
+          if (isTransientPushFailure(delivery)) result.transient += 1
           break
       }
     }

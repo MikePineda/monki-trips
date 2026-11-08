@@ -59,7 +59,10 @@ export default class PushSubscriptionsController {
   async test(ctx: HttpContext): Promise<ApiEnvelope<PushTestResult>> {
     const user = ctx.auth.use('web').getUserOrFail()
     if (!this.vapid.enabled) throw new ApiException('E_PUSH_DISABLED')
-    const result = await this.notifications.sendToUser(user, this.messages.test(user.locale))
-    return { data: result }
+    const { sent, pruned, failed } = await this.notifications.sendToUser(
+      user,
+      this.messages.test(user.locale)
+    )
+    return { data: { sent, pruned, failed } }
   }
 }

@@ -16,16 +16,23 @@ export interface RecordedPush {
 export class FakePushSender extends PushSender {
   readonly sent: RecordedPush[] = []
   readonly #answers = new Map<string, number>()
+  readonly #once = new Map<string, number>()
 
   /** From now on, the push service answers `statusCode` for `endpoint`. */
   answerWith(endpoint: string, statusCode: number): void {
     this.#answers.set(endpoint, statusCode)
   }
 
+  /** The next send to `endpoint` answers `statusCode`; later ones answer as before. */
+  answerOnceWith(endpoint: string, statusCode: number): void {
+    this.#once.set(endpoint, statusCode)
+  }
+
   /** Forgets every recorded send and scripted answer. */
   reset(): void {
     this.sent.length = 0
     this.#answers.clear()
+    this.#once.clear()
   }
 
   /** Messages sent to `endpoint`, oldest first. */
@@ -35,7 +42,9 @@ export class FakePushSender extends PushSender {
 
   async send(target: PushTarget, payload: PushPayload): Promise<PushDelivery> {
     this.sent.push({ endpoint: target.endpoint, payload })
-    const statusCode = this.#answers.get(target.endpoint)
+    const once = this.#once.get(target.endpoint)
+    this.#once.delete(target.endpoint)
+    const statusCode = once ?? this.#answers.get(target.endpoint)
     if (statusCode === undefined || (statusCode >= 200 && statusCode < 300)) {
       return { status: 'sent' }
     }
