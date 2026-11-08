@@ -407,6 +407,19 @@ h4 {
   white-space: nowrap;
 }
 
+/* -------------------------------------------------------------- banners */
+
+/*
+ * The print banner's action is projected (a ghost mk-button), so the
+ * banner's own styles cannot reach it: it takes the banner ink and an
+ * underline here, as the accent fails contrast on the print tint.
+ */
+mk-banner[data-tone='print'] .mk-banner__action .mk-button[data-variant='ghost'] {
+  color: var(--on-print-warning);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ------------------------------------------------------------- overlays */
 
 /* Bottom sheets (SheetService on the CDK Dialog): panel and backdrop. */
