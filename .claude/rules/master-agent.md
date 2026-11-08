@@ -71,6 +71,18 @@ deploy. Branches are deleted on merge by the repo setting. The owner
 approves product decisions, the design stops and the steps only the owner
 can do (`docs/QA.md`).
 
+## Rewriting your own branch
+
+Agents may rewrite **their own feature branch** so they never wait on the
+owner: rebase onto `origin/main` before pushing, restack a PR whose base was
+rebase-merged (`git rebase --onto origin/main <old-base-head> <branch>`),
+or drop a commit that broke a guard, then
+`git push --force-with-lease origin <branch>`. Plain `--force`, `-f`,
+`+refspec` and any force push naming `main` are denied in
+`.claude/settings.json`; the `main` ruleset (`non_fast_forward`, PR only,
+required checks) is the real barrier. Never rewrite a branch someone else
+is pushing to.
+
 ## State lives in git
 
 - `docs/BACKLOG.md` is updated and pushed after every WP.
