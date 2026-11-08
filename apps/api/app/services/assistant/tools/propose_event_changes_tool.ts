@@ -15,7 +15,7 @@ import { MutationDryRun } from '#services/assistant/mutation_dry_run'
 import { ProposalRecorder } from '#services/assistant/proposal_recorder'
 import { validateToolInput } from '#services/assistant/tool_input'
 import { Clock } from '#services/clock'
-import { TripContent, type TripContentRows } from '#services/trip_content'
+import type { TripContentRows } from '#services/trip_content'
 import { TripViews } from '#services/trip_views'
 import { shiftedEnd } from '#domain/event_move'
 import { nightShifts } from '#domain/night_shifts'
@@ -146,7 +146,6 @@ export class ProposeEventChangesTool implements AssistantTool {
   }
 
   constructor(
-    private readonly content: TripContent,
     private readonly views: TripViews,
     private readonly dryRun: MutationDryRun,
     private readonly recorder: ProposalRecorder,
@@ -158,22 +157,26 @@ export class ProposeEventChangesTool implements AssistantTool {
       summary?: string
       changes: ChangeInput[]
     }>(input, raw)
-    const before = await this.content.load(ctx.trip.id)
     const changedAt = this.clock.now().toISOString()
-    const planned = changes.map((change, index) => ({
-      change,
-      mutation: this.mutationOf(ctx, before, change, index, changedAt),
-    }))
-    const ids = planned.map(({ mutation }) => mutation.id)
-    if (new Set(ids).size !== ids.length) {
-      throw new ToolInputError('Each event may appear in one change only; merge them.')
-    }
-
-    const mutations = planned.map(({ mutation }) => mutation)
-    const { after, baseline } = await this.dryRun.run(ctx.user, ctx.trip, mutations, ctx.i18n)
+    const { before, after, baseline, mutations } = await this.dryRun.run(
+      ctx.user,
+      ctx.trip,
+      ctx.i18n,
+      (current) => {
+        const planned = changes.map((change, index) =>
+          this.mutationOf(ctx, current, change, index, changedAt)
+        )
+        const ids = planned.map((mutation) => mutation.id)
+        if (new Set(ids).size !== ids.length) {
+          throw new ToolInputError('Each event may appear in one change only; merge them.')
+        }
+        return planned
+      }
+    )
     const beforeById = new Map(before.events.map((event) => [event.id, event]))
     const afterById = new Map(after.events.map((event) => [event.id, event]))
-    const events: AiEventChange[] = planned.map(({ change, mutation }) => {
+    const events: AiEventChange[] = mutations.map((mutation, index) => {
+      const change = changes[index]
       const was = beforeById.get(mutation.id) ?? null
       const will = afterById.get(mutation.id)!
       return {

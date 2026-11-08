@@ -12,6 +12,9 @@ import type {
 import app from '@adonisjs/core/services/app'
 import { PLANS } from '#config/plans'
 import { AiConversations } from '#services/assistant/ai_conversations'
+import i18nManager from '@adonisjs/i18n/services/main'
+import type { ToolContext } from '#services/assistant/assistant_tool'
+import { ProposeEventChangesTool } from '#services/assistant/tools/propose_event_changes_tool'
 import type { LlmToolResultBlock } from '#services/llm/llm_provider'
 import type Trip from '#models/trip'
 import type User from '#models/user'
@@ -68,6 +71,25 @@ function toolResults(request: { messages: { content: unknown }[] }): LlmToolResu
         )
       : []
   )
+}
+
+/** What a tool call runs with, for tests that call a tool without the chat around it. */
+async function toolContext(user: User, trip: Trip): Promise<ToolContext> {
+  const [conversation] = await db
+    .table('ai_conversations')
+    .insert({ trip_id: trip.id, user_id: user.id })
+    .returning('id')
+  const [message] = await db
+    .table('ai_messages')
+    .insert({ conversation_id: conversation.id, trip_id: trip.id, role: 'assistant' })
+    .returning('id')
+  return {
+    user,
+    trip,
+    conversationId: conversation.id,
+    messageId: message.id,
+    i18n: i18nManager.locale('en'),
+  }
 }
 
 function decide(client: any, user: User, tripId: string, actionId: string, verb: string) {
@@ -691,6 +713,62 @@ test.group('Trip assistant', (group) => {
     assert.include(expenseError.content, 'amount')
     assert.include(extract.content, 'not available yet')
     assert.isEmpty(await db.from('ai_actions').where('trip_id', trip.id))
+  })
+
+  test('a change that would not apply in full is not proposed', async ({ client, assert }) => {
+    // Another device renamed the event with a clock ahead of now: a rename now loses the merge.
+    const walk = await addEvent(trip.id, {
+      field_clock: JSON.stringify({ title: Date.parse('2026-11-07T12:00:00Z') }),
+    })
+    llm.current.script(
+      'chat',
+      'partial',
+      chatScript(
+        {
+          tool: 'propose_event_changes',
+          input: { changes: [{ op: 'edit', eventId: walk, title: 'Sunset walk' }] },
+        },
+        { text: 'Sorry.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+
+    const { events } = await say(client, owner, trip.id, conversation.id, 'Rename the walk')
+
+    assert.isEmpty(proposals(events))
+    const [refused] = toolResults(llm.current.calls[1])
+    assert.isTrue(refused.isError)
+    assert.include(refused.content, 'would not apply in full')
+    assert.include(refused.content, 'title')
+    assert.isEmpty(await db.from('ai_actions').where('trip_id', trip.id))
+  })
+
+  test('the diff and the baseline are read after the trip lock, in one snapshot', async ({
+    assert,
+  }) => {
+    const walk = await addEvent(trip.id, {
+      starts_local: '2027-01-22T09:00:00',
+      start_tz: 'Asia/Bangkok',
+      starts_at: '2027-01-22T02:00:00Z',
+      starts_on: '2027-01-22',
+    })
+    const ctx = await toolContext(owner, trip)
+    const tool = await app.container.make(ProposeEventChangesTool)
+    const statements: string[] = []
+    const listener = (query: { sql: string }) => statements.push(query.sql)
+    const knex = db.connection().getWriteClient()
+    knex.on('query', listener)
+
+    const outcome = await tool.run(ctx, {
+      changes: [{ op: 'move', eventId: walk, startsLocal: '2027-01-23T09:00' }],
+    })
+
+    knex.off('query', listener)
+    assert.isNotTrue(outcome.isError)
+    const lock = statements.findIndex((sql) => /from "trips".*for update/is.test(sql))
+    const firstEventRead = statements.findIndex((sql) => /from "events"/.test(sql))
+    assert.isAtLeast(lock, 0)
+    assert.isAbove(firstEventRead, lock, 'no event is read before the trip is locked')
   })
 
   test('read tools answer the budget, today and tasks from the trip', async ({

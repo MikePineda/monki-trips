@@ -74,7 +74,9 @@ export class CreateTaskTool implements AssistantTool {
       },
       changedAt: this.clock.now().toISOString(),
     }
-    const { after, baseline } = await this.dryRun.run(ctx.user, ctx.trip, [mutation], ctx.i18n)
+    const { after, baseline } = await this.dryRun.run(ctx.user, ctx.trip, ctx.i18n, () => [
+      mutation,
+    ])
     const row = after.tasks.find((one) => one.id === mutation.id)!
     const proposal: AiTaskProposal = {
       kind: 'task',

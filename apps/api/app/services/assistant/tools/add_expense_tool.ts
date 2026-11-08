@@ -15,7 +15,6 @@ import { ProposalRecorder } from '#services/assistant/proposal_recorder'
 import { validateToolInput } from '#services/assistant/tool_input'
 import { Clock } from '#services/clock'
 import { FxRates } from '#services/fx/fx_rates'
-import { TripContent } from '#services/trip_content'
 import { TripViews } from '#services/trip_views'
 
 const input = vine.compile(
@@ -85,7 +84,6 @@ export class AddExpenseTool implements AssistantTool {
   }
 
   constructor(
-    private readonly content: TripContent,
     private readonly views: TripViews,
     private readonly fx: FxRates,
     private readonly dryRun: MutationDryRun,
@@ -102,8 +100,6 @@ export class AddExpenseTool implements AssistantTool {
         `Invalid input: amount (decimals). ${expense.currency} amounts must be non-zero with at most the currency's decimals.`
       )
     }
-    const { budgetCategories } = await this.content.load(ctx.trip.id)
-    const category = categoryFor(budgetCategories, expense.category)
     let spentOn = expense.spentOn
     if (!spentOn) {
       const { date } = await this.views.today(ctx.trip)
@@ -113,31 +109,41 @@ export class AddExpenseTool implements AssistantTool {
     // Like a sync push's `prepare`: fetch the rate before the transaction, which then reads the cache.
     await this.fx.find(ctx.trip.baseCurrency, expense.currency, spentOn).catch(() => null)
 
-    const mutation: SyncMutation = {
-      mutationId: randomUUID(),
-      tripId: ctx.trip.id,
-      entity: 'expense',
-      op: 'upsert',
-      id: randomUUID(),
-      changes: {
-        amountMinor: Number(minor),
-        currency: expense.currency,
-        spentOn,
-        categoryId: category?.id ?? null,
-        description: expense.description ?? null,
-      },
-      changedAt: this.clock.now().toISOString(),
-    }
-    const { after, baseline } = await this.dryRun.run(ctx.user, ctx.trip, [mutation], ctx.i18n)
-    const row = after.expenses.find((one) => one.id === mutation.id)!
+    let category: BudgetCategory | null = null
+    const { after, baseline, mutations } = await this.dryRun.run(
+      ctx.user,
+      ctx.trip,
+      ctx.i18n,
+      ({ budgetCategories }) => {
+        category = categoryFor(budgetCategories, expense.category)
+        const mutation: SyncMutation = {
+          mutationId: randomUUID(),
+          tripId: ctx.trip.id,
+          entity: 'expense',
+          op: 'upsert',
+          id: randomUUID(),
+          changes: {
+            amountMinor: Number(minor),
+            currency: expense.currency,
+            spentOn,
+            categoryId: category?.id ?? null,
+            description: expense.description ?? null,
+          },
+          changedAt: this.clock.now().toISOString(),
+        }
+        return [mutation]
+      }
+    )
+    const chosen = category as BudgetCategory | null
+    const row = after.expenses.find((one) => one.id === mutations[0].id)!
     const proposal: AiExpenseProposal = {
       kind: 'expense',
       expenseId: row.id,
       amountMinor: row.amountMinor,
       currency: row.currency,
       categoryId: row.categoryId,
-      categoryKey: category?.key ?? null,
-      categoryName: category?.name ?? null,
+      categoryKey: chosen?.key ?? null,
+      categoryName: chosen?.name ?? null,
       spentOn: row.spentOn,
       description: row.description,
       baseCurrency: ctx.trip.baseCurrency,
@@ -146,7 +152,7 @@ export class AddExpenseTool implements AssistantTool {
       fxRateDate: row.fxRateDate,
       fxSource: row.fxSource,
     }
-    const action = await this.recorder.record(ctx, 'add_expense', proposal, [mutation], baseline)
+    const action = await this.recorder.record(ctx, 'add_expense', proposal, mutations, baseline)
     return { ...toolData(this.definition.name, ProposalRecorder.forModel(action)), action }
   }
 }
