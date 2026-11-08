@@ -27,6 +27,19 @@ export interface LlmImageBlock {
   data: string
 }
 
+/**
+ * A PDF the model should read as pages (text and layout), for a scanned
+ * booking whose text layer is too thin. Needs the vision model like an
+ * image; `pages` sizes the input estimate.
+ */
+export interface LlmDocumentBlock {
+  type: 'document'
+  mimeType: 'application/pdf'
+  /** Base64 without newlines. */
+  data: string
+  pages: number
+}
+
 /** A tool call the model made earlier in the conversation. */
 export interface LlmToolUseBlock {
   type: 'tool_use'
@@ -43,7 +56,12 @@ export interface LlmToolResultBlock {
   isError?: boolean
 }
 
-export type LlmContentBlock = LlmTextBlock | LlmImageBlock | LlmToolUseBlock | LlmToolResultBlock
+export type LlmContentBlock =
+  | LlmTextBlock
+  | LlmImageBlock
+  | LlmDocumentBlock
+  | LlmToolUseBlock
+  | LlmToolResultBlock
 
 export interface LlmMessage {
   role: LlmRole
@@ -112,6 +130,15 @@ export abstract class LlmProvider {
   /** The provider's name for `llm_usage.provider`. */
   abstract readonly name: string
 
+  /**
+   * Whether requests carrying an image or a PDF document can be answered
+   * (a vision model is configured). Features that need it answer 503
+   * `E_EXTRACTION_UNAVAILABLE` without calling the model when it is false.
+   */
+  get supportsVision(): boolean {
+    return false
+  }
+
   /** The whole answer at once. Throws `LlmUnavailableError` when the provider cannot answer. */
   abstract complete(request: LlmRequest): Promise<LlmCompletion>
 
@@ -145,10 +172,11 @@ export function messageText(message: LlmMessage): string {
     .join('')
 }
 
-/** Whether any message carries an image. */
+/** Whether any message carries an image or a PDF document (both need the vision model). */
 export function hasImageInput(request: Pick<LlmRequest, 'messages'>): boolean {
   return request.messages.some(
     (message) =>
-      typeof message.content !== 'string' && message.content.some((block) => block.type === 'image')
+      typeof message.content !== 'string' &&
+      message.content.some((block) => block.type === 'image' || block.type === 'document')
   )
 }

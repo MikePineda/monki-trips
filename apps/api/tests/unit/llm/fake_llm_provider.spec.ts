@@ -88,4 +88,12 @@ test.group('Fake LLM provider', () => {
     )
     await assert.rejects(() => missing.complete(request), LlmUnavailableError as any)
   })
+
+  test('the fake offers vision until a test turns it off', ({ assert }) => {
+    const provider = fake()
+
+    assert.isTrue(provider.supportsVision)
+    provider.withVision(false)
+    assert.isFalse(provider.supportsVision)
+  })
 })

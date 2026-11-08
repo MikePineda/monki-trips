@@ -46,9 +46,20 @@ export class FakeLlmProvider extends LlmProvider {
   private readonly cases = new Map<LlmPurpose, string>()
   private readonly cursor = new Map<string, number>()
   private readonly fixtures = new Map<string, FakeLlmFixture>()
+  private vision = true
 
   constructor(private readonly fixturesDir: string) {
     super()
+  }
+
+  override get supportsVision(): boolean {
+    return this.vision
+  }
+
+  /** Like a deployment without `LLM_VISION_MODEL` when `false`. */
+  withVision(enabled: boolean): this {
+    this.vision = enabled
+    return this
   }
 
   /** Answer the next calls of `purpose` from `<purpose>/<name>.json`, starting from its first response. */

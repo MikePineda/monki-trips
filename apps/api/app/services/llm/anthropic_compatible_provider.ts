@@ -87,6 +87,10 @@ export class AnthropicCompatibleProvider extends LlmProvider {
     this.sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)))
   }
 
+  override get supportsVision(): boolean {
+    return Boolean(this.options.visionModel)
+  }
+
   /** The model a request goes to: the vision model when it carries an image and one is set. */
   modelFor(request: Pick<LlmRequest, 'messages'>): string {
     if (hasImageInput(request) && this.options.visionModel) return this.options.visionModel
@@ -298,6 +302,11 @@ function wireContent(message: LlmMessage): string | unknown[] {
       case 'image':
         return {
           type: 'image',
+          source: { type: 'base64', media_type: block.mimeType, data: block.data },
+        }
+      case 'document':
+        return {
+          type: 'document',
           source: { type: 'base64', media_type: block.mimeType, data: block.data },
         }
       case 'tool_use':

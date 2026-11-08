@@ -73,4 +73,23 @@ test.group('Prompt builder', () => {
       }
     }, LlmUnavailableError as any)
   })
+
+  test('a user turn can carry a file block next to the app-written text', ({ assert }) => {
+    const built = new PromptBuilder('Read bookings.')
+      .userBlocks([
+        { type: 'image', mimeType: 'image/png', data: 'AA==' },
+        { type: 'text', text: 'Read the attached file.' },
+      ])
+      .build()
+
+    assert.deepEqual(built.messages, [
+      {
+        role: 'user',
+        content: [
+          { type: 'image', mimeType: 'image/png', data: 'AA==' },
+          { type: 'text', text: 'Read the attached file.' },
+        ],
+      },
+    ])
+  })
 })

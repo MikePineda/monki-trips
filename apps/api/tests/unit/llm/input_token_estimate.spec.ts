@@ -1,3 +1,4 @@
+import { LLM_DOCUMENT_PAGE_TOKEN_ESTIMATE } from '#config/llm'
 import { test } from '@japa/runner'
 import { estimateInputTokens } from '#services/llm/input_token_estimate'
 
@@ -38,5 +39,23 @@ test.group('Input token estimate', () => {
 
     assert.isBelow(withImage, 5_000)
     assert.isAbove(withImage, 0)
+  })
+
+  test('a pdf document counts a fixed block per page, not by its base64 size', ({ assert }) => {
+    const estimate = (pages: number) =>
+      estimateInputTokens({
+        system: '',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'document', mimeType: 'application/pdf', data: 'x'.repeat(400_000), pages },
+            ],
+          },
+        ],
+      })
+
+    assert.equal(estimate(3), 3 * LLM_DOCUMENT_PAGE_TOKEN_ESTIMATE)
+    assert.equal(estimate(0), LLM_DOCUMENT_PAGE_TOKEN_ESTIMATE)
   })
 })
