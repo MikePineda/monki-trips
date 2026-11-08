@@ -1,0 +1,15 @@
+meta {
+  name: Weather of a trip day
+  type: http
+  seq: 58
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/weather?date=2027-01-21
+  body: none
+  auth: none
+}
+
+params:query {
+  date: 2027-01-21
+}

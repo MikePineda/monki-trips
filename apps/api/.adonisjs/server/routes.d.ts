@@ -39,6 +39,7 @@ export type ScannedRoutes = {
     'trips.nights': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.budget': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.weather': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
@@ -75,6 +76,7 @@ export type ScannedRoutes = {
     'trips.nights': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.budget': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.weather': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -99,6 +101,7 @@ export type ScannedRoutes = {
     'trips.nights': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.budget': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.today': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.weather': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }

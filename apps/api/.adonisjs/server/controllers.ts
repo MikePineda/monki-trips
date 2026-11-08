@@ -24,4 +24,5 @@ export const controllers = {
   TripMembers: () => import('#controllers/trip_members_controller'),
   TripViews: () => import('#controllers/trip_views_controller'),
   Trips: () => import('#controllers/trips_controller'),
+  Weather: () => import('#controllers/weather_controller'),
 }

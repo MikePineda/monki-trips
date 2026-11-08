@@ -212,6 +212,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"today"]],
     types: placeholder as Registry['trips.today']['types'],
   },
+  'trips.weather': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/weather',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"weather"]],
+    types: placeholder as Registry['trips.weather']['types'],
+  },
   'trips.export': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/trips/:tripId/export',

@@ -15,7 +15,13 @@
 import router from '@adonisjs/core/services/router'
 import { controllers } from '#generated/controllers'
 import { middleware } from '#start/kernel'
-import { throttleForgot, throttleLlm, throttleSignup, throttleVerify } from '#start/limiter'
+import {
+  throttleForgot,
+  throttleLlm,
+  throttleSignup,
+  throttleVerify,
+  throttleWeather,
+} from '#start/limiter'
 
 router.where('tripId', router.matchers.uuid())
 router.where('id', router.matchers.uuid())
@@ -117,6 +123,10 @@ router
                 router
                   .get('trips/:tripId/today', [controllers.TripViews, 'today'])
                   .as('trips.today')
+                router
+                  .get('trips/:tripId/weather', [controllers.Weather, 'show'])
+                  .as('trips.weather')
+                  .use(throttleWeather)
                 router
                   .get('trips/:tripId/export', [controllers.TripJson, 'export'])
                   .as('trips.export')
