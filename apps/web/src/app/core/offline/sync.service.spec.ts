@@ -435,6 +435,95 @@ describe('SyncService', () => {
     expect(ids).toEqual(['s-elsewhere', 's-new', 's-old'])
   })
 
+  describe('the shares of a pushed split', () => {
+    const share = (id: string, travellerId: string, shareMinor: number) => ({
+      id,
+      tripId: 't1',
+      expenseId: 'x1',
+      travellerId,
+      shareMinor,
+      updatedAt: '2026-11-07T12:00:00.000Z',
+    })
+    const SERVER = [share('s-a', 'v1', 600), share('s-b', 'v2', 650)]
+
+    async function queueMySplit() {
+      await db.expenses.put(EXPENSE)
+      await db.expenseShares.put(share('s-mine', 'v3', 1250))
+      return outbox.enqueue({
+        tripId: 't1',
+        kind: 'expense.upsert',
+        payload: {
+          entity: 'expense',
+          op: 'upsert',
+          id: 'x1',
+          changes: { shares: [{ id: 's-mine', travellerId: 'v3', shareMinor: 1250 }] },
+          changedAt: '2026-11-07T12:00:00.000Z',
+        },
+      })
+    }
+    const stored = async () =>
+      (await db.expenseShares.where('expenseId').equals('x1').toArray())
+        .map((row) => [row.id, row.travellerId, row.shareMinor])
+        .sort()
+
+    it('a split that loses last-write-wins gives way to the server shares', async () => {
+      const entry = await queueMySplit()
+      api.conflictNext(entry.id, { table: 'expenses', row: SERVER_EXPENSE })
+      api.sharesNext(entry.id, 'x1', SERVER)
+
+      await sync.push()
+
+      expect(await stored()).toEqual([
+        ['s-a', 'v1', 600],
+        ['s-b', 'v2', 650],
+      ])
+    })
+
+    it('a rejected split puts the server shares back', async () => {
+      const entry = await queueMySplit()
+      api.rejectNext(entry.id, 'shares must add up')
+      api.sharesNext(entry.id, 'x1', SERVER)
+
+      await sync.push()
+
+      expect(await stored()).toEqual([
+        ['s-a', 'v1', 600],
+        ['s-b', 'v2', 650],
+      ])
+    })
+
+    it('an applied split takes the rows the server stored', async () => {
+      const entry = await queueMySplit()
+      api.sharesNext(entry.id, 'x1', [{ ...share('s-mine', 'v3', 1250), updatedAt: 'server' }])
+
+      await sync.push()
+
+      const [row] = await db.expenseShares.where('expenseId').equals('x1').toArray()
+      expect(row).toMatchObject({ id: 's-mine', updatedAt: 'server' })
+      expect(row?.syncState).toBeUndefined()
+    })
+
+    it('a newer split still in the outbox keeps the device shares', async () => {
+      const entry = await queueMySplit()
+      await outbox.enqueue({
+        tripId: 't1',
+        kind: 'expense.upsert',
+        payload: {
+          entity: 'expense',
+          op: 'upsert',
+          id: 'x1',
+          changes: { shares: [{ id: 's-mine', travellerId: 'v3', shareMinor: 1250 }] },
+          changedAt: '2026-11-07T12:01:00.000Z',
+        },
+      })
+      api.sharesNext(entry.id, 'x1', SERVER)
+
+      await sync.push()
+
+      expect((await stored()).map(([id]) => id)).toContain('s-mine')
+    })
+  })
+
   it('drops the trips the server no longer lists, with their rows', async () => {
     await db.trips.bulkPut([
       {

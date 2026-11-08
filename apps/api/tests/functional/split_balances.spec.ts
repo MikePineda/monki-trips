@@ -133,6 +133,62 @@ test.group('Split budget mode', (group) => {
     assert.lengthOf(await liveShares(dinner.id), 2)
   })
 
+  test('an expense push answers the live shares the server keeps, whatever the outcome', async ({
+    client,
+    assert,
+  }) => {
+    const { owner, trip, ownerTraveller, friendTraveller } = await tripOfThree(client)
+    const id = randomUUID()
+    const kept = randomUUID()
+    const applied = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        {
+          amountMinor: 1000,
+          currency: 'AUD',
+          spentOn: '2027-01-21',
+          shares: [{ id: kept, travellerId: ownerTraveller, shareMinor: 1000 }],
+        },
+        { id, changedAt: '2026-11-07T11:00:00.000Z' }
+      )
+    )
+    const stale = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        { shares: [{ id: randomUUID(), travellerId: friendTraveller, shareMinor: 1000 }] },
+        { id, changedAt: '2026-11-07T09:00:00.000Z' }
+      )
+    )
+    const wrong = await pushOne(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        {
+          shares: [{ id: randomUUID(), travellerId: friendTraveller, shareMinor: 1 }],
+        },
+        { id, changedAt: '2026-11-07T11:30:00.000Z' }
+      )
+    )
+
+    assert.equal(applied.status, 'applied')
+    assert.equal(stale.status, 'partial')
+    assert.equal(wrong.status, 'rejected')
+    for (const result of [applied, stale, wrong]) {
+      assert.deepEqual(
+        result.shares?.map((share) => [share.id, share.travellerId, share.shareMinor]),
+        [[kept, ownerTraveller, 1000]]
+      )
+    }
+  })
+
   test('switching back to shared keeps payers and shares', async ({ client, assert }) => {
     const { owner, trip, ownerTraveller } = await tripOfThree(client)
     const groceries = await pushApplied<Expense>(

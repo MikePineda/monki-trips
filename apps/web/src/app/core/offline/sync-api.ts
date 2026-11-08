@@ -1,7 +1,7 @@
 import { inject, InjectionToken } from '@angular/core'
 import { API } from '../api/api'
 import { RealSyncApi } from '../api/real-sync-api'
-import type { OutboxRecord, SyncChange } from './records'
+import type { ExpenseShareRecord, OutboxRecord, SyncChange } from './records'
 
 export interface SyncPullResult {
   /** Opaque position to send back on the next pull. */
@@ -20,6 +20,11 @@ export interface SyncPushResult {
   rejected: { id: string; message: string }[]
   /** The server's row wins; the client applies it and drops the mutation. */
   conflicts: { id: string; serverRow: SyncChange }[]
+  /**
+   * For each pushed expense, the live shares the server keeps after the
+   * mutation (applied or not): the device replaces its own with these.
+   */
+  expenseShares?: { expenseId: string; shares: ExpenseShareRecord[] }[]
 }
 
 /**

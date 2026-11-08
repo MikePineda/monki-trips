@@ -120,6 +120,12 @@ export interface SyncMutationResult {
   rejectedFields?: string[]
   error?: SyncMutationError
   row?: SyncRowByEntity[SyncPushEntity] | null
+  /**
+   * For an `expense` whose row the result names: the live shares the
+   * server keeps after this mutation, applied or not. The client replaces
+   * its shares of that expense with these.
+   */
+  shares?: ExpenseShare[]
 }
 
 export interface SyncPushOutput {

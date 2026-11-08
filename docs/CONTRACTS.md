@@ -170,6 +170,11 @@ Each mutation runs in its own transaction and answers one of:
 | `duplicate` | this `mutationId` was applied before (same account, still a member); the stored result comes back (after leaving the trip: `rejected E_ROW_NOT_FOUND`). Rejections are not stored: a retry is re-evaluated. Also an insert of a row the trip already has under another id (a task with a `templateItemKey` already present): nothing is written and `row` is the server's row, which the device adopts in place of its own.                                                                                                                                                                                                         |
 | `rejected`  | nothing was written; `error: { code, message, errors? }`. `E_ROW_NOT_FOUND` (not a member, id of another trip, missing parent, unknown row), `E_ROW_DELETED` (tombstones always win; `row` is the tombstone), `E_TRIP_ROLE`, `E_BASE_CURRENCY_LOCKED`, `E_VALIDATION_ERROR` (with `errors`), `E_BAD_REQUEST` (an operation the entity does not allow), `E_CONFLICT` (a `mutationId` of another account, or a second live row where only one may exist: a seat per traveller and segment, a share per traveller and expense). A value the database cannot store is `E_VALIDATION_ERROR` too: one bad mutation never fails the batch. |
 
+Every result of an `expense` mutation that names its row (`row`) also carries
+`shares`: the expense's live split as the server keeps it after the mutation,
+applied, partial or rejected. The client replaces its shares of that expense
+with these unless a newer split of it is still queued.
+
 A field applies when its `changedAt` is not older than the field's clock
 (`field_clock`); a tie goes to the last arrival. An expense's `shares` is
 one field with its own clock entry: a stale split loses as a whole

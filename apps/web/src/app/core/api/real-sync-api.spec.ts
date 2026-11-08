@@ -367,6 +367,56 @@ describe('RealSyncApi', () => {
     )
     expect(result.rejected).toHaveLength(2)
   })
+  it('hands back the live shares the server keeps for a pushed expense, refused or not', async () => {
+    const share = {
+      id: 's1',
+      tripId: 't1',
+      expenseId: 'x1',
+      travellerId: 'v1',
+      shareMinor: 1250,
+      deletedAt: null,
+      updatedAt: '2026-11-07T10:00:00.000Z',
+    }
+    const { loader } = clientWith({
+      push: () => ({
+        results: [
+          {
+            mutationId: 'm1',
+            status: 'rejected',
+            error: { code: 'E_VALIDATION_ERROR', message: 'The shares must add up' },
+            row: { id: 'x1' } as never,
+            shares: [share],
+          },
+        ],
+      }),
+    })
+    const expense = {
+      entity: 'expense',
+      op: 'upsert',
+      id: 'x1',
+      changes: { shares: [] },
+      changedAt: '2026-11-07T12:00:00.000Z',
+    }
+
+    const result = await new RealSyncApi(loader).push([entry('m1', expense, 'expense.upsert')])
+
+    expect(result.expenseShares).toEqual([
+      {
+        expenseId: 'x1',
+        shares: [
+          {
+            id: 's1',
+            tripId: 't1',
+            expenseId: 'x1',
+            travellerId: 'v1',
+            shareMinor: 1250,
+            updatedAt: '2026-11-07T10:00:00.000Z',
+          },
+        ],
+      },
+    ])
+  })
+
   it('pulls the itinerary rows into their tables: stops, events, legs and seats', async () => {
     const event = blankEvent({ id: 'e1', tripId: 't1', title: 'Flight out' })
     const { loader } = clientWith({

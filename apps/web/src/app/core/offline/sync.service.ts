@@ -250,7 +250,35 @@ export class SyncService {
       await this.outbox.scheduleRetry(mutation.id)
       return false
     }
+    await this.adoptServerShares(result.expenseShares ?? [])
     return true
+  }
+
+  /**
+   * The split the server keeps for each pushed expense replaces the
+   * device's, whatever the outcome, so a split that lost or was refused
+   * never stays behind (the pull skipped those shares while it was
+   * pending). A newer split of the same expense still in the outbox keeps
+   * the device's rows until its own answer.
+   */
+  private async adoptServerShares(
+    entries: NonNullable<SyncPushResult['expenseShares']>
+  ): Promise<void> {
+    if (entries.length === 0) {
+      return
+    }
+    const db = await this.database
+    await db.transaction('rw', [db.expenseShares, db.outbox], async () => {
+      const pending = await this.outbox.pendingFieldsByRow(db)
+      for (const { expenseId, shares } of entries) {
+        const fields = pending.get(expenseId)
+        if (fields && (fields.has('shares') || fields.has('*'))) {
+          continue
+        }
+        await db.expenseShares.where('expenseId').equals(expenseId).delete()
+        await db.expenseShares.bulkPut(shares)
+      }
+    })
   }
 
   /** The row a refused change touched shows "needs attention" until the person decides. */
