@@ -65,6 +65,10 @@ export interface ApiDefinition {
     documents: {
       store: typeof routes['trips.documents.store']
       file: typeof routes['trips.documents.file']
+      extract: typeof routes['trips.documents.extract']
+    }
+    receipts: {
+      extract: typeof routes['trips.receipts.extract']
     }
     tasks: {
       fromTemplate: typeof routes['trips.tasks.fromTemplate']
@@ -89,6 +93,7 @@ export interface ApiDefinition {
       actions: {
         accept: typeof routes['trips.ai.actions.accept']
         reject: typeof routes['trips.ai.actions.reject']
+        revise: typeof routes['trips.ai.actions.revise']
       }
     }
     members: {

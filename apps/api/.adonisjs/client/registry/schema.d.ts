@@ -554,6 +554,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/documents_controller').default['file']>>>
     }
   }
+  'trips.documents.extract': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/documents/:id/extract'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/extractions_controller').default['document']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/extractions_controller').default['document']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/extractions_controller').default['document']>>>
+    }
+  }
+  'trips.receipts.extract': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/receipts/extract'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/extractions_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/extractions_controller').default['receipt']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/extractions_controller').default['receipt']>>>
+    }
+  }
   'trips.tasks.fromTemplate': {
     methods: ["POST"]
     pattern: '/api/v1/trips/:tripId/tasks/from-template'
@@ -721,6 +747,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['reject']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['reject']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['reject']>>>
+    }
+  }
+  'trips.ai.actions.revise': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/ai/actions/:id/revise'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking_extraction').reviseBookingValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking_extraction').reviseBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['revise']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['revise']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['revise']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'trips.members.index': {

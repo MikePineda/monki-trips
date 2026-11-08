@@ -78,6 +78,7 @@
     "luxon": "3.7.2",
     "pg": "8.23.1",
     "reflect-metadata": "0.2.2",
+    "unpdf": "1.9.1",
     "web-push": "^4.0.0"
   },
   "hotHook": {

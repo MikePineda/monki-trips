@@ -1,0 +1,27 @@
+meta {
+  name: Read a receipt photo
+  type: http
+  seq: 69
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/receipts/extract
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:multipart-form {
+  file: @file(fixtures/receipt.png)
+}
+
+docs {
+  Multipart `file`: JPEG, PNG, WebP or GIF by its bytes, 5 MB at most; never
+  stored. 200 with a `ReceiptDraft` (amount, currency, date, merchant,
+  category key, review flags) for the quick expense sheet to confirm; no
+  proposal row. 413 E_FILE_TOO_LARGE, 415 E_UNSUPPORTED_FILE, 503
+  E_EXTRACTION_UNAVAILABLE without a vision model, 402 over the token cap.
+}

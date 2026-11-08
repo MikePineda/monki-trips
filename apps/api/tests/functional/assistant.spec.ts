@@ -749,7 +749,8 @@ test.group('Trip assistant', (group) => {
     assert.include(eventError.content, 'endsLocal')
     assert.isTrue(expenseError.isError)
     assert.include(expenseError.content, 'amount')
-    assert.include(extract.content, 'not available yet')
+    assert.isTrue(extract.isError)
+    assert.include(extract.content, 'documentId')
     assert.isEmpty(await db.from('ai_actions').where('trip_id', trip.id))
   })
 

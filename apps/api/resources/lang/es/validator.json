@@ -40,7 +40,10 @@
       "unresolvedRef": "{field} apunta a una ref que no está en el archivo",
       "duplicateRef": "{field} repite una ref ya usada en el archivo",
       "quietHoursPair": "Las horas de silencio necesitan un inicio y un final",
-      "quietHoursDistinct": "Las horas de silencio necesitan un inicio y un final distintos"
+      "quietHoursDistinct": "Las horas de silencio necesitan un inicio y un final distintos",
+      "amount": "{field} debe ser un importe válido para la moneda",
+      "currency": "{field} debe ser una moneda ISO 4217",
+      "range": "{field} debe apuntar a uno de los trayectos"
     },
     "fields": {
       "email": "el correo",
@@ -177,7 +180,10 @@
       "checkOut": "los avisos de check-out",
       "tasksDue": "los avisos de tareas",
       "quietHoursStart": "el inicio de las horas de silencio",
-      "quietHoursEnd": "el final de las horas de silencio"
+      "quietHoursEnd": "el final de las horas de silencio",
+      "cost": "el coste",
+      "draft": "la reserva",
+      "segment": "el trayecto"
     }
   }
 }

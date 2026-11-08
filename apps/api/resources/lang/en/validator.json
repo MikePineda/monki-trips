@@ -40,7 +40,10 @@
       "unresolvedRef": "{field} names a ref that is not in the file",
       "duplicateRef": "{field} repeats a ref already used in the file",
       "quietHoursPair": "Quiet hours need both a start and an end",
-      "quietHoursDistinct": "Quiet hours need a start and an end that differ"
+      "quietHoursDistinct": "Quiet hours need a start and an end that differ",
+      "amount": "{field} must be an amount the currency can hold",
+      "currency": "{field} must be an ISO 4217 currency",
+      "range": "{field} must point at one of the legs"
     },
     "fields": {
       "email": "e-mail",
@@ -177,7 +180,10 @@
       "checkOut": "check-out reminders",
       "tasksDue": "task reminders",
       "quietHoursStart": "quiet hours start",
-      "quietHoursEnd": "quiet hours end"
+      "quietHoursEnd": "quiet hours end",
+      "cost": "cost",
+      "draft": "booking",
+      "segment": "leg"
     }
   }
 }

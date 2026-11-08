@@ -1,0 +1,43 @@
+meta {
+  name: Revise a booking proposal
+  type: http
+  seq: 70
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/actions/{{actionId}}/revise
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "draft": {
+      "kind": "ferry",
+      "title": "Ferry to Example Island",
+      "providerName": "Example Ferries",
+      "segments": [
+        {
+          "originName": "North Pier",
+          "destName": "Example Island",
+          "departsLocal": "2027-01-25T09:00",
+          "departsTz": "Asia/Bangkok",
+          "arrivesLocal": "2027-01-25T11:30",
+          "arrivesTz": "Asia/Bangkok"
+        }
+      ]
+    }
+  }
+}
+
+docs {
+  The member's corrected draft replaces an `extract_booking` proposal: it is
+  validated again (422 with `draft.<path>` fields), its mutations, baseline
+  and diff are recomputed and the flags of changed fields dropped. Only the
+  account that asked for it (else 404), only while `proposed` (409
+  E_AI_ACTION_CLOSED); any other tool answers 409 E_AI_ACTION_NOT_REVISABLE.
+}

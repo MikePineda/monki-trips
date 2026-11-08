@@ -37,9 +37,7 @@ export function estimateInputTokens(
     characters += JSON.stringify(tool.inputSchema).length
   }
   return (
-    Math.ceil(characters / LLM_CHARS_PER_TOKEN) +
-    images * LLM_IMAGE_TOKEN_ESTIMATE +
-    documentTokens
+    Math.ceil(characters / LLM_CHARS_PER_TOKEN) + images * LLM_IMAGE_TOKEN_ESTIMATE + documentTokens
   )
 }
 

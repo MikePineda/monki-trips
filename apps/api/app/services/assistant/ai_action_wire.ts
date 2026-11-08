@@ -15,7 +15,7 @@ export function aiActionWire(row: Row): AiAction {
   return {
     id: String(row['id']),
     tripId: String(row['trip_id']),
-    conversationId: String(row['conversation_id']),
+    conversationId: row['conversation_id'] ? String(row['conversation_id']) : null,
     messageId: row['message_id'] ? String(row['message_id']) : null,
     tool: row['tool'] as AiAction['tool'],
     status: row['status'] as AiAction['status'],
