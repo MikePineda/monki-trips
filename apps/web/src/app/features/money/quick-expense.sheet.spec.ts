@@ -3,7 +3,8 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog'
 import { TestBed } from '@angular/core/testing'
 import { provideRouter } from '@angular/router'
 import type { ReceiptDraft } from '@monkitrips/shared'
-import { apiFakes, provideApiTesting } from '../../../testing/api-testing'
+import { apiFakes, provideApiTesting, type ApiFakes } from '../../../testing/api-testing'
+import { FAKE_APP_CONFIG } from '../../../testing/fake-auth-api'
 import { DEMO_TRIP_RECORD, blankStop } from '../../../testing/fake-trip-content'
 import { i18nTesting } from '../../../testing/i18n-testing'
 import { defaultCategoryRecords, expenseRecord } from '../../../testing/money-fixtures'
@@ -51,6 +52,7 @@ describe('QuickExpenseSheet', () => {
   let closedWith: QuickExpenseResult[]
   let receipts: ScriptedReceiptApi
   let downscaled: Blob[]
+  let fakes: ApiFakes
 
   beforeEach(async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
@@ -58,12 +60,13 @@ describe('QuickExpenseSheet', () => {
     closedWith = []
     receipts = new ScriptedReceiptApi()
     downscaled = []
+    fakes = apiFakes()
     TestBed.configureTestingModule({
       imports: [QuickExpenseSheet, i18nTesting()],
       providers: [
         // 03:00 UTC on the 21st is noon in Tokyo: lunch time at the stop.
         ...provideOfflineTesting({ db, clock: new TestClock('2027-01-21T03:00:00.000Z') }),
-        ...provideApiTesting(apiFakes()),
+        ...provideApiTesting(fakes),
         provideRouter([]),
         { provide: TIME_ZONE, useValue: 'UTC' },
         { provide: DIALOG_DATA, useValue: { tripId: 'trip-1' } },
@@ -285,7 +288,8 @@ describe('QuickExpenseSheet', () => {
   })
 
   it('scan receipt is offered only online, with a reason offline', async () => {
-    const { byId } = await render()
+    const { byId, until } = await render()
+    await until(() => expect(byId('money.quick.scan')).not.toBeNull())
 
     expect(byId('money.quick.scan')?.hasAttribute('disabled')).toBe(true)
     expect(byId('money.quick.scanOffline')?.textContent).toContain('You need a connection')
@@ -293,6 +297,24 @@ describe('QuickExpenseSheet', () => {
     const file = byId('money.quick.scanFile') as HTMLInputElement
     expect(file.accept).toBe('image/*')
     expect(file.getAttribute('capture')).toBe('environment')
+  })
+
+  it('scan receipt is hidden while the server cannot read photos', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+    fakes.auth.appConfig = { ...FAKE_APP_CONFIG, visionEnabled: false }
+    const { tap, until, byId, selectedCategory } = await render()
+    // The sheet is drawn and the server's answer is in before anything is asserted hidden.
+    await until(() => expect(selectedCategory()).toBe('food'))
+    await until(() => expect(fakes.auth.calls).toContain('config'))
+
+    expect(byId('money.quick.scan')).toBeNull()
+    expect(byId('money.quick.scanFile')).toBeNull()
+    expect(byId('money.quick.scanPrivacy')).toBeNull()
+    expect(fakes.auth.calls).toContain('config')
+
+    await tap('ui.keypad.7')
+    await tap('money.quick.save')
+    await until(() => expect(closedWith).toHaveLength(1))
   })
 
   it('scan receipt fills amount, currency, date and category for confirmation', async () => {
@@ -320,6 +342,9 @@ describe('QuickExpenseSheet', () => {
     expect(amountFlag.querySelector('mk-icon')).not.toBeNull()
     expect(byId('money.quick.flag.spentOn')?.textContent?.trim()).toBe('Date: Check this')
     expect(await db.expenses.count()).toBe(0)
+    // Saving needs no connection; offline, sync cannot drain the outbox before it is read.
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    window.dispatchEvent(new Event('offline'))
 
     await tap('money.quick.save')
 

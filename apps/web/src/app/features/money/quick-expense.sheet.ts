@@ -8,6 +8,7 @@ import {
   type ExtractionReviewReason,
 } from '@monkitrips/shared'
 import { ApiFailure, toApiFailure } from '../../core/api/api-failure'
+import { AppConfigStore } from '../../core/api/app-config.store'
 import { LangStore } from '../../core/i18n/lang.store'
 import { CLOCK } from '../../core/offline/clock'
 import { OnlineStore } from '../../core/offline/online.store'
@@ -94,7 +95,8 @@ export type QuickExpenseResult = { expense: ExpenseRecord } | undefined
  * read by the AI provider and not stored; what it says fills the amount,
  * currency, date and category for the member to confirm, the fields to
  * check flagged with an icon and a word, and Save writes the same outbox
- * expense as ever.
+ * expense as ever. It is hidden while the server cannot read photos
+ * (`visionEnabled` in the app config).
  */
 @Component({
   selector: 'app-quick-expense-sheet',
@@ -233,46 +235,48 @@ export type QuickExpenseResult = { expense: ExpenseRecord } | undefined
               data-testid="money.quick.scanning"
             />
           }
-          <mk-stack gap="half">
-            <mk-row>
-              <button
-                mk-button
-                variant="secondary"
-                size="sm"
-                type="button"
-                [disabled]="!online() || scanning()"
-                data-testid="money.quick.scan"
-                (click)="receiptInput.click()"
-              >
-                <mk-icon name="image" [size]="18" />
-                {{ 'money.scan.action' | transloco }}
-              </button>
-            </mk-row>
-            <input
-              #receiptInput
-              mkInput
-              type="file"
-              accept="image/*"
-              capture="environment"
-              hidden
-              data-testid="money.quick.scanFile"
-              (change)="scan($event)"
-            />
-            @if (!online()) {
-              <p mk-text variant="caption" tone="ink-2" data-testid="money.quick.scanOffline">
-                {{ 'money.scan.offline' | transloco }}
+          @if (visionEnabled()) {
+            <mk-stack gap="half">
+              <mk-row>
+                <button
+                  mk-button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  [disabled]="!online() || scanning()"
+                  data-testid="money.quick.scan"
+                  (click)="receiptInput.click()"
+                >
+                  <mk-icon name="image" [size]="18" />
+                  {{ 'money.scan.action' | transloco }}
+                </button>
+              </mk-row>
+              <input
+                #receiptInput
+                mkInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+                data-testid="money.quick.scanFile"
+                (change)="scan($event)"
+              />
+              @if (!online()) {
+                <p mk-text variant="caption" tone="ink-2" data-testid="money.quick.scanOffline">
+                  {{ 'money.scan.offline' | transloco }}
+                </p>
+              }
+              <p mk-text variant="caption" tone="ink-3" data-testid="money.quick.scanPrivacy">
+                {{ 'money.scan.privacy' | transloco }}
               </p>
-            }
-            <p mk-text variant="caption" tone="ink-3" data-testid="money.quick.scanPrivacy">
-              {{ 'money.scan.privacy' | transloco }}
-            </p>
-            <mk-api-error
-              [failure]="scanFailure()"
-              scope="money"
-              [knownCodes]="scanErrorCodes"
-              testId="money.quick.scanError"
-            />
-          </mk-stack>
+              <mk-api-error
+                [failure]="scanFailure()"
+                scope="money"
+                [knownCodes]="scanErrorCodes"
+                testId="money.quick.scanError"
+              />
+            </mk-stack>
+          }
         </mk-stack>
       } @else {
         <p mk-text tone="ink-2" data-testid="money.quick.noTrip">
@@ -309,7 +313,10 @@ export class QuickExpenseSheet {
   private readonly transloco = inject(TranslocoService)
   private readonly receipts = inject(RECEIPT_EXTRACTION_API)
   private readonly downscale = inject(RECEIPT_DOWNSCALER)
+  private readonly appConfig = inject(AppConfigStore)
   protected readonly online = inject(OnlineStore).online
+  /** "Scan receipt" is offered only while the server can read photos. */
+  protected readonly visionEnabled = this.appConfig.visionEnabled
   protected readonly look = FLAG_LOOK
   protected readonly scanErrorCodes = RECEIPT_ERROR_CODES
 
@@ -392,6 +399,10 @@ export class QuickExpenseSheet {
   })
 
   private readonly categoryWords = scopedLabels('money', CATEGORY_LABEL_KEYS)
+
+  constructor() {
+    void this.appConfig.load()
+  }
 
   protected categoryName(category: BudgetCategoryRecord): string {
     return categoryLabel(category, this.categoryWords())

@@ -1,6 +1,7 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog'
 import { TestBed } from '@angular/core/testing'
 import type { AiAction } from '@monkitrips/shared'
+import { FAKE_APP_CONFIG, FakeAuthApi } from '../../../testing/fake-auth-api'
 import { DEMO_TRIP_RECORD } from '../../../testing/fake-trip-content'
 import { FakeDeviceStorage } from '../../../testing/fake-device-storage'
 import { FakeDocumentsApi, documentRow } from '../../../testing/fake-documents-api'
@@ -12,6 +13,7 @@ import {
 } from '../../../testing/offline-testing'
 import { settle } from '../../../testing/settle'
 import { ApiFailure } from '../../core/api/api-failure'
+import { AUTH_API } from '../../core/api/auth-api'
 import type { MonkiTripsDb } from '../../core/offline/db'
 import { DocumentCopiesStore } from '../../core/offline/document-copies.store'
 import { toDocumentRecord } from '../../core/offline/document-record'
@@ -57,6 +59,7 @@ describe('DocumentDetailSheet', () => {
   let storage: FakeDeviceStorage
   let rendered: number
   let extraction: ScriptedExtractionApi
+  let auth: FakeAuthApi
 
   beforeEach(async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
@@ -65,6 +68,7 @@ describe('DocumentDetailSheet', () => {
     storage = new FakeDeviceStorage()
     rendered = 0
     extraction = new ScriptedExtractionApi()
+    auth = new FakeAuthApi()
     api.files.set('voucher', new Blob([BYTES], { type: 'application/pdf' }))
     TestBed.configureTestingModule({
       imports: [DocumentDetailSheet, i18nTesting()],
@@ -83,6 +87,7 @@ describe('DocumentDetailSheet', () => {
         },
         { provide: DialogRef, useValue: { close: () => undefined } },
         { provide: BOOKING_EXTRACTION_API, useValue: extraction },
+        { provide: AUTH_API, useValue: auth },
       ],
     })
     await db.trips.put(DEMO_TRIP_RECORD)
@@ -249,6 +254,35 @@ describe('DocumentDetailSheet', () => {
     expect(host.querySelector('[data-testid="docs.detail.readOffline"]')?.textContent).toContain(
       'You need a connection to read a booking.'
     )
+  })
+
+  it('a document already linked to an event is not offered for reading', async () => {
+    await db.docs.put(toDocumentRecord(documentRow({ id: 'voucher', eventId: 'ev-1' })))
+    const { host } = await render()
+
+    expect(host.querySelector('[data-testid="docs.detail.readBooking"]')).toBeNull()
+    expect(host.querySelector('[data-testid="docs.detail.readLinked"]')?.textContent).toContain(
+      'already attached to an event in the plan'
+    )
+  })
+
+  it('read this booking is hidden for a photo while the server cannot read photos', async () => {
+    auth.appConfig = { ...FAKE_APP_CONFIG, visionEnabled: false }
+    await db.docs.put(toDocumentRecord(documentRow({ id: 'voucher', mime: 'image/jpeg' })))
+    const photo = await render()
+
+    await photo.until(() =>
+      expect(photo.host.querySelector('[data-testid="docs.detail.readBooking"]')).toBeNull()
+    )
+    expect(auth.calls).toContain('config')
+    photo.fixture.destroy()
+
+    await db.docs.put(toDocumentRecord(documentRow({ id: 'voucher', mime: 'application/pdf' })))
+    const pdf = await render()
+    await settle(pdf.fixture)
+    const button = pdf.host.querySelector('[data-testid="docs.detail.readBooking"]')
+    expect(button).not.toBeNull()
+    expect(button?.hasAttribute('disabled')).toBe(false)
   })
 
   it('read this booking says the file is sent to the ai provider', async () => {

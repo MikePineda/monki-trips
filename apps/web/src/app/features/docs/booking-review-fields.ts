@@ -1,4 +1,8 @@
-import { BOOKING_TRANSPORT_KINDS, type BookingDraft } from '@monkitrips/shared'
+import {
+  BOOKING_TRANSPORT_KINDS,
+  type BookingDraft,
+  type BookingSegmentDraft,
+} from '@monkitrips/shared'
 
 export type BookingFieldInput = 'text' | 'code' | 'datetime-local'
 
@@ -16,6 +20,8 @@ export interface BookingReviewGroup {
   title: string
   n: number | null
   fields: BookingReviewField[]
+  /** A leg that accept would skip: it lacks a time or a zone at either end. */
+  unsaved: boolean
 }
 
 const text = (path: string, label: string): BookingReviewField => ({ path, label, input: 'text' })
@@ -30,10 +36,26 @@ export function isTransportKind(kind: string): boolean {
   return (BOOKING_TRANSPORT_KINDS as readonly string[]).includes(kind)
 }
 
+const filled = (value: string | null): boolean => value !== null && value.trim() !== ''
+
+/** Whether accept saves this leg: both local times and both zones are stated. */
+export function legSaved(
+  segment: Pick<BookingSegmentDraft, 'departsLocal' | 'departsTz' | 'arrivesLocal' | 'arrivesTz'>
+): boolean {
+  return (
+    filled(segment.departsLocal) &&
+    filled(segment.departsTz) &&
+    filled(segment.arrivesLocal) &&
+    filled(segment.arrivesTz)
+  )
+}
+
 /**
  * The blocks of fields the review sheet shows for a draft, in reading
- * order: the booking itself, each leg (transport) or the start and end
- * (everything else), the place, the cost and each seat line. Pure.
+ * order: the booking itself, each leg (transport, flagged when accept
+ * would skip it) or the start and end (everything else: its legs are
+ * ignored on accept, so they are not shown), the place, the cost and each
+ * seat line. Pure.
  */
 export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
   const groups: BookingReviewGroup[] = [
@@ -41,6 +63,7 @@ export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
       id: 'booking',
       title: 'booking',
       n: null,
+      unsaved: false,
       fields: [
         text('title', 'title'),
         text('providerName', 'providerName'),
@@ -48,12 +71,15 @@ export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
       ],
     },
   ]
-  draft.segments.forEach((_, index) => {
+  const transport = isTransportKind(draft.kind)
+  const legs = transport ? draft.segments : []
+  legs.forEach((segment, index) => {
     const at = `segments.${index}`
     groups.push({
       id: at,
       title: 'segment',
       n: index + 1,
+      unsaved: !legSaved(segment),
       fields: [
         text(`${at}.carrier`, 'carrier'),
         code(`${at}.number`, 'number'),
@@ -68,11 +94,12 @@ export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
       ],
     })
   })
-  if (!isTransportKind(draft.kind)) {
+  if (!transport) {
     groups.push({
       id: 'when',
       title: 'when',
       n: null,
+      unsaved: false,
       fields: [
         time('startsLocal', 'startsLocal'),
         text('startTz', 'startTz'),
@@ -86,6 +113,7 @@ export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
       id: 'place',
       title: 'place',
       n: null,
+      unsaved: false,
       fields: [
         text('placeName', 'placeName'),
         text('address', 'address'),
@@ -96,6 +124,7 @@ export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
       id: 'cost',
       title: 'cost',
       n: null,
+      unsaved: false,
       fields: [text('cost', 'cost'), code('costCurrency', 'costCurrency')],
     }
   )
@@ -105,6 +134,7 @@ export function bookingReviewGroups(draft: BookingDraft): BookingReviewGroup[] {
       id: at,
       title: 'seat',
       n: index + 1,
+      unsaved: false,
       fields: [code(`${at}.seat`, 'seat'), code(`${at}.coach`, 'coach')],
     })
   })
