@@ -102,10 +102,8 @@ describe('AssistantPage', () => {
 
     await page.until(() => expect(page.all('assistant.message.text')).toHaveLength(2))
     const [question, answer] = page.all('assistant.message.text')
-    expect(question.textContent?.trim()).toBe('What is <b>bold</b>?')
-    expect(answer.textContent?.trim()).toBe(
-      '<img src=x onerror="alert(1)"> and <b>this</b>\nsecond line'
-    )
+    expect(question.textContent).toBe('What is <b>bold</b>?')
+    expect(answer.textContent).toBe('<img src=x onerror="alert(1)"> and <b>this</b>\nsecond line')
     expect(page.host.querySelector('[data-testid="assistant.log"] img')).toBeNull()
     expect(page.host.querySelector('[data-testid="assistant.log"] b')).toBeNull()
     expect(answer.hasAttribute('data-lines')).toBe(true)
@@ -158,7 +156,7 @@ describe('AssistantPage', () => {
     const card = () => page.all('assistant.proposal')[0]!
     expect(card().textContent).toContain('฿350.00')
     expect(card().textContent).toContain('$15.56')
-    expect(card().textContent).toContain('1 THB = 0.0444 AUD')
+    expect(card().textContent).toContain('1 AUD = 22.5 THB')
     const pullsBefore = sync.calls.filter((call) => call.kind === 'pull').length
 
     await page.click('assistant.proposal.accept')

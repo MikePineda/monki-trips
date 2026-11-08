@@ -89,10 +89,11 @@ function expenseView(proposal: AiExpenseProposal, t: Translate, locale: string):
     if (proposal.fxRate && proposal.fxRateDate) {
       changes.push({
         label: t('proposal.expense.rate'),
+        // `fxRate` is units of the paid currency per one unit of the base.
         after: t('proposal.expense.rateValue', {
-          from: proposal.currency,
+          from: proposal.baseCurrency,
           rate: proposal.fxRate,
-          to: proposal.baseCurrency,
+          to: proposal.currency,
           date: formatDayDate(proposal.fxRateDate, locale, false),
         }),
       })

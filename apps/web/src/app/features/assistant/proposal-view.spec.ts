@@ -22,7 +22,7 @@ describe('proposalView', () => {
     expect(view.changes.map((change) => [change.label, change.after])).toEqual([
       ['Amount', '฿350.00'],
       ['In AUD', '$15.56'],
-      ['Rate', '1 THB = 0.0444 AUD on 7 Nov'],
+      ['Rate', '1 AUD = 22.5 THB on 7 Nov'],
       ['Category', 'Food'],
       ['Day', 'Sat 7 Nov'],
     ])

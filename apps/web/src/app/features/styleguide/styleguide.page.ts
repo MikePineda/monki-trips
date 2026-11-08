@@ -638,17 +638,21 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
             >
               <mk-list>
                 <mk-chat-message author="member" [name]="'styleguide.sample.chatYou' | transloco">
-                  <p mk-text [preserveLines]="true">
-                    {{ 'styleguide.sample.chatQuestion' | transloco }}
-                  </p>
+                  <p
+                    mk-text
+                    [preserveLines]="true"
+                    [textContent]="'styleguide.sample.chatQuestion' | transloco"
+                  ></p>
                 </mk-chat-message>
                 <mk-chat-message
                   author="assistant"
                   [name]="'styleguide.sample.chatKiko' | transloco"
                 >
-                  <p mk-text [preserveLines]="true">
-                    {{ 'styleguide.sample.chatAnswer' | transloco }}
-                  </p>
+                  <p
+                    mk-text
+                    [preserveLines]="true"
+                    [textContent]="'styleguide.sample.chatAnswer' | transloco"
+                  ></p>
                   <mk-proposal
                     icon="calendar"
                     [kind]="'styleguide.sample.proposalKind' | transloco"

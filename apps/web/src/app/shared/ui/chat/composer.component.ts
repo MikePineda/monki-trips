@@ -3,6 +3,7 @@ import {
   Component,
   DOCUMENT,
   DestroyRef,
+  ElementRef,
   ViewEncapsulation,
   inject,
   signal,
@@ -16,8 +17,9 @@ import {
  * scrolls, on `surface-0` with a `line` hairline on top, bleeding to the
  * page gutter. When an on-screen keyboard covers the bottom of the
  * layout viewport (iOS keeps the tab bar under it), the visual viewport
- * says how much: the composer rises by that inset so the text being
- * typed stays in view. The textarea starts one line tall and grows with
+ * says how much: while the composer holds the focus it rises by that
+ * inset so the text being typed stays in view (without the focus there is
+ * no keyboard of its own, and a collapsing toolbar must not move it). The textarea starts one line tall and grows with
  * its content up to a third of the screen.
  */
 @Component({
@@ -77,22 +79,30 @@ export class MkComposerComponent {
   /** CSS px of the layout viewport an on-screen keyboard covers (0 without one). */
   protected readonly keyboardInset = signal(0)
 
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement
+
   constructor() {
     const win = inject(DOCUMENT).defaultView
     const viewport = win?.visualViewport
     if (!win || !viewport) {
       return
     }
-    const measure = () =>
-      this.keyboardInset.set(
-        Math.max(0, Math.round(win.innerHeight - viewport.height - viewport.offsetTop))
-      )
+    const measure = () => {
+      const focused = this.host.contains(this.host.ownerDocument.activeElement)
+      const covered = win.innerHeight - viewport.height - viewport.offsetTop
+      this.keyboardInset.set(focused ? Math.max(0, Math.round(covered)) : 0)
+    }
     viewport.addEventListener('resize', measure)
     viewport.addEventListener('scroll', measure)
-    measure()
+    this.host.addEventListener('focusin', measure)
+    // After the blur lands, so activeElement has moved on.
+    const later = () => setTimeout(measure)
+    this.host.addEventListener('focusout', later)
     inject(DestroyRef).onDestroy(() => {
       viewport.removeEventListener('resize', measure)
       viewport.removeEventListener('scroll', measure)
+      this.host.removeEventListener('focusin', measure)
+      this.host.removeEventListener('focusout', later)
     })
   }
 }

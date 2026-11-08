@@ -37,7 +37,7 @@ export const EXPENSE_PROPOSAL: AiProposal = {
   description: 'Pad thai',
   baseCurrency: 'AUD',
   baseAmountMinor: 1_556,
-  fxRate: '0.0444',
+  fxRate: '22.5',
   fxRateDate: '2026-11-07',
   fxSource: 'frankfurter',
 }
