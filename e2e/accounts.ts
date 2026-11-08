@@ -70,6 +70,7 @@ export const SOLO_JOURNEYS = [
   'j07w',
   'j08',
   'j10',
+  'j14',
   'j15',
 ] as const
 
