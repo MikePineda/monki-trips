@@ -9,6 +9,7 @@ export function toTravellerRecord(traveller: Traveller): TravellerRecord {
     displayName: traveller.displayName,
     userId: traveller.userId,
     position: traveller.position,
+    ...(traveller.createdAt ? { createdAt: traveller.createdAt } : {}),
     updatedAt: traveller.updatedAt ?? '',
   }
 }

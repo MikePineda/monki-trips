@@ -21,6 +21,7 @@ export const travellerEntity: EntitySpec = {
     { field: 'displayName', column: 'display_name', type: 'text', writable: true },
     { field: 'userId', column: 'user_id', type: 'text', writable: false },
     { field: 'position', column: 'position', type: 'int', writable: true },
+    { field: 'createdAt', column: 'created_at', type: 'instant', writable: false },
     { field: 'deletedAt', column: 'deleted_at', type: 'instant', writable: false },
     { field: 'updatedAt', column: 'updated_at', type: 'instant', writable: false },
   ],

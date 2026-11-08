@@ -1,4 +1,5 @@
 import { computed, type Signal } from '@angular/core'
+import { byTravellerOrder } from '../../domain/traveller-order'
 import { liveSignalFor } from './live'
 import type {
   BudgetCategoryRecord,
@@ -50,9 +51,7 @@ export function tripTravellers(tripId: Signal<string>): Signal<TravellerRecord[]
   return liveSignalFor(
     tripId,
     async (db, id) =>
-      (await db.travellers.where('tripId').equals(id).toArray()).sort(
-        (a, b) => a.position - b.position
-      ),
+      (await db.travellers.where('tripId').equals(id).toArray()).sort(byTravellerOrder),
     []
   )
 }
