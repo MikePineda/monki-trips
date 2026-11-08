@@ -91,6 +91,7 @@ export type MergedRow = Record<string, unknown> &
       | 'fxSource'
       | 'fxRateDate'
       | 'shares'
+      | 'paidByTravellerId'
       | 'doneAt'
       | 'doneBy'
       | 'origin'
