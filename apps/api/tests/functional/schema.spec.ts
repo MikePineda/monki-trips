@@ -61,6 +61,9 @@ const EXPECTED_TABLES = [
   'trip_activity',
   'notification_settings',
   'sent_reminders',
+  'ai_conversations',
+  'ai_messages',
+  'ai_actions',
 ]
 
 async function columnsOf(table: string): Promise<string[]> {
