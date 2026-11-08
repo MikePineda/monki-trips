@@ -619,6 +619,97 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phrase_cards_controller').default['destroy']>>>
     }
   }
+  'trips.ai.conversations.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/ai/conversations'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['index']>>>
+    }
+  }
+  'trips.ai.conversations.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/ai/conversations'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/assistant').createConversationValidator)>>
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/assistant').createConversationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'trips.ai.conversations.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/ai/conversations/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['show']>>>
+    }
+  }
+  'trips.ai.conversations.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/trips/:tripId/ai/conversations/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['destroy']>>>
+    }
+  }
+  'trips.ai.conversations.message': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/ai/conversations/:id/messages'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/assistant').chatMessageValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/assistant').chatMessageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['message']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['message']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_conversations_controller').default['message']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'trips.ai.actions.accept': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/ai/actions/:id/accept'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['accept']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['accept']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['accept']>>>
+    }
+  }
+  'trips.ai.actions.reject': {
+    methods: ["POST"]
+    pattern: '/api/v1/trips/:tripId/ai/actions/:id/reject'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { tripId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['reject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['reject']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/ai_actions_controller').default['reject']>>>
+    }
+  }
   'trips.members.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/members'

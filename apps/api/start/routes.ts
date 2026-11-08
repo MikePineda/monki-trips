@@ -167,6 +167,35 @@ router
                     'destroy',
                   ])
                   .as('trips.phraseCards.destroy')
+                // The assistant: conversations private to their creator, proposals only they decide.
+                router
+                  .get('trips/:tripId/ai/conversations', [controllers.AiConversations, 'index'])
+                  .as('trips.ai.conversations.index')
+                router
+                  .post('trips/:tripId/ai/conversations', [controllers.AiConversations, 'store'])
+                  .as('trips.ai.conversations.store')
+                router
+                  .get('trips/:tripId/ai/conversations/:id', [controllers.AiConversations, 'show'])
+                  .as('trips.ai.conversations.show')
+                router
+                  .delete('trips/:tripId/ai/conversations/:id', [
+                    controllers.AiConversations,
+                    'destroy',
+                  ])
+                  .as('trips.ai.conversations.destroy')
+                router
+                  .post('trips/:tripId/ai/conversations/:id/messages', [
+                    controllers.AiConversations,
+                    'message',
+                  ])
+                  .as('trips.ai.conversations.message')
+                  .use(throttleLlm)
+                router
+                  .post('trips/:tripId/ai/actions/:id/accept', [controllers.AiActions, 'accept'])
+                  .as('trips.ai.actions.accept')
+                router
+                  .post('trips/:tripId/ai/actions/:id/reject', [controllers.AiActions, 'reject'])
+                  .as('trips.ai.actions.reject')
                 router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')

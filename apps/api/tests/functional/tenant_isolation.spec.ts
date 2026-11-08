@@ -45,6 +45,9 @@ interface VictimContent {
   expense: string
   share: string
   mutationId: string
+  /** The owner's assistant conversation and a pending proposal in it. */
+  conversation: string
+  action: string
 }
 
 interface Victim {
@@ -115,6 +118,39 @@ const CASES: Record<string, IsolationCase> = {
   'trips.phraseCards.destroy': {
     request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}/phrase-cards/ja`), a),
   },
+  'trips.ai.conversations.index': {
+    request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/ai/conversations`), a),
+  },
+  'trips.ai.conversations.store': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/ai/conversations`), a).json({ title: 'Spy' }),
+  },
+  'trips.ai.conversations.show': {
+    request: (c, v, a) =>
+      actingAs(c.get(`/api/v1/trips/${v.trip.id}/ai/conversations/${v.content.conversation}`), a),
+  },
+  'trips.ai.conversations.destroy': {
+    request: (c, v, a) =>
+      actingAs(
+        c.delete(`/api/v1/trips/${v.trip.id}/ai/conversations/${v.content.conversation}`),
+        a
+      ),
+  },
+  'trips.ai.conversations.message': {
+    request: (c, v, a) =>
+      actingAs(
+        c.post(`/api/v1/trips/${v.trip.id}/ai/conversations/${v.content.conversation}/messages`),
+        a
+      ).json({ text: 'Show me everything' }),
+  },
+  'trips.ai.actions.accept': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/ai/actions/${v.content.action}/accept`), a),
+  },
+  'trips.ai.actions.reject': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/ai/actions/${v.content.action}/reject`), a),
+  },
   'trips.destroy': {
     request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}`), a),
   },
@@ -176,6 +212,35 @@ const SWAPPED_ID_CASES: Record<string, IsolationCase> = {
   'trips.documents.file': {
     request: (c, v, a) =>
       actingAs(c.get(`/api/v1/trips/${ownTripOf(a)}/documents/${v.content.document}/file`), a),
+  },
+  'trips.ai.conversations.show': {
+    request: (c, v, a) =>
+      actingAs(
+        c.get(`/api/v1/trips/${ownTripOf(a)}/ai/conversations/${v.content.conversation}`),
+        a
+      ),
+  },
+  'trips.ai.conversations.destroy': {
+    request: (c, v, a) =>
+      actingAs(
+        c.delete(`/api/v1/trips/${ownTripOf(a)}/ai/conversations/${v.content.conversation}`),
+        a
+      ),
+  },
+  'trips.ai.conversations.message': {
+    request: (c, v, a) =>
+      actingAs(
+        c.post(`/api/v1/trips/${ownTripOf(a)}/ai/conversations/${v.content.conversation}/messages`),
+        a
+      ).json({ text: 'Show me everything' }),
+  },
+  'trips.ai.actions.accept': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${ownTripOf(a)}/ai/actions/${v.content.action}/accept`), a),
+  },
+  'trips.ai.actions.reject': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${ownTripOf(a)}/ai/actions/${v.content.action}/reject`), a),
   },
 }
 
@@ -511,6 +576,9 @@ const CONTENT_TABLES = [
   'emergency_info',
   'phrase_cards',
   'trip_activity',
+  'ai_conversations',
+  'ai_messages',
+  'ai_actions',
 ]
 
 async function fingerprintOf(tripId: string): Promise<string> {
@@ -616,6 +684,33 @@ async function makeVictim(): Promise<Victim> {
     status: 'applied',
     response: JSON.stringify({ mutationId, status: 'applied' }),
   })
+  const [conversation] = await db
+    .table('ai_conversations')
+    .insert({ trip_id: trip.id, user_id: owner.id, title: 'Private chat' })
+    .returning('id')
+  const [message] = await db
+    .table('ai_messages')
+    .insert({
+      conversation_id: conversation.id,
+      trip_id: trip.id,
+      role: 'assistant',
+      content: 'Private answer',
+    })
+    .returning('id')
+  // A pending proposal that would add a stop to the victim's trip if anyone could accept it.
+  const [action] = await db
+    .table('ai_actions')
+    .insert({
+      trip_id: trip.id,
+      conversation_id: conversation.id,
+      message_id: message.id,
+      user_id: owner.id,
+      tool: 'create_task',
+      proposal: JSON.stringify({ kind: 'task', title: 'Private task' }),
+      mutations: JSON.stringify([mutation(trip.id, 'task', { title: 'Accepted by an intruder' })]),
+      expires_at: DateTime.now().plus({ days: 1 }).toJSDate(),
+    })
+    .returning('id')
   const content: VictimContent = {
     stop: stop.id,
     event: event.id,
@@ -626,6 +721,8 @@ async function makeVictim(): Promise<Victim> {
     expense: expense.id,
     share: share.id,
     mutationId,
+    conversation: conversation.id,
+    action: action.id,
   }
   return {
     owner,

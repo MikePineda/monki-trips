@@ -1,0 +1,26 @@
+meta {
+  name: Start an assistant conversation
+  type: http
+  seq: 62
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/conversations
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "title": "Rainy day ideas"
+  }
+}
+
+docs {
+  201 `AiConversation`. `title` is optional: without one, the first message
+  names the conversation (its first 60 characters).
+}

@@ -36,5 +36,7 @@
   "E_FX_UNAVAILABLE": "Los tipos de cambio no están disponibles ahora. Inténtalo de nuevo en un momento",
   "E_LLM_QUOTA_EXCEEDED": "Has gastado la cuota de IA de este mes. Se renueva el día uno del mes que viene",
   "E_LLM_UNAVAILABLE": "El asistente de IA no está disponible ahora. Inténtalo de nuevo en un momento",
-  "E_LLM_BAD_OUTPUT": "El asistente de IA dio una respuesta que no pudimos usar. Inténtalo de nuevo"
+  "E_LLM_BAD_OUTPUT": "El asistente de IA dio una respuesta que no pudimos usar. Inténtalo de nuevo",
+  "E_AI_ACTION_CLOSED": "Esta propuesta ya se decidió o ha caducado",
+  "E_AI_ACTION_STALE": "El viaje cambió desde que se hizo esta propuesta. No se cambió nada; vuelve a preguntar al asistente"
 }

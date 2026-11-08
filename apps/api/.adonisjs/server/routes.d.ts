@@ -52,6 +52,13 @@ export type ScannedRoutes = {
     'trips.phraseCards.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'language': ParamValue} }
+    'trips.ai.conversations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.show': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.conversations.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.conversations.message': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.actions.accept': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.actions.reject': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.members.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.destroy': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -86,6 +93,8 @@ export type ScannedRoutes = {
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.show': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'spa.fallback': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
@@ -113,6 +122,8 @@ export type ScannedRoutes = {
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.show': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'spa.fallback': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
@@ -138,6 +149,10 @@ export type ScannedRoutes = {
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.tasks.fromTemplate': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.ai.conversations.message': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.actions.accept': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.actions.reject': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.transferOwnership': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.restore': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -154,6 +169,7 @@ export type ScannedRoutes = {
   DELETE: {
     'me.pushSubscriptions.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'trips.phraseCards.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'language': ParamValue} }
+    'trips.ai.conversations.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.destroy': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }

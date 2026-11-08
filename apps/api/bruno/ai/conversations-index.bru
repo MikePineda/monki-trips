@@ -1,0 +1,16 @@
+meta {
+  name: List my assistant conversations
+  type: http
+  seq: 61
+}
+
+get {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/conversations
+  body: none
+  auth: none
+}
+
+docs {
+  The caller's own conversations in this trip, newest first. Another member's
+  conversations never appear: they are private to their creator.
+}

@@ -77,6 +77,19 @@ export interface ApiDefinition {
       store: typeof routes['trips.phraseCards.store']
       destroy: typeof routes['trips.phraseCards.destroy']
     }
+    ai: {
+      conversations: {
+        index: typeof routes['trips.ai.conversations.index']
+        store: typeof routes['trips.ai.conversations.store']
+        show: typeof routes['trips.ai.conversations.show']
+        destroy: typeof routes['trips.ai.conversations.destroy']
+        message: typeof routes['trips.ai.conversations.message']
+      }
+      actions: {
+        accept: typeof routes['trips.ai.actions.accept']
+        reject: typeof routes['trips.ai.actions.reject']
+      }
+    }
     members: {
       index: typeof routes['trips.members.index']
       destroy: typeof routes['trips.members.destroy']

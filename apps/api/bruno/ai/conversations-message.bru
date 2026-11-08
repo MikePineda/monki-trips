@@ -1,0 +1,28 @@
+meta {
+  name: Send a message to the assistant
+  type: http
+  seq: 65
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/ai/conversations/{{conversationId}}/messages
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "text": "Log 350 baht of pad thai"
+  }
+}
+
+docs {
+  `text/event-stream`: `text` deltas, a `proposal` event per drafted change
+  (action id and diff), then `done` or `error`. Throttled like every LLM
+  route; 402 `E_LLM_QUOTA_EXCEEDED` and 503 `E_LLM_UNAVAILABLE` answer JSON
+  before the stream starts. Nothing is written until the action is accepted.
+}
