@@ -85,3 +85,17 @@ Every variable the app understands is documented in
 Anything left out of `.env` keeps its safe default: mail goes to the log and
 AI features stay off. Document uploads arrive in a later release and will
 need S3-compatible object storage (`DRIVE_DISK=s3` with every `S3_*` value).
+
+### Weather
+
+Today shows the weather of the place the trip is at that day. Set
+`WEATHER_PROVIDER=open-meteo` to read it from [Open-Meteo](https://open-meteo.com/)
+(no key; `off`, the default, hides the row). The API sends only coordinates
+rounded to two decimals and keeps each place's forecast for 30 minutes,
+shared by every account, so a small instance stays far below the limits.
+
+Open-Meteo's free API is for **non-commercial use** (fewer than 10 000 calls
+a day, 5 000 an hour, 600 a minute); commercial use needs one of their
+paid plans. The data is licensed under CC BY 4.0: the app credits it on
+Today ("Weather data by Open-Meteo.com"); keep that line if you change the
+screen.
