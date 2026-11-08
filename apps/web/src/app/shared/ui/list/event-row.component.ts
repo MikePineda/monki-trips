@@ -61,9 +61,13 @@ import type { IconName } from '../icon/icon-names'
       flex: none;
       align-self: center;
     }
+    /* The link covers the whole row height (the row's padding included): one 48 px target. */
     .mk-event__link {
       display: flex;
       flex: 1 1 0;
+      align-self: stretch;
+      margin: calc(-1 * var(--space-1)) 0;
+      padding: var(--space-1) 0;
       align-items: flex-start;
       gap: var(--space-1);
       min-width: 0;

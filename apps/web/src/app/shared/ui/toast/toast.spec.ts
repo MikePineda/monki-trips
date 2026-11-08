@@ -24,14 +24,23 @@ describe('mk-toast', () => {
     }
   }
 
-  it('shows a message as a status and dismisses it after five seconds', () => {
+  it('is a polite live region that exists before any toast, so screen readers announce the first one', () => {
+    const { fixture } = render()
+    const host = fixture.nativeElement as HTMLElement
+
+    expect(host.getAttribute('role')).toBe('status')
+    expect(host.getAttribute('aria-live')).toBe('polite')
+    expect(host.children).toHaveLength(0)
+  })
+
+  it('shows a message inside the live region and dismisses it after five seconds', () => {
     const { fixture, service, toasts } = render()
 
     service.show({ message: 'Expense saved' })
     fixture.detectChanges()
 
     expect(toasts()).toHaveLength(1)
-    expect(toasts()[0].getAttribute('role')).toBe('status')
+    expect(toasts()[0].closest('[role="status"]')).toBe(fixture.nativeElement)
     expect(toasts()[0].textContent).toContain('Expense saved')
 
     vi.advanceTimersByTime(TOAST_DURATION_MS)

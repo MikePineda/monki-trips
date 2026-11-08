@@ -86,6 +86,9 @@ interface DocRow {
           data-testid="docs.print"
         >
           <a
+            mk-button
+            variant="ghost"
+            size="sm"
             mkBannerAction
             [routerLink]="['/t', tripId(), 'docs', toPrint()[0].id]"
             data-testid="docs.print.open"

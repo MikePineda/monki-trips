@@ -16,7 +16,8 @@ import { ToastService } from './toast.service'
   imports: [MkIconComponent, MkIconButtonComponent, TranslocoPipe],
   viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'mk-toast-host' },
+  // The live region exists before any toast: one inserted with its own role is often not announced.
+  host: { 'class': 'mk-toast-host', 'role': 'status', 'aria-live': 'polite' },
   styles: `
     :host {
       position: fixed;
@@ -80,7 +81,7 @@ import { ToastService } from './toast.service'
   `,
   template: `
     @for (toast of toasts.toasts(); track toast.id) {
-      <div class="mk-toast" role="status" data-testid="ui.toast">
+      <div class="mk-toast" data-testid="ui.toast">
         <span class="mk-toast__message">{{ toast.message }}</span>
         @if (toast.action; as action) {
           <button

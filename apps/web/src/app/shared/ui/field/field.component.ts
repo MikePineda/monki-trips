@@ -69,6 +69,12 @@ import { provideUiI18n } from '../ui-i18n'
       min-height: calc(var(--space-6) * 2);
       padding: var(--space-1) var(--space-2);
     }
+    /* Date and time inputs focus an inner field, so :focus-visible never matches them. */
+    .mk-field .mk-input:focus,
+    .mk-field .mk-input:focus-within {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
     .mk-field .mk-input::placeholder {
       color: var(--ink-3);
     }

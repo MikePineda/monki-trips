@@ -56,6 +56,12 @@ export type TextAlign = 'start' | 'center' | 'end'
       min-width: 0;
       color: var(--ink-1);
     }
+    /* A standalone link (<a mk-text>) is a 44 px target; a link inside a sentence is a plain <a>. */
+    :host(a) {
+      display: flex;
+      align-items: center;
+      min-height: var(--tap-target);
+    }
     :host([data-tone='inherit']) {
       color: inherit;
     }

@@ -65,9 +65,12 @@ export type ButtonSize = 'md' | 'sm' | 'block'
     :host([data-variant='destructive']) {
       color: var(--status-critical);
     }
+    /* A tinted container (the print banner) hands the ghost its own ink and underline. */
     :host([data-variant='ghost']) {
       background: transparent;
-      color: var(--accent);
+      color: var(--mk-ghost-ink, var(--accent));
+      text-decoration: var(--mk-ghost-decoration, none);
+      text-underline-offset: 3px;
       padding: 0 var(--space-1);
     }
     :host([data-size='sm']) {
@@ -75,10 +78,11 @@ export type ButtonSize = 'md' | 'sm' | 'block'
       padding: 0 var(--space-1);
       font-size: 14px;
     }
+    /* The pseudo element sits inside the 1 px border: 34 + 2 × 5 = 44 px. */
     :host([data-size='sm'])::after {
       content: '';
       position: absolute;
-      inset: -4px 0;
+      inset: -5px -1px;
     }
     :host([data-size='block']) {
       display: flex;

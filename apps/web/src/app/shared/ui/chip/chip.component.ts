@@ -30,9 +30,14 @@ export type ChipTone = 'neutral' | 'good' | 'warning' | 'serious' | 'critical'
     '[class.mk-chip--selected]': 'selected()',
   },
   styles: `
+    /*
+     * A 32 px chip with a 44 px hit area: 6 px above and below, and 2 px of
+     * margin so the hit areas of a wrapped row (8 px gap) never overlap.
+     */
     :host {
       display: inline-flex;
       max-width: 100%;
+      margin-block: 2px;
     }
     .mk-chip__body {
       display: inline-flex;
@@ -53,7 +58,15 @@ export type ChipTone = 'neutral' | 'good' | 'warning' | 'serious' | 'critical'
       text-overflow: ellipsis;
     }
     button.mk-chip__body {
+      position: relative;
+      min-width: var(--tap-target);
+      justify-content: center;
       cursor: pointer;
+    }
+    button.mk-chip__body::after {
+      content: '';
+      position: absolute;
+      inset: -7px -1px;
     }
     button.mk-chip__body[aria-pressed='true'] {
       border-color: var(--accent);
