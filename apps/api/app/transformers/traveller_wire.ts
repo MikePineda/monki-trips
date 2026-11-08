@@ -8,5 +8,6 @@ export function toTravellerWire(traveller: Traveller): TravellerWire {
     displayName: traveller.displayName,
     userId: traveller.userId,
     position: traveller.position,
+    createdAt: traveller.createdAt.toISO() ?? undefined,
   }
 }

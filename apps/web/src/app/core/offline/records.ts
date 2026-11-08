@@ -184,6 +184,8 @@ export interface TravellerRecord extends TripScopedRecord {
   displayName: string
   userId: string | null
   position: number
+  /** When the server created it (ties on `position` follow it); absent until it syncs. */
+  createdAt?: string
 }
 
 /**

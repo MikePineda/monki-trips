@@ -10,6 +10,8 @@ export interface Traveller {
   /** Account behind this traveller, or null for a person without one. */
   userId: string | null
   position: number
+  /** When the row was created; ties on `position` follow it. */
+  createdAt?: string
   /** ISO instant while the traveller is soft-deleted (sync tombstone), absent on the REST routes. */
   deletedAt?: string | null
   updatedAt?: string
