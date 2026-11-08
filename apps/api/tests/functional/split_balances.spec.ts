@@ -363,6 +363,68 @@ test.group('Split budget mode', (group) => {
     assert.lengthOf(await liveShares(groceries.id), 3)
   })
 
+  test('split, shared and split again creates no second split', async ({ client, assert }) => {
+    const { owner, trip } = await tripOfThree(client)
+    const groceries = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', { amountMinor: 3000, currency: 'AUD', spentOn: '2027-01-21' })
+    )
+    for (const [budgetMode, at] of [
+      ['split', '2026-11-07T09:00:00.000Z'],
+      ['shared', '2026-11-07T10:00:00.000Z'],
+      ['split', '2026-11-07T11:00:00.000Z'],
+    ]) {
+      await pushApplied(
+        client,
+        owner,
+        mutation(trip.id, 'trip', { budgetMode }, { id: trip.id, changedAt: at })
+      )
+    }
+
+    assert.lengthOf(await liveShares(groceries.id), 3)
+    const all = await db.from('expense_shares').where('expense_id', groceries.id)
+    assert.lengthOf(all, 3)
+  })
+
+  test('a payer or a share of another trip answers E_ROW_NOT_FOUND and writes nothing', async ({
+    client,
+    assert,
+  }) => {
+    const { owner, trip, ownerTraveller } = await tripOfThree(client)
+    const other = await makeTrip(owner)
+    const [stranger] = await db.from('travellers').where('trip_id', other.id)
+
+    const payer = await pushOne(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        amountMinor: 1000,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        paidByTravellerId: stranger.id,
+      })
+    )
+    const share = await pushOne(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        amountMinor: 1000,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        paidByTravellerId: ownerTraveller,
+        shares: [{ id: randomUUID(), travellerId: stranger.id, shareMinor: 1000 }],
+      })
+    )
+
+    for (const result of [payer, share]) {
+      assert.equal(result.status, 'rejected')
+      assert.equal(result.error?.code, 'E_ROW_NOT_FOUND')
+    }
+    const written = await db.from('expenses').where('trip_id', trip.id)
+    assert.lengthOf(written, 0)
+  })
+
   test('balances show who owes whom with the fewest transfers', async ({ client, assert }) => {
     const { owner, editor, trip, ownerTraveller, editorTraveller, friendTraveller } =
       await tripOfThree(client)
