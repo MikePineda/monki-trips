@@ -8,6 +8,7 @@ import type Trip from '#models/trip'
 import type User from '#models/user'
 import { aiActionWire } from '#services/assistant/ai_action_wire'
 import { AiConversations } from '#services/assistant/ai_conversations'
+import { DISCARDED_PROPOSAL_COLUMNS } from '#services/assistant/discarded_proposal'
 import type { BaselineRow } from '#services/assistant/mutation_dry_run'
 import { Clock } from '#services/clock'
 import { PUSH_ENTITIES } from '#services/sync/entity_registry'
@@ -80,12 +81,7 @@ export class AiActionDecisions {
       })
     } catch (error) {
       if (error instanceof StaleProposal || error instanceof MutationRejected) {
-        await db.from('ai_actions').where('id', id).where('status', 'proposed').update({
-          status: 'failed',
-          error_code: 'E_AI_ACTION_STALE',
-          decided_at: this.clock.now(),
-          updated_at: this.clock.now(),
-        })
+        await failStale(id, this.clock.now())
         throw new ApiException('E_AI_ACTION_STALE')
       }
       throw error
@@ -164,7 +160,10 @@ export class AiActionDecisions {
     }
     const now = this.clock.now()
     if (new Date(row['expires_at'] as string | Date).getTime() <= now.getTime()) {
-      await trx.from('ai_actions').where('id', id).update({ status: 'expired', updated_at: now })
+      await trx
+        .from('ai_actions')
+        .where('id', id)
+        .update({ status: 'expired', updated_at: now, ...discardedIfOutsideChat(row) })
       return null
     }
     return row
@@ -205,11 +204,40 @@ export class AiActionDecisions {
     status: 'accepted' | 'rejected'
   ): Promise<Row> {
     const now = this.clock.now()
+    const current = (await trx.from('ai_actions').where('id', id).first()) as Row
     const [row] = (await trx
       .from('ai_actions')
       .where('id', id)
-      .update({ status, decided_at: now, updated_at: now })
+      .update({
+        status,
+        decided_at: now,
+        updated_at: now,
+        ...(status === 'rejected' ? discardedIfOutsideChat(current) : {}),
+      })
       .returning('*')) as Row[]
     return row
   }
+}
+
+/** The draft-clearing columns for a row made outside a chat; nothing for a chat's own proposal. */
+function discardedIfOutsideChat(row: Row): Partial<typeof DISCARDED_PROPOSAL_COLUMNS> {
+  return row['conversation_id'] ? {} : DISCARDED_PROPOSAL_COLUMNS
+}
+
+/**
+ * Marks a proposal that lost against a change of the trip as `failed`
+ * (`E_AI_ACTION_STALE`); one made outside a chat also loses its draft.
+ */
+export async function failStale(id: string, now: Date): Promise<void> {
+  const open = () => db.from('ai_actions').where('id', id).where('status', 'proposed')
+  const closed = {
+    status: 'failed',
+    error_code: 'E_AI_ACTION_STALE',
+    decided_at: now,
+    updated_at: now,
+  }
+  await open()
+    .whereNull('conversation_id')
+    .update({ ...closed, ...DISCARDED_PROPOSAL_COLUMNS })
+  await open().update(closed)
 }

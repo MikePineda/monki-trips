@@ -17,6 +17,7 @@ import type Trip from '#models/trip'
 import type User from '#models/user'
 import { ToolInputError } from '#services/assistant/assistant_tool'
 import { aiActionWire } from '#services/assistant/ai_action_wire'
+import { failStale } from '#services/assistant/ai_action_decisions'
 import { AiConversations } from '#services/assistant/ai_conversations'
 import { MutationDryRun, type BaselineRow } from '#services/assistant/mutation_dry_run'
 import { ProposalRecorder, type ProposalOrigin } from '#services/assistant/proposal_recorder'
@@ -148,6 +149,17 @@ export class BookingProposals {
       }
       throw error
     }
+    // The baseline stays the one of the proposal: a row another member changed since (the document
+    // linked elsewhere) makes the proposal stale, a revision does not re-stamp it.
+    const original = row['baseline'] as BaselineRow[]
+    const moved = built.baseline.some((entry) => {
+      const before = original.find((one) => one.entity === entry.entity && one.id === entry.id)
+      return before !== undefined && before.changeSeq !== entry.changeSeq
+    })
+    if (moved) {
+      await failStale(id, this.clock.now())
+      throw new ApiException('E_AI_ACTION_STALE')
+    }
     const proposal: AiBookingProposal = {
       ...previous,
       draft,
@@ -163,11 +175,18 @@ export class BookingProposals {
       .update({
         proposal: JSON.stringify(proposal),
         mutations: JSON.stringify(built.mutations),
-        baseline: JSON.stringify(built.baseline),
+        baseline: JSON.stringify(original),
         updated_at: now,
       })
       .returning('*')) as Record<string, unknown>[]
-    if (!updated) throw new ApiException('E_AI_ACTION_CLOSED', { status: 'expired' })
+    if (!updated) {
+      // Decided (or expired) while the dry run ran: report what it is now.
+      const current = (await db.from('ai_actions').where('id', id).select('status').first()) as {
+        status: string
+      } | null
+      const status = current && current['status'] !== 'proposed' ? current['status'] : 'expired'
+      throw new ApiException('E_AI_ACTION_CLOSED', { status })
+    }
     return aiActionWire(updated)
   }
 

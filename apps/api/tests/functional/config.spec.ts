@@ -2,6 +2,8 @@ import { test } from '@japa/runner'
 import app from '@adonisjs/core/services/app'
 import { VapidConfig } from '#services/vapid_config'
 import { makeVapidConfig } from '#tests/helpers/fake_push'
+import { FakeLlmProvider } from '#services/llm/fake_llm_provider'
+import { LlmProvider } from '#services/llm/llm_provider'
 
 test.group('Public config', () => {
   test('GET /config tells whether registration is open and which locales exist', async ({
@@ -56,5 +58,23 @@ test.group('Public config', () => {
 
     const cookies = (response.headers()['set-cookie'] as unknown as string[] | undefined) ?? []
     assert.isTrue(cookies.some((cookie: string) => cookie.startsWith('XSRF-TOKEN=')))
+  })
+
+  test('GET /config tells whether the server can read photos and scans', async ({
+    client,
+    assert,
+  }) => {
+    const fake = new FakeLlmProvider(app.makePath('tests/fixtures/llm'))
+    app.container.swap(LlmProvider, () => fake)
+    try {
+      const on = await client.get('/api/v1/config')
+      fake.withVision(false)
+      const off = await client.get('/api/v1/config')
+
+      assert.isTrue(on.body().data.visionEnabled)
+      assert.isFalse(off.body().data.visionEnabled)
+    } finally {
+      app.container.restore(LlmProvider)
+    }
   })
 })

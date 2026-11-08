@@ -80,6 +80,8 @@ export const ERROR_CODES = {
   // Reading bookings and receipts
   /** The file needs the vision model and none is configured (`LLM_VISION_MODEL` empty). */
   E_EXTRACTION_UNAVAILABLE: 503,
+  /** The document is already attached to an event: reading it again would duplicate the booking. */
+  E_DOCUMENT_ALREADY_LINKED: 409,
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES

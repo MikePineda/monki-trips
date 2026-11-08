@@ -6,7 +6,8 @@ import {
 } from '@monkitrips/shared'
 import { ApiException } from '#exceptions/api_exception'
 import type { LlmDocumentBlock, LlmImageBlock } from '#services/llm/llm_provider'
-import { readPdfText } from '#services/assistant/extraction/pdf_text'
+import { stripImageMetadata } from '#services/assistant/extraction/image_metadata'
+import { PdfParseRefused, readPdfText, type PdfText } from '#services/assistant/extraction/pdf_text'
 import { EXTRACTION_MIN_TEXT_CHARS } from '#config/extraction'
 
 /** What reaches the model: a PDF's text (the cheap text model) or the file itself (the vision model). */
@@ -35,24 +36,35 @@ function meaningfulLength(text: string): number {
  * Refusals: 415 `E_UNSUPPORTED_FILE` for a type the model cannot read
  * (HEIC, anything not a PDF or a JPEG/PNG/WebP/GIF), 503
  * `E_EXTRACTION_UNAVAILABLE` when vision is needed and not configured, 413
- * `E_FILE_TOO_LARGE` over the bounds. `mime` is the sniffed type, never
- * the name the client gave.
+ * `E_FILE_TOO_LARGE` over the bounds or when the parse is cut off, 415 for
+ * a PDF pdf.js cannot open. A photo loses its metadata (EXIF, GPS)
+ * first. `mime` is the sniffed type, never the name the client gave.
  */
 export async function extractionInputOf(
   bytes: Buffer,
   mime: string,
-  options: { vision: boolean }
+  options: { vision: boolean; parseTimeoutMs?: number }
 ): Promise<ExtractionInput> {
   if (mime === 'application/pdf') {
-    const read = await readPdfText(bytes, {
-      maxPages: EXTRACTION_MAX_PDF_PAGES,
-      maxChars: EXTRACTION_MAX_TEXT_CHARS,
-    })
+    let read: PdfText
+    try {
+      read = await readPdfText(bytes, {
+        maxPages: EXTRACTION_MAX_PDF_PAGES,
+        maxChars: EXTRACTION_MAX_TEXT_CHARS,
+        timeoutMs: options.parseTimeoutMs,
+      })
+    } catch (error) {
+      // Too slow or too big to parse within the worker's limits.
+      if (error instanceof PdfParseRefused) throw new ApiException('E_FILE_TOO_LARGE')
+      throw error
+    }
+    // pdf.js could not open it (garbage behind a %PDF header, a password): it never reaches the model.
+    if (read.pages === null) throw new ApiException('E_UNSUPPORTED_FILE')
     if (meaningfulLength(read.text) >= EXTRACTION_MIN_TEXT_CHARS) {
       return { source: 'text', text: read.text, truncated: read.truncated }
     }
     if (!options.vision) throw new ApiException('E_EXTRACTION_UNAVAILABLE')
-    const pages = read.pages ?? EXTRACTION_MAX_PDF_PAGES
+    const pages = read.pages
     if (pages > EXTRACTION_MAX_PDF_PAGES || bytes.length > EXTRACTION_MAX_IMAGE_BYTES) {
       throw new ApiException('E_FILE_TOO_LARGE')
     }
@@ -69,8 +81,11 @@ export async function extractionInputOf(
   if (!isImageMime(mime)) throw new ApiException('E_UNSUPPORTED_FILE')
   if (!options.vision) throw new ApiException('E_EXTRACTION_UNAVAILABLE')
   if (bytes.length > EXTRACTION_MAX_IMAGE_BYTES) throw new ApiException('E_FILE_TOO_LARGE')
+  // EXIF (with its GPS position), XMP and comments stay on the server.
+  const clean = stripImageMetadata(bytes, mime)
+  if (!clean) throw new ApiException('E_UNSUPPORTED_FILE')
   return {
     source: 'vision',
-    block: { type: 'image', mimeType: mime, data: bytes.toString('base64') },
+    block: { type: 'image', mimeType: mime, data: clean.toString('base64') },
   }
 }

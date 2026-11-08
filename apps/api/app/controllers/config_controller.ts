@@ -5,6 +5,7 @@ import i18nManager from '@adonisjs/i18n/services/main'
 import { currentBuildInfo } from '#services/build_info'
 import { RegistrationPolicy } from '#services/registration_policy'
 import { VapidConfig } from '#services/vapid_config'
+import { LlmProvider } from '#services/llm/llm_provider'
 
 /**
  * Public configuration the web app reads before anyone signs in. Being a
@@ -16,7 +17,8 @@ import { VapidConfig } from '#services/vapid_config'
 export default class ConfigController {
   constructor(
     private readonly registration: RegistrationPolicy,
-    private readonly vapid: VapidConfig
+    private readonly vapid: VapidConfig,
+    private readonly llm: LlmProvider
   ) {}
 
   async show(): Promise<ApiEnvelope<AppConfig>> {
@@ -29,6 +31,7 @@ export default class ConfigController {
         version: build.version,
         pushEnabled: this.vapid.enabled,
         vapidPublicKey: this.vapid.publicKey,
+        visionEnabled: this.llm.supportsVision,
       },
     }
   }

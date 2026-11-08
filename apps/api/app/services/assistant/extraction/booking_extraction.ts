@@ -2,7 +2,7 @@ import { inject } from '@adonisjs/core'
 import drive from '@adonisjs/drive/services/main'
 import db from '@adonisjs/lucid/services/db'
 import type { I18n } from '@adonisjs/i18n'
-import type { AiAction } from '@monkitrips/shared'
+import { EXTRACTION_MAX_IMAGE_BYTES, type AiAction } from '@monkitrips/shared'
 import { ApiException } from '#exceptions/api_exception'
 import type Trip from '#models/trip'
 import type User from '#models/user'
@@ -20,7 +20,7 @@ import { BookingProposals } from '#services/assistant/extraction/booking_proposa
 import { extractionInputOf } from '#services/assistant/extraction/extraction_input'
 import { bookingPrompt } from '#services/assistant/extraction/extraction_prompts'
 import { bookingOutputValidator } from '#validators/booking_extraction'
-import { EXTRACTION_MAX_OUTPUT_TOKENS } from '#config/extraction'
+import { EXTRACTION_MAX_OUTPUT_TOKENS, EXTRACTION_MAX_PDF_BYTES } from '#config/extraction'
 
 type BookingOutput = LooseDraft & ModelFlags
 
@@ -59,17 +59,25 @@ export class BookingExtraction {
       .where('id', documentId)
       .where('trip_id', trip.id)
       .whereNull('deleted_at')
-      .select('id', 'kind', 'mime', 'storage_key')
+      .select('id', 'kind', 'mime', 'storage_key', 'size_bytes', 'event_id')
       .first()) as {
       id: string
       kind: string
       mime: string | null
       storage_key: string | null
+      size_bytes: number | string | null
+      event_id: string | null
     } | null
     if (!document) throw new ApiException('E_ROW_NOT_FOUND')
     if (document.kind !== 'file' || !document.storage_key || !document.mime) {
       throw new ApiException('E_UNSUPPORTED_FILE')
     }
+    // Already attached to an event: reading it again would add a second event and move the link.
+    if (document.event_id) throw new ApiException('E_DOCUMENT_ALREADY_LINKED')
+    // Refused from the stored size, before the bytes are fetched or parsed.
+    const limit =
+      document.mime === 'application/pdf' ? EXTRACTION_MAX_PDF_BYTES : EXTRACTION_MAX_IMAGE_BYTES
+    if (Number(document.size_bytes ?? 0) > limit) throw new ApiException('E_FILE_TOO_LARGE')
 
     let bytes: Buffer
     try {

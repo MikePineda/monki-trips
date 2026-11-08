@@ -17,6 +17,7 @@ import { controllers } from '#generated/controllers'
 import { middleware } from '#start/kernel'
 import {
   throttleForgot,
+  throttleAiRevise,
   throttleLlm,
   throttleSignup,
   throttleVerify,
@@ -214,6 +215,7 @@ router
                 router
                   .post('trips/:tripId/ai/actions/:id/revise', [controllers.AiActions, 'revise'])
                   .as('trips.ai.actions.revise')
+                  .use(throttleAiRevise)
                 router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')

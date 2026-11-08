@@ -109,7 +109,21 @@ export interface AiTaskProposal {
 
 /** What the member sees before deciding: a diff, never the raw mutations. */
 export type AiProposal =
-  AiEventChangesProposal | AiExpenseProposal | AiTaskProposal | AiBookingProposal
+  | AiEventChangesProposal
+  | AiExpenseProposal
+  | AiTaskProposal
+  | AiBookingProposal
+  | AiDiscardedProposal
+
+/**
+ * What is left of a proposal made outside a chat (a document read from
+ * its detail) once it is rejected, expired or failed: the draft, the
+ * mutations and the baseline are cleared, since no conversation deletion
+ * would ever remove them.
+ */
+export interface AiDiscardedProposal {
+  kind: 'discarded'
+}
 
 export interface AiAction {
   id: string

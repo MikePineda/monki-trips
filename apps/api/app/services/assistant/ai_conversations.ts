@@ -1,5 +1,6 @@
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
+import { DISCARDED_PROPOSAL_COLUMNS } from '#services/assistant/discarded_proposal'
 import type { QueryClientContract, TransactionClientContract } from '@adonisjs/lucid/types/database'
 import {
   AI_CONVERSATION_TITLE_LENGTH,
@@ -96,17 +97,24 @@ export class AiConversations {
     await db.from('ai_conversations').where('id', id).delete()
   }
 
-  /** Marks proposals of the trip whose time ran out as `expired`. */
+  /**
+   * Marks proposals of the trip whose time ran out as `expired`; one made
+   * outside a chat also loses its draft (`DISCARDED_PROPOSAL_COLUMNS`).
+   */
   async expireDue(
     tripId: string,
     client: QueryClientContract | TransactionClientContract = db.connection()
   ): Promise<void> {
     const now = this.clock.now()
-    await client
-      .from('ai_actions')
-      .where('trip_id', tripId)
-      .where('status', 'proposed')
-      .where('expires_at', '<=', now)
-      .update({ status: 'expired', updated_at: now })
+    const due = () =>
+      client
+        .from('ai_actions')
+        .where('trip_id', tripId)
+        .where('status', 'proposed')
+        .where('expires_at', '<=', now)
+    await due()
+      .whereNull('conversation_id')
+      .update({ status: 'expired', updated_at: now, ...DISCARDED_PROPOSAL_COLUMNS })
+    await due().update({ status: 'expired', updated_at: now })
   }
 }

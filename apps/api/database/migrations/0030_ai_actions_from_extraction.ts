@@ -25,6 +25,11 @@ export default class extends BaseSchema {
   }
 
   async down() {
+    // The older CHECK cannot hold these rows: they go first. Rows without a
+    // conversation are all extract_booking ones; the column stays nullable.
+    this.defer(async (database) => {
+      await database.from('ai_actions').where('tool', 'extract_booking').delete()
+    })
     this.schema.alterTable('ai_actions', (table) => {
       table.dropChecks(['ai_actions_tool_check'])
       table.check(

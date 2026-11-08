@@ -95,6 +95,14 @@ export const throttleLlmPerDay = limiter.define('llm_day', (ctx) =>
 export const throttleLlm = [throttleLlmPerMinute, throttleLlmPerDay]
 
 /**
+ * Revising a booking proposal: no model call, but a full dry run of the
+ * trip each time, so 30 a minute per account.
+ */
+export const throttleAiRevise = limiter.define('ai_revise', (ctx) =>
+  limiter.allowRequests(30).every('1 min').usingKey(accountKey(ctx))
+)
+
+/**
  * Weather lookups: 120 per hour per account. Today asks once per visit and
  * "Download everything" asks once per trip day ahead (at most 16); the
  * shared 30-minute cache keeps the provider's free tier far away.

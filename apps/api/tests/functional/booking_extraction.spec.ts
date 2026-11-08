@@ -22,6 +22,12 @@ import { useFixedClock } from '#tests/helpers/fixed_clock'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
 import { makeUser } from '#tests/helpers/make_user'
 import { FERRY_BOOKING_LINES, syntheticPdf } from '#tests/helpers/synthetic_pdf'
+import { syntheticPng } from '#tests/helpers/synthetic_png'
+import { mutation, pushApplied } from '#tests/helpers/sync'
+import { readFile, readdir } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { MutationDryRun } from '#services/assistant/mutation_dry_run'
 
 /** What the model answers for the synthetic ferry booking: the zone inferred and flagged. */
 const FERRY_ANSWER = {
@@ -70,11 +76,7 @@ function answers(...contents: unknown[]): FakeLlmFixture {
   }
 }
 
-const PNG = Buffer.concat([
-  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-  Buffer.from('0000000d49484452', 'hex'),
-  Buffer.alloc(32),
-])
+const PNG = syntheticPng()
 const EXE = Buffer.concat([Buffer.from('MZ'), Buffer.alloc(64)])
 
 async function upload(
@@ -230,8 +232,8 @@ test.group('Reading a booking', (group) => {
     const row = await db.from('ai_actions').where('id', response.body().data.id).firstOrFail()
     assert.equal(row.trip_id, trip.id)
     assert.equal(row.tool, 'extract_booking')
-    for (const mutation of row.mutations as { tripId: string }[]) {
-      assert.equal(mutation.tripId, trip.id)
+    for (const stored of row.mutations as { tripId: string }[]) {
+      assert.equal(stored.tripId, trip.id)
     }
     assert.notProperty(bookingOf(response.body().data).draft, 'tripId')
     assert.isEmpty(await db.from('ai_actions').where('trip_id', other.id))
@@ -523,6 +525,203 @@ test.group('Reading a booking', (group) => {
       'extract_booking'
     )
   })
+  test('a document already linked to an event is not read again', async ({ client, assert }) => {
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const documentId = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    const first = await extract(client, owner, trip.id, documentId)
+    await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/ai/actions/${first.body().data.id}/accept`),
+      owner
+    ).json({})
+    const calls = llm.current.calls.length
+
+    const again = await extract(client, owner, trip.id, documentId)
+
+    again.assertStatus(409)
+    again.assertBodyContains({ code: 'E_DOCUMENT_ALREADY_LINKED' })
+    assert.lengthOf(llm.current.calls, calls)
+    const events = await db.from('events').where('trip_id', trip.id)
+    assert.lengthOf(events, 1)
+  })
+
+  test('revise keeps the document baseline', async ({ client, assert }) => {
+    const partner = await makeUser()
+    await addMember(trip, partner)
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const documentId = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    const extracted = await extract(client, owner, trip.id, documentId)
+    const action: AiAction = extracted.body().data
+    // Another member edits the document after the proposal was made.
+    await pushApplied(
+      client,
+      partner,
+      mutation(
+        trip.id,
+        'document',
+        { title: 'Ferry (renamed)' },
+        { id: documentId, changedAt: '2026-11-08T10:00:01.000Z' }
+      )
+    )
+    const draft = structuredClone(bookingOf(action).draft)
+    draft.title = 'Ferry, edited'
+
+    const revised = await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/ai/actions/${action.id}/revise`),
+      owner
+    ).json({ draft })
+    const accepted = await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/ai/actions/${action.id}/accept`),
+      owner
+    ).json({})
+
+    revised.assertStatus(409)
+    revised.assertBodyContains({ code: 'E_AI_ACTION_STALE' })
+    accepted.assertStatus(409)
+    assert.isEmpty(await db.from('events').where('trip_id', trip.id))
+  })
+
+  test('an unreadable pdf never reaches the model', async ({ client, assert }) => {
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const garbage = Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(4096, 7)])
+    const documentId = await upload(client, owner, trip, garbage)
+
+    const response = await extract(client, owner, trip.id, documentId)
+
+    response.assertStatus(415)
+    assert.isEmpty(llm.current.calls)
+  })
+
+  test('a pdf over the read limit is refused from its stored size', async ({ client, assert }) => {
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const big = Buffer.concat([syntheticPdf([FERRY_BOOKING_LINES]), Buffer.alloc(11 * 1024 * 1024)])
+    const documentId = await upload(client, owner, trip, big)
+
+    const response = await extract(client, owner, trip.id, documentId)
+
+    response.assertStatus(413)
+    assert.isEmpty(llm.current.calls)
+  })
+
+  test('rejecting an extraction discards the draft', async ({ client, assert }) => {
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const documentId = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    const extracted = await extract(client, owner, trip.id, documentId)
+    const id = extracted.body().data.id
+
+    const rejected = await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/ai/actions/${id}/reject`),
+      owner
+    ).json({})
+
+    rejected.assertStatus(200)
+    const row = await db.from('ai_actions').where('id', id).firstOrFail()
+    assert.equal(row.status, 'rejected')
+    assert.deepEqual(row.proposal, { kind: 'discarded' })
+    assert.deepEqual(row.mutations, [])
+    assert.deepEqual(row.baseline, [])
+    assert.notInclude(JSON.stringify(row), 'TEST01')
+  })
+
+  test('an extraction nobody decided on loses its draft when it expires', async ({
+    client,
+    assert,
+  }) => {
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const documentId = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    const extracted = await extract(client, owner, trip.id, documentId)
+    const id = extracted.body().data.id
+    await db
+      .from('ai_actions')
+      .where('id', id)
+      .update({ expires_at: new Date('2026-11-08T09:00:00Z') })
+
+    const late = await actingAs(
+      client.post(`/api/v1/trips/${trip.id}/ai/actions/${id}/accept`),
+      owner
+    ).json({})
+
+    late.assertStatus(409)
+    const row = await db.from('ai_actions').where('id', id).firstOrFail()
+    assert.equal(row.status, 'expired')
+    assert.deepEqual(row.proposal, { kind: 'discarded' })
+    assert.deepEqual(row.mutations, [])
+  })
+
+  test('revise that loses to an accept reports the real status', async ({ client, assert }) => {
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    const documentId = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    const extracted = await extract(client, owner, trip.id, documentId)
+    const action: AiAction = extracted.body().data
+    // The accept lands while the revision's dry run runs.
+    const real = await app.container.make(MutationDryRun)
+    app.container.swap(MutationDryRun, () => {
+      const racing = Object.create(real) as MutationDryRun
+      racing.run = async (...args) => {
+        const result = await real.run(...args)
+        await db.from('ai_actions').where('id', action.id).update({ status: 'accepted' })
+        return result
+      }
+      return racing
+    })
+    try {
+      const revised = await actingAs(
+        client.post(`/api/v1/trips/${trip.id}/ai/actions/${action.id}/revise`),
+        owner
+      ).json({ draft: bookingOf(action).draft })
+
+      revised.assertStatus(409)
+      revised.assertBodyContains({ code: 'E_AI_ACTION_CLOSED', status: 'accepted' })
+    } finally {
+      app.container.restore(MutationDryRun)
+    }
+    const after = await db.from('ai_actions').where('id', action.id).firstOrFail()
+    assert.equal(after.status, 'accepted')
+  })
+
+  test('revise is throttled per account', async ({ client }) => {
+    const path = `/api/v1/trips/${trip.id}/ai/actions/${randomUUID()}/revise`
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const response = await actingAs(client.post(path), owner).json({ draft: { kind: 'tour' } })
+      response.assertStatus(404)
+    }
+
+    const throttled = await actingAs(client.post(path), owner).json({ draft: { kind: 'tour' } })
+
+    throttled.assertStatus(429)
+  })
+
+  test('the chat reads one booking per turn', async ({ client, assert }) => {
+    const first = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    const second = await upload(client, owner, trip, syntheticPdf([FERRY_BOOKING_LINES]))
+    llm.current.script('extract_booking', 'ferry', answers(FERRY_ANSWER))
+    llm.current.script('chat', 'two', {
+      model: 'fake-chat-model',
+      responses: [
+        {
+          toolCalls: [
+            { id: 'a', name: 'extract_booking', input: { documentId: first } },
+            { id: 'b', name: 'extract_booking', input: { documentId: second } },
+          ],
+        },
+        { content: 'Done.' },
+      ],
+    })
+    const conversation = await startConversation(client, owner, trip.id)
+
+    await say(client, owner, trip.id, conversation.id, 'Read both')
+
+    const purposes = llm.current.calls.map((call) => call.purpose)
+    assert.lengthOf(
+      purposes.filter((purpose) => purpose === 'extract_booking'),
+      1
+    )
+    assert.lengthOf(await db.from('ai_actions').where('trip_id', trip.id), 1)
+    const results = llm.current.calls
+      .at(-1)!
+      .messages.flatMap((m) => (Array.isArray(m.content) ? m.content : []))
+      .filter((block) => block.type === 'tool_result')
+    assert.include(results[1], { isError: true })
+  })
 })
 
 test.group('Reading a receipt', (group) => {
@@ -617,5 +816,28 @@ test.group('Reading a receipt', (group) => {
 
     response.assertStatus(404)
     assert.isEmpty(llm.current.calls)
+  })
+  test('a refused receipt leaves nothing in the temp dir', async ({ client, assert }) => {
+    const marker = `synthetic-receipt-${randomUUID()}`
+    const photo = syntheticPng(marker)
+    const stranger = await makeUser()
+    const strangerTrip = await makeTrip(stranger)
+    const before = new Set(await readdir(tmpdir()))
+
+    const notMember = await scan(client, owner, strangerTrip.id).file('file', photo, {
+      filename: 'r.png',
+    })
+    const noCsrf = await client
+      .post(`/api/v1/trips/${trip.id}/receipts/extract`)
+      .loginAs(owner)
+      .file('file', photo, { filename: 'r.png' })
+
+    notMember.assertStatus(404)
+    assert.notEqual(noCsrf.status(), 200)
+    for (const name of await readdir(tmpdir())) {
+      if (before.has(name)) continue
+      const content = await readFile(join(tmpdir(), name)).catch(() => Buffer.alloc(0))
+      assert.equal(content.indexOf(marker), -1, 'no copy of the photo is left on disk')
+    }
   })
 })

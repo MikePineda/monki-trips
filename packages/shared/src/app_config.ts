@@ -15,4 +15,10 @@ export interface AppConfig {
   pushEnabled: boolean
   /** The VAPID public key browsers subscribe with (`applicationServerKey`); null while push is disabled. */
   vapidPublicKey: string | null
+  /**
+   * Whether the server can read photos and scanned PDFs (a vision model is
+   * configured, `LLM_VISION_MODEL`). While false the web app hides "Scan
+   * receipt" and "Read this booking" on photos; a PDF with text still reads.
+   */
+  visionEnabled: boolean
 }

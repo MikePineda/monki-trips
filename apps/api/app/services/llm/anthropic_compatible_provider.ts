@@ -24,7 +24,7 @@ export interface AnthropicCompatibleOptions {
   baseUrl?: string
   apiKey: string
   model: string
-  /** Used instead of `model` when a request carries an image. */
+  /** Reads requests that carry an image or a PDF document; empty or absent = vision off (`supportsVision`). */
   visionModel?: string
   timeoutMs?: number
   /** Waits between attempts; the list length is the number of retries. */
@@ -91,7 +91,11 @@ export class AnthropicCompatibleProvider extends LlmProvider {
     return Boolean(this.options.visionModel)
   }
 
-  /** The model a request goes to: the vision model when it carries an image and one is set. */
+  /**
+   * The model a request goes to: the vision model when it carries an image
+   * or a PDF document. Without one, features refuse such requests first
+   * (`supportsVision` is false), so a file never reaches the text model.
+   */
   modelFor(request: Pick<LlmRequest, 'messages'>): string {
     if (hasImageInput(request) && this.options.visionModel) return this.options.visionModel
     return this.options.model
