@@ -270,6 +270,47 @@ test.group('Trip assistant', (group) => {
     assert.equal(activity[0].action, 'created')
   })
 
+  test('accept locks the trip row before the rows it touches, like sync push', async ({
+    client,
+    assert,
+  }) => {
+    const walk = await addEvent(trip.id, {
+      starts_local: '2027-01-22T09:00:00',
+      start_tz: 'Asia/Bangkok',
+      starts_at: '2027-01-22T02:00:00Z',
+      starts_on: '2027-01-22',
+    })
+    llm.current.script(
+      'chat',
+      'lock-order',
+      chatScript(
+        {
+          tool: 'propose_event_changes',
+          input: { changes: [{ op: 'move', eventId: walk, startsLocal: '2027-01-23T09:00' }] },
+        },
+        { text: 'Proposed.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+    const { events } = await say(client, owner, trip.id, conversation.id, 'Move the walk')
+    const [action] = proposals(events)
+    const locks: string[] = []
+    const listener = (query: { sql: string }) => {
+      if (/for update/i.test(query.sql)) locks.push(query.sql)
+    }
+    const knex = db.connection().getWriteClient()
+    knex.on('query', listener)
+
+    const response: ApiResponse = await decide(client, owner, trip.id, action.id, 'accept')
+
+    knex.off('query', listener)
+    response.assertStatus(200)
+    assert.isNotEmpty(locks)
+    assert.match(locks[0], /from "trips"/, 'the trip row is the first lock taken')
+    const firstContentLock = locks.findIndex((sql) => /from "(events|tasks|expenses)"/.test(sql))
+    assert.isAbove(firstContentLock, 0)
+  })
+
   test('accept fails when the trip changed since the proposal', async ({ client, assert }) => {
     const walk = await addEvent(trip.id, {
       starts_local: '2027-01-22T09:00:00',

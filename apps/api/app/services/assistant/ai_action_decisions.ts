@@ -37,6 +37,10 @@ class StaleProposal extends Error {}
  * must still carry the change stamp it had when the proposal was made, and
  * every mutation must apply in full; otherwise nothing is written, the
  * action is marked `failed` and the answer is 409 `E_AI_ACTION_STALE`.
+ *
+ * Locks are taken in the order every trip write uses (the trip row, then
+ * the action, then the content rows), so an accept and a sync push on the
+ * same rows queue behind each other instead of deadlocking.
  */
 @inject()
 export class AiActionDecisions {
@@ -51,6 +55,8 @@ export class AiActionDecisions {
     await this.prepare(user, trip, id)
     try {
       return await db.transaction(async (trx) => {
+        // Same lock order as sync push and the dry run: the trip row first, then the rows it holds.
+        await this.lockTrip(trx, trip)
         const row = await this.openAction(trx, user, trip, id)
         const mutations = row['mutations'] as SyncMutation[]
         await this.checkBaseline(trx, trip, row['baseline'] as BaselineRow[])
@@ -111,6 +117,18 @@ export class AiActionDecisions {
         .prepare({ tripId: trip.id, id: mutation.id, changes: mutation.changes ?? {} })
         .catch(() => {})
     }
+  }
+
+  /** Locks the live trip row (404 once the trip is deleted), as `MutationApplier` does first. */
+  private async lockTrip(trx: TransactionClientContract, trip: Trip): Promise<void> {
+    const row = await trx
+      .from('trips')
+      .where('id', trip.id)
+      .whereNull('deleted_at')
+      .forUpdate()
+      .select('id')
+      .first()
+    if (!row) throw new ApiException('E_ROW_NOT_FOUND')
   }
 
   /** The caller's own action of this trip, locked, still `proposed`; else 404 or 409. */
