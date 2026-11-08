@@ -12,21 +12,42 @@ export interface TodayTrip {
   startsOn: string
 }
 
+/** Synthetic coordinates of the invented harbour town (open sea, nobody lives there). */
+const HARBOUR = { lat: 10.25, lng: 120.75 }
+
+/** A `YYYY-MM-DD` date `days` after `date`. */
+function plusDays(date: string, days: number): string {
+  const at = new Date(`${date}T00:00:00Z`)
+  at.setUTCDate(at.getUTCDate() + days)
+  return at.toISOString().slice(0, 10)
+}
+
+/** Today's date at the harbour (Asia/Bangkok), for a trip that is under way. */
+export function harbourToday(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(now)
+}
+
 /**
  * A synthetic trip for the travel-mode journeys, written through the API
- * like the app writes it: one stop, a harbour walk on day 1 with its
+ * like the app writes it: one placed stop, a harbour walk on day 1 with its
  * entry pass (show on the phone) and a voucher to print, and lodging for
- * the first two nights. Invented places and codes only.
+ * the first two nights. Invented places, coordinates and codes only. By
+ * default it starts years from now (Today previews day 1 and no forecast
+ * reaches it); `startsOn` moves it, e.g. to today for the weather.
  */
-export async function seedTodayTrip(account: E2eAccount): Promise<TodayTrip> {
+export async function seedTodayTrip(
+  account: E2eAccount,
+  options: { startsOn?: string } = {}
+): Promise<TodayTrip> {
   const api = await ApiSession.signIn(account)
   try {
     await api.deleteAllTrips()
-    const startsOn = '2030-03-01'
+    const startsOn = options.startsOn ?? '2030-03-01'
+    const day = (offset: number) => plusDays(startsOn, offset)
     const tripId = await api.createTrip({
       name: 'Harbour escape',
       startsOn,
-      endsOn: '2030-03-05',
+      endsOn: day(4),
       baseCurrency: 'EUR',
     })
     const stopId = randomUUID()
@@ -41,8 +62,9 @@ export async function seedTodayTrip(account: E2eAccount): Promise<TodayTrip> {
           name: 'Port Vellmar',
           countryCode: 'XA',
           tz: 'Asia/Bangkok',
-          arriveOn: '2030-03-01',
-          departOn: '2030-03-05',
+          arriveOn: startsOn,
+          departOn: day(4),
+          ...HARBOUR,
         },
       },
       {
@@ -52,7 +74,7 @@ export async function seedTodayTrip(account: E2eAccount): Promise<TodayTrip> {
           kind: 'tour',
           title: 'Harbour walk',
           status: 'booked',
-          startsLocal: '2030-03-01T10:00',
+          startsLocal: `${startsOn}T10:00`,
           startTz: 'Asia/Bangkok',
           address: '14 Quay Lane',
           bookingCode: 'DEMO07',
@@ -65,9 +87,9 @@ export async function seedTodayTrip(account: E2eAccount): Promise<TodayTrip> {
           kind: 'lodging',
           title: 'Lighthouse Rooms',
           status: 'booked',
-          startsLocal: '2030-03-01T15:00',
+          startsLocal: `${startsOn}T15:00`,
           startTz: 'Asia/Bangkok',
-          endsLocal: '2030-03-03T11:00',
+          endsLocal: `${day(2)}T11:00`,
           endTz: 'Asia/Bangkok',
           address: '2 Beacon Road',
           addressLocal: 'Οδός Φάρου 2',
