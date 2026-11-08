@@ -261,6 +261,41 @@ test.group('Split budget mode', (group) => {
     ])
   })
 
+  test('switching to split leaves a payer alone whose clock is newer than the switch', async ({
+    client,
+    assert,
+  }) => {
+    const { owner, trip } = await tripOfThree(client)
+    const museum = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'expense',
+        { amountMinor: 3000, currency: 'AUD', spentOn: '2027-01-21', paidByTravellerId: null },
+        { changedAt: '2026-11-07T11:00:00.000Z' }
+      )
+    )
+
+    // An older switch, made offline, arrives after the payer was cleared on purpose.
+    await pushApplied(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'trip',
+        { budgetMode: 'split' },
+        { id: trip.id, changedAt: '2026-11-07T09:00:00.000Z' }
+      )
+    )
+
+    const row = await db.from('expenses').where('id', museum.id).first()
+    assert.isNull(row.paid_by_traveller_id)
+    assert.equal(row.field_clock.paidByTravellerId, Date.parse('2026-11-07T11:00:00.000Z'))
+    assert.equal(row.field_clock.shares, Date.parse('2026-11-07T09:00:00.000Z'))
+    assert.lengthOf(await liveShares(museum.id), 3)
+  })
+
   test('switching back to shared keeps payers and shares', async ({ client, assert }) => {
     const { owner, trip, ownerTraveller } = await tripOfThree(client)
     const groceries = await pushApplied<Expense>(

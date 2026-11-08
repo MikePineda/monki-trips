@@ -33,9 +33,11 @@ export function switchedToSplit(ctx: AfterWriteContext): boolean {
  * Makes live expenses of a split trip complete: one without a payer gets
  * the owner's traveller, one without a live split gets equal shares among
  * every live traveller (the remainder on the payer). Payers and splits
- * already recorded are kept. `expenseIds` narrows it to those expenses;
- * null means every live expense of the trip. Each expense it touches gets
- * the field clocks of what it wrote, at `changedAt`. Answers what it wrote.
+ * already recorded are kept, and so is a field whose clock is newer than
+ * `changedAt` (an older switch arriving late never undoes a later edit).
+ * `expenseIds` narrows it to those expenses; null means every live
+ * expense of the trip. A field it writes keeps the greater of its stored
+ * clock and `changedAt`. Answers what it wrote.
  */
 export async function completeSplits(
   writer: SplitWriter,
@@ -53,12 +55,13 @@ export async function completeSplits(
     .orderBy('spent_on')
     .orderBy('id')
     .forUpdate()
-    .select('id', 'amount_minor', 'paid_by_traveller_id')
+    .select('id', 'amount_minor', 'paid_by_traveller_id', 'field_clock')
   if (expenseIds) query.whereIn('id', [...expenseIds])
   const expenses = (await query) as {
     id: string
     amount_minor: string
     paid_by_traveller_id: string | null
+    field_clock: Record<string, number> | null
   }[]
   if (expenses.length === 0) return []
   const withShares = new Set(
@@ -83,12 +86,14 @@ export async function completeSplits(
   for (const expense of expenses) {
     const fields: string[] = []
     const values: Record<string, unknown> = {}
+    const stored = expense.field_clock ?? {}
+    const writable = (field: string) => (stored[field] ?? 0) <= writer.changedAt
     const payer = expense.paid_by_traveller_id ?? fallbackPayer
-    if (expense.paid_by_traveller_id === null) {
+    if (expense.paid_by_traveller_id === null && writable('paidByTravellerId')) {
       fields.push('paidByTravellerId')
       values['paid_by_traveller_id'] = payer
     }
-    if (!withShares.has(expense.id)) {
+    if (!withShares.has(expense.id) && writable('shares')) {
       fields.push('shares')
       for (const share of equalShares(expense.amount_minor, travellerIds, payer)) {
         await trx.table('expense_shares').insert({
@@ -103,7 +108,9 @@ export async function completeSplits(
       }
     }
     if (fields.length === 0) continue
-    const clock = Object.fromEntries(fields.map((field) => [field, writer.changedAt]))
+    const clock = Object.fromEntries(
+      fields.map((field) => [field, Math.max(stored[field] ?? 0, writer.changedAt)])
+    )
     await trx
       .from('expenses')
       .where('id', expense.id)
