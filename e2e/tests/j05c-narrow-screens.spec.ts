@@ -14,9 +14,9 @@ import { signIn } from '../sign-in.ts'
  * day figure before the trip spreads over the trip's days, the last line
  * of a list scrolls clear of the floating button, nothing runs past the
  * right edge (Where we sleep included: dates whole, long titles kept in
- * the row) and the floating button stays inside the viewport. The
- * Notifications section of Settings (switches, quiet hours, upcoming
- * reminders) stays inside the screen too.
+ * the row, the Phrases cards too) and the floating button stays inside
+ * the viewport. The Notifications section of Settings (switches, quiet
+ * hours, upcoming reminders) stays inside the screen too.
  *
  * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
  * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
@@ -182,6 +182,7 @@ test.describe('J05c trip screens on a narrow phone', () => {
       { path: 'more', fab: 'shell.fab' },
       { path: 'more/members', fab: 'shell.fab' },
       { path: 'more/tasks', fab: 'shell.fab' },
+      { path: 'more/phrases', fab: 'shell.fab' },
     ]
     for (const screen of screens) {
       await page.goto(`/t/${trip.tripId}/${screen.path}`)
@@ -196,6 +197,34 @@ test.describe('J05c trip screens on a narrow phone', () => {
       })
       expect(room, screen.path).toBeGreaterThanOrEqual(56 + 64)
     }
+  })
+
+  test('the Phrases page keeps long cards inside the row and clears the floating button', async ({
+    page,
+  }) => {
+    const arrange = await ApiSession.signIn(solo)
+    try {
+      expect(await arrange.generatePhraseCards(trip.tripId, 'th')).toBe(8)
+    } finally {
+      await arrange.dispose()
+    }
+
+    await signIn(page, solo)
+    await page.goto(`/t/${trip.tripId}/more/phrases`)
+    await page.getByTestId('phrases.language').selectOption('th')
+    await expect(page.getByTestId('phrases.card')).toHaveCount(8)
+
+    expect(await overflowing(page)).toEqual([])
+    for (const card of await page.getByTestId('phrases.card').all()) {
+      const chevron = await card.locator('.mk-row__chevron').boundingBox()
+      expect(chevron).not.toBeNull()
+      expect(chevron!.x + chevron!.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+    }
+
+    await scrollToEnd(page)
+    const fab = await expectFabInside(page, 'shell.fab')
+    const last = await page.getByTestId('phrases.translate').boundingBox()
+    expect(last!.y + last!.height).toBeLessThanOrEqual(fab.y)
   })
 
   test('the Notifications settings section stays inside the screen, upcoming reminders included', async ({

@@ -87,6 +87,19 @@ export class ApiSession {
     return body.data.id
   }
 
+  /**
+   * Generates the trip's phrase cards in one language (`POST
+   * /trips/:tripId/phrase-cards`; the suite's API answers from the fake
+   * LLM) and answers how many cards the set holds.
+   */
+  async generatePhraseCards(tripId: string, language: string): Promise<number> {
+    const response = await this.write('post', `/api/v1/trips/${tripId}/phrase-cards`, {
+      language,
+    })
+    const body = (await response.json()) as { data: { cards: unknown[] } }
+    return body.data.cards.length
+  }
+
   /** The trip's live content as the API sees it (tasks, emergency information...). */
   async snapshot(tripId: string): Promise<TripContentSnapshotLike> {
     const response = await this.context.get(`/api/v1/trips/${tripId}/snapshot`)
