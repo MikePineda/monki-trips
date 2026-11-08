@@ -47,7 +47,8 @@
     "alertBody": "Agrega un hospedaje, o un transporte nocturno, para esta noche.",
     "findStay": "Buscar hospedaje",
     "lastDayTitle": "No hay noche que planear",
-    "lastDayBody": "El viaje termina hoy."
+    "lastDayBody": "El viaje termina hoy.",
+    "showDriver": "Mostrar al taxista"
   },
   "money": {
     "label": "Disponible hoy",

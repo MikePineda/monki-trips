@@ -24,6 +24,7 @@ import { TripContentStore } from '../../core/offline/trip-content.store'
 import {
   tripEvents,
   tripExpenses,
+  tripPhraseCards,
   tripRecord,
   tripSegments,
   tripStops,
@@ -42,6 +43,8 @@ import { relativeTime } from '../../domain/relative-time'
 import { telHref } from '../../domain/tel-href'
 import { todayDocuments, todayMascot, todayScreen } from '../../domain/today-screen'
 import { localClock, zoneLabel } from '../../domain/zoned-time'
+import { languageForCountry } from '../../domain/phrase-card-languages'
+import { tonightAddressCard } from '../../domain/tonight-address-card'
 import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
@@ -297,6 +300,18 @@ interface DocumentLine {
                   </a>
                 }
                 <span mkRowGrow></span>
+                @if (driverCard(); as cardKey) {
+                  <a
+                    mk-button
+                    variant="secondary"
+                    size="sm"
+                    [routerLink]="['..', 'more', 'phrases', 'show', cardKey]"
+                    data-testid="today.tonight.showDriver"
+                  >
+                    <mk-icon name="car" [size]="16" />
+                    {{ 'today.tonight.showDriver' | transloco }}
+                  </a>
+                }
                 @if (tonightDirections(); as href) {
                   <a
                     mk-button
@@ -463,6 +478,7 @@ export default class TodayPage {
   private readonly copies = inject(DocumentCopiesStore).copies
   private readonly tasks = tripTasks(this.tripId)
   private readonly expenses = tripExpenses(this.tripId)
+  private readonly phraseSets = tripPhraseCards(this.tripId)
 
   /** "Now", moved on by a timer so the countdown ticks; read from CLOCK. */
   private readonly now = signal(this.clockNow())
@@ -482,6 +498,20 @@ export default class TodayPage {
       now: this.now(),
       deviceZone: this.deviceZone,
     })
+  })
+
+  /** The "take me to this address" card of tonight's stay, for "Show to driver"; null without one. */
+  protected readonly driverCard = computed(() => {
+    const view = this.screen()?.view
+    const tonight = view?.tonight
+    if (!tonight || tonight.how !== 'lodging') {
+      return null
+    }
+    return tonightAddressCard(
+      this.phraseSets(),
+      tonight,
+      languageForCountry(view.stop?.countryCode)
+    )
   })
 
   private readonly platform = computed(() => {
