@@ -6,6 +6,7 @@ import type { DbRow, DeriveContext, EntitySpec, FieldProblem } from '#services/s
 import { convertToBaseMinor } from '#domain/convert_to_base'
 import { FxRates } from '#services/fx/fx_rates'
 import { liveTravellerIds } from '#services/live_travellers'
+import { completeSplits } from '#services/split_switch'
 import { toWireValue } from '#services/sync/column_types'
 import { tombstoneWhere } from '#services/sync/table_writes'
 import { expenseChanges } from '#validators/sync/entities'
@@ -218,7 +219,11 @@ export const expenseEntity: EntitySpec = {
       return
     }
     const shares = ctx.extras['shares'] as ShareInput[] | undefined
-    if (!shares) return
+    if (!shares) {
+      // A device that has not pulled the switch to split yet sends no split: complete it here.
+      if (ctx.tripRow['budget_mode'] === 'split') await completeSplits(ctx, [String(ctx.row.id)])
+      return
+    }
     // Replace the whole split: tombstone what is live, then write the new shares.
     // The applier already refused share ids of another expense or trip; the
     // update is still fenced to this expense, and an insert of an id that

@@ -70,9 +70,8 @@ test.group('Split budget mode', (group) => {
     )
 
     assert.equal(switched.budgetMode, 'split')
-    const [groceriesRow, taxiRow] = await Promise.all(
-      [groceries.id, taxi.id].map((id) => db.from('expenses').where('id', id).first())
-    )
+    const groceriesRow = await db.from('expenses').where('id', groceries.id).first()
+    const taxiRow = await db.from('expenses').where('id', taxi.id).first()
     assert.equal(groceriesRow.paid_by_traveller_id, ownerTraveller)
     assert.equal(taxiRow.paid_by_traveller_id, editorTraveller)
     const expected = (pairs: [string, number][]) => pairs.sort(([a], [b]) => a.localeCompare(b))
@@ -232,6 +231,34 @@ test.group('Split budget mode', (group) => {
     assert.sameDeepMembers(await liveShares(taxi.id), expected)
     const row = await db.from('expenses').where('id', taxi.id).first()
     assert.equal(row.field_clock.shares, Date.parse('2026-11-07T11:00:00.000Z'))
+  })
+
+  test('an expense pushed to a split trip without a split gets equal shares and the owner as payer', async ({
+    client,
+    assert,
+  }) => {
+    const { owner, editor, trip, ownerTraveller, editorTraveller, friendTraveller } =
+      await tripOfThree(client)
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'trip', { budgetMode: 'split' }, { id: trip.id })
+    )
+
+    // Made on a device that has not pulled the switch yet: no payer, no shares.
+    const late = await pushApplied<Expense>(
+      client,
+      editor,
+      mutation(trip.id, 'expense', { amountMinor: 3000, currency: 'AUD', spentOn: '2027-01-22' })
+    )
+
+    const row = await db.from('expenses').where('id', late.id).first()
+    assert.equal(row.paid_by_traveller_id, ownerTraveller)
+    assert.sameDeepMembers(await liveShares(late.id), [
+      [ownerTraveller, 1000],
+      [editorTraveller, 1000],
+      [friendTraveller, 1000],
+    ])
   })
 
   test('switching back to shared keeps payers and shares', async ({ client, assert }) => {
