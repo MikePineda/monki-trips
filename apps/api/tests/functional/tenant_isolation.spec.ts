@@ -95,6 +95,9 @@ const CASES: Record<string, IsolationCase> = {
   'trips.tasks.fromTemplate': {
     request: (c, v, a) => actingAs(c.post(`/api/v1/trips/${v.trip.id}/tasks/from-template`), a),
   },
+  'trips.weather': {
+    request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/weather?date=2027-01-21`), a),
+  },
   'trips.emergency.show': {
     request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/emergency`), a),
   },
