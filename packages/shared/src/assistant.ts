@@ -8,6 +8,7 @@ import type { ErrorCode } from './error_codes.ts'
 import type { EventKind, EventStatus } from './domain/trip_event.ts'
 import type { FxSource } from './expense.ts'
 import type { TaskPriority } from './domain/trip_task.ts'
+import type { AiBookingProposal } from './booking_extraction.ts'
 
 /** `proposed → accepted | rejected | expired | failed`; mirrors the CHECK on `ai_actions.status`. */
 export const AI_ACTION_STATUSES = ['proposed', 'accepted', 'rejected', 'expired', 'failed'] as const
@@ -15,7 +16,12 @@ export const AI_ACTION_STATUSES = ['proposed', 'accepted', 'rejected', 'expired'
 export type AiActionStatus = (typeof AI_ACTION_STATUSES)[number]
 
 /** The write tools; mirrors the CHECK on `ai_actions.tool`. */
-export const AI_ACTION_TOOLS = ['propose_event_changes', 'add_expense', 'create_task'] as const
+export const AI_ACTION_TOOLS = [
+  'propose_event_changes',
+  'add_expense',
+  'create_task',
+  'extract_booking',
+] as const
 
 export type AiActionTool = (typeof AI_ACTION_TOOLS)[number]
 
@@ -102,12 +108,14 @@ export interface AiTaskProposal {
 }
 
 /** What the member sees before deciding: a diff, never the raw mutations. */
-export type AiProposal = AiEventChangesProposal | AiExpenseProposal | AiTaskProposal
+export type AiProposal =
+  AiEventChangesProposal | AiExpenseProposal | AiTaskProposal | AiBookingProposal
 
 export interface AiAction {
   id: string
   tripId: string
-  conversationId: string
+  /** Null for a proposal made outside a chat (reading a document from its detail). */
+  conversationId: string | null
   /** The assistant message the proposal belongs to. */
   messageId: string | null
   tool: AiActionTool
