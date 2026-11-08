@@ -53,11 +53,13 @@ export class AiActionDecisions {
   async accept(user: User, trip: Trip, id: string, i18n: I18n): Promise<AcceptedAction> {
     await this.conversations.expireDue(trip.id)
     await this.prepare(user, trip, id)
+    let accepted: AcceptedAction | null
     try {
-      return await db.transaction(async (trx) => {
+      accepted = await db.transaction(async (trx) => {
         // Same lock order as sync push and the dry run: the trip row first, then the rows it holds.
         await this.lockTrip(trx, trip)
         const row = await this.openAction(trx, user, trip, id)
+        if (!row) return null
         const mutations = row['mutations'] as SyncMutation[]
         await this.checkBaseline(trx, trip, row['baseline'] as BaselineRow[])
         const changedAt = this.clock.now().toISOString()
@@ -88,14 +90,21 @@ export class AiActionDecisions {
       }
       throw error
     }
+    // Expired under the lock: the transaction committed the `expired` mark, then the refusal.
+    if (!accepted) throw new ApiException('E_AI_ACTION_CLOSED', { status: 'expired' })
+    return accepted
   }
 
   async reject(user: User, trip: Trip, id: string): Promise<AiAction> {
     await this.conversations.expireDue(trip.id)
-    return db.transaction(async (trx) => {
-      await this.openAction(trx, user, trip, id)
+    const rejected = await db.transaction(async (trx) => {
+      await this.lockTrip(trx, trip)
+      const row = await this.openAction(trx, user, trip, id)
+      if (!row) return null
       return aiActionWire(await this.close(trx, id, 'rejected'))
     })
+    if (!rejected) throw new ApiException('E_AI_ACTION_CLOSED', { status: 'expired' })
+    return rejected
   }
 
   /**
@@ -131,13 +140,17 @@ export class AiActionDecisions {
     if (!row) throw new ApiException('E_ROW_NOT_FOUND')
   }
 
-  /** The caller's own action of this trip, locked, still `proposed`; else 404 or 409. */
+  /**
+   * The caller's own action of this trip, locked and still `proposed`; else
+   * 404 or 409. One whose time ran out (even since the sweep before the
+   * lock) is marked `expired` here and answers null.
+   */
   private async openAction(
     trx: TransactionClientContract,
     user: User,
     trip: Trip,
     id: string
-  ): Promise<Row> {
+  ): Promise<Row | null> {
     const row = (await trx
       .from('ai_actions')
       .where('id', id)
@@ -148,6 +161,11 @@ export class AiActionDecisions {
     if (!row) throw new ApiException('E_ROW_NOT_FOUND')
     if (row['status'] !== 'proposed') {
       throw new ApiException('E_AI_ACTION_CLOSED', { status: row['status'] })
+    }
+    const now = this.clock.now()
+    if (new Date(row['expires_at'] as string | Date).getTime() <= now.getTime()) {
+      await trx.from('ai_actions').where('id', id).update({ status: 'expired', updated_at: now })
+      return null
     }
     return row
   }

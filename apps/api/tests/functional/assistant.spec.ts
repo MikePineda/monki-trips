@@ -9,7 +9,9 @@ import type {
   AiTaskProposal,
   AssistantStreamEvent,
 } from '@monkitrips/shared'
+import app from '@adonisjs/core/services/app'
 import { PLANS } from '#config/plans'
+import { AiConversations } from '#services/assistant/ai_conversations'
 import type { LlmToolResultBlock } from '#services/llm/llm_provider'
 import type Trip from '#models/trip'
 import type User from '#models/user'
@@ -496,6 +498,46 @@ test.group('Trip assistant', (group) => {
       detail.body().data.actions.map((action: AiAction) => action.status),
       ['rejected', 'expired']
     )
+  })
+
+  test('an action that expires between the sweep and the lock is refused as expired', async ({
+    client,
+    assert,
+    cleanup,
+  }) => {
+    llm.current.script(
+      'chat',
+      'late',
+      chatScript(
+        { tool: 'create_task', input: { title: 'Book the late checkout' } },
+        { tool: 'create_task', input: { title: 'Pay the deposit' } },
+        { text: 'Ok.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+    const { events } = await say(client, owner, trip.id, conversation.id, 'Two tasks')
+    const [first, second] = proposals(events)
+    // The sweep runs before the lock; here it finds nothing, as if the action expired right after it.
+    class NoSweep extends AiConversations {
+      async expireDue(): Promise<void> {}
+    }
+    app.container.swap(AiConversations, () => new NoSweep(clock))
+    cleanup(() => app.container.restore(AiConversations))
+    clock.advance(24 * 60 * 60 * 1000)
+
+    const accepted: ApiResponse = await decide(client, owner, trip.id, first.id, 'accept')
+    const rejected: ApiResponse = await decide(client, owner, trip.id, second.id, 'reject')
+
+    accepted.assertStatus(409)
+    accepted.assertBodyContains({ code: 'E_AI_ACTION_CLOSED', status: 'expired' })
+    rejected.assertStatus(409)
+    rejected.assertBodyContains({ code: 'E_AI_ACTION_CLOSED', status: 'expired' })
+    const rows = await db.from('ai_actions').whereIn('id', [first.id, second.id])
+    assert.deepEqual(
+      rows.map((row) => row.status),
+      ['expired', 'expired']
+    )
+    assert.isEmpty(await db.from('tasks').where('trip_id', trip.id).where('origin', 'ai'))
   })
 
   test('log 350 baht of pad thai proposes a THB food expense', async ({ client, assert }) => {
