@@ -64,5 +64,10 @@
   },
   "deviceFrame": {
     "label": "Pantalla de ejemplo"
+  },
+  "proposal": {
+    "before": "Antes",
+    "after": "Después",
+    "changes": "Qué cambia"
   }
 }

@@ -90,6 +90,8 @@ describe('StyleguidePage', () => {
     expect(section('skeleton').querySelector('mk-skeleton')).not.toBeNull()
     expect(section('keypad').querySelectorAll('mk-keypad button')).toHaveLength(12)
     expect(section('icons').querySelectorAll('mk-icon').length).toBeGreaterThan(40)
+    expect(section('assistant').querySelectorAll('mk-chat-message')).toHaveLength(2)
+    expect(section('assistant').querySelectorAll('mk-proposal')).toHaveLength(2)
   })
 
   it('shows Kiko in the six states at the three sizes with a reduced-motion toggle', () => {

@@ -17,12 +17,15 @@ import { MkTextComponent, TEXT_VARIANTS } from './text.component'
       Updated 3 h ago
     </p>
     <span mk-text data-testid="probe.default">body</span>
+    <p mk-text [preserveLines]="true" data-testid="probe.lines">{{ written }}</p>
     <code mk-text variant="code" [breakAnywhere]="true" data-testid="probe.link">
       https://trips.example.com/invite/0123456789abcdef0123456789abcdef
     </code>
   `,
 })
-class Host {}
+class Host {
+  readonly written = 'First line\nSecond line'
+}
 
 describe('mk-text', () => {
   function render(): HTMLElement {
@@ -58,6 +61,15 @@ describe('mk-text', () => {
     expect(host.querySelector('[data-testid="probe.default"]')!.hasAttribute('data-break')).toBe(
       false
     )
+  })
+
+  it('keeps the line breaks of free text someone wrote', () => {
+    const host = render()
+    const lines = host.querySelector<HTMLElement>('[data-testid="probe.lines"]')!
+
+    expect(lines.hasAttribute('data-lines')).toBe(true)
+    expect(getComputedStyle(lines).whiteSpace).toBe('pre-wrap')
+    expect(lines.textContent).toBe('First line\nSecond line')
   })
 
   it('defaults to body text in ink-1', () => {

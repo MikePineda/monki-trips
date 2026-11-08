@@ -65,7 +65,8 @@
     "empty": "Empty states",
     "skeleton": "Skeleton",
     "keypad": "Keypad",
-    "icons": "Icons"
+    "icons": "Icons",
+    "assistant": "Assistant chat"
   },
   "motion": {
     "still": "Still frames",
@@ -140,7 +141,26 @@
     "showCard": "Show a card full screen",
     "cardPhrase": "Bonvolu min konduki al la stacidomo",
     "cardRomanization": "BON-vo-lu min kon-DU-ki",
-    "cardPrompt": "Please take me to the station"
+    "cardPrompt": "Please take me to the station",
+    "chatYou": "You",
+    "chatKiko": "Kiko",
+    "chatQuestion": "Move the day trip to Thursday and tell me what shifts",
+    "chatAnswer": "Moving it to Thursday frees Wednesday.\nOne night loses its bed; check it before you accept.",
+    "proposalKind": "Plan change",
+    "proposalTitle": "Move the day trip to Thursday",
+    "proposalStarts": "Moved: Island day trip · Starts",
+    "proposalNight": "Night of Wed 12 May",
+    "proposalNightNext": "Night of Thu 13 May",
+    "proposalNoBed": "No bed",
+    "proposalLoses": "Loses its bed",
+    "proposalGains": "Gains a bed",
+    "proposalAccept": "Accept",
+    "proposalReject": "Reject",
+    "proposalExpenseKind": "Expense",
+    "proposalExpenseTitle": "฿350.00 · Food",
+    "proposalAmount": "Amount",
+    "proposalBase": "In AUD",
+    "proposalAccepted": "Accepted"
   },
   "screens": {
     "today": "Today",

@@ -64,5 +64,10 @@
   },
   "deviceFrame": {
     "label": "Sample screen"
+  },
+  "proposal": {
+    "before": "Before",
+    "after": "After",
+    "changes": "What changes"
   }
 }

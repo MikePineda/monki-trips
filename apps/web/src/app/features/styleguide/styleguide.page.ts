@@ -15,6 +15,7 @@ import { LangStore } from '../../core/i18n/lang.store'
 import { ThemeStore, type ThemePreference } from '../../core/theme/theme.store'
 import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
+import { MkChatMessageComponent } from '../../shared/ui/chat/chat-message.component'
 import { MkChipComponent } from '../../shared/ui/chip/chip.component'
 import { MkConnectionStatusComponent } from '../../shared/ui/connection-status/connection-status.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
@@ -35,6 +36,11 @@ import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MASCOT_STATES } from '../../shared/ui/mascot/mascot-sheet'
 import { MkMascotComponent, type MascotSize } from '../../shared/ui/mascot/mascot.component'
 import { MkProgressComponent } from '../../shared/ui/progress/progress.component'
+import {
+  MkProposalComponent,
+  type ProposalChange,
+  type ProposalStatus,
+} from '../../shared/ui/proposal/proposal.component'
 import { MkRouteChipComponent } from '../../shared/ui/route-chip/route-chip.component'
 import {
   MkSegmentedComponent,
@@ -118,6 +124,8 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
     MkKeypadComponent,
     MkMascotComponent,
     MkStampComponent,
+    MkChatMessageComponent,
+    MkProposalComponent,
     MockTodayComponent,
     MockTripsComponent,
     MockItineraryDayComponent,
@@ -625,6 +633,51 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
             </mk-section>
 
             <mk-section
+              [eyebrow]="'styleguide.components.assistant' | transloco"
+              data-testid="styleguide.assistant"
+            >
+              <mk-list>
+                <mk-chat-message author="member" [name]="'styleguide.sample.chatYou' | transloco">
+                  <p mk-text [preserveLines]="true">
+                    {{ 'styleguide.sample.chatQuestion' | transloco }}
+                  </p>
+                </mk-chat-message>
+                <mk-chat-message
+                  author="assistant"
+                  [name]="'styleguide.sample.chatKiko' | transloco"
+                >
+                  <p mk-text [preserveLines]="true">
+                    {{ 'styleguide.sample.chatAnswer' | transloco }}
+                  </p>
+                  <mk-proposal
+                    icon="calendar"
+                    [kind]="'styleguide.sample.proposalKind' | transloco"
+                    [title]="'styleguide.sample.proposalTitle' | transloco"
+                    [changes]="proposalChanges()"
+                  >
+                    <mk-row mkProposalActions gap="1">
+                      <button mk-button size="sm" type="button">
+                        <mk-icon name="check" [size]="16" />
+                        {{ 'styleguide.sample.proposalAccept' | transloco }}
+                      </button>
+                      <button mk-button variant="secondary" size="sm" type="button">
+                        <mk-icon name="x" [size]="16" />
+                        {{ 'styleguide.sample.proposalReject' | transloco }}
+                      </button>
+                    </mk-row>
+                  </mk-proposal>
+                  <mk-proposal
+                    icon="wallet"
+                    [kind]="'styleguide.sample.proposalExpenseKind' | transloco"
+                    [title]="'styleguide.sample.proposalExpenseTitle' | transloco"
+                    [changes]="expenseChanges()"
+                    [status]="acceptedStatus()"
+                  />
+                </mk-chat-message>
+              </mk-list>
+            </mk-section>
+
+            <mk-section
               [eyebrow]="'styleguide.components.icons' | transloco"
               data-testid="styleguide.icons"
             >
@@ -801,6 +854,48 @@ export default class StyleguidePage {
   protected readonly lunch = computed(() =>
     formatMoney(1800, DEMO_TRIP.localCurrency, this.i18n.locale())
   )
+  private readonly proposalLabels = scopedLabels('styleguide', [
+    'sample.proposalStarts',
+    'sample.proposalNight',
+    'sample.proposalNightNext',
+    'sample.proposalNoBed',
+    'sample.proposalLoses',
+    'sample.proposalGains',
+    'sample.proposalAmount',
+    'sample.proposalBase',
+    'sample.proposalAccepted',
+  ])
+  /** A move that shifts a stay by a night: one night loses its bed, the next gains one. */
+  protected readonly proposalChanges = computed<ProposalChange[]>(() => {
+    const [starts, night, nightNext, noBed, loses, gains] = this.proposalLabels()
+    return [
+      { label: starts ?? '', before: 'Wed 09:00', after: 'Thu 09:00', mono: true },
+      {
+        label: night ?? '',
+        before: DEMO_TRIP.tonight.name,
+        after: noBed ?? '',
+        flag: { tone: 'serious', icon: 'alert-triangle', label: loses ?? '' },
+      },
+      {
+        label: nightNext ?? '',
+        before: noBed ?? '',
+        after: DEMO_TRIP.tonight.name,
+        flag: { tone: 'good', icon: 'bed', label: gains ?? '' },
+      },
+    ]
+  })
+  protected readonly expenseChanges = computed<ProposalChange[]>(() => {
+    const labels = this.proposalLabels()
+    return [
+      { label: labels[6] ?? '', after: formatMoney(35_000, 'THB', this.i18n.locale()), mono: true },
+      { label: labels[7] ?? '', after: formatMoney(1_556, 'AUD', this.i18n.locale()), mono: true },
+    ]
+  })
+  protected readonly acceptedStatus = computed<ProposalStatus>(() => ({
+    tone: 'good',
+    icon: 'circle-check',
+    label: this.proposalLabels()[8] ?? '',
+  }))
   protected readonly keypadAmount = computed(() =>
     formatMoney(
       Math.round(Number(this.keypadDigits() || '0') * 100),
