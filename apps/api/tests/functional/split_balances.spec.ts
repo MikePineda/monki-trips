@@ -6,6 +6,7 @@ import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
+import { countQueries } from '#tests/helpers/count_queries'
 import { mutation, pushApplied, pushOne } from '#tests/helpers/sync'
 
 /** The live shares of an expense as `[travellerId, shareMinor]`, by traveller. */
@@ -294,6 +295,38 @@ test.group('Split budget mode', (group) => {
     assert.equal(row.field_clock.paidByTravellerId, Date.parse('2026-11-07T11:00:00.000Z'))
     assert.equal(row.field_clock.shares, Date.parse('2026-11-07T09:00:00.000Z'))
     assert.lengthOf(await liveShares(museum.id), 3)
+  })
+
+  test('switching to split writes in bulk, whatever the number of expenses', async ({
+    client,
+    assert,
+  }) => {
+    const queriesFor = async (expenses: number) => {
+      const { owner, trip } = await tripOfThree(client)
+      for (let index = 0; index < expenses; index++) {
+        await pushApplied(
+          client,
+          owner,
+          mutation(trip.id, 'expense', {
+            amountMinor: 1000 + index,
+            currency: 'AUD',
+            spentOn: '2027-01-21',
+          })
+        )
+      }
+      const switchTo = mutation(trip.id, 'trip', { budgetMode: 'split' }, { id: trip.id })
+      return countQueries(() => pushApplied(client, owner, switchTo))
+    }
+
+    const few = await queriesFor(2)
+    const many = await queriesFor(12)
+
+    assert.equal(many, few)
+    const activity = await db
+      .from('trip_activity')
+      .where('entity', 'expense')
+      .where('action', 'updated')
+    assert.lengthOf(activity, 14)
   })
 
   test('switching back to shared keeps payers and shares', async ({ client, assert }) => {

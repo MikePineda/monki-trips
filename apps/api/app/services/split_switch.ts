@@ -5,6 +5,9 @@ import type { AfterWriteContext } from '#services/sync/entity_spec'
 import { liveTravellerIds } from '#services/live_travellers'
 import { ownerTravellerId } from '#services/owner_traveller'
 
+/** Rows per bulk statement, well under Postgres' 65 535 bound parameters. */
+const BATCH = 1000
+
 /** Who writes and when: the mutation's account and its `changedAt` (epoch ms). */
 export interface SplitWriter {
   trx: TransactionClientContract
@@ -83,20 +86,22 @@ export async function completeSplits(
     travellerId: writer.changedAt,
   })
   const completed: CompletedSplit[] = []
+  const shareRows: Record<string, unknown>[] = []
+  const updates: { id: string; payer: string | null; clock: string }[] = []
   for (const expense of expenses) {
     const fields: string[] = []
-    const values: Record<string, unknown> = {}
     const stored = expense.field_clock ?? {}
     const writable = (field: string) => (stored[field] ?? 0) <= writer.changedAt
     const payer = expense.paid_by_traveller_id ?? fallbackPayer
+    let newPayer: string | null = null
     if (expense.paid_by_traveller_id === null && writable('paidByTravellerId')) {
       fields.push('paidByTravellerId')
-      values['paid_by_traveller_id'] = payer
+      newPayer = payer
     }
     if (!withShares.has(expense.id) && writable('shares')) {
       fields.push('shares')
       for (const share of equalShares(expense.amount_minor, travellerIds, payer)) {
-        await trx.table('expense_shares').insert({
+        shareRows.push({
           id: randomUUID(),
           expense_id: expense.id,
           trip_id: tripId,
@@ -111,15 +116,26 @@ export async function completeSplits(
     const clock = Object.fromEntries(
       fields.map((field) => [field, Math.max(stored[field] ?? 0, writer.changedAt)])
     )
-    await trx
-      .from('expenses')
-      .where('id', expense.id)
-      .update({
-        ...values,
-        updated_by: writer.userId,
-        field_clock: trx.raw('field_clock || ?::jsonb', [JSON.stringify(clock)]),
-      })
+    updates.push({ id: expense.id, payer: newPayer, clock: JSON.stringify(clock) })
     completed.push({ expenseId: expense.id, fields })
+  }
+
+  for (let start = 0; start < shareRows.length; start += BATCH) {
+    await trx.table('expense_shares').multiInsert(shareRows.slice(start, start + BATCH))
+  }
+  for (let start = 0; start < updates.length; start += BATCH) {
+    const batch = updates.slice(start, start + BATCH)
+    // One statement per batch: the payer only where it was missing, the clocks merged.
+    await trx.rawQuery(
+      `UPDATE expenses AS e
+          SET paid_by_traveller_id = coalesce(v.payer, e.paid_by_traveller_id),
+              updated_by = ?,
+              field_clock = e.field_clock || v.clock
+         FROM (VALUES ${batch.map(() => "(?::uuid, nullif(?, '')::uuid, ?::jsonb)").join(', ')})
+           AS v(id, payer, clock)
+        WHERE e.id = v.id`,
+      [writer.userId, ...batch.flatMap((update) => [update.id, update.payer ?? '', update.clock])]
+    )
   }
   return completed
 }
@@ -127,19 +143,24 @@ export async function completeSplits(
 /**
  * A trip that just switched to split: every live expense is completed
  * (`completeSplits`) inside the trip mutation's own transaction, each one
- * it touched with its own `trip_activity` row. Switching back to shared
+ * it touched with its own `trip_activity` row, all of them written in a
+ * few bulk statements whatever the number of expenses. Switching back to shared
  * writes nothing: the data stays and the client hides it.
  */
 export async function assignSplit(ctx: AfterWriteContext): Promise<void> {
   const completed = await completeSplits(ctx, null)
-  for (const { expenseId, fields } of completed) {
-    await ctx.trx.table('trip_activity').insert({
-      trip_id: ctx.tripId,
-      actor_user_id: ctx.userId,
-      entity: 'expense',
-      entity_id: expenseId,
-      action: 'updated',
-      fields,
-    })
+  if (completed.length === 0) return
+  // One activity row per expense (the feed names the row that changed), written in bulk.
+  for (let start = 0; start < completed.length; start += BATCH) {
+    await ctx.trx.table('trip_activity').multiInsert(
+      completed.slice(start, start + BATCH).map(({ expenseId, fields }) => ({
+        trip_id: ctx.tripId,
+        actor_user_id: ctx.userId,
+        entity: 'expense',
+        entity_id: expenseId,
+        action: 'updated',
+        fields,
+      }))
+    )
   }
 }
