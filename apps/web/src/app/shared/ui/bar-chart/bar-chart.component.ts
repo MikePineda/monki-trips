@@ -46,16 +46,22 @@ export interface ChartBar {
     }
     .mk-bar__head {
       display: flex;
+      flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
-      gap: var(--space-1);
+      gap: 0 var(--space-1);
     }
     .mk-bar__label {
+      min-width: 0;
+      max-width: 100%;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+    /* Too wide beside the label: the figures take the next line, still at the right. */
     .mk-bar__figures {
+      margin-left: auto;
+      text-align: end;
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
     }

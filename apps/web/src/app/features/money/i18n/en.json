@@ -10,9 +10,10 @@
     "overBudget": "over budget",
     "waitingOne": "1 waiting for a rate",
     "waitingOther": "{{count}} waiting for a rate",
-    "leftToday": "{{amount}} left today",
-    "overDaysOne": "over 1 day",
-    "overDaysOther": "over {{count}} days",
+    "tripDaysOne": "over 1 trip day",
+    "tripDaysOther": "over {{count}} trip days",
+    "daysLeftOne": "over 1 day left",
+    "daysLeftOther": "over {{count}} days left",
     "tripEnded": "The trip has ended"
   },
   "views": {

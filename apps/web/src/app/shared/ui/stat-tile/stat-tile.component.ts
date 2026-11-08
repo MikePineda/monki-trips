@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 
 /**
- * One figure of up to three in a row (`<mk-row align="stretch" gap="0">`),
- * separated by vertical `line` hairlines, never boxed: eyebrow, value in
- * title (tabular), sub-line in caption / ink-2 ("A$138", "of €300"). Values
- * stay in ink; a negative uses U+2212 and says what it means in the sub-line.
+ * One figure of up to three in a `<mk-stat-row>`, separated by vertical
+ * `line` hairlines, never boxed: eyebrow, value in title (tabular),
+ * sub-line in caption / ink-2 ("A$138", "of €300"). Values stay in ink; a
+ * negative uses U+2212 and says what it means in the sub-line. The value
+ * scales between 20 px and the title's 24 px with the row's width and is
+ * never truncated; a tile too wide for the line moves to the next one.
  */
 @Component({
   selector: 'mk-stat-tile',
@@ -13,16 +15,20 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
   styles: `
     :host {
       display: flex;
-      flex: 1 1 0;
+      flex: 1 1 auto;
       flex-direction: column;
       gap: 2px;
-      min-width: 0;
+      box-sizing: border-box;
+      max-width: 100%;
+      margin-right: var(--space-2);
       padding: var(--space-1) var(--space-2) var(--space-1) 0;
+      border-right: 1px solid var(--line);
       color: var(--ink-1);
     }
-    :host(:not(:first-child)) {
-      padding-left: var(--space-2);
-      border-left: 1px solid var(--line);
+    @container (max-width: 240px) {
+      :host {
+        flex-basis: 100%;
+      }
     }
     .mk-stat__eyebrow {
       margin: 0;
@@ -30,6 +36,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
     }
     .mk-stat__value {
       margin: 0;
+      font-size: clamp(20px, 6cqi, 24px);
+      line-height: 1.3;
+      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
     .mk-stat__sub {

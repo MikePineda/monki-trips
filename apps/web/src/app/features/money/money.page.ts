@@ -37,6 +37,7 @@ import { MkListRowComponent } from '../../shared/ui/list/list-row.component'
 import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MkSegmentedComponent } from '../../shared/ui/segmented/segmented.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
+import { MkStatRowComponent } from '../../shared/ui/stat-tile/stat-row.component'
 import { MkStatTileComponent } from '../../shared/ui/stat-tile/stat-tile.component'
 import {
   MkTableComponent,
@@ -106,6 +107,7 @@ const WORDS = [
     MkSectionComponent,
     MkSegmentedComponent,
     MkStackComponent,
+    MkStatRowComponent,
     MkStatTileComponent,
     MkTableComponent,
     MkTextComponent,
@@ -116,7 +118,7 @@ const WORDS = [
     <mk-stack gap="3">
       <h1 mk-text variant="title" data-testid="money.title">{{ 'money.title' | transloco }}</h1>
 
-      <mk-row align="stretch" gap="0" data-testid="money.stats">
+      <mk-stat-row data-testid="money.stats">
         @for (tile of tiles(); track tile.id) {
           <mk-stat-tile
             [eyebrow]="tile.eyebrow"
@@ -125,7 +127,7 @@ const WORDS = [
             [attr.data-testid]="'money.stat.' + tile.id"
           />
         }
-      </mk-row>
+      </mk-stat-row>
 
       <mk-segmented
         role="tablist"
@@ -360,16 +362,21 @@ export default class MoneyPage {
       id: 'perDay',
       eyebrow: t('perDay'),
       value: status.allowanceTodayMinor === null ? '—' : money(status.allowanceTodayMinor),
+      // The days the shared rule divided by: the trip's days before it, the days left during it.
       sub:
         status.phase === 'past'
           ? t('tripEnded')
           : status.allowanceTodayMinor === null
             ? undefined
-            : status.phase === 'ongoing' && status.leftTodayMinor !== null
-              ? t('leftToday', { amount: money(status.leftTodayMinor) })
-              : t(countKey('overDays', status.daysLeftInclToday), {
-                  count: status.daysLeftInclToday,
-                }),
+            : t(
+                countKey(
+                  status.phase === 'upcoming' ? 'tripDays' : 'daysLeft',
+                  status.allowanceDays
+                ),
+                {
+                  count: status.allowanceDays,
+                }
+              ),
     }
     return [spent, remaining, perDay]
   })

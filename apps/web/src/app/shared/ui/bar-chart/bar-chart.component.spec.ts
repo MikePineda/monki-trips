@@ -68,4 +68,15 @@ describe('mk-bar-chart', () => {
     expect(bars[1].querySelector('.mk-bar__status mk-icon')).not.toBeNull()
     expect(bars[1].textContent).toContain('Over budget')
   })
+
+  it('on a narrow screen the figures move under the label, right-aligned and whole', () => {
+    const host = render()
+    const head = host.querySelector('.mk-bar__head')!
+    const figures = host.querySelector('.mk-bar__figures')!
+
+    expect(getComputedStyle(head).flexWrap).toBe('wrap')
+    expect(getComputedStyle(figures).marginLeft).toBe('auto')
+    expect(getComputedStyle(figures).whiteSpace).toBe('nowrap')
+    expect(getComputedStyle(figures).textAlign).toBe('end')
+  })
 })
