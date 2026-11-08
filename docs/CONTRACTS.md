@@ -452,7 +452,8 @@ recipient (`m***@example.com`) and the subject only.
 The pure planner `planReminders` (`@monkitrips/shared`, `reminder_plan.ts`)
 yields, for one account, every reminder with `fireAt` in `[now, now + 36 h)`,
 sorted by `fireAt`; the same input always gives the same
-`(kind, refId, fireAt)`.
+`(kind, refId, nominalFireAt)`. `nominalFireAt` is the fire time before
+quiet hours (2026-11-08); `fireAt` is when it is sent.
 
 | Kind        | Fires                                                                                                                                                                                   | `refId`                 | `url`                        | `params`                                          |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ---------------------------- | ------------------------------------------------- |
@@ -466,7 +467,9 @@ sorted by `fireAt`; the same input always gives the same
   `[quietHoursStart, quietHoursEnd)` moves to the end (a window like
   22:00–07:00 ends the next morning); a move that would land at or after
   the departure, the check-out or the end of the digest's day keeps the
-  original time. A disabled kind is never planned.
+  original time. A disabled kind is never planned. Quiet hours whose start
+  equals their end are rejected with 422 (`quietHoursDistinct`); both ends
+  set or both null (`quietHoursPair`).
 - The push message is the usual `PushPayload`: `title` and `body` rendered
   in the account locale, `url` as above, `tag` `<kind>:<refId>`.
 - The `push:reminders` job (every minute) plans for each active account with
@@ -475,6 +478,24 @@ sorted by `fireAt`; the same input always gives the same
   `sent_reminders` with `ON CONFLICT DO NOTHING RETURNING id` and sent only
   when the insert returned a row, so it goes out once across replicas even
   beyond the slot claim. Without VAPID keys it does nothing.
+- Dedupe (2026-11-08): the ledger key is `(user_id, kind, ref_id, fire_at)`
+  with `fire_at` = `nominalFireAt`. Toggling quiet hours never re-sends nor
+  drops a reminder already sent; an edited event time is a new occurrence
+  and is sent again. `tasks_due` goes out at most once per user, trip and
+  trip-local day: the insert is skipped when any row exists for
+  `(user_id, 'tasks_due', ref_id)`, whatever its `fire_at` (the day's zone
+  can move west during the day and with it the digest's 09:00).
+- Delivery: at least once within the late window, at most once after a
+  success. When a send reaches no subscription and at least one failure was
+  transient (5xx, 429, timeout, network error), the ledger row is deleted
+  and the next minute retries while the window lasts; 404/410 prune the
+  endpoint as for the test push, any other 4xx is final.
+- Cost: one run reads the candidate accounts, their settings, their live
+  memberships of live trips (ended at most two days ago), and the stops,
+  events and tasks of those trips in one query each (`whereIn`), whatever
+  the number of accounts; each trip is built once for all its members and
+  nothing else of a trip is read (`ReminderTripsLoader`).
+  `GET /me/reminders/upcoming` plans through the same loader.
 
 ### Scheduler
 

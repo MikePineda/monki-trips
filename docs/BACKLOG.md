@@ -111,3 +111,5 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 2.7b: not planned yet: flight-change reminders (from the plan), one leave reminder per segment of a multi-leg trip, and a retention for `sent_reminders` (a job for `push:prune` to take over).
 - 2026-11-08: WP 2.7b: Settings' upcoming reminders come rendered in the account locale; switching the app language changes only their times until the account locale follows (`PATCH /me` from the language switch, or render on the device from the planner keys).
 - 2026-11-08: WP 2.7b: the iOS tab and "blocked" states still show the reminder choices (they are account-wide); a line saying "reminders reach your other devices" would make that clearer.
+- 2026-11-08: WP 2.7b: the reminders job sends one push at a time with the library's default timeout; add a per-send timeout and a concurrency limit so a slow push service cannot hold the minute.
+- 2026-11-08: WP 2.7b: a quiet-hours boundary next to a DST transition can be one hour off (rare, 01:00–03:00 local): the move to the end is read with the reminder's offset at its original time.
