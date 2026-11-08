@@ -1,0 +1,25 @@
+meta {
+  name: Read a booking document
+  type: http
+  seq: 68
+}
+
+post {
+  url: {{baseUrl}}/api/v1/trips/{{tripId}}/documents/{{documentId}}/extract
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+docs {
+  201 with an `ai_actions` proposal (tool `extract_booking`, no conversation):
+  the event the booking stands for, its legs and the document link, plus the
+  draft and the fields to review. Nothing is written until it is accepted
+  (`POST …/ai/actions/:id/accept`). A PDF's text goes to the text model; a
+  scan or a photo goes to `LLM_VISION_MODEL`. 503 E_EXTRACTION_UNAVAILABLE
+  without one, 402 over the token cap, 429 throttled, 422 E_LLM_BAD_OUTPUT,
+  404 for a document of another trip.
+}

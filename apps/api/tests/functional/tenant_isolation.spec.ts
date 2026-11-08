@@ -154,6 +154,27 @@ const CASES: Record<string, IsolationCase> = {
     request: (c, v, a) =>
       actingAs(c.post(`/api/v1/trips/${v.trip.id}/ai/actions/${v.content.action}/reject`), a),
   },
+  'trips.ai.actions.revise': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/ai/actions/${v.content.action}/revise`), a).json({
+        draft: { kind: 'tour', title: 'Intruder' },
+      }),
+  },
+  'trips.documents.extract': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/documents/${v.content.document}/extract`), a),
+  },
+  'trips.receipts.extract': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${v.trip.id}/receipts/extract`), a).file(
+        'file',
+        Buffer.concat([
+          Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+          Buffer.alloc(40),
+        ]),
+        { filename: 'receipt.png' }
+      ),
+  },
   'trips.destroy': {
     request: (c, v, a) => actingAs(c.delete(`/api/v1/trips/${v.trip.id}`), a),
   },
@@ -244,6 +265,17 @@ const SWAPPED_ID_CASES: Record<string, IsolationCase> = {
   'trips.ai.actions.reject': {
     request: (c, v, a) =>
       actingAs(c.post(`/api/v1/trips/${ownTripOf(a)}/ai/actions/${v.content.action}/reject`), a),
+  },
+  'trips.ai.actions.revise': {
+    request: (c, v, a) =>
+      actingAs(
+        c.post(`/api/v1/trips/${ownTripOf(a)}/ai/actions/${v.content.action}/revise`),
+        a
+      ).json({ draft: { kind: 'tour', title: 'Intruder' } }),
+  },
+  'trips.documents.extract': {
+    request: (c, v, a) =>
+      actingAs(c.post(`/api/v1/trips/${ownTripOf(a)}/documents/${v.content.document}/extract`), a),
   },
 }
 

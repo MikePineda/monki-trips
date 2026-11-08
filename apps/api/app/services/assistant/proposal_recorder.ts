@@ -2,6 +2,12 @@ import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import type { AiAction, AiActionTool, AiProposal, SyncMutation } from '@monkitrips/shared'
 import type { ToolContext } from '#services/assistant/assistant_tool'
+
+/** Where a proposal comes from: a chat turn, or (no conversation) a document's detail. */
+export type ProposalOrigin = Pick<ToolContext, 'user' | 'trip'> & {
+  conversationId: string | null
+  messageId: string | null
+}
 import { aiActionWire } from '#services/assistant/ai_action_wire'
 import type { BaselineRow } from '#services/assistant/mutation_dry_run'
 import { Clock } from '#services/clock'
@@ -18,7 +24,7 @@ export class ProposalRecorder {
   constructor(private readonly clock: Clock) {}
 
   async record(
-    ctx: ToolContext,
+    ctx: ProposalOrigin,
     tool: AiActionTool,
     proposal: AiProposal,
     mutations: SyncMutation[],

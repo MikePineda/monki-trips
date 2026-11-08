@@ -47,6 +47,8 @@ export type ScannedRoutes = {
     'trips.export': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.documents.file': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.documents.extract': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.receipts.extract': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.tasks.fromTemplate': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.emergency.show': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.emergency.update': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -60,6 +62,7 @@ export type ScannedRoutes = {
     'trips.ai.conversations.message': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.ai.actions.accept': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.ai.actions.reject': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.actions.revise': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.members.index': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.members.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.destroy': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
@@ -150,12 +153,15 @@ export type ScannedRoutes = {
     'trips.import': { paramsTuple?: []; params?: {} }
     'sync.push': { paramsTuple?: []; params?: {} }
     'trips.documents.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
+    'trips.documents.extract': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.receipts.extract': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.tasks.fromTemplate': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.phraseCards.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.ai.conversations.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.ai.conversations.message': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.ai.actions.accept': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.ai.actions.reject': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
+    'trips.ai.actions.revise': { paramsTuple: [ParamValue,ParamValue]; params: {'tripId': ParamValue,'id': ParamValue} }
     'trips.transferOwnership': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.invitations.store': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
     'trips.restore': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }

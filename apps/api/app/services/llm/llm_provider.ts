@@ -57,11 +57,7 @@ export interface LlmToolResultBlock {
 }
 
 export type LlmContentBlock =
-  | LlmTextBlock
-  | LlmImageBlock
-  | LlmDocumentBlock
-  | LlmToolUseBlock
-  | LlmToolResultBlock
+  LlmTextBlock | LlmImageBlock | LlmDocumentBlock | LlmToolUseBlock | LlmToolResultBlock
 
 export interface LlmMessage {
   role: LlmRole

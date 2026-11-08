@@ -148,6 +148,18 @@ router
                 router
                   .get('trips/:tripId/documents/:id/file', [controllers.Documents, 'file'])
                   .as('trips.documents.file')
+                // Reading a booking or a receipt: the model proposes, the member decides.
+                router
+                  .post('trips/:tripId/documents/:id/extract', [
+                    controllers.Extractions,
+                    'document',
+                  ])
+                  .as('trips.documents.extract')
+                  .use(throttleLlm)
+                router
+                  .post('trips/:tripId/receipts/extract', [controllers.Extractions, 'receipt'])
+                  .as('trips.receipts.extract')
+                  .use(throttleLlm)
                 router
                   .post('trips/:tripId/tasks/from-template', [controllers.Tasks, 'fromTemplate'])
                   .as('trips.tasks.fromTemplate')
@@ -199,6 +211,9 @@ router
                 router
                   .post('trips/:tripId/ai/actions/:id/reject', [controllers.AiActions, 'reject'])
                   .as('trips.ai.actions.reject')
+                router
+                  .post('trips/:tripId/ai/actions/:id/revise', [controllers.AiActions, 'revise'])
+                  .as('trips.ai.actions.revise')
                 router
                   .get('trips/:tripId/members', [controllers.TripMembers, 'index'])
                   .as('trips.members.index')

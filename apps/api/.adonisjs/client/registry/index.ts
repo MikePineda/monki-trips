@@ -260,6 +260,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"documents"],[1,"id"],[0,"file"]],
     types: placeholder as Registry['trips.documents.file']['types'],
   },
+  'trips.documents.extract': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/documents/:id/extract',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"documents"],[1,"id"],[0,"extract"]],
+    types: placeholder as Registry['trips.documents.extract']['types'],
+  },
+  'trips.receipts.extract': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/receipts/extract',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"receipts"],[0,"extract"]],
+    types: placeholder as Registry['trips.receipts.extract']['types'],
+  },
   'trips.tasks.fromTemplate': {
     methods: ["POST"],
     pattern: '/api/v1/trips/:tripId/tasks/from-template',
@@ -337,6 +349,12 @@ const routes = {
     pattern: '/api/v1/trips/:tripId/ai/actions/:id/reject',
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"actions"],[1,"id"],[0,"reject"]],
     types: placeholder as Registry['trips.ai.actions.reject']['types'],
+  },
+  'trips.ai.actions.revise': {
+    methods: ["POST"],
+    pattern: '/api/v1/trips/:tripId/ai/actions/:id/revise',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"ai"],[0,"actions"],[1,"id"],[0,"revise"]],
+    types: placeholder as Registry['trips.ai.actions.revise']['types'],
   },
   'trips.members.index': {
     methods: ["GET","HEAD"],

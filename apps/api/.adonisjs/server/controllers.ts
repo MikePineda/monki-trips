@@ -11,6 +11,7 @@ export const controllers = {
   Documents: () => import('#controllers/documents_controller'),
   EmailVerification: () => import('#controllers/email_verification_controller'),
   Emergency: () => import('#controllers/emergency_controller'),
+  Extractions: () => import('#controllers/extractions_controller'),
   Fx: () => import('#controllers/fx_controller'),
   HealthChecks: () => import('#controllers/health_checks_controller'),
   Invitations: () => import('#controllers/invitations_controller'),
