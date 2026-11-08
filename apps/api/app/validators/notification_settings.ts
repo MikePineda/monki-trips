@@ -16,7 +16,18 @@ const quietHoursPair = vine.createRule(
   { name: 'quietHoursPair' }
 )
 
-/** Body of `PUT /me/notification-settings`: every field, the quiet hours as a pair. */
+/** Quiet hours starting and ending at the same minute have no length: rejected, never read as all day. */
+const quietHoursDistinct = vine.createRule(
+  (value, _options, field) => {
+    if (typeof value !== 'object' || value === null) return
+    const { quietHoursStart: start, quietHoursEnd: end } = value as Record<string, unknown>
+    if (start === null || start === undefined || start !== end) return
+    field.report('Quiet hours need a start and an end that differ', 'quietHoursDistinct', field)
+  },
+  { name: 'quietHoursDistinct' }
+)
+
+/** Body of `PUT /me/notification-settings`: every field, the quiet hours as a pair of different times. */
 export const notificationSettingsValidator = vine.compile(
   vine
     .object({
@@ -27,4 +38,5 @@ export const notificationSettingsValidator = vine.compile(
       quietHoursEnd: localTime(),
     })
     .use(quietHoursPair())
+    .use(quietHoursDistinct())
 )

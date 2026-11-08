@@ -39,7 +39,8 @@
       "schema": "{field} no cumple el esquema trip JSON v1",
       "unresolvedRef": "{field} apunta a una ref que no está en el archivo",
       "duplicateRef": "{field} repite una ref ya usada en el archivo",
-      "quietHoursPair": "Las horas de silencio necesitan un inicio y un final"
+      "quietHoursPair": "Las horas de silencio necesitan un inicio y un final",
+      "quietHoursDistinct": "Las horas de silencio necesitan un inicio y un final distintos"
     },
     "fields": {
       "email": "el correo",
