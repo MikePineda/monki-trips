@@ -90,6 +90,19 @@ async function arrange(account: E2eAccount): Promise<Arranged> {
 
 async function visible(locator: Locator): Promise<void> {
   await expect(locator.first()).toBeVisible({ timeout: 15_000 })
+  // Lazy translation scopes can land after the ready marker (WebKit is slower):
+  // measure only once every visible control carries its name.
+  await locator.page().waitForFunction(
+    () =>
+      Array.from(document.querySelectorAll('button, a[href]')).every((element) => {
+        const box = element.getBoundingClientRect()
+        if (box.width === 0 || box.height === 0) return true
+        const name = element.getAttribute('aria-label') ?? element.textContent ?? ''
+        return name.trim().length > 0 || element.querySelector('[aria-label], img[alt]') !== null
+      }),
+    undefined,
+    { timeout: 15_000 }
+  )
 }
 
 function signedInScreens(t: Arranged): Screen[] {
