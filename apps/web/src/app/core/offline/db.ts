@@ -8,6 +8,7 @@ import type {
   EmergencyRecord,
   EventRecord,
   ExpenseRecord,
+  ExpenseShareRecord,
   MemberRecord,
   MetaRecord,
   OutboxRecord,
@@ -46,6 +47,7 @@ export class MonkiTripsDb extends Dexie {
   declare tasks: Table<TaskRecord, string>
   declare checklist: Table<ChecklistRecord, string>
   declare expenses: Table<ExpenseRecord, string>
+  declare expenseShares: Table<ExpenseShareRecord, string>
   declare budgetCategories: Table<BudgetCategoryRecord, string>
   declare members: Table<MemberRecord, string>
   declare travellers: Table<TravellerRecord, string>
@@ -101,6 +103,11 @@ export class MonkiTripsDb extends Dexie {
     // from scratch once, so no upgrade function here.
     this.version(6).stores({
       phraseCards: 'id, tripId, [tripId+language], updatedAt',
+    })
+    // WP 4.1: who shares each expense (split mode), indexed by expense. The new
+    // entity mapping makes the sync service pull from scratch once.
+    this.version(7).stores({
+      expenseShares: 'id, tripId, expenseId, updatedAt',
     })
   }
 }

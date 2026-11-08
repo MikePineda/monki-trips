@@ -51,7 +51,8 @@
     "budgetTotalHint": "En {{currency}}; déjalo vacío si no hay presupuesto.",
     "homeTz": "Zona horaria de casa",
     "save": "Guardar cambios",
-    "saved": "Viaje guardado"
+    "saved": "Viaje guardado",
+    "budgetModeHint": "Compartido: un solo bote para todos. Dividido: cada gasto guarda quién pagó y entre quiénes se reparte, y Dinero muestra quién le debe a quién."
   },
   "stop": {
     "newTitle": "Nueva parada",

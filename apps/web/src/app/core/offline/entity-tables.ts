@@ -3,7 +3,7 @@ import type { SyncTable } from './records'
 
 /**
  * Which device table holds each sync entity. Entities missing here
- * (expense shares...) are ignored by the sync client until
+ * are ignored by the sync client until
  * their work package defines the device's row shape. When this set changes
  * the sync service pulls from scratch once (`syncedEntitiesKey`), so rows of
  * a newly mapped entity that the old cursor had already skipped arrive too.
@@ -22,6 +22,7 @@ export const ENTITY_TABLES: Partial<Record<SyncEntity, SyncTable>> = {
   task: 'tasks',
   emergency: 'emergency',
   expense: 'expenses',
+  expense_share: 'expenseShares',
   budget_category: 'budgetCategories',
   phrase_card: 'phraseCards',
 }
@@ -39,6 +40,7 @@ export const TABLE_ENTITIES: Partial<Record<SyncTable, SyncEntity>> = {
   tasks: 'task',
   emergency: 'emergency',
   expenses: 'expense',
+  expenseShares: 'expense_share',
   budgetCategories: 'budget_category',
 }
 

@@ -19,7 +19,8 @@
   "views": {
     "label": "Money views",
     "budget": "Budget",
-    "expenses": "Expenses"
+    "expenses": "Expenses",
+    "balances": "Balances"
   },
   "budget": {
     "viewLabel": "Chart or table",
@@ -85,7 +86,8 @@
     "savedOffline": "Expense saved · will sync when online",
     "updated": "Expense updated",
     "deleted": "Expense deleted",
-    "budgetSaved": "Budget saved"
+    "budgetSaved": "Budget saved",
+    "settled": "Marked as settled"
   },
   "edit": {
     "title": "Edit expense",
@@ -104,7 +106,8 @@
     "receipt": "Receipt",
     "receiptSoon": "Receipt photos arrive in a later version.",
     "save": "Save",
-    "delete": "Delete expense"
+    "delete": "Delete expense",
+    "split": "Who paid and who shares"
   },
   "budgetEdit": {
     "title": "Edit budget",
@@ -113,5 +116,38 @@
     "ownerOnly": "Only the trip owner can change this.",
     "categories": "By category",
     "save": "Save"
+  },
+  "split": {
+    "chip": "Paid by {{payer}} · split {{count}} ways",
+    "chipOne": "Paid by {{payer}} · for {{name}}",
+    "open": "Change who paid and who shares",
+    "title": "Split",
+    "total": "Total {{amount}}",
+    "paidBy": "Paid by",
+    "sharedBy": "Shared by",
+    "custom": "Custom amounts",
+    "left": "{{amount}} left to assign",
+    "over": "{{amount}} too much",
+    "addsUp": "Adds up to {{amount}}",
+    "nobody": "Pick at least one person",
+    "done": "Done"
+  },
+  "balances": {
+    "people": "Who owes what",
+    "row": "{{state}} · paid {{paid}} · share {{owed}}",
+    "getsBack": "gets back",
+    "owes": "owes",
+    "settled": "settled",
+    "settleUp": "Settle up",
+    "pays": "{{from}} pays {{to}}",
+    "mark": "Mark as settled",
+    "allSettled": {
+      "title": "All settled",
+      "body": "Nobody owes anybody right now."
+    },
+    "waitingOne": "1 expense waits for a rate and is not in the balances yet.",
+    "waitingOther": "{{count}} expenses wait for a rate and are not in the balances yet.",
+    "settleDescription": "Settle up",
+    "someone": "Someone who left the trip"
   }
 }

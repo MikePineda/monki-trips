@@ -3,7 +3,11 @@ import { toDocumentRecord } from '../offline/document-record'
 import { toEmergencyRecord } from '../offline/emergency-record'
 import { ENTITY_TABLES } from '../offline/entity-tables'
 import { toEventRecord } from '../offline/event-record'
-import { toBudgetCategoryRecord, toExpenseRecord } from '../offline/expense-record'
+import {
+  toBudgetCategoryRecord,
+  toExpenseRecord,
+  toExpenseShareRecord,
+} from '../offline/expense-record'
 import { toMemberRecord } from '../offline/member-record'
 import { toPhraseCardRecord } from '../offline/phrase-card-record'
 import { toSeatRecord } from '../offline/seat-record'
@@ -163,6 +167,10 @@ export function toDeviceChange(change: WireChange): SyncChange[] {
       return change.row.deletedAt
         ? [{ table: 'expenses', row: { id: change.row.id }, deleted: true }]
         : [{ table: 'expenses', row: toExpenseRecord(change.row) }]
+    case 'expense_share':
+      return change.row.deletedAt
+        ? [{ table: 'expenseShares', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'expenseShares', row: toExpenseShareRecord(change.row) }]
     case 'budget_category':
       return change.row.deletedAt
         ? [{ table: 'budgetCategories', row: { id: change.row.id }, deleted: true }]

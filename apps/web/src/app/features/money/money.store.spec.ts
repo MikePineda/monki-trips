@@ -150,6 +150,146 @@ describe('MoneyStore', () => {
     expect((await mutations()).map((mutation) => mutation?.op)).toEqual(['delete', 'upsert'])
   })
 
+  it('a quick expense with a split writes its shares and sends them with the expense', async () => {
+    const saved = await TestBed.inject(MoneyStore).addQuick({
+      ...quick,
+      currency: 'AUD',
+      paidByTravellerId: 'v1',
+      shares: [
+        { travellerId: 'v1', shareMinor: 2250 },
+        { travellerId: 'v2', shareMinor: 2250 },
+      ],
+    })
+
+    const stored = await db.expenseShares.where('expenseId').equals(saved.id).toArray()
+    expect(stored.map((row) => [row.travellerId, row.shareMinor]).sort()).toEqual([
+      ['v1', 2250],
+      ['v2', 2250],
+    ])
+    const [queued] = await mutations()
+    expect(queued!.changes['shares']).toEqual(
+      stored.map((row) => ({
+        id: row.id,
+        travellerId: row.travellerId,
+        shareMinor: row.shareMinor,
+      }))
+    )
+  })
+
+  it('a new split replaces the shares of the expense as a whole', async () => {
+    await db.expenses.put(expenseRecord({ id: 'x1', amountMinor: 4500, paidByTravellerId: 'v1' }))
+    await db.expenseShares.bulkPut([
+      {
+        id: 's1',
+        tripId: 'trip-1',
+        expenseId: 'x1',
+        travellerId: 'v1',
+        shareMinor: 2250,
+        updatedAt: 'x',
+      },
+      {
+        id: 's2',
+        tripId: 'trip-1',
+        expenseId: 'x1',
+        travellerId: 'v2',
+        shareMinor: 2250,
+        updatedAt: 'x',
+      },
+    ])
+
+    await TestBed.inject(MoneyStore).update('x1', {}, 'AUD', {
+      paidByTravellerId: 'v2',
+      shares: [{ travellerId: 'v3', shareMinor: 4500 }],
+    })
+
+    const shares = await db.expenseShares.where('expenseId').equals('x1').toArray()
+    expect(shares.map((row) => [row.travellerId, row.shareMinor])).toEqual([['v3', 4500]])
+    expect((await db.expenses.get('x1'))?.paidByTravellerId).toBe('v2')
+    const last = (await mutations()).at(-1)!
+    expect(last.changes).toMatchObject({
+      paidByTravellerId: 'v2',
+      shares: [{ id: shares[0]!.id, travellerId: 'v3', shareMinor: 4500 }],
+    })
+  })
+
+  it('a new amount splits again equally between the same people, so the split still adds up', async () => {
+    await db.expenses.put(expenseRecord({ id: 'x1', amountMinor: 4500, paidByTravellerId: 'v2' }))
+    await db.expenseShares.bulkPut([
+      {
+        id: 's1',
+        tripId: 'trip-1',
+        expenseId: 'x1',
+        travellerId: 'v1',
+        shareMinor: 1000,
+        updatedAt: 'x',
+      },
+      {
+        id: 's2',
+        tripId: 'trip-1',
+        expenseId: 'x1',
+        travellerId: 'v2',
+        shareMinor: 3500,
+        updatedAt: 'x',
+      },
+    ])
+
+    await TestBed.inject(MoneyStore).update('x1', { amountMinor: 1001 }, 'AUD')
+
+    const shares = await db.expenseShares.where('expenseId').equals('x1').toArray()
+    expect(shares.map((row) => [row.travellerId, row.shareMinor]).sort()).toEqual([
+      ['v1', 500],
+      ['v2', 501],
+    ])
+    const last = (await mutations()).at(-1)!
+    expect(last.changes['shares']).toHaveLength(2)
+  })
+
+  it('undo of a delete brings the split back with the expense', async () => {
+    await db.expenses.put(expenseRecord({ id: 'x1', amountMinor: 4500, paidByTravellerId: 'v1' }))
+    await db.expenseShares.put({
+      id: 's1',
+      tripId: 'trip-1',
+      expenseId: 'x1',
+      travellerId: 'v2',
+      shareMinor: 4500,
+      updatedAt: 'x',
+    })
+    const store = TestBed.inject(MoneyStore)
+
+    const removed = await store.remove('x1')
+    expect(await db.expenseShares.count()).toBe(0)
+    const restored = await store.restore(removed)
+
+    const shares = await db.expenseShares.where('expenseId').equals(restored.id).toArray()
+    expect(shares.map((row) => [row.travellerId, row.shareMinor])).toEqual([['v2', 4500]])
+    expect((await mutations()).at(-1)!.changes['shares']).toHaveLength(1)
+  })
+
+  it('settling a pair records a base-currency expense the debtor paid for the creditor', async () => {
+    const settled = await TestBed.inject(MoneyStore).settle({
+      tripId: 'trip-1',
+      baseCurrency: 'AUD',
+      fromTravellerId: 'v2',
+      toTravellerId: 'v1',
+      amountMinor: 4500,
+      categoryId: 'cat-other',
+      spentOn: '2027-01-21',
+      description: 'Settle up',
+    })
+
+    expect(await db.expenses.get(settled.id)).toMatchObject({
+      amountMinor: 4500,
+      currency: 'AUD',
+      baseAmountMinor: 4500,
+      paidByTravellerId: 'v2',
+      categoryId: 'cat-other',
+      description: 'Settle up',
+      needsDetails: false,
+    })
+    const shares = await db.expenseShares.where('expenseId').equals(settled.id).toArray()
+    expect(shares.map((row) => [row.travellerId, row.shareMinor])).toEqual([['v1', 4500]])
+  })
+
   it('category and trip budgets are written through the outbox', async () => {
     const store = TestBed.inject(MoneyStore)
 

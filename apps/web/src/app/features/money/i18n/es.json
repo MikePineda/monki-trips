@@ -19,7 +19,8 @@
   "views": {
     "label": "Vistas de dinero",
     "budget": "Presupuesto",
-    "expenses": "Gastos"
+    "expenses": "Gastos",
+    "balances": "Saldos"
   },
   "budget": {
     "viewLabel": "Gráfica o tabla",
@@ -85,7 +86,8 @@
     "savedOffline": "Gasto guardado · se sincronizará con conexión",
     "updated": "Gasto actualizado",
     "deleted": "Gasto eliminado",
-    "budgetSaved": "Presupuesto guardado"
+    "budgetSaved": "Presupuesto guardado",
+    "settled": "Marcado como saldado"
   },
   "edit": {
     "title": "Editar gasto",
@@ -104,7 +106,8 @@
     "receipt": "Recibo",
     "receiptSoon": "Las fotos de recibos llegan en una versión posterior.",
     "save": "Guardar",
-    "delete": "Eliminar gasto"
+    "delete": "Eliminar gasto",
+    "split": "Quién pagó y entre quiénes"
   },
   "budgetEdit": {
     "title": "Editar presupuesto",
@@ -113,5 +116,38 @@
     "ownerOnly": "Solo quien creó el viaje puede cambiar esto.",
     "categories": "Por categoría",
     "save": "Guardar"
+  },
+  "split": {
+    "chip": "Pagó {{payer}} · entre {{count}}",
+    "chipOne": "Pagó {{payer}} · para {{name}}",
+    "open": "Cambiar quién pagó y entre quiénes se divide",
+    "title": "Dividir",
+    "total": "Total {{amount}}",
+    "paidBy": "Pagó",
+    "sharedBy": "Se divide entre",
+    "custom": "Importes a medida",
+    "left": "Faltan {{amount}} por asignar",
+    "over": "Sobran {{amount}}",
+    "addsUp": "Suma {{amount}}",
+    "nobody": "Elige al menos una persona",
+    "done": "Listo"
+  },
+  "balances": {
+    "people": "Quién debe qué",
+    "row": "{{state}} · pagó {{paid}} · le toca {{owed}}",
+    "getsBack": "recupera",
+    "owes": "debe",
+    "settled": "en paz",
+    "settleUp": "Saldar cuentas",
+    "pays": "{{from}} paga a {{to}}",
+    "mark": "Marcar como saldado",
+    "allSettled": {
+      "title": "Todo saldado",
+      "body": "Ahora mismo nadie le debe nada a nadie."
+    },
+    "waitingOne": "1 gasto espera un tipo de cambio y aún no cuenta en los saldos.",
+    "waitingOther": "{{count}} gastos esperan un tipo de cambio y aún no cuentan en los saldos.",
+    "settleDescription": "Saldar cuentas",
+    "someone": "Alguien que dejó el viaje"
   }
 }

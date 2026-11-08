@@ -5,6 +5,7 @@ import type {
   DocRecord,
   EventRecord,
   ExpenseRecord,
+  ExpenseShareRecord,
   MemberRecord,
   PhraseCardRecord,
   SeatRecord,
@@ -62,6 +63,15 @@ export function tripTasks(tripId: Signal<string>): Signal<TaskRecord[]> {
 
 export function tripExpenses(tripId: Signal<string>): Signal<ExpenseRecord[]> {
   return liveSignalFor(tripId, (db, id) => db.expenses.where('tripId').equals(id).toArray(), [])
+}
+
+/** Every live share of the trip's expenses (split mode). */
+export function tripExpenseShares(tripId: Signal<string>): Signal<ExpenseShareRecord[]> {
+  return liveSignalFor(
+    tripId,
+    (db, id) => db.expenseShares.where('tripId').equals(id).toArray(),
+    []
+  )
 }
 
 /** The trip's budget lines in position order. */

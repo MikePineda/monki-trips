@@ -17,6 +17,9 @@ import type { MonkiTripsDb } from '../../core/offline/db'
 import { outboxMutation } from '../../core/offline/mutation'
 import { toStopRecord } from '../../core/offline/stop-record'
 import { TIME_ZONE } from '../../core/offline/time-zone'
+import { META_SESSION } from '../../core/offline/meta.store'
+import { SessionStore } from '../../core/session/session.store'
+import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
 import { QuickExpenseSheet, type QuickExpenseResult } from './quick-expense.sheet'
 
 describe('QuickExpenseSheet', () => {
@@ -150,5 +153,74 @@ describe('QuickExpenseSheet', () => {
 
     await until(() => expect(closedWith).toHaveLength(1))
     expect((await db.expenses.get(closedWith[0]!.expense.id))?.categoryId).toBe('cat-shopping')
+  })
+
+  describe('in split mode', () => {
+    beforeEach(async () => {
+      await db.trips.put({ ...DEMO_TRIP_RECORD, budgetMode: 'split' })
+      await db.travellers.bulkPut([
+        {
+          id: 'v1',
+          tripId: 'trip-1',
+          displayName: 'Traveller A',
+          userId: 'someone-else',
+          position: 0,
+          updatedAt: 'x',
+        },
+        {
+          id: 'v2',
+          tripId: 'trip-1',
+          displayName: 'Traveller B',
+          userId: FAKE_SESSION_USER.id,
+          position: 1,
+          updatedAt: 'x',
+        },
+        {
+          id: 'v3',
+          tripId: 'trip-1',
+          displayName: 'Traveller C',
+          userId: null,
+          position: 2,
+          updatedAt: 'x',
+        },
+      ])
+      // Offline: the session comes back from the device's cached copy.
+      await db.meta.put({ key: META_SESSION, value: FAKE_SESSION_USER })
+      await TestBed.inject(SessionStore).restore()
+    })
+
+    it('split chip keeps quick expense at three taps by default', async () => {
+      const { tap, until, byId } = await render()
+      await until(() =>
+        expect(byId('money.quick.split')?.textContent).toContain('Paid by Traveller B')
+      )
+      expect(byId('money.quick.split')?.textContent).toContain('3')
+
+      // Amount and Save: with the FAB tap that opened the sheet, three taps.
+      await tap('ui.keypad.9')
+      await tap('money.quick.save')
+
+      await until(() => expect(closedWith).toHaveLength(1))
+      const saved = closedWith[0]!.expense
+      expect(saved.paidByTravellerId).toBe('v2')
+      const shares = await db.expenseShares.where('expenseId').equals(saved.id).toArray()
+      expect(shares.map((row) => [row.travellerId, row.shareMinor]).sort()).toEqual([
+        ['v1', 3],
+        ['v2', 3],
+        ['v3', 3],
+      ])
+    })
+  })
+
+  it('shared mode shows no split chip and sends no shares', async () => {
+    const { tap, until, byId } = await render()
+    await until(() => expect(byId('money.quick.save')).not.toBeNull())
+    expect(byId('money.quick.split')).toBeNull()
+
+    await tap('ui.keypad.9')
+    await tap('money.quick.save')
+
+    await until(() => expect(closedWith).toHaveLength(1))
+    expect(await db.expenseShares.count()).toBe(0)
   })
 })
