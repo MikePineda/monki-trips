@@ -239,6 +239,20 @@ describe('MoneyPage', () => {
     expect(host.textContent).toContain('Flight out')
   })
 
+  it('offers the expenses CSV only while online', async () => {
+    const { byId, until } = await render()
+    await until(() => expect(byId('money.title')).not.toBeNull())
+    expect(byId('money.exportCsv')).toBeNull()
+  })
+
+  it('exports the expenses as CSV from the header when online', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+    const { byId, until } = await render()
+    await until(() => expect(byId('money.exportCsv')).not.toBeNull())
+    expect(byId('money.exportCsv')!.getAttribute('href')).toBe('/api/v1/trips/trip-1/expenses.csv')
+    expect(byId('money.exportCsv')!.hasAttribute('download')).toBe(true)
+  })
+
   describe('split trips', () => {
     const traveller = (
       id: string,

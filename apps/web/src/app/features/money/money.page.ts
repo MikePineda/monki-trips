@@ -5,6 +5,7 @@ import { scopedLabels } from '../../core/i18n/scoped-labels'
 import { LangStore } from '../../core/i18n/lang.store'
 import { CLOCK } from '../../core/offline/clock'
 import type { ExpenseRecord } from '../../core/offline/records'
+import { OnlineStore } from '../../core/offline/online.store'
 import { SyncService } from '../../core/offline/sync.service'
 import { TIME_ZONE } from '../../core/offline/time-zone'
 import {
@@ -126,7 +127,22 @@ const WORDS = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-stack gap="3">
-      <h1 mk-text variant="title" data-testid="money.title">{{ 'money.title' | transloco }}</h1>
+      <mk-row justify="between" gap="1" [wrap]="true">
+        <h1 mk-text variant="title" data-testid="money.title">{{ 'money.title' | transloco }}</h1>
+        @if (online()) {
+          <a
+            mk-button
+            variant="ghost"
+            size="sm"
+            [href]="csvHref()"
+            download
+            data-testid="money.exportCsv"
+          >
+            <mk-icon name="download" [size]="16" />
+            {{ 'money.exportCsv' | transloco }}
+          </a>
+        }
+      </mk-row>
 
       <mk-stat-row data-testid="money.stats">
         @for (tile of tiles(); track tile.id) {
@@ -372,6 +388,9 @@ export default class MoneyPage {
   private readonly clock = inject(CLOCK)
   private readonly deviceZone = inject(TIME_ZONE)
 
+  /** The expenses CSV comes from the server: offered while online only. */
+  protected readonly online = inject(OnlineStore).online
+  protected readonly csvHref = computed(() => `/api/v1/trips/${this.tripId()}/expenses.csv`)
   protected readonly trip = tripRecord(this.tripId)
   /** Every expense of the trip, settlements included (what balances count). */
   private readonly allExpenses = tripExpenses(this.tripId)

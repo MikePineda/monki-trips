@@ -27,7 +27,8 @@
     "title": "Sellos nuevos",
     "body": "{{trip}} ya está en el pasaporte. ¡Bienvenidos de vuelta!",
     "open": "Abrir el pasaporte",
-    "mascot": "Kiko celebrando"
+    "mascot": "Kiko celebrando",
+    "recap": "Ver el resumen del viaje"
   },
   "empty": {
     "pastTitle": "Aún no hay sellos",

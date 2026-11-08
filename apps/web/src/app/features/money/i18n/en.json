@@ -185,5 +185,6 @@
     "E_LLM_BAD_OUTPUT": "The receipt could not be read. Try another photo or type the amount.",
     "E_UNSUPPORTED_FILE": "This photo cannot be read. Use a JPEG, PNG or WebP picture.",
     "E_FILE_TOO_LARGE": "This photo is too large to read."
-  }
+  },
+  "exportCsv": "Export expenses (CSV)"
 }

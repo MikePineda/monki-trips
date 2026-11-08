@@ -32,7 +32,9 @@
       "emptyBody": "Añade los lugares donde os quedaréis, en orden: dan la ruta y la hora local de cada evento.",
       "dates": "Del {{arrive}} al {{depart}}",
       "undated": "Fechas por decidir"
-    }
+    },
+    "recap": "Resumen del viaje",
+    "recapSoFar": "El viaje hasta ahora"
   },
   "edit": {
     "title": "Editar viaje",

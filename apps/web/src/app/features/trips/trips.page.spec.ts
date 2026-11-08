@@ -225,6 +225,13 @@ describe('TripsPage', () => {
       'In 86 days'
     )
     expect(host.querySelector('[data-testid="history.noPast"]')).toBeNull()
+    const href = (phase: string) =>
+      host
+        .querySelector(`[data-testid="history.${phase}"] [data-testid="trips.item"]`)
+        ?.getAttribute('href')
+    // A trip we are back from opens its recap; the others open Today.
+    expect(href('past')).toBe('/t/past/recap')
+    expect(href('ongoing')).toBe('/t/on/today')
   })
 
   it('a past trip is a ticket with its route, days, nights, countries, total spent and cover stamp', async () => {
@@ -262,7 +269,7 @@ describe('TripsPage', () => {
     })
     const ticket = host.querySelector('[data-testid="trips.item"]')!
     const text = ticket.textContent!.replace(/\s+/g, ' ')
-    expect(ticket.getAttribute('href')).toBe('/t/past/today')
+    expect(ticket.getAttribute('href')).toBe('/t/past/recap')
     expect(text).toContain('Harbour City → Old Town')
     expect(text).toContain('10 days · 9 nights · 2 countries')
     expect(text).toContain('1 – 10 May 2026')
@@ -347,6 +354,9 @@ describe('TripsPage', () => {
       ).toBe(true)
     })
     expect(await TestBed.inject(MetaStore).get('history.stampsSeen.back')).toBe(true)
+    expect(party.querySelector('[data-testid="history.openRecap"]')?.getAttribute('href')).toMatch(
+      /^\/t\/[^/]+\/recap$/
+    )
     expect(party.querySelector('[data-testid="history.openPassport"]')?.getAttribute('href')).toBe(
       '/passport'
     )
