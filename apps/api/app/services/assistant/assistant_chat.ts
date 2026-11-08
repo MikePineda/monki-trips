@@ -10,11 +10,13 @@ import type { ToolContext } from '#services/assistant/assistant_tool'
 import { assistantSystemPrompt } from '#services/assistant/assistant_prompt'
 import { AssistantToolbox } from '#services/assistant/assistant_toolbox'
 import { titleFromMessage } from '#services/assistant/ai_conversations'
-import { LlmClient } from '#services/llm/llm_client'
+import { LlmClient, type LlmCaller } from '#services/llm/llm_client'
 import type {
   LlmCompletion,
   LlmContentBlock,
+  LlmDelta,
   LlmMessage,
+  LlmRequest,
   LlmToolResultBlock,
 } from '#services/llm/llm_provider'
 import { Clock } from '#services/clock'
@@ -33,10 +35,22 @@ export interface ChatTurn {
   conversation: Record<string, unknown>
   text: string
   i18n: I18n
+  /** Aborted when the member goes away: the turn makes no further model call. */
+  signal?: AbortSignal
 }
 
 const LIMIT_REACHED =
   'Tool call limit reached for this message. Answer the member now with what you already know.'
+
+/** Everything a running turn carries between model calls. */
+interface TurnState {
+  caller: LlmCaller
+  ctx: ToolContext
+  system: string
+  messages: LlmMessage[]
+  title: string
+  signal?: AbortSignal
+}
 
 /**
  * One turn of the chat: the member's message, then the tool loop. Every
@@ -45,10 +59,13 @@ const LIMIT_REACHED =
  * after that it must answer without tools. Text is streamed as it comes;
  * each proposal a write tool records is streamed as a `proposal` event.
  *
- * A turn that fails before anything was streamed (over the cap, provider
- * down) leaves no trace and rethrows, so the route answers with the error
- * status; a turn that fails later keeps what was said and ends with an
- * `error` event. Prompts, answers and tool payloads are never logged.
+ * `start` stores the member's message and reserves the first model call:
+ * when that reservation is refused (402 over the cap) the turn leaves no
+ * trace and `start` rejects, so the route answers with the status. Once
+ * it resolves, every later failure ends the stream with an `error` event.
+ * Whatever happens, including a member who stops the stream, the text
+ * streamed so far is stored as the answer. Prompts, answers and tool
+ * payloads are never logged.
  */
 @inject()
 export class AssistantChat {
@@ -59,7 +76,7 @@ export class AssistantChat {
     private readonly clock: Clock
   ) {}
 
-  async *turn(turn: ChatTurn): AsyncGenerator<AssistantStreamEvent> {
+  async start(turn: ChatTurn): Promise<AsyncGenerator<AssistantStreamEvent>> {
     const { user, trip, conversation, text, i18n } = turn
     const conversationId = String(conversation['id'])
     const history = await this.history(conversationId)
@@ -88,36 +105,53 @@ export class AssistantChat {
       .returning('id')
     await db.from('ai_conversations').where('id', conversationId).update({ title, updated_at: now })
     const messageId = String(assistantMessage.id)
-    const ctx: ToolContext = { user, trip, conversationId, messageId, i18n }
 
     const { date: today } = await this.views.today(trip)
-    const system = assistantSystemPrompt({ locale: user.locale, today })
-    const messages: LlmMessage[] = [...history, { role: 'user', content: text }]
+    const state: TurnState = {
+      caller: { user, tripId: trip.id },
+      ctx: { user, trip, conversationId, messageId, i18n },
+      system: assistantSystemPrompt({ locale: user.locale, today }),
+      messages: [...history, { role: 'user', content: text }],
+      title,
+      signal: turn.signal,
+    }
+
+    let first: AsyncIterable<LlmDelta>
+    try {
+      first = await this.llm.openStream(state.caller, this.request(state, 0, 0))
+    } catch (error) {
+      // Refused before any model call: the turn leaves no trace and the route answers the error.
+      await db.from('ai_messages').whereIn('id', [userMessage.id, assistantMessage.id]).delete()
+      if (titled) {
+        await db.from('ai_conversations').where('id', conversationId).update({ title: null })
+      }
+      throw error
+    }
+    return this.run(state, first)
+  }
+
+  private async *run(
+    state: TurnState,
+    first: AsyncIterable<LlmDelta>
+  ): AsyncGenerator<AssistantStreamEvent> {
+    const { ctx } = state
     let answer = ''
-    let streamed = false
+    let outcome: AssistantStreamEvent | null = null
+    let pending: AsyncIterable<LlmDelta> | null = first
     let toolCalls = 0
     let outputTokens = 0
-
     try {
       for (;;) {
         const mustAnswer = toolCalls >= ASSISTANT_MAX_TOOL_CALLS
         const budget = ASSISTANT_MAX_OUTPUT_TOKENS_PER_TURN - outputTokens
-        if (budget <= 0) break
+        if (budget <= 0 || state.signal?.aborted) break
+        const deltas: AsyncIterable<LlmDelta> =
+          pending ?? this.llm.stream(state.caller, this.request(state, toolCalls, outputTokens))
+        pending = null
         let completion: LlmCompletion | null = null
-        for await (const delta of this.llm.stream(
-          { user, tripId: trip.id },
-          {
-            purpose: 'chat',
-            system,
-            messages,
-            tools: this.toolbox.definitions(),
-            toolChoice: mustAnswer ? 'none' : 'auto',
-            maxTokens: Math.min(ASSISTANT_MAX_TOKENS_PER_CALL, budget),
-          }
-        )) {
+        for await (const delta of deltas) {
           if (delta.type === 'text') {
             answer += delta.text
-            streamed = true
             yield { type: 'text', text: delta.text }
           } else if (delta.type === 'done') {
             completion = delta.completion
@@ -137,7 +171,7 @@ export class AssistantChat {
             input: call.input,
           })
         }
-        messages.push({ role: 'assistant', content: assistantBlocks })
+        state.messages.push({ role: 'assistant', content: assistantBlocks })
 
         const results: LlmToolResultBlock[] = []
         for (const call of completion.toolCalls) {
@@ -151,36 +185,45 @@ export class AssistantChat {
             continue
           }
           toolCalls += 1
-          const outcome = await this.toolbox.run(ctx, call)
-          if (outcome.action) {
-            streamed = true
-            yield { type: 'proposal', action: outcome.action }
-          }
+          const outcomeOfTool = await this.toolbox.run(ctx, call)
+          if (outcomeOfTool.action) yield { type: 'proposal', action: outcomeOfTool.action }
           results.push({
             type: 'tool_result',
             toolUseId: call.id,
-            content: outcome.content,
-            ...(outcome.isError ? { isError: true } : {}),
+            content: outcomeOfTool.content,
+            ...(outcomeOfTool.isError ? { isError: true } : {}),
           })
         }
-        messages.push({ role: 'user', content: results })
+        state.messages.push({ role: 'user', content: results })
+      }
+      outcome = {
+        type: 'done',
+        conversationId: ctx.conversationId,
+        messageId: ctx.messageId,
+        title: state.title,
       }
     } catch (error) {
-      if (!streamed) {
-        // Nothing reached the member: the turn leaves no trace and the route answers the error.
-        await db.from('ai_messages').whereIn('id', [userMessage.id, assistantMessage.id]).delete()
-        if (titled) {
-          await db.from('ai_conversations').where('id', conversationId).update({ title: null })
-        }
-        throw error
-      }
-      await this.saveAnswer(messageId, answer)
-      yield this.errorEvent(error, i18n)
-      return
+      outcome = this.errorEvent(error, ctx.i18n)
+    } finally {
+      // Also when the member stops the stream: what was streamed stays the answer.
+      await this.saveAnswer(ctx.messageId, answer)
     }
+    if (!state.signal?.aborted) yield outcome
+  }
 
-    await this.saveAnswer(messageId, answer)
-    yield { type: 'done', conversationId, messageId, title }
+  /** The next model call; a copy of the messages, so each call keeps what it was sent. */
+  private request(state: TurnState, toolCalls: number, outputTokens: number): LlmRequest {
+    return {
+      purpose: 'chat',
+      system: state.system,
+      messages: [...state.messages],
+      tools: this.toolbox.definitions(),
+      toolChoice: toolCalls >= ASSISTANT_MAX_TOOL_CALLS ? 'none' : 'auto',
+      maxTokens: Math.min(
+        ASSISTANT_MAX_TOKENS_PER_CALL,
+        ASSISTANT_MAX_OUTPUT_TOKENS_PER_TURN - outputTokens
+      ),
+    }
   }
 
   /** Earlier messages as plain turns (no tool payloads: the model reads fresh data with the tools). */

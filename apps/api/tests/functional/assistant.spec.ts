@@ -20,8 +20,9 @@ import { AiConversations } from '#services/assistant/ai_conversations'
 import i18nManager from '@adonisjs/i18n/services/main'
 import type { ToolContext } from '#services/assistant/assistant_tool'
 import { ProposeEventChangesTool } from '#services/assistant/tools/propose_event_changes_tool'
+import { AssistantChat } from '#services/assistant/assistant_chat'
 import type { LlmToolResultBlock } from '#services/llm/llm_provider'
-import type Trip from '#models/trip'
+import Trip from '#models/trip'
 import type User from '#models/user'
 import { actingAs } from '#tests/helpers/acting_as'
 import { chatScript, say, startConversation } from '#tests/helpers/assistant'
@@ -95,6 +96,27 @@ async function toolContext(user: User, trip: Trip): Promise<ToolContext> {
     messageId: message.id,
     i18n: i18nManager.locale('en'),
   }
+}
+
+/** A chat turn run through the service, without HTTP, so a test can stop it midway. */
+async function startTurn(
+  user: User,
+  tripId: string,
+  conversationId: string,
+  text: string,
+  signal?: AbortSignal
+) {
+  const chat = await app.container.make(AssistantChat)
+  const conversation = await db.from('ai_conversations').where('id', conversationId).firstOrFail()
+  const turnTrip = await Trip.findOrFail(tripId)
+  return chat.start({
+    user,
+    trip: turnTrip,
+    conversation,
+    text,
+    i18n: i18nManager.locale('en'),
+    signal,
+  })
 }
 
 function decide(client: any, user: User, tripId: string, actionId: string, verb: string) {
@@ -831,6 +853,105 @@ test.group('Trip assistant', (group) => {
     }
     assert.isTrue(tasks.truncated)
     assert.isAtMost(tasks.tasks[0].notes.length, ASSISTANT_NOTES_MAX_CHARS)
+  })
+
+  test('a member who stops the stream keeps what was streamed and the proposals', async ({
+    client,
+    assert,
+  }) => {
+    llm.current.script(
+      'chat',
+      'abort',
+      chatScript(
+        { tool: 'create_task', input: { title: 'Charge the camera' } },
+        { text: 'The task is ready for you to confirm once you are back.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+    const events = await startTurn(owner, trip.id, conversation.id, 'Camera')
+    const seen: AssistantStreamEvent[] = []
+
+    for await (const event of events) {
+      seen.push(event)
+      if (seen.filter((one) => one.type === 'text').length === 2) break
+    }
+
+    const streamed = seen.flatMap((event) => (event.type === 'text' ? [event.text] : [])).join('')
+    assert.equal(streamed, 'The task ')
+    const messages = await db
+      .from('ai_messages')
+      .where('conversation_id', conversation.id)
+      .orderBy('seq')
+    assert.deepEqual(
+      messages.map((message) => [message.role, message.content]),
+      [
+        ['user', 'Camera'],
+        ['assistant', 'The task '],
+      ]
+    )
+    const [action] = await db.from('ai_actions').where('conversation_id', conversation.id)
+    assert.equal(action.status, 'proposed')
+    assert.equal(action.message_id, messages[1].id)
+    const usage = await db.from('llm_usage').where('user_id', owner.id).orderBy('created_at')
+    assert.sameMembers(
+      usage.map((row) => row.status),
+      ['ok', 'aborted']
+    )
+  })
+
+  test('a member who leaves during a tool run stops the turn before the next model call', async ({
+    client,
+    assert,
+  }) => {
+    llm.current.script(
+      'chat',
+      'leave',
+      chatScript(
+        { tool: 'create_task', input: { title: 'Print the boarding passes' } },
+        { text: 'Done.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+    const aborter = new AbortController()
+    const events = await startTurn(owner, trip.id, conversation.id, 'Passes', aborter.signal)
+    const seen: string[] = []
+
+    for await (const event of events) {
+      seen.push(event.type)
+      // The connection closes while the tool runs: the controller aborts, the turn keeps going.
+      if (event.type === 'proposal') aborter.abort()
+    }
+
+    assert.deepEqual(seen, ['proposal'])
+    assert.lengthOf(llm.current.calls, 1, 'no model call after the member left')
+    const usage = await db.from('llm_usage').where('user_id', owner.id)
+    assert.deepEqual(
+      usage.map((row) => row.status),
+      ['ok']
+    )
+    assert.lengthOf(await db.from('ai_actions').where('conversation_id', conversation.id), 1)
+  })
+
+  test('a provider failure on the first call arrives as an error event, not a status', async ({
+    client,
+    assert,
+  }) => {
+    llm.current.script('chat', 'down', { responses: [{ error: 'upstream 529' }] })
+    const conversation = await startConversation(client, owner, trip.id)
+
+    const { response, events } = await say(client, owner, trip.id, conversation.id, 'Hello?')
+
+    response.assertStatus(200)
+    assert.match(String(response.header('content-type')), /^text\/event-stream/)
+    assert.equal(response.header('cache-control'), 'no-cache')
+    assert.equal(response.header('x-accel-buffering'), 'no')
+    assert.deepEqual(events, [
+      {
+        type: 'error',
+        code: 'E_LLM_UNAVAILABLE',
+        message: 'The AI assistant is not available right now. Try again in a moment',
+      },
+    ])
   })
 
   test('read tools answer the budget, today and tasks from the trip', async ({

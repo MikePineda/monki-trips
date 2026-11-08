@@ -57,6 +57,22 @@ export class LlmClient {
    */
   async *stream(caller: LlmCaller, request: LlmRequest): AsyncIterable<LlmDelta> {
     const reservation = await this.reserve(caller, request)
+    yield* this.streamReserved(reservation, request)
+  }
+
+  /**
+   * Like `stream`, but the reservation is made now: over the cap this
+   * rejects (402) before anything is returned, so a route can answer the
+   * error as a status and only then commit to a streamed response. The
+   * caller must iterate what it gets (the iteration settles the
+   * reservation); one it drops stops counting after `LLM_PENDING_TTL_MS`.
+   */
+  async openStream(caller: LlmCaller, request: LlmRequest): Promise<AsyncIterable<LlmDelta>> {
+    const reservation = await this.reserve(caller, request)
+    return this.streamReserved(reservation, request)
+  }
+
+  private async *streamReserved(reservation: string, request: LlmRequest): AsyncIterable<LlmDelta> {
     const startedAt = this.clock.now().getTime()
     let completion: LlmCompletion | null = null
     let known: { usage: LlmUsage; model: string } | null = null
