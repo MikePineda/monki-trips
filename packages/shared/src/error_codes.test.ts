@@ -26,4 +26,6 @@ test('the codes the plan names keep their status', () => {
   assert.equal(ERROR_CODES.E_LLM_QUOTA_EXCEEDED, 402)
   assert.equal(ERROR_CODES.E_LLM_UNAVAILABLE, 503)
   assert.equal(ERROR_CODES.E_LLM_BAD_OUTPUT, 422)
+  assert.equal(ERROR_CODES.E_AI_ACTION_CLOSED, 409)
+  assert.equal(ERROR_CODES.E_AI_ACTION_STALE, 409)
 })
