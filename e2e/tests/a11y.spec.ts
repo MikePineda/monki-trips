@@ -8,8 +8,9 @@ import { signIn } from '../sign-in.ts'
 
 /**
  * QA-1: the accessibility audit of every screen at 390 × 844, light and
- * dark, on the synthetic Harbour escape trip (e2e/today-trip.ts) plus one
- * expense, signed in as the trip's owner.
+ * dark, on the synthetic Harbour escape trip (e2e/today-trip.ts) in split
+ * mode, with a traveller without an account and one expense they share, so
+ * the Balances segment has a settle-up line, signed in as the trip's owner.
  *
  * - axe-core with the WCAG 2.0 A/AA, 2.1 AA and 2.2 AA rules: zero
  *   violations, or a dated entry in EXCEPTIONS with its reason.
@@ -65,7 +66,14 @@ async function arrange(account: E2eAccount): Promise<Arranged> {
     const snapshot = await api.snapshot(trip.tripId)
     const food = snapshot.budgetCategories.find((row) => row.key === 'food')!
     await api.push(trip.tripId, [
+      {
+        entity: 'traveller',
+        id: crypto.randomUUID(),
+        changes: { displayName: 'Traveller B', position: 1 },
+      },
       { entity: 'trip', id: trip.tripId, changes: { budgetTotalMinor: 120_000 } },
+      // Split mode: the lunch below gets the owner as payer and equal shares on the server.
+      { entity: 'trip', id: trip.tripId, changes: { budgetMode: 'split' } },
       { entity: 'budget_category', id: food.id, changes: { budgetMinor: 30_000 } },
       {
         entity: 'expense',
@@ -141,6 +149,25 @@ function signedInScreens(t: Arranged): Screen[] {
         await visible(page.getByTestId('money.stats'))
         await page.getByTestId('shell.fab').click()
         await visible(page.getByRole('dialog').getByTestId('money.quick.amount'))
+      },
+    },
+    {
+      name: 'money balances',
+      open: async (page) => {
+        await page.goto(`${trip}/money`)
+        await page.getByTestId('money.view.balances').click()
+        await visible(page.getByTestId('money.settlement'))
+      },
+    },
+    {
+      name: 'split sheet',
+      open: async (page) => {
+        await page.goto(`${trip}/money`)
+        await visible(page.getByTestId('money.stats'))
+        await page.getByTestId('shell.fab').click()
+        await page.getByTestId('ui.keypad.9').click()
+        await page.getByTestId('money.quick.split').locator('button').click()
+        await visible(page.getByTestId('money.split.done'))
       },
     },
     { name: 'more', open: go(`${trip}/more`, (p) => p.getByTestId('trip.more.list')) },
