@@ -1,0 +1,58 @@
+{
+  "title": "Phrases",
+  "intro": "Cards in the local language, made once before the trip and kept on this phone. Show them to a driver or a waiter, even with no connection.",
+  "language": "Language of the cards",
+  "category": {
+    "greetings": "Basics",
+    "reservation": "Reservations",
+    "lodging_address": "Where we sleep",
+    "food": "Food",
+    "emergency": "Emergencies",
+    "numbers": "Numbers and paying"
+  },
+  "food": {
+    "title": "Food preferences",
+    "hint": "Added to the food cards. Optional.",
+    "note": "Anything else (allergies, dislikes)",
+    "options": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "no_pork": "No pork",
+      "no_beef": "No beef",
+      "no_seafood": "No seafood",
+      "no_peanuts": "No peanuts",
+      "gluten_free": "Gluten free",
+      "not_spicy": "Not spicy"
+    }
+  },
+  "generate": "Make the cards",
+  "regenerate": "Make them again",
+  "generating": "Kiko is writing your cards…",
+  "offline": "Making cards needs a connection. The cards you already have work offline.",
+  "confirm": {
+    "title": "Make the cards again?",
+    "body": "The cards in {{language}} are replaced for everyone on the trip.",
+    "action": "Replace them"
+  },
+  "empty": {
+    "title": "No cards in {{language}} yet",
+    "body": "Pick your food preferences and make the cards while you are online."
+  },
+  "name": {
+    "label": "Name on the reservation cards",
+    "hint": "Filled in on this phone only, never sent."
+  },
+  "show": "Show full screen",
+  "translate": "Translate something else",
+  "translateHint": "Opens Google Translate in a new tab (needs a connection).",
+  "notFound": "This card is not on this phone any more.",
+  "errors": {
+    "E_LLM_QUOTA_EXCEEDED": "You have used this month's AI allowance. It resets on {{date}}.",
+    "E_TOO_MANY_REQUESTS": "Too many tries in a short time. Try again in {{minutes}} min.",
+    "E_CONFLICT": "Someone already made cards in this language. They will appear here shortly.",
+    "E_LLM_UNAVAILABLE": "The card writer is not available right now. Try again later.",
+    "E_LLM_BAD_OUTPUT": "The cards came back unusable. Try again.",
+    "network": "No connection. Try again when you are online.",
+    "unknown": "The cards could not be made. Try again."
+  }
+}

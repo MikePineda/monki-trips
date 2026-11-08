@@ -12,6 +12,7 @@ interface MoreItem {
     | 'tasks'
     | 'checklist'
     | 'emergency'
+    | 'phrases'
     | 'members'
     | 'activity'
     | 'settings'
@@ -46,6 +47,7 @@ export default class MorePage {
     { id: 'tasks', icon: 'list-checks' },
     { id: 'checklist', icon: 'clipboard-check' },
     { id: 'emergency', icon: 'siren' },
+    { id: 'phrases', icon: 'languages' },
     { id: 'members', icon: 'users' },
     { id: 'activity', icon: 'activity' },
     { id: 'settings', icon: 'settings' },

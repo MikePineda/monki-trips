@@ -182,6 +182,20 @@ describe('StyleguidePage', () => {
     expect(toasts.toasts()[0]?.message).toBe('Expense saved')
   })
 
+  it('shows a phrase card full screen and closes it', () => {
+    const { fixture, host } = render()
+
+    host.querySelector<HTMLElement>('[data-testid="styleguide.show-card"]')!.click()
+    fixture.detectChanges()
+    expect(
+      host.querySelector('mk-show-card [data-testid="ui.showCard.phrase"]')?.textContent
+    ).toContain('stacidomo')
+
+    host.querySelector<HTMLElement>('[data-testid="ui.showCard.close"]')!.click()
+    fixture.detectChanges()
+    expect(host.querySelector('mk-show-card')).toBeNull()
+  })
+
   it('tells search engines not to index it', () => {
     render()
 

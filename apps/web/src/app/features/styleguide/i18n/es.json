@@ -134,7 +134,11 @@
     "emptyDayBody": "Aún no hay nada planeado.",
     "emptyDayAction": "Añadir algo",
     "emptyIconTitle": "Aún no hay nada compartido",
-    "emptyIconBody": "Los archivos compartidos desde otras apps llegarán aquí."
+    "emptyIconBody": "Los archivos compartidos desde otras apps llegarán aquí.",
+    "showCard": "Mostrar una tarjeta en pantalla completa",
+    "cardPhrase": "Bonvolu min konduki al la stacidomo",
+    "cardRomanization": "BON-vo-lu min kon-DU-ki",
+    "cardPrompt": "Lléveme a la estación, por favor"
   },
   "screens": {
     "today": "Hoy",

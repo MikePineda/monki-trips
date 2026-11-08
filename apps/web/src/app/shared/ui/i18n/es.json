@@ -57,5 +57,9 @@
   "preview": {
     "loading": "Abriendo…",
     "none": "Este archivo no tiene vista previa. Descárgalo para abrirlo."
+  },
+  "showCard": {
+    "close": "Cerrar",
+    "keptOn": "La pantalla se mantiene encendida mientras la tarjeta está abierta"
   }
 }

@@ -114,6 +114,17 @@ export const routes: Routes = [
           { path: 'checklist', loadComponent: () => import('./features/tasks/checklist.page') },
           { path: 'emergency', loadComponent: () => import('./features/emergency/emergency.page') },
           {
+            path: 'phrases',
+            loadComponent: () => import('./features/phrases/phrases.page'),
+            children: [
+              {
+                path: 'show/:cardKey',
+                loadComponent: () =>
+                  import('./features/phrases/phrases.page').then((m) => m.PhraseShowPage),
+              },
+            ],
+          },
+          {
             path: 'members',
             loadComponent: () => import('./features/trip/members/members.page'),
           },
