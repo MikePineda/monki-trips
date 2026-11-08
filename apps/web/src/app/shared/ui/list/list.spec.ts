@@ -25,6 +25,17 @@ import { MkListComponent } from './list.component'
       <mk-list-row title="Lunch" value="€18" [chevron]="true" testId="probe.row.value" />
     </mk-list>
     <mk-list>
+      <mk-list-row
+        title="Sun 31 Jan"
+        meta="Night 2 of 17"
+        icon="train-front"
+        value="On board · Train 13 Port Vellmar → Hill Town (sleeper, lower berth)"
+        valueKind="text"
+        [link]="['/t', 'trip-1', 'plan', 'e', 'event-1']"
+        testId="probe.row.text"
+      />
+    </mk-list>
+    <mk-list>
       <mk-event-row
         time="14:20"
         zone="EEST"
@@ -51,7 +62,7 @@ describe('mk-list rows', () => {
     const host = render()
 
     expect(host.querySelector('[data-testid="probe.list"]')?.getAttribute('role')).toBe('list')
-    expect(host.querySelectorAll('mk-list-row[role="listitem"]')).toHaveLength(3)
+    expect(host.querySelectorAll('mk-list-row[role="listitem"]')).toHaveLength(4)
   })
 
   it('a row shows icon, title, mono meta and a status with its icon and word in ink', () => {
@@ -101,5 +112,35 @@ describe('mk-list rows', () => {
       'sprite/lucide.svg#bed-double'
     )
     expect(rows[1].querySelector('.mk-event__meta')?.textContent).toBe('Night 1 of 2')
+  })
+
+  it('a figure value never shrinks: the title gives way and ellipsizes', () => {
+    const host = render()
+    const row = host.querySelector('[data-testid="probe.row.value"]')!
+
+    expect(getComputedStyle(row.querySelector('.mk-row__value')!).flexShrink).toBe('0')
+    expect(getComputedStyle(row.querySelector('.mk-row__text')!).minWidth).toBe('0px')
+    expect(getComputedStyle(row.closest('mk-list-row')!).minWidth).toBe('0px')
+  })
+
+  it('a text value gives way to a whole date and meta, wraps to two lines and keeps the chevron', () => {
+    const host = render()
+    const listRow = host.querySelector('mk-list-row:has([data-testid="probe.row.text"])')!
+    const row = host.querySelector('[data-testid="probe.row.text"]')!
+    const lead = getComputedStyle(row.querySelector('.mk-row__text')!)
+    const title = getComputedStyle(row.querySelector('.mk-row__title')!)
+    const meta = getComputedStyle(row.querySelector('.mk-row__meta')!)
+    const value = getComputedStyle(row.querySelector('.mk-row__value')!)
+
+    expect(listRow.getAttribute('data-value-kind')).toBe('text')
+    expect(lead.flexShrink).toBe('0')
+    expect(title.textOverflow).not.toBe('ellipsis')
+    expect(meta.whiteSpace).toBe('nowrap')
+    expect(value.whiteSpace).toBe('normal')
+    expect(value.minWidth).toBe('0px')
+    expect(value.flexGrow).toBe('1')
+    // At most two lines (line-clamp, measured in J05c), then the rest is hidden.
+    expect(value.overflow).toBe('hidden')
+    expect(row.querySelector('.mk-row__chevron')).not.toBeNull()
   })
 })

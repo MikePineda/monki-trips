@@ -35,6 +35,13 @@ export type FabPlacement = 'fixed' | 'static'
       right: calc(var(--space-2) + env(safe-area-inset-right, 0px));
       bottom: calc(var(--tab-bar-height) + var(--space-2) + env(safe-area-inset-bottom, 0px));
       z-index: 45;
+      /* Never past the left edge either, whatever the label's length. */
+      max-width: calc(
+        100vw - 2 *
+          var(--space-2) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)
+      );
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   `,
   template: `<ng-content />`,

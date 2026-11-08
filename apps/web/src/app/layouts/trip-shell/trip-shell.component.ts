@@ -58,7 +58,7 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
         <mk-icon name="info" />
       </a>
     </app-shell-header>
-    <mk-page [tabBar]="true" [fab]="showFab()">
+    <mk-page [tabBar]="true" [fab]="floatsButton()">
       <router-outlet />
     </mk-page>
     @if (showFab()) {
@@ -112,6 +112,15 @@ export class TripShellComponent {
   protected readonly showFab = computed(() => {
     const path = this.url().split(/[?#]/)[0]
     return !/\/(more\/settings|plan)(\/|$)/.test(path) && !/\/add$/.test(path)
+  })
+
+  /**
+   * Any floating button on this screen, the shell's or the Plan tab's own:
+   * the page keeps `--fab-clearance` below its content for it.
+   */
+  protected readonly floatsButton = computed(() => {
+    const path = this.url().split(/[?#]/)[0]
+    return !/\/more\/settings(\/|$)/.test(path) && !/\/add$/.test(path)
   })
 
   protected readonly title = computed(() => this.trip()?.name ?? this.untitled())

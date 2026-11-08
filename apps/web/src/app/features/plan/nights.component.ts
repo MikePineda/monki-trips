@@ -65,6 +65,7 @@ import { EVENT_KIND_ICONS } from './events/event-kind-icon'
               [title]="night(row.date)"
               [meta]="'plan.nights.nightOf' | transloco: { night: row.number, total: row.total }"
               [value]="coverText(row)"
+              valueKind="text"
               [status]="row.uncovered ? noStay() : undefined"
               [link]="
                 row.covers[0] ? ['/t', tripId(), 'plan', 'e', row.covers[0].eventId] : undefined
