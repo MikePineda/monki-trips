@@ -113,3 +113,8 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 2.7b: the iOS tab and "blocked" states still show the reminder choices (they are account-wide); a line saying "reminders reach your other devices" would make that clearer.
 - 2026-11-08: WP 2.7b: the reminders job sends one push at a time with the library's default timeout; add a per-send timeout and a concurrency limit so a slow push service cannot hold the minute.
 - 2026-11-08: WP 2.7b: a quiet-hours boundary next to a DST transition can be one hour off (rare, 01:00–03:00 local): the move to the end is read with the reminder's offset at its original time.
+- 2026-11-08: WP 3.0b: a `lodging_address` card does not name its lodging, so Today's "Show to driver" matches tonight's stay by the address text (else the only address card of the set); add the event id to each address card in the API (`PhraseCard.eventId`, additive) and match by id.
+- 2026-11-08: WP 3.0b: the web app keeps a copy of `PHRASE_CARD_LANGUAGES` (`domain/phrase-card-languages.ts`); move the list to `@monkitrips/shared` so the API and the picker cannot drift.
+- 2026-11-08: WP 3.0b: the phrases screen does not show `llmTokensLeft` from `/auth/me`; show what is left before "Make the cards", and disable it at 0 with the reset date.
+- 2026-11-08: WP 3.0b: the name picker offers the trip's travellers only; a free-text name (a booking under someone not on the trip) would also stay on the device.
+- 2026-11-08: API: `llm_usage.spec.ts` "parallel requests cannot exceed the cap" is flaky under the parallel `verify:quick` load (3 provider calls instead of 2 once); make the reservation race deterministic in the test.
