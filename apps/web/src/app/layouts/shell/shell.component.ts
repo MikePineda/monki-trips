@@ -38,7 +38,9 @@ import { provideShellI18n } from './shell-i18n'
       </a>
     </app-shell-header>
     <mk-page>
-      <router-outlet />
+      <main>
+        <router-outlet />
+      </main>
     </mk-page>
   `,
 })

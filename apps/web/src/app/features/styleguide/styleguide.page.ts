@@ -126,7 +126,7 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-page>
-      <mk-stack gap="3">
+      <mk-stack gap="3" role="main">
         <mk-stack gap="2">
           <h1 mk-text variant="title">{{ 'styleguide.title' | transloco }}</h1>
           <p mk-text tone="ink-2">{{ 'styleguide.intro' | transloco }}</p>

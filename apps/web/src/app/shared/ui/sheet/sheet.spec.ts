@@ -53,6 +53,18 @@ describe('mk-sheet', () => {
     expect(document.querySelector('.cdk-overlay-container .mk-sheet-panel')).not.toBeNull()
   })
 
+  it('a sheet opened without a label is named by its own title', () => {
+    const { sheets } = setup()
+
+    sheets.open(ProbeSheet, { data: { label: 'Food' } })
+    TestBed.tick()
+
+    const dialog = dialogElement()!
+    const title = dialog.querySelector('h2')!
+    expect(title.id).not.toBe('')
+    expect(dialog.getAttribute('aria-labelledby')).toBe(title.id)
+  })
+
   it('traps focus inside the sheet while it is open', async () => {
     const { sheets } = setup()
 

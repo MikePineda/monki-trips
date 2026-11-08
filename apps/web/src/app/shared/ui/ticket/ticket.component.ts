@@ -134,7 +134,11 @@ import { provideUiI18n } from '../ui-i18n'
     </svg>
     <div class="mk-ticket__body">
       <div class="mk-ticket__top">
-        <h3 class="mk-ticket__title mk-type-heading">{{ title() }}</h3>
+        @if (headingLevel() === 2) {
+          <h2 class="mk-ticket__title mk-type-heading">{{ title() }}</h2>
+        } @else {
+          <h3 class="mk-ticket__title mk-type-heading">{{ title() }}</h3>
+        }
         <div class="mk-ticket__when">
           <time class="mk-type-code-display" data-testid="ui.ticket.time">{{ time() }}</time>
           @if (zone(); as zone) {
@@ -171,6 +175,8 @@ export class MkTicketComponent {
   private static nextId = 0
 
   readonly title = input.required<string>()
+  /** The title's heading level: 3 inside a titled section, 2 right under the page's h1 (Today). */
+  readonly headingLevel = input<2 | 3>(3)
   /** Local time `HH:mm` of the place. */
   readonly time = input.required<string>()
   /** Zone abbreviation, only when it differs from the device. */

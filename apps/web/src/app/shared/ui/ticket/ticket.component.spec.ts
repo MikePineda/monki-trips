@@ -17,7 +17,13 @@ import { MkTicketComponent } from './ticket.component'
     >
       <button mkTicketAction type="button" data-testid="probe.directions">Directions</button>
     </mk-ticket>
-    <mk-ticket title="Museum" time="10:00" [route]="['ALD', 'ALD']" data-testid="probe.second" />
+    <mk-ticket
+      title="Museum"
+      time="10:00"
+      [route]="['ALD', 'ALD']"
+      [headingLevel]="2"
+      data-testid="probe.second"
+    />
   `,
 })
 class Host {}
@@ -46,6 +52,16 @@ describe('mk-ticket', () => {
     expect(ticket.querySelector('[data-testid="ui.ticket.leave"]')?.textContent?.trim()).toBe(
       'Leave at 13:40'
     )
+  })
+
+  it('titles itself with an h3 by default and with an h2 when it sits right under the page title', () => {
+    const host = render()
+    const [first, second] = [...host.querySelectorAll('mk-ticket')]
+
+    expect(first.querySelector('h3')?.textContent).toBe('Train to Aldermoor')
+    expect(second.querySelector('h3')).toBeNull()
+    expect(second.querySelector('h2')?.textContent).toBe('Museum')
+    expect(second.querySelector('h2')?.classList.contains('mk-type-heading')).toBe(true)
   })
 
   it('puts the route, the reference and the one action on the stub', () => {

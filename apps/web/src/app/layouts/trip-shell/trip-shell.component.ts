@@ -59,7 +59,9 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
       </a>
     </app-shell-header>
     <mk-page [tabBar]="true" [fab]="floatsButton()">
-      <router-outlet />
+      <main>
+        <router-outlet />
+      </main>
     </mk-page>
     @if (showFab()) {
       <a mk-fab [routerLink]="['/t', tripId(), 'add']" data-testid="shell.fab">
@@ -105,13 +107,14 @@ export class TripShellComponent {
     { initialValue: this.router.url }
   )
   /**
-   * The quick-expense button, on every trip screen but settings and the
-   * sheet's own route. The Plan tab floats its own "Add event" button and a
+   * The quick-expense button, on every trip screen but settings, and
+   * under the quick expense sheet on its own route. The Plan tab floats its own "Add event" button and a
    * screen has one floating control (DESIGN.md), so it hides there too.
    */
   protected readonly showFab = computed(() => {
     const path = this.url().split(/[?#]/)[0]
-    return !/\/(more\/settings|plan)(\/|$)/.test(path) && !/\/add$/.test(path)
+    // Kept under the sheet on `/add`, so the sheet gives the focus back to it on close.
+    return !/\/(more\/settings|plan)(\/|$)/.test(path)
   })
 
   /**

@@ -61,5 +61,8 @@
   "showCard": {
     "close": "Cerrar",
     "keptOn": "La pantalla se mantiene encendida mientras la tarjeta está abierta"
+  },
+  "deviceFrame": {
+    "label": "Pantalla de ejemplo"
   }
 }
