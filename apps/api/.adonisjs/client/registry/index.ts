@@ -248,6 +248,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"export"]],
     types: placeholder as Registry['trips.export']['types'],
   },
+  'trips.expenses.csv': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/expenses.csv',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"expenses.csv"]],
+    types: placeholder as Registry['trips.expenses.csv']['types'],
+  },
   'trips.documents.store': {
     methods: ["POST"],
     pattern: '/api/v1/trips/:tripId/documents',

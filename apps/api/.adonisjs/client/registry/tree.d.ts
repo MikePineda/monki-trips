@@ -62,6 +62,9 @@ export interface ApiDefinition {
     today: typeof routes['trips.today']
     weather: typeof routes['trips.weather']
     export: typeof routes['trips.export']
+    expenses: {
+      csv: typeof routes['trips.expenses.csv']
+    }
     documents: {
       store: typeof routes['trips.documents.store']
       file: typeof routes['trips.documents.file']

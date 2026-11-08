@@ -528,6 +528,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_json_controller').default['export']>>>
     }
   }
+  'trips.expenses.csv': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/expenses.csv'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_expenses_controller').default['csvFile']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_expenses_controller').default['csvFile']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_expenses_controller').default['csvFile']>>>
+    }
+  }
   'trips.documents.store': {
     methods: ["POST"]
     pattern: '/api/v1/trips/:tripId/documents'
