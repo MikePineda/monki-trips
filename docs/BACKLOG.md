@@ -106,3 +106,6 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 2.9: the Today weather row credits the provider in text only; make "Open-Meteo.com" a link once `shared/ui` has an inline link style for captions.
 - 2026-11-08: WP 2.9: the fake weather provider (dev, E2E) forecasts from the UTC date, so between 17:00 and 24:00 UTC a stop east of UTC sees no "current" reading in E2E; a fake that follows the place's zone would make dev mornings look like production.
 - 2026-11-08: WP 2.9: Open-Meteo's free tier is non-commercial; a public hosted instance with paying users needs a paid plan or another provider behind `WeatherProvider`.
+- 2026-11-08: WP 2.7b: the API keeps its own Luxon `today_view` and leave buffers (`#domain/today_view`) beside the shared ones; reminders read the shared `tripLocalZone` and `leaveAtMs`. Move the API's Today onto the shared `todayView` so the two cannot drift.
+- 2026-11-08: WP 2.7b: `push:reminders` loads every live trip (ended at most two days ago) of each subscribed account every minute; fine for a household, but plan per trip or cache by `updated_at` if an instance grows.
+- 2026-11-08: WP 2.7b: not planned yet: flight-change reminders (from the plan), one leave reminder per segment of a multi-leg trip, and a retention for `sent_reminders` (a job for `push:prune` to take over).
