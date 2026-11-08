@@ -137,16 +137,33 @@ export interface TodayView<W extends WeatherSnapshot = WeatherSnapshot> {
   isFlightDay: boolean
 }
 
-interface ResolvedZone {
+/** The zone a trip-local clock reads, and which rule picked it. */
+export interface TripLocalZone {
   tz: string
   offsetMin: number
   source: TodayZoneSource
   stop: TodayStop | null
 }
 
-function resolveZone(input: TodayViewInput, nowMs: number): ResolvedZone {
+/** What the trip-local zone rule reads: the stops (offsets at `now`), the events and the home zone. */
+export interface TripLocalZoneInput {
+  stops: readonly TodayStop[]
+  events: readonly TripEvent[]
+  homeTz: string
+  /** UTC offset of `homeTz` at `now`, minutes east of UTC. */
+  homeOffsetMin: number
+}
+
+/**
+ * The trip-local zone at `now`: the stop whose stay covers the local date
+ * (read in the stop's own offset), else the zone of the last active event
+ * that has started (its arrival zone once it has ended), else home. Today
+ * and the reminder planner both read the trip's "today" through this rule.
+ */
+export function tripLocalZone(input: TripLocalZoneInput, now: IsoInstant): TripLocalZone {
+  const nowMs = epochMs(now)
   for (const stop of sortedStops(input.stops)) {
-    const local = localDate({ at: input.now, offsetMin: stop.offsetMin })
+    const local = localDate({ at: now, offsetMin: stop.offsetMin })
     if (stop.arriveOn <= local && local <= stop.departOn) {
       return { tz: stop.tz, offsetMin: stop.offsetMin, source: 'stop', stop }
     }
@@ -164,13 +181,25 @@ function resolveZone(input: TodayViewInput, nowMs: number): ResolvedZone {
     const ended = last.ends !== null && epochMs(last.ends.at) <= nowMs
     const zoned: ZonedInstant = ended && last.ends ? last.ends : last.starts
     return {
-      tz: zoned.tz ?? input.trip.homeTz,
+      tz: zoned.tz ?? input.homeTz,
       offsetMin: zoned.offsetMin,
       source: 'event',
       stop: null,
     }
   }
-  return { tz: input.trip.homeTz, offsetMin: input.trip.homeOffsetMin, source: 'home', stop: null }
+  return { tz: input.homeTz, offsetMin: input.homeOffsetMin, source: 'home', stop: null }
+}
+
+function resolveZone(input: TodayViewInput): TripLocalZone {
+  return tripLocalZone(
+    {
+      stops: input.stops,
+      events: input.events,
+      homeTz: input.trip.homeTz,
+      homeOffsetMin: input.trip.homeOffsetMin,
+    },
+    input.now
+  )
 }
 
 interface Candidate {
@@ -315,7 +344,7 @@ function tonightFrom(events: readonly TripEvent[], today: IsoDate): Tonight | nu
 
 export function todayView<W extends WeatherSnapshot>(input: TodayViewInput<W>): TodayView<W> {
   const nowMs = epochMs(input.now)
-  const zone = resolveZone(input, nowMs)
+  const zone = resolveZone(input)
   const today = localDate({ at: input.now, offsetMin: zone.offsetMin })
   const phase = tripPhase(input.trip, today)
 
