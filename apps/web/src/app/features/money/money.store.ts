@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core'
 import { convertToBase, scaleShares } from '@monkitrips/shared'
-import { v7 as uuidv7 } from 'uuid'
+import { v5 as uuidv5, v7 as uuidv7 } from 'uuid'
 import { CLOCK } from '../../core/offline/clock'
 import type { MonkiTripsDb } from '../../core/offline/db'
 import type { OutboxMutation } from '../../core/offline/mutation'
@@ -52,7 +52,17 @@ export interface SettlementInput {
   spentOn: string
   /** "Settle up", in the person's language. */
   description: string
+  /**
+   * What the balances were computed from (the number of expenses that are
+   * not settlements): with the trip, the pair, the amount and the day it
+   * names the settlement, so a double tap or both people settling the same
+   * debt write one row.
+   */
+  balancesVersion: string
 }
+
+/** Namespace of the settlement ids (UUIDv5); a constant, never a secret. */
+const SETTLEMENT_NAMESPACE = '6f1c2d3e-8a4b-4c5d-9e6f-7a8b9c0d1e2f'
 
 /** What the edit sheet may change; `fxRate` set means "use this rate" (manual), null means "look it up". */
 export type ExpenseChanges = Partial<
@@ -155,9 +165,20 @@ export class MoneyStore {
    */
   async settle(input: SettlementInput): Promise<ExpenseRecord> {
     const now = this.clock()
+    const id = uuidv5(
+      [
+        input.tripId,
+        input.fromTravellerId,
+        input.toTravellerId,
+        input.amountMinor,
+        input.spentOn,
+        input.balancesVersion,
+      ].join(':'),
+      SETTLEMENT_NAMESPACE
+    )
     const record = withLocalBase(
       {
-        id: uuidv7(),
+        id,
         tripId: input.tripId,
         kind: 'settlement',
         categoryId: input.categoryId,
@@ -178,10 +199,15 @@ export class MoneyStore {
       },
       input.baseCurrency
     )
+    // The share id follows the settlement's, so a second write replaces the same row.
     const shares = shareRecords(
       record,
       [{ travellerId: input.toTravellerId, shareMinor: input.amountMinor }],
       now
+    ).map((share) => ({ ...share, id: uuidv5(`${id}:${share.travellerId}`, SETTLEMENT_NAMESPACE) }))
+    const db = await this.database
+    await db.transaction('rw', db.expenseShares, () =>
+      db.expenseShares.where('expenseId').equals(id).delete()
     )
     await this.write(
       record,

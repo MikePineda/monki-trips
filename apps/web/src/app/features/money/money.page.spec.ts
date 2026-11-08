@@ -367,6 +367,22 @@ describe('MoneyPage', () => {
       expect(host.textContent).not.toContain('155.00')
     })
 
+    it('a double tap on Mark as settled records one settlement', async () => {
+      await db.trips.put({ ...TRIP, budgetMode: 'split' })
+      const { byId, tap, until, host } = await render()
+      await until(() => expect(byId('money.view.balances')).not.toBeNull())
+      await tap(byId('money.view.balances'))
+      await until(() => expect(settlements(host)).toHaveLength(2))
+
+      const button = host.querySelector<HTMLButtonElement>('[data-testid="money.settle.mark"]')!
+      button.click()
+      button.click()
+
+      await until(() => expect(settlements(host)).toHaveLength(1))
+      const recorded = (await db.expenses.toArray()).filter((row) => row.kind === 'settlement')
+      expect(recorded).toHaveLength(1)
+    })
+
     it('a settle up line with someone who left the trip cannot be marked as settled', async () => {
       await db.trips.put({ ...TRIP, budgetMode: 'split' })
       // Traveller C left the trip: the row is gone from the device, the share stays.
