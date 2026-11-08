@@ -12,6 +12,7 @@ import { MkButtonComponent, type ButtonSize, type ButtonVariant } from './button
       [size]="size()"
       [loading]="loading()"
       [disabled]="disabled()"
+      [wrap]="wrap()"
     >
       Save
     </button>
@@ -22,6 +23,7 @@ class Host {
   readonly size = input<ButtonSize>('md')
   readonly loading = input(false)
   readonly disabled = input(false)
+  readonly wrap = input(false)
 }
 
 describe('mk-button', () => {
@@ -31,6 +33,7 @@ describe('mk-button', () => {
       size: ButtonSize
       loading: boolean
       disabled: boolean
+      wrap: boolean
     }>
   ) {
     TestBed.configureTestingModule({ imports: [Host, i18nTesting()] })
@@ -65,6 +68,15 @@ describe('mk-button', () => {
     const button = render({ size })
 
     expect(button.getAttribute('data-size')).toBe(size)
+  })
+
+  it('a long label wraps from the start only when asked to', () => {
+    expect(getComputedStyle(render({})).whiteSpace).toBe('nowrap')
+    TestBed.resetTestingModule()
+    const wrapped = render({ wrap: true })
+
+    expect(wrapped.hasAttribute('data-wrap')).toBe(true)
+    expect(getComputedStyle(wrapped).whiteSpace).toBe('normal')
   })
 
   it('loading disables the button, announces busy and shows a spinner', () => {

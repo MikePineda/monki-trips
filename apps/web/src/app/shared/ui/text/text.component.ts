@@ -48,6 +48,7 @@ export type TextAlign = 'start' | 'center' | 'end'
     '[attr.data-align]': 'align()',
     '[attr.data-truncate]': 'truncate() ? "" : null',
     '[attr.data-break]': 'breakAnywhere() ? "" : null',
+    '[attr.data-lines]': 'preserveLines() ? "" : null',
   },
   styles: `
     :host {
@@ -106,6 +107,10 @@ export type TextAlign = 'start' | 'center' | 'end'
     :host([data-break]) {
       overflow-wrap: anywhere;
     }
+    :host([data-lines]) {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
     :host(span),
     :host(a),
     :host(code),
@@ -122,6 +127,8 @@ export class MkTextComponent {
   readonly truncate = input(false)
   /** Long unbroken values (a link, a token) wrap at any character instead of overflowing. */
   readonly breakAnywhere = input(false)
+  /** Free text someone wrote (a chat message): its line breaks show, long words wrap. */
+  readonly preserveLines = input(false)
 
   protected readonly classes = computed(() => `mk-text mk-type-${this.variant()}`)
 }

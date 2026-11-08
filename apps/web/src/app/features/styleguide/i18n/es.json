@@ -65,7 +65,8 @@
     "empty": "Estados vacíos",
     "skeleton": "Esqueleto",
     "keypad": "Teclado",
-    "icons": "Iconos"
+    "icons": "Iconos",
+    "assistant": "Chat del asistente"
   },
   "motion": {
     "still": "Fotogramas fijos",
@@ -140,7 +141,26 @@
     "showCard": "Mostrar una tarjeta en pantalla completa",
     "cardPhrase": "Bonvolu min konduki al la stacidomo",
     "cardRomanization": "BON-vo-lu min kon-DU-ki",
-    "cardPrompt": "Lléveme a la estación, por favor"
+    "cardPrompt": "Lléveme a la estación, por favor",
+    "chatYou": "Tú",
+    "chatKiko": "Kiko",
+    "chatQuestion": "Mueve la excursión al jueves y dime qué cambia",
+    "chatAnswer": "Al moverla al jueves queda libre el miércoles.\nUna noche se queda sin cama; revísala antes de aceptar.",
+    "proposalKind": "Cambio en el plan",
+    "proposalTitle": "Mover la excursión al jueves",
+    "proposalStarts": "Movido: Excursión a la isla · Empieza",
+    "proposalNight": "Noche del mié 12 may",
+    "proposalNightNext": "Noche del jue 13 may",
+    "proposalNoBed": "Sin cama",
+    "proposalLoses": "Se queda sin cama",
+    "proposalGains": "Gana una cama",
+    "proposalAccept": "Aceptar",
+    "proposalReject": "Rechazar",
+    "proposalExpenseKind": "Gasto",
+    "proposalExpenseTitle": "฿350.00 · Comida",
+    "proposalAmount": "Importe",
+    "proposalBase": "En AUD",
+    "proposalAccepted": "Aceptada"
   },
   "screens": {
     "today": "Hoy",

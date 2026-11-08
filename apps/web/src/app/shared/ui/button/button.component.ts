@@ -28,6 +28,7 @@ export type ButtonSize = 'md' | 'sm' | 'block'
     'class': 'mk-button mk-type-body-strong',
     '[attr.data-variant]': 'variant()',
     '[attr.data-size]': 'size()',
+    '[attr.data-wrap]': 'wrap() ? "" : null',
     '[class.mk-button--loading]': 'loading()',
     '[attr.disabled]': 'inactive() ? "" : null',
     '[attr.aria-disabled]': 'inactive() ? "true" : null',
@@ -81,6 +82,14 @@ export type ButtonSize = 'md' | 'sm' | 'block'
       position: absolute;
       inset: -5px -1px;
     }
+    /* A sentence as a button (a suggestion): it wraps and reads from the start. */
+    :host([data-wrap]) {
+      white-space: normal;
+      justify-content: flex-start;
+      text-align: start;
+      max-width: 100%;
+      padding-block: var(--space-half);
+    }
     :host([data-size='block']) {
       display: flex;
       width: 100%;
@@ -123,6 +132,8 @@ export class MkButtonComponent {
   readonly size = input<ButtonSize>('md')
   readonly loading = input(false)
   readonly disabled = input(false)
+  /** Long labels wrap instead of running past the column. */
+  readonly wrap = input(false)
 
   protected readonly inactive = computed(() => this.disabled() || this.loading())
 }
