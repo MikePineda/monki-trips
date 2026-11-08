@@ -2,5 +2,19 @@
   "test": {
     "title": "monki trips",
     "body": "Las notificaciones funcionan en este dispositivo."
+  },
+  "reminders": {
+    "leave_at": {
+      "title": "Hora de salir: {title}",
+      "body": "Sale a las {startTime}. Sal a las {leaveTime}."
+    },
+    "check_out": {
+      "title": "Check-out hoy: {title}",
+      "body": "Deja el alojamiento antes de las {checkOutTime}."
+    },
+    "tasks_due": {
+      "title": "{count, plural, one {# tarea} other {# tareas}} para hoy",
+      "body": "{tripName}: {titles}{more, plural, =0 {} other { y # más}}"
+    }
   }
 }

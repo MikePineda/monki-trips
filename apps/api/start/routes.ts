@@ -88,6 +88,15 @@ router
             router
               .post('me/push-subscriptions/test', [controllers.PushSubscriptions, 'test'])
               .as('me.pushSubscriptions.test')
+            router
+              .get('me/notification-settings', [controllers.NotificationSettings, 'show'])
+              .as('me.notificationSettings.show')
+            router
+              .put('me/notification-settings', [controllers.NotificationSettings, 'update'])
+              .as('me.notificationSettings.update')
+            router
+              .get('me/reminders/upcoming', [controllers.Reminders, 'upcoming'])
+              .as('me.reminders.upcoming')
 
             router
               .post('invitations/:token/accept', [controllers.Invitations, 'accept'])

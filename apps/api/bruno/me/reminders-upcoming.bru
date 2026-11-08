@@ -1,0 +1,15 @@
+meta {
+  name: My reminders in the next 36 hours
+  type: http
+  seq: 60
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me/reminders/upcoming
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}

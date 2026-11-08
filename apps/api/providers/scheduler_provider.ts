@@ -3,6 +3,7 @@ import { shouldStartScheduler } from '#domain/scheduler_slot'
 import { Clock } from '#services/clock'
 import { JobClaim } from '#services/scheduler/job_claim'
 import { PushPruneJob } from '#services/scheduler/push_prune_job'
+import { PushRemindersJob } from '#services/scheduler/push_reminders_job'
 import { Scheduler } from '#services/scheduler/scheduler'
 
 /**
@@ -18,6 +19,7 @@ export default class SchedulerProvider {
       const logger = await this.app.container.make('logger')
       const scheduler = new Scheduler(new JobClaim(), await this.app.container.make(Clock), logger)
       scheduler.register(new PushPruneJob(logger))
+      scheduler.register(await this.app.container.make(PushRemindersJob))
       return scheduler
     })
   }

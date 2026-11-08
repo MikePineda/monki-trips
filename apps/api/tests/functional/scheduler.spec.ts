@@ -88,7 +88,7 @@ test.group('Scheduler', (group) => {
   }) => {
     const scheduler = await app.container.make(Scheduler)
 
-    assert.deepEqual(scheduler.jobNames, ['push:prune'])
+    assert.deepEqual(scheduler.jobNames, ['push:prune', 'push:reminders'])
     assert.isFalse(scheduler.running)
   })
 

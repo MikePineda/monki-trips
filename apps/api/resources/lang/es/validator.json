@@ -38,7 +38,8 @@
       "templateOnly": "{field} solo se admite en una tarea de la plantilla",
       "schema": "{field} no cumple el esquema trip JSON v1",
       "unresolvedRef": "{field} apunta a una ref que no está en el archivo",
-      "duplicateRef": "{field} repite una ref ya usada en el archivo"
+      "duplicateRef": "{field} repite una ref ya usada en el archivo",
+      "quietHoursPair": "Las horas de silencio necesitan un inicio y un final"
     },
     "fields": {
       "email": "el correo",
@@ -170,7 +171,12 @@
       "dryRun": "el ensayo",
       "language": "el idioma de las tarjetas",
       "preferences": "las preferencias de comida",
-      "force": "forzar"
+      "force": "forzar",
+      "leaveAt": "los avisos de salida",
+      "checkOut": "los avisos de check-out",
+      "tasksDue": "los avisos de tareas",
+      "quietHoursStart": "el inicio de las horas de silencio",
+      "quietHoursEnd": "el final de las horas de silencio"
     }
   }
 }
