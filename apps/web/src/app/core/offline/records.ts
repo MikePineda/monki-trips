@@ -91,7 +91,14 @@ export interface DocBlobRecord {
   sha256: string
   size: number
   mime: string
-  blob: Blob
+  /**
+   * The file's bytes. An ArrayBuffer, never a Blob: WebKit refuses Blobs
+   * in IndexedDB in private sessions ("Error preparing Blob/File data to
+   * be stored in object store"), and an ArrayBuffer stores everywhere.
+   */
+  bytes?: ArrayBuffer
+  /** How copies saved before `bytes` kept their file; still read, never written. */
+  blob?: Blob
   /** ISO timestamp. */
   savedAt: string
 }
