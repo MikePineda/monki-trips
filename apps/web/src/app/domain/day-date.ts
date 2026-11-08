@@ -1,11 +1,17 @@
 /**
- * Day-first calendar dates for the UI ("Wed 12 May", "mié 12 may") from a
+ * Day-first calendar dates for the UI ("Wed 12 May", "mié 12 may", with the
+ * year on request: "12 May 2026") from a
  * `YYYY-MM-DD` string. Pure: `Intl` only, the calendar date is taken as
  * written (no zone shift), the locale is always passed in.
  */
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
 
-export function formatDayDate(isoDate: string, locale: string, withWeekday = true): string {
+export function formatDayDate(
+  isoDate: string,
+  locale: string,
+  withWeekday = true,
+  withYear = false
+): string {
   const match = ISO_DATE.exec(isoDate)
   if (!match) {
     throw new TypeError(`not a YYYY-MM-DD date: ${isoDate}`)
@@ -15,6 +21,7 @@ export function formatDayDate(isoDate: string, locale: string, withWeekday = tru
     ...(withWeekday ? { weekday: 'short' } : {}),
     day: 'numeric',
     month: 'short',
+    ...(withYear ? { year: 'numeric' } : {}),
     timeZone: 'UTC',
   }).format(date)
   // "Wed, 12 May" reads as "Wed 12 May" in the design (no comma after the weekday).

@@ -1,0 +1,46 @@
+{
+  "title": "Pasaporte",
+  "back": "Volver a los viajes",
+  "summary": {
+    "countriesOne": "{{count}} país",
+    "countriesOther": "{{count}} países",
+    "citiesOne": "{{count}} ciudad",
+    "citiesOther": "{{count}} ciudades"
+  },
+  "view": {
+    "label": "Vista del pasaporte",
+    "stamps": "Sellos",
+    "map": "Mapa"
+  },
+  "comingUp": "Próximamente",
+  "cities": "Ciudades",
+  "countryStamp": "{{place}}, sellado el {{date}}",
+  "countryComingUp": "{{place}}, próximamente {{date}}",
+  "empty": {
+    "title": "El pasaporte está vacío",
+    "body": "Añade las paradas de un viaje; cada país y ciudad recibe su sello cuando ya habéis estado allí."
+  },
+  "detail": {
+    "stamped": "Sellado el {{date}}",
+    "comingUp": "Próximamente, el {{date}}",
+    "trip": "En {{trip}}",
+    "visits": "Todas las visitas",
+    "visitEarned": "{{date}} · {{trip}}",
+    "visitComingUp": "{{date}} · {{trip}} · próximamente",
+    "arrivedBy": {
+      "plane": "Llegada en avión",
+      "train": "Llegada en tren",
+      "boat": "Llegada en barco",
+      "road": "Llegada por carretera"
+    },
+    "openTrip": "Abrir el viaje",
+    "close": "Cerrar"
+  },
+  "map": {
+    "title": "Donde hemos estado",
+    "label": "Mapa de los lugares donde hemos estado: {{places}}",
+    "noPlaces": "Aún no hay lugares en el mapa: añade coordenadas a las paradas de un viaje.",
+    "offline": "Sin conexión: un mapa sencillo desde el dispositivo hasta que vuelva la conexión.",
+    "legend": "Viajes"
+  }
+}

@@ -1,7 +1,15 @@
 {
   "version": 1,
   "stamps": [
-    { "code": "XA", "file": "XA.svg" },
-    { "code": "XB", "file": "XB.svg" }
+    {
+      "code": "XA",
+      "file": "XA.svg",
+      "name": "Xaloa"
+    },
+    {
+      "code": "XB",
+      "file": "XB.svg",
+      "name": "Xebria"
+    }
   ]
 }

@@ -1,0 +1,46 @@
+{
+  "title": "Passport",
+  "back": "Back to the trips",
+  "summary": {
+    "countriesOne": "{{count}} country",
+    "countriesOther": "{{count}} countries",
+    "citiesOne": "{{count}} city",
+    "citiesOther": "{{count}} cities"
+  },
+  "view": {
+    "label": "Passport view",
+    "stamps": "Stamps",
+    "map": "Map"
+  },
+  "comingUp": "Coming up",
+  "cities": "Cities",
+  "countryStamp": "{{place}}, stamped {{date}}",
+  "countryComingUp": "{{place}}, coming up {{date}}",
+  "empty": {
+    "title": "The passport is empty",
+    "body": "Add the stops of a trip; each country and city gets its stamp once you have been there."
+  },
+  "detail": {
+    "stamped": "Stamped on {{date}}",
+    "comingUp": "Coming up on {{date}}",
+    "trip": "On {{trip}}",
+    "visits": "Every visit",
+    "visitEarned": "{{date}} · {{trip}}",
+    "visitComingUp": "{{date}} · {{trip}} · coming up",
+    "arrivedBy": {
+      "plane": "Arrived by plane",
+      "train": "Arrived by train",
+      "boat": "Arrived by boat",
+      "road": "Arrived by road"
+    },
+    "openTrip": "Open the trip",
+    "close": "Close"
+  },
+  "map": {
+    "title": "Where we have been",
+    "label": "Map of the places we have been: {{places}}",
+    "noPlaces": "No place on the map yet: add coordinates to the stops of a trip.",
+    "offline": "Offline: a simple map from the device until the connection is back.",
+    "legend": "Trips"
+  }
+}

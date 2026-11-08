@@ -1,0 +1,37 @@
+{
+  "title": "Our trips",
+  "passport": "Passport",
+  "sections": {
+    "ongoing": "On the road",
+    "upcoming": "Coming up",
+    "past": "Where we have been"
+  },
+  "eyebrow": {
+    "ongoing": "Day {{day}} of {{total}}",
+    "upcomingOne": "In {{count}} day",
+    "upcomingOther": "In {{count}} days",
+    "pastOne": "Back {{count}} day ago",
+    "pastOther": "Back {{count}} days ago",
+    "pastLong": "{{date}}"
+  },
+  "stats": {
+    "daysOne": "{{count}} day",
+    "daysOther": "{{count}} days",
+    "nightsOne": "{{count}} night",
+    "nightsOther": "{{count}} nights",
+    "countriesOne": "{{count}} country",
+    "countriesOther": "{{count}} countries"
+  },
+  "spent": "Spent {{amount}}",
+  "cover": "Stamp of {{place}}",
+  "celebration": {
+    "title": "New stamps",
+    "body": "{{trip}} is in the passport. Welcome back!",
+    "open": "Open the passport",
+    "mascot": "Kiko celebrating"
+  },
+  "empty": {
+    "pastTitle": "No stamps yet",
+    "pastBody": "When a trip ends, its countries and cities land in the passport."
+  }
+}
