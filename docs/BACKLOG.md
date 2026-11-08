@@ -129,3 +129,4 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: Web: `SyncService` pulls while signed out (401 from `/sync/pull` on the login page and the styleguide, Lighthouse "errors in console"); start syncing only with a session. API: `/auth/me` answering 200 with no user would clear the other 401.
 - 2026-11-08: Web: segmented controls with `role="tablist"` have no arrow-key navigation or roving tabindex; add the APG tabs keyboard model (or use the radiogroup role where the content does not change).
 - 2026-11-08: E2E: `overflowing()` is copied in `j05c-narrow-screens.spec.ts` and `a11y.spec.ts`; move it to `e2e/overflowing.ts` once the parallel J05c packages land.
+- 2026-11-08: Web: the styleguide's tokens section shifts the layout by 0.22 (CLS) while it loads; reserve its height or render the contrast table at once.

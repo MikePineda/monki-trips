@@ -98,13 +98,13 @@ dropped the PWA category: installability is Chrome's own
 
 | Page                                   | Performance | Accessibility | Best practices | Installable |
 | -------------------------------------- | ----------- | ------------- | -------------- | ----------- |
-| login, before → after                  | 68 → 69     | 100 → 100     | 96 → 96        | yes         |
-| styleguide, before → after             | 62 → 51     | 90 → 100      | 96 → 96        | yes         |
-| Today signed in, before → after        | 71 → 67     | 97 → 100      | 96 → 100       | yes         |
+| login, before → after                  | 70 → 69     | 100 → 100     | 96 → 96        | yes         |
+| styleguide, before → after             | 52 → 51     | 90 → 100      | 96 → 96        | yes         |
+| Today signed in, before → after        | 66 → 64     | 92 → 100      | 100 → 100      | yes         |
 | production login page (public, `main`) | 91          | 100           | 96             | yes         |
 | production styleguide (public, `main`) | 75          | 90            | 96             | yes         |
 
-Performance moves by ±10 between runs on the shared VM. What keeps it
+Both columns come from one run each, back to back; scores move by up to ±10 between runs on the shared VM (an earlier `main` run gave the styleguide 62 and Today 71, with 97 accessibility and 96 best practices on Today). The styleguide's 0.22 layout shift on its tokens section is on `main` too. What keeps it
 down is outside this package and is in `docs/BACKLOG.md`: lazy chunks
 whose hash holds `_` or `-` and the fonts get a one-hour cache instead of
 `immutable`; signed-out pages log 401s from `/auth/me` and `/sync/pull`
