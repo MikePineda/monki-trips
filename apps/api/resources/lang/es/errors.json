@@ -38,5 +38,7 @@
   "E_LLM_UNAVAILABLE": "El asistente de IA no está disponible ahora. Inténtalo de nuevo en un momento",
   "E_LLM_BAD_OUTPUT": "El asistente de IA dio una respuesta que no pudimos usar. Inténtalo de nuevo",
   "E_AI_ACTION_CLOSED": "Esta propuesta ya se decidió o ha caducado",
-  "E_AI_ACTION_STALE": "El viaje cambió desde que se hizo esta propuesta. No se cambió nada; vuelve a preguntar al asistente"
+  "E_AI_ACTION_STALE": "El viaje cambió desde que se hizo esta propuesta. No se cambió nada; vuelve a preguntar al asistente",
+  "E_AI_ACTION_NOT_REVISABLE": "Solo se puede editar una propuesta leída de una reserva",
+  "E_EXTRACTION_UNAVAILABLE": "Este servidor no está configurado para leer fotos ni archivos escaneados. Añade la reserva a mano"
 }

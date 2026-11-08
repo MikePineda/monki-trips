@@ -74,6 +74,12 @@ export const ERROR_CODES = {
   E_AI_ACTION_CLOSED: 409,
   /** The trip changed since the proposal was made: nothing was applied, ask the assistant again. */
   E_AI_ACTION_STALE: 409,
+  /** Only a proposal read from a booking can be revised. */
+  E_AI_ACTION_NOT_REVISABLE: 409,
+
+  // Reading bookings and receipts
+  /** The file needs the vision model and none is configured (`LLM_VISION_MODEL` empty). */
+  E_EXTRACTION_UNAVAILABLE: 503,
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES
