@@ -476,6 +476,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['budget']>>>
     }
   }
+  'trips.balances': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/balances'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['balances']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['balances']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['balances']>>>
+    }
+  }
   'trips.today': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/today'
