@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core'
-import { RouterLink } from '@angular/router'
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import {
   balances,
@@ -38,7 +37,6 @@ import { passportInput } from '../../domain/travel-history'
 import { MkBarChartComponent, type ChartBar } from '../../shared/ui/bar-chart/bar-chart.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
-import { MkIconButtonComponent } from '../../shared/ui/icon-button/icon-button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
 import { MkGridComponent } from '../../shared/ui/layout/grid.component'
 import { MkRowComponent } from '../../shared/ui/layout/row.component'
@@ -107,7 +105,6 @@ const CATEGORY_KEYS = [
 @Component({
   selector: 'app-recap-page',
   imports: [
-    RouterLink,
     TranslocoPipe,
     MkStackComponent,
     MkRowComponent,
@@ -115,7 +112,6 @@ const CATEGORY_KEYS = [
     MkSectionComponent,
     MkTextComponent,
     MkButtonComponent,
-    MkIconButtonComponent,
     MkIconComponent,
     MkEmptyStateComponent,
     MkMascotComponent,
@@ -135,19 +131,9 @@ const CATEGORY_KEYS = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mk-stack gap="3">
-      <mk-row gap="1">
-        <a
-          mk-icon-button
-          [routerLink]="['/t', tripId(), 'summary']"
-          [attr.aria-label]="'recap.back' | transloco"
-          data-testid="recap.back"
-        >
-          <mk-icon name="arrow-left" />
-        </a>
-        <h1 mk-text variant="title" data-testid="recap.title">
-          {{ (finished() ? 'recap.title' : 'recap.titleSoFar') | transloco }}
-        </h1>
-      </mk-row>
+      <h1 mk-text variant="title" data-testid="recap.title">
+        {{ (finished() ? 'recap.title' : 'recap.titleSoFar') | transloco }}
+      </h1>
 
       @if (trip(); as trip) {
         <mk-row gap="2" align="start" data-testid="recap.hero" [attr.data-phase]="recap()?.phase">
@@ -181,9 +167,9 @@ const CATEGORY_KEYS = [
           } @else {
             @if (chips().length > 0) {
               <mk-section [eyebrow]="'recap.route' | transloco">
-                <mk-row gap="1" [wrap]="true" data-testid="recap.route">
-                  <mk-route-chip [stops]="chips()" size="display" />
-                </mk-row>
+                <mk-stack data-testid="recap.route">
+                  <mk-route-chip [stops]="chips()" size="display" [wrap]="true" />
+                </mk-stack>
               </mk-section>
             }
 

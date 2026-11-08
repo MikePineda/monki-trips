@@ -11,7 +11,11 @@ export type RouteChipSize = 'label' | 'display'
 @Component({
   selector: 'mk-route-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { 'class': 'mk-route-chip', '[attr.data-size]': 'size()' },
+  host: {
+    'class': 'mk-route-chip',
+    '[attr.data-size]': 'size()',
+    '[attr.data-wrap]': "wrap() ? '' : null",
+  },
   styles: `
     :host {
       display: inline-flex;
@@ -29,6 +33,15 @@ export type RouteChipSize = 'label' | 'display'
     .mk-route__arrow {
       color: var(--ink-3);
     }
+    /* A long route (place names, not codes) breaks between places, never off the screen. */
+    :host([data-wrap]) {
+      display: inline;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    :host([data-wrap]) .mk-route__arrow {
+      white-space: pre;
+    }
   `,
   template: `
     @for (stop of stops(); track $index; let last = $last) {
@@ -42,4 +55,6 @@ export type RouteChipSize = 'label' | 'display'
 export class MkRouteChipComponent {
   readonly stops = input.required<readonly string[]>()
   readonly size = input<RouteChipSize>('label')
+  /** Let a long route wrap between places (the recap's names); codes stay on one line by default. */
+  readonly wrap = input(false)
 }

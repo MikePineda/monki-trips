@@ -7,6 +7,12 @@ import { MkRouteChipComponent } from './route-chip.component'
   template: `
     <mk-route-chip [stops]="['PVM', 'ALD', 'KSB']" data-testid="probe.trip" />
     <mk-route-chip [stops]="['PVM', 'ALD']" size="display" data-testid="probe.ticket" />
+    <mk-route-chip
+      [stops]="['The Long Lagoon Of Seven Bridges', 'Riverside Guesthouse Quarter']"
+      size="display"
+      [wrap]="true"
+      data-testid="probe.names"
+    />
   `,
 })
 class Host {}
@@ -33,6 +39,15 @@ describe('mk-route-chip', () => {
 
     expect(host.querySelector('[data-testid="probe.ticket"]')?.getAttribute('data-size')).toBe(
       'display'
+    )
+  })
+
+  it('a route of place names wraps only when asked', () => {
+    const host = render()
+
+    expect(host.querySelector('[data-testid="probe.names"]')?.hasAttribute('data-wrap')).toBe(true)
+    expect(host.querySelector('[data-testid="probe.ticket"]')?.hasAttribute('data-wrap')).toBe(
+      false
     )
   })
 })

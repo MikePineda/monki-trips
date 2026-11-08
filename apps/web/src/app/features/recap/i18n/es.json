@@ -1,7 +1,6 @@
 {
   "title": "Resumen del viaje",
   "titleSoFar": "El viaje hasta ahora",
-  "back": "Volver al viaje",
   "dates": "{{start}} – {{end}}",
   "phase": {
     "past": "¡Bienvenidos de vuelta! Aquí está el viaje, de principio a fin.",

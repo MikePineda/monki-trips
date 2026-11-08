@@ -1,7 +1,6 @@
 {
   "title": "Trip recap",
   "titleSoFar": "The trip so far",
-  "back": "Back to the trip",
   "dates": "{{start}} – {{end}}",
   "phase": {
     "past": "Welcome back! Here is the trip, start to finish.",
