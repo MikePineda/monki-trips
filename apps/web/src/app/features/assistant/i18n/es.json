@@ -1,0 +1,143 @@
+{
+  "title": "Kiko",
+  "intro": "Pregunta sobre el viaje con tus palabras. Kiko puede proponer cambios; nada cambia hasta que aceptas.",
+  "you": "Tú",
+  "kiko": "Kiko",
+  "thinking": "Kiko está pensando",
+  "newChat": "Nuevo chat",
+  "log": "Conversación con Kiko",
+  "stopped": "Detenido. La respuesta hasta aquí se queda.",
+  "answered": "Kiko respondió: {{text}}",
+  "suggestions": {
+    "title": "Prueba a preguntar",
+    "tomorrow": "¿Qué necesitamos mañana?",
+    "perDay": "¿Cuánto nos queda por día?",
+    "expense": "Apunta 350 baht de pad thai",
+    "move": "Mueve la excursión al jueves y dime qué cambia"
+  },
+  "history": {
+    "title": "Tus chats",
+    "untitled": "Chat sin título",
+    "delete": "Borrar {{title}}",
+    "confirm": {
+      "title": "¿Borrar este chat?",
+      "body": "Se borran sus mensajes y propuestas. Lo que aceptaste se queda en el viaje.",
+      "action": "Borrar chat"
+    }
+  },
+  "composer": {
+    "label": "Mensaje para Kiko",
+    "send": "Enviar",
+    "stop": "Detener",
+    "tokensLeft": "Quedan {{count}} tokens este mes"
+  },
+  "offline": {
+    "title": "Kiko necesita conexión",
+    "body": "Puedes leer tus chats aquí. Pregunta de nuevo cuando tengas conexión."
+  },
+  "errors": {
+    "network": "No se pudo contactar a Kiko. Revisa la conexión e inténtalo de nuevo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo.",
+    "E_LLM_QUOTA_EXCEEDED": "Ya usaste lo disponible para Kiko este mes. Se renueva el {{date}}.",
+    "E_TOO_MANY_REQUESTS": "Son muchas preguntas seguidas. Inténtalo de nuevo en {{minutes}} min.",
+    "E_LLM_UNAVAILABLE": "Kiko no está disponible ahora. Inténtalo en un momento.",
+    "E_ROW_NOT_FOUND": "Este chat ya no está. Empieza uno nuevo."
+  },
+  "proposal": {
+    "kind": {
+      "expense": "Gasto",
+      "task": "Tarea",
+      "event_changes": "Cambio en el plan"
+    },
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "status": {
+      "accepted": "Aceptada",
+      "rejected": "Rechazada",
+      "expired": "Caducada",
+      "failed": "No aplicada"
+    },
+    "stale": "El viaje cambió desde que Kiko propuso esto. Vuelve a preguntar.",
+    "expiredNote": "Las propuestas caducan al día. Vuelve a preguntar.",
+    "network": "Esto necesita conexión. Inténtalo de nuevo cuando tengas conexión.",
+    "unknown": "No se pudo guardar. Inténtalo de nuevo.",
+    "expense": {
+      "title": "{{amount}} · {{category}}",
+      "amount": "Importe",
+      "base": "En {{currency}}",
+      "rate": "Cambio",
+      "rateValue": "1 {{from}} = {{rate}} {{to}} el {{date}}",
+      "noRate": "Cambio aún desconocido",
+      "category": "Categoría",
+      "spentOn": "Día",
+      "description": "Qué"
+    },
+    "task": {
+      "due": "Para",
+      "noDue": "Sin fecha",
+      "priority": "Prioridad",
+      "notes": "Notas",
+      "priorities": {
+        "low": "Baja",
+        "normal": "Normal",
+        "high": "Alta"
+      }
+    },
+    "events": {
+      "title": "Cambian {{count}} eventos",
+      "op": {
+        "add": "Nuevo",
+        "move": "Movido",
+        "edit": "Cambiado",
+        "cancel": "Cancelado"
+      },
+      "event": "{{op}}: {{title}}",
+      "none": "Nada",
+      "fields": {
+        "title": "Título",
+        "kind": "Tipo",
+        "status": "Estado",
+        "startsLocal": "Empieza",
+        "startTz": "Zona horaria de inicio",
+        "endsLocal": "Termina",
+        "endTz": "Zona horaria de fin",
+        "placeName": "Lugar",
+        "address": "Dirección",
+        "notes": "Notas"
+      },
+      "night": "Noche del {{date}}",
+      "noBed": "Sin cama",
+      "loses": "Se queda sin cama",
+      "gains": "Gana una cama",
+      "uncovered": "Noches sin cama",
+      "kinds": {
+        "flight": "Vuelo",
+        "train": "Tren",
+        "ferry": "Ferry",
+        "bus": "Autobús",
+        "car": "Coche",
+        "lodging": "Alojamiento",
+        "tour": "Tour",
+        "meal": "Comida",
+        "activity": "Actividad",
+        "free_time": "Tiempo libre",
+        "other": "Otro"
+      },
+      "statuses": {
+        "idea": "Idea",
+        "to_book": "Por reservar",
+        "booked": "Reservado",
+        "paid": "Pagado",
+        "cancelled": "Cancelado"
+      }
+    },
+    "categories": {
+      "accommodation": "Alojamiento",
+      "transport": "Transporte",
+      "food": "Comida",
+      "activities": "Actividades",
+      "shopping": "Compras",
+      "other": "Otros"
+    }
+  }
+}

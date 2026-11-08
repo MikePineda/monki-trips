@@ -1,5 +1,6 @@
 import { computed, type Signal } from '@angular/core'
 import { byTravellerOrder } from '../../domain/traveller-order'
+import type { AiConversationRecord } from './ai-conversation-record'
 import { liveSignalFor } from './live'
 import type {
   BudgetCategoryRecord,
@@ -130,6 +131,20 @@ export function tripPhraseCards(tripId: Signal<string>): Signal<PhraseCardRecord
       (await db.phraseCards.where('tripId').equals(id).toArray()).sort((a, b) =>
         a.language.localeCompare(b.language)
       ),
+    []
+  )
+}
+
+/** The member's cached assistant conversations of the trip, most recently used first. */
+export function tripAiConversations(tripId: Signal<string>): Signal<AiConversationRecord[]> {
+  return liveSignalFor(
+    tripId,
+    (db, id) =>
+      db.aiConversations
+        .where('[tripId+updatedAt]')
+        .between([id, ''], [id, '￿'])
+        .reverse()
+        .toArray(),
     []
   )
 }

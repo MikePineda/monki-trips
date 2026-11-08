@@ -78,5 +78,6 @@
       "thunderstorm": "Thunderstorm",
       "snow": "Snow"
     }
-  }
+  },
+  "assistant": "Ask Kiko about the trip"
 }

@@ -1,0 +1,143 @@
+{
+  "title": "Kiko",
+  "intro": "Ask about the trip in your own words. Kiko can propose changes; nothing changes until you accept.",
+  "you": "You",
+  "kiko": "Kiko",
+  "thinking": "Kiko is thinking",
+  "newChat": "New chat",
+  "log": "Conversation with Kiko",
+  "stopped": "Stopped. The answer so far stays here.",
+  "answered": "Kiko answered: {{text}}",
+  "suggestions": {
+    "title": "Try asking",
+    "tomorrow": "What do we need tomorrow?",
+    "perDay": "How much is left per day?",
+    "expense": "Log 350 baht of pad thai",
+    "move": "Move the day trip to Thursday and tell me what shifts"
+  },
+  "history": {
+    "title": "Your chats",
+    "untitled": "Untitled chat",
+    "delete": "Delete {{title}}",
+    "confirm": {
+      "title": "Delete this chat?",
+      "body": "Its messages and proposals are deleted. Anything you accepted stays in the trip.",
+      "action": "Delete chat"
+    }
+  },
+  "composer": {
+    "label": "Message Kiko",
+    "send": "Send",
+    "stop": "Stop",
+    "tokensLeft": "{{count}} tokens left this month"
+  },
+  "offline": {
+    "title": "Kiko needs a connection",
+    "body": "Your chats are here to read. Ask again when you are back online."
+  },
+  "errors": {
+    "network": "Kiko could not be reached. Check the connection and try again.",
+    "unknown": "Something went wrong. Try again.",
+    "E_LLM_QUOTA_EXCEEDED": "You have used this month's allowance for Kiko. It resets on {{date}}.",
+    "E_TOO_MANY_REQUESTS": "That is a lot of questions in a row. Try again in {{minutes}} min.",
+    "E_LLM_UNAVAILABLE": "Kiko is not available right now. Try again in a moment.",
+    "E_ROW_NOT_FOUND": "This chat is not here any more. Start a new one."
+  },
+  "proposal": {
+    "kind": {
+      "expense": "Expense",
+      "task": "Task",
+      "event_changes": "Plan change"
+    },
+    "accept": "Accept",
+    "reject": "Reject",
+    "status": {
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired",
+      "failed": "Not applied"
+    },
+    "stale": "The trip changed since Kiko proposed this. Ask again.",
+    "expiredNote": "Proposals expire after a day. Ask again.",
+    "network": "This needs a connection. Try again when you are online.",
+    "unknown": "This could not be saved. Try again.",
+    "expense": {
+      "title": "{{amount}} · {{category}}",
+      "amount": "Amount",
+      "base": "In {{currency}}",
+      "rate": "Rate",
+      "rateValue": "1 {{from}} = {{rate}} {{to}} on {{date}}",
+      "noRate": "Rate not known yet",
+      "category": "Category",
+      "spentOn": "Day",
+      "description": "What"
+    },
+    "task": {
+      "due": "Due",
+      "noDue": "No due date",
+      "priority": "Priority",
+      "notes": "Notes",
+      "priorities": {
+        "low": "Low",
+        "normal": "Normal",
+        "high": "High"
+      }
+    },
+    "events": {
+      "title": "{{count}} events change",
+      "op": {
+        "add": "New",
+        "move": "Moved",
+        "edit": "Changed",
+        "cancel": "Cancelled"
+      },
+      "event": "{{op}}: {{title}}",
+      "none": "None",
+      "fields": {
+        "title": "Title",
+        "kind": "Kind",
+        "status": "Status",
+        "startsLocal": "Starts",
+        "startTz": "Start time zone",
+        "endsLocal": "Ends",
+        "endTz": "End time zone",
+        "placeName": "Place",
+        "address": "Address",
+        "notes": "Notes"
+      },
+      "night": "Night of {{date}}",
+      "noBed": "No bed",
+      "loses": "Loses its bed",
+      "gains": "Gains a bed",
+      "uncovered": "Nights without a bed",
+      "kinds": {
+        "flight": "Flight",
+        "train": "Train",
+        "ferry": "Ferry",
+        "bus": "Bus",
+        "car": "Car",
+        "lodging": "Stay",
+        "tour": "Tour",
+        "meal": "Meal",
+        "activity": "Activity",
+        "free_time": "Free time",
+        "other": "Other"
+      },
+      "statuses": {
+        "idea": "Idea",
+        "to_book": "To book",
+        "booked": "Booked",
+        "paid": "Paid",
+        "cancelled": "Cancelled"
+      }
+    },
+    "categories": {
+      "accommodation": "Accommodation",
+      "transport": "Transport",
+      "food": "Food",
+      "activities": "Activities",
+      "shopping": "Shopping",
+      "other": "Other"
+    }
+  }
+}

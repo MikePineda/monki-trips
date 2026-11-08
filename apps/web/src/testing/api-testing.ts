@@ -1,6 +1,7 @@
 import type { Provider } from '@angular/core'
 import { ACCOUNT_API } from '../app/core/api/account-api'
 import { ACTIVITY_API } from '../app/core/api/activity-api'
+import { ASSISTANT_API } from '../app/core/api/assistant-api'
 import { AUTH_API } from '../app/core/api/auth-api'
 import { PHRASE_CARDS_API } from '../app/core/api/phrase-cards-api'
 import { PUSH_API } from '../app/core/api/push-api'
@@ -9,6 +10,7 @@ import { TRIPS_API } from '../app/core/api/trips-api'
 import { SESSION_API } from '../app/core/session/session-api'
 import { FakeAccountApi } from './fake-account-api'
 import { FakeActivityApi } from './fake-activity-api'
+import { FakeAssistantApi } from './fake-assistant-api'
 import { FakeAuthApi } from './fake-auth-api'
 import { FakePhraseCardsApi } from './fake-phrase-cards-api'
 import { FakePushApi } from './fake-push-api'
@@ -25,6 +27,7 @@ export interface ApiFakes {
   reminders: FakeRemindersApi
   activity: FakeActivityApi
   phraseCards: FakePhraseCardsApi
+  assistant: FakeAssistantApi
 }
 
 /** One fresh fake per API, for a spec to script and inspect. */
@@ -38,6 +41,7 @@ export function apiFakes(): ApiFakes {
     reminders: new FakeRemindersApi(),
     activity: new FakeActivityApi(),
     phraseCards: new FakePhraseCardsApi(),
+    assistant: new FakeAssistantApi(),
   }
 }
 
@@ -55,5 +59,6 @@ export function provideApiTesting(fakes: ApiFakes = apiFakes()): Provider[] {
     { provide: REMINDERS_API, useValue: fakes.reminders },
     { provide: ACTIVITY_API, useValue: fakes.activity },
     { provide: PHRASE_CARDS_API, useValue: fakes.phraseCards },
+    { provide: ASSISTANT_API, useValue: fakes.assistant },
   ]
 }

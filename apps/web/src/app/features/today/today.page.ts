@@ -444,6 +444,18 @@ interface DocumentLine {
             </mk-stack>
           </mk-section>
         }
+
+        <mk-section [hairline]="false">
+          <a
+            mk-text
+            variant="label"
+            tone="accent"
+            [routerLink]="['/t', tripId(), 'more', 'assistant']"
+            data-testid="today.assistant"
+          >
+            {{ 'today.assistant' | transloco }}
+          </a>
+        </mk-section>
       </mk-stack>
     } @else {
       <mk-skeleton mascot="thinking" [rows]="6" data-testid="today.loading" />

@@ -70,7 +70,8 @@
       "offline": "Offline",
       "members": "Members",
       "activity": "Activity",
-      "phrases": "Phrases"
+      "phrases": "Phrases",
+      "assistant": "Kiko, the trip assistant"
     }
   },
   "notFound": {

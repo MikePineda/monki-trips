@@ -1,4 +1,4 @@
-import type { Route, Routes } from '@angular/router'
+import type { Route, Routes, UrlMatchResult, UrlSegment } from '@angular/router'
 import { authGuard } from './core/session/auth.guard'
 import { currentTripGuard } from './core/session/current-trip.guard'
 import { tripHomeGuard } from './core/session/trip-home.guard'
@@ -31,6 +31,19 @@ export function settingsRoute(path: string): Route {
       },
     ],
   }
+}
+
+/**
+ * `assistant` and `assistant/:conversationId` as one route, so the chat
+ * page stays the same instance when its first message creates the
+ * conversation and the URL takes its id (a stream in flight survives).
+ */
+export function assistantMatcher(segments: UrlSegment[]): UrlMatchResult | null {
+  if (segments[0]?.path !== 'assistant' || segments.length > 2) {
+    return null
+  }
+  const [, id] = segments
+  return id ? { consumed: segments, posParams: { conversationId: id } } : { consumed: segments }
 }
 
 export const routes: Routes = [
@@ -128,6 +141,10 @@ export const routes: Routes = [
                   import('./features/phrases/phrases.page').then((m) => m.PhraseShowPage),
               },
             ],
+          },
+          {
+            matcher: assistantMatcher,
+            loadComponent: () => import('./features/assistant/assistant.page'),
           },
           {
             path: 'members',

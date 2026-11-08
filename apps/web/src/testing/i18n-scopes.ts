@@ -1,6 +1,8 @@
 import type { Translation } from '@jsverse/transloco'
 import accountEn from '../app/features/account/i18n/en.json'
 import accountEs from '../app/features/account/i18n/es.json'
+import assistantEn from '../app/features/assistant/i18n/en.json'
+import assistantEs from '../app/features/assistant/i18n/es.json'
 import authEn from '../app/features/auth/i18n/en.json'
 import authEs from '../app/features/auth/i18n/es.json'
 import docsEn from '../app/features/docs/i18n/en.json'
@@ -52,6 +54,7 @@ import type { AppLang } from '../app/domain/locale'
 export const SCOPE_CATALOGUES = {
   account: { en: accountEn, es: accountEs },
   activity: { en: activityEn, es: activityEs },
+  assistant: { en: assistantEn, es: assistantEs },
   auth: { en: authEn, es: authEs },
   docs: { en: docsEn, es: docsEs },
   emergency: { en: emergencyEn, es: emergencyEs },
