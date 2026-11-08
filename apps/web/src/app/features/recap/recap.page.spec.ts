@@ -189,9 +189,7 @@ describe('RecapPage', () => {
     const { byId, until } = await render()
 
     await until(() => expect(byId('recap.exportCsv')).not.toBeNull())
-    expect(byId('recap.exportCsv')!.getAttribute('href')).toBe(
-      '/api/v1/trips/trip-1/expenses.csv'
-    )
+    expect(byId('recap.exportCsv')!.getAttribute('href')).toBe('/api/v1/trips/trip-1/expenses.csv')
     expect(byId('recap.exportCsv')!.hasAttribute('download')).toBe(true)
   })
 })

@@ -43,8 +43,7 @@ interface Palette {
 
 function palette(document: Document): Palette {
   const style = document.defaultView?.getComputedStyle(document.documentElement)
-  const token = (name: string, fallback: string) =>
-    style?.getPropertyValue(name).trim() || fallback
+  const token = (name: string, fallback: string) => style?.getPropertyValue(name).trim() || fallback
   return {
     surface: token('--surface-1', 'white'),
     surfaceSunken: token('--surface-2', 'whitesmoke'),
@@ -99,7 +98,13 @@ async function kikoFrame(
   } catch {
     return null
   }
-  return { image, sx: col * sheet.frame.w, sy: row * sheet.frame.h, w: sheet.frame.w, h: sheet.frame.h }
+  return {
+    image,
+    sx: col * sheet.frame.w,
+    sy: row * sheet.frame.h,
+    w: sheet.frame.w,
+    h: sheet.frame.h,
+  }
 }
 
 /** Draws the card; exported for the styleguide and the specs of the painter alone. */
