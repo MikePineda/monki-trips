@@ -58,6 +58,9 @@ export const ERROR_CODES = {
   // Exchange rates
   E_FX_UNAVAILABLE: 503,
 
+  // Weather
+  E_WEATHER_UNAVAILABLE: 503,
+
   // LLM
   /** The account spent its monthly token cap; the payload says when it resets. */
   E_LLM_QUOTA_EXCEEDED: 402,
