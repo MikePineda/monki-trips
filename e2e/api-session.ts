@@ -161,6 +161,13 @@ export class ApiSession {
     }
   }
 
+  /** Issues an invitation by link and answers its token (the response is the only place it shows). */
+  async createInvitationLink(tripId: string): Promise<string> {
+    const response = await this.write('post', `/api/v1/trips/${tripId}/invitations`, {})
+    const body = (await response.json()) as { data: { token: string } }
+    return body.data.token
+  }
+
   /** Uploads a file document (multipart, like the documents screen) and answers its id. */
   async uploadDocument(
     tripId: string,
