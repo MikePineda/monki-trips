@@ -1,0 +1,29 @@
+meta {
+  name: Save my notification settings
+  type: http
+  seq: 59
+}
+
+put {
+  url: {{baseUrl}}/api/v1/me/notification-settings
+  body: json
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: {{xsrfToken}}
+}
+
+body:json {
+  {
+    "leaveAt": true,
+    "checkOut": true,
+    "tasksDue": true,
+    "quietHoursStart": "22:00",
+    "quietHoursEnd": "07:00"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

@@ -28,6 +28,9 @@ export type ScannedRoutes = {
     'me.pushSubscriptions.store': { paramsTuple?: []; params?: {} }
     'me.pushSubscriptions.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'me.pushSubscriptions.test': { paramsTuple?: []; params?: {} }
+    'me.notificationSettings.show': { paramsTuple?: []; params?: {} }
+    'me.notificationSettings.update': { paramsTuple?: []; params?: {} }
+    'me.reminders.upcoming': { paramsTuple?: []; params?: {} }
     'invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'trips.index': { paramsTuple?: []; params?: {} }
     'trips.store': { paramsTuple?: []; params?: {} }
@@ -69,6 +72,8 @@ export type ScannedRoutes = {
     'invitations.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'me.export': { paramsTuple?: []; params?: {} }
+    'me.notificationSettings.show': { paramsTuple?: []; params?: {} }
+    'me.reminders.upcoming': { paramsTuple?: []; params?: {} }
     'trips.index': { paramsTuple?: []; params?: {} }
     'sync.pull': { paramsTuple?: []; params?: {} }
     'fx.rates': { paramsTuple?: []; params?: {} }
@@ -94,6 +99,8 @@ export type ScannedRoutes = {
     'invitations.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'me.export': { paramsTuple?: []; params?: {} }
+    'me.notificationSettings.show': { paramsTuple?: []; params?: {} }
+    'me.reminders.upcoming': { paramsTuple?: []; params?: {} }
     'trips.index': { paramsTuple?: []; params?: {} }
     'sync.pull': { paramsTuple?: []; params?: {} }
     'fx.rates': { paramsTuple?: []; params?: {} }
@@ -141,6 +148,7 @@ export type ScannedRoutes = {
   }
   PUT: {
     'me.password': { paramsTuple?: []; params?: {} }
+    'me.notificationSettings.update': { paramsTuple?: []; params?: {} }
     'trips.emergency.update': { paramsTuple: [ParamValue]; params: {'tripId': ParamValue} }
   }
   DELETE: {

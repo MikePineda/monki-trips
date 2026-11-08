@@ -146,6 +146,24 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"push-subscriptions"],[0,"test"]],
     types: placeholder as Registry['me.pushSubscriptions.test']['types'],
   },
+  'me.notificationSettings.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/me/notification-settings',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"notification-settings"]],
+    types: placeholder as Registry['me.notificationSettings.show']['types'],
+  },
+  'me.notificationSettings.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/me/notification-settings',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"notification-settings"]],
+    types: placeholder as Registry['me.notificationSettings.update']['types'],
+  },
+  'me.reminders.upcoming': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/me/reminders/upcoming',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"reminders"],[0,"upcoming"]],
+    types: placeholder as Registry['me.reminders.upcoming']['types'],
+  },
   'invitations.accept': {
     methods: ["POST"],
     pattern: '/api/v1/invitations/:token/accept',

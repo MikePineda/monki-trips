@@ -307,6 +307,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/push_subscriptions_controller').default['test']>>>
     }
   }
+  'me.notificationSettings.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/me/notification-settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/notification_settings_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/notification_settings_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/notification_settings_controller').default['show']>>>
+    }
+  }
+  'me.notificationSettings.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/me/notification-settings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/notification_settings').notificationSettingsValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/notification_settings').notificationSettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/notification_settings_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/notification_settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/notification_settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'me.reminders.upcoming': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/me/reminders/upcoming'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/reminders_controller').default['upcoming']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/reminders_controller').default['upcoming']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/reminders_controller').default['upcoming']>>>
+    }
+  }
   'invitations.accept': {
     methods: ["POST"]
     pattern: '/api/v1/invitations/:token/accept'

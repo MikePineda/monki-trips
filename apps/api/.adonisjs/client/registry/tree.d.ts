@@ -43,6 +43,13 @@ export interface ApiDefinition {
       destroy: typeof routes['me.pushSubscriptions.destroy']
       test: typeof routes['me.pushSubscriptions.test']
     }
+    notificationSettings: {
+      show: typeof routes['me.notificationSettings.show']
+      update: typeof routes['me.notificationSettings.update']
+    }
+    reminders: {
+      upcoming: typeof routes['me.reminders.upcoming']
+    }
   }
   trips: {
     index: typeof routes['trips.index']

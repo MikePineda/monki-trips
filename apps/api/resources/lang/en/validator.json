@@ -38,7 +38,8 @@
       "templateOnly": "{field} is only allowed on a task from the template",
       "schema": "{field} does not match the trip JSON v1 schema",
       "unresolvedRef": "{field} names a ref that is not in the file",
-      "duplicateRef": "{field} repeats a ref already used in the file"
+      "duplicateRef": "{field} repeats a ref already used in the file",
+      "quietHoursPair": "Quiet hours need both a start and an end"
     },
     "fields": {
       "email": "e-mail",
@@ -170,7 +171,12 @@
       "dryRun": "dry run",
       "language": "language of the cards",
       "preferences": "food preferences",
-      "force": "force"
+      "force": "force",
+      "leaveAt": "leave reminders",
+      "checkOut": "check-out reminders",
+      "tasksDue": "task reminders",
+      "quietHoursStart": "quiet hours start",
+      "quietHoursEnd": "quiet hours end"
     }
   }
 }

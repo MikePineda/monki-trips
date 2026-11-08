@@ -1,0 +1,15 @@
+meta {
+  name: My notification settings
+  type: http
+  seq: 58
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me/notification-settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
