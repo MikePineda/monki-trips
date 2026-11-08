@@ -124,3 +124,8 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 3.1: proposals that expire stay as `expired` rows forever; purge decided and expired `ai_actions` (and conversations untouched for months) with a scheduler job.
 - 2026-11-08: WP 3.1: `propose_event_changes` cannot move an event whose times come from its segments (flights, trains); add segment moves once the web chat shows segment diffs.
 - 2026-11-08: WP 3.1: the assistant answers in the member's locale because trips have no language of their own; a per-trip language preference would let a mixed-language group pick one.
+- 2026-11-08: API: `static_cache_policy` serves lazy chunks whose hash contains `_` or `-` (`chunk-CtV_29Zq.js`) with a one-hour cache instead of `immutable`; widen the hashed-name pattern (Lighthouse cache insight, ~126 KiB on the login page).
+- 2026-11-08: Web: the self-hosted fonts in `public/fonts` are unhashed and cached for one hour; emit them hashed through `styles.css` (or name them by version) so they can be `immutable`.
+- 2026-11-08: Web: `SyncService` pulls while signed out (401 from `/sync/pull` on the login page and the styleguide, Lighthouse "errors in console"); start syncing only with a session. API: `/auth/me` answering 200 with no user would clear the other 401.
+- 2026-11-08: Web: segmented controls with `role="tablist"` have no arrow-key navigation or roving tabindex; add the APG tabs keyboard model (or use the radiogroup role where the content does not change).
+- 2026-11-08: E2E: `overflowing()` is copied in `j05c-narrow-screens.spec.ts` and `a11y.spec.ts`; move it to `e2e/overflowing.ts` once the parallel J05c packages land.

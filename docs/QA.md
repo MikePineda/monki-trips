@@ -58,3 +58,55 @@ deps: installed
 db: docker postgres:17 on 127.0.0.1:5432
 privacy: patterns set (pre-push runs the full check)
 ```
+
+## Accessibility audit (2026-11-08)
+
+QA-1. `e2e/tests/a11y.spec.ts` (`mobile-chromium`, 390 × 844) visits every
+screen of a synthetic trip signed in as its owner (trips, Today, summary,
+Plan days, an event sheet, Where we sleep, Docs, the document quick view,
+Money, the quick expense sheet, More, Tasks, Checklist, Members, Activity,
+Emergency, Ready to fly, Phrases, trip and account Settings, the
+styleguide) and, signed out, the login page and an invitation preview.
+
+| Check                                           | Rule                                                                                                                                                                                                                       |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| axe-core 4.14.0 (`@axe-core/playwright` 4.14.0) | tags `wcag2a`, `wcag2aa`, `wcag21aa`, `wcag22aa`; light and dark; motion emulated as reduced so sheets are measured at rest                                                                                                |
+| Tap targets                                     | 44 × 44 CSS px hit area for every control (DESIGN.md), stricter than WCAG 2.5.8's 24 px; a smaller visual passes when the points 21 px from its centre still hit it; links inside running text are exempt (2.5.8 "inline") |
+| Focus                                           | Tab through each screen: every focused control draws an outline of at least 2 px or a box shadow                                                                                                                           |
+| Outline                                         | one `main` landmark; one `h1` (an open sheet instead carries an accessible name and an `h2`); no skipped heading level                                                                                                     |
+| Sheets                                          | Tab stays inside an open sheet; Escape gives the focus back to the opener (quick expense, event detail)                                                                                                                    |
+| Language                                        | `<html lang>` follows English and Spanish, after a reload too                                                                                                                                                              |
+| Overflow                                        | nothing runs past the right edge at 360 px                                                                                                                                                                                 |
+
+Found on `main` and fixed in the ui-kit, the layouts and two feature
+templates: 9 axe nodes in light (3 `color-contrast` on the print banner's
+action, 6 `aria-required-children` from the segmented control's role on its
+host) and 6 in dark, 96 controls below 44 px, 1 control without a focus
+ring (date inputs), 25 outline problems (no `main` outside sign-in, an
+`h1` → `h3` jump on Today, unnamed route sheets, the styleguide's mock
+screens adding `h1`s) and the quick expense losing the focus on close.
+
+**Exceptions: none.** The spec keeps an `EXCEPTIONS` list (rule, screen,
+target, date, reason); it is empty.
+
+Lighthouse 13.5.0, mobile preset (simulated slow 4G and CPU throttling),
+Chrome from `CHROME_PATH`, local production build (`E2E_LIGHTHOUSE=1
+npm run e2e -- -- --project=mobile-chromium lighthouse`). Lighthouse 12
+dropped the PWA category: installability is Chrome's own
+`Page.getInstallabilityErrors`. Accessibility and best practices are gated at
+95; performance is reported, not gated.
+
+| Page                                   | Performance | Accessibility | Best practices | Installable |
+| -------------------------------------- | ----------- | ------------- | -------------- | ----------- |
+| login, before → after                  | 68 → 69     | 100 → 100     | 96 → 96        | yes         |
+| styleguide, before → after             | 62 → 51     | 90 → 100      | 96 → 96        | yes         |
+| Today signed in, before → after        | 71 → 67     | 97 → 100      | 96 → 100       | yes         |
+| production login page (public, `main`) | 91          | 100           | 96             | yes         |
+| production styleguide (public, `main`) | 75          | 90            | 96             | yes         |
+
+Performance moves by ±10 between runs on the shared VM. What keeps it
+down is outside this package and is in `docs/BACKLOG.md`: lazy chunks
+whose hash holds `_` or `-` and the fonts get a one-hour cache instead of
+`immutable`; signed-out pages log 401s from `/auth/me` and `/sync/pull`
+(the only best-practices miss); `theme-boot.js` blocks render by design
+(no theme flash).
