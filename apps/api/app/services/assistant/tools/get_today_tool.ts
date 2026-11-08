@@ -6,6 +6,8 @@ import { toolData } from '#services/assistant/assistant_tool'
 import { validateToolInput } from '#services/assistant/tool_input'
 import { TripContent } from '#services/trip_content'
 import { TripViews } from '#services/trip_views'
+import { ASSISTANT_ADDRESS_MAX_CHARS } from '#config/assistant'
+import { clipText } from '#domain/clip_text'
 
 const input = vine.compile(
   vine.object({
@@ -75,7 +77,7 @@ export class GetTodayTool implements AssistantTool {
                 startTz: event.startTz,
                 endsLocal: event.endsLocal,
                 endTz: event.endTz,
-                placeName: event.placeName,
+                placeName: clipText(event.placeName, ASSISTANT_ADDRESS_MAX_CHARS),
               },
             ]
           : []

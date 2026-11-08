@@ -11,6 +11,11 @@ import type {
 } from '@monkitrips/shared'
 import app from '@adonisjs/core/services/app'
 import { PLANS } from '#config/plans'
+import {
+  ASSISTANT_ADDRESS_MAX_CHARS,
+  ASSISTANT_NOTES_MAX_CHARS,
+  ASSISTANT_TOOL_RESULT_MAX_CHARS,
+} from '#config/assistant'
 import { AiConversations } from '#services/assistant/ai_conversations'
 import i18nManager from '@adonisjs/i18n/services/main'
 import type { ToolContext } from '#services/assistant/assistant_tool'
@@ -769,6 +774,63 @@ test.group('Trip assistant', (group) => {
     const firstEventRead = statements.findIndex((sql) => /from "events"/.test(sql))
     assert.isAtLeast(lock, 0)
     assert.isAbove(firstEventRead, lock, 'no event is read before the trip is locked')
+  })
+
+  test('read tool results stay bounded however long the trip notes are', async ({
+    client,
+    assert,
+  }) => {
+    const longNotes = 'Bring cash for the boat. '.repeat(200)
+    const longAddress = 'Soi 7, Beach Road, '.repeat(26)
+    await db.table('events').multiInsert(
+      Array.from({ length: 100 }, (_, index) => ({
+        trip_id: trip.id,
+        kind: 'tour',
+        title: `Island hop ${index}`,
+        notes: longNotes,
+        address: longAddress,
+        starts_on: '2027-01-22',
+      }))
+    )
+    await db.table('tasks').multiInsert(
+      Array.from({ length: 100 }, (_, index) => ({
+        trip_id: trip.id,
+        title: `Pack item ${index}`,
+        notes: longNotes,
+      }))
+    )
+    llm.current.script(
+      'chat',
+      'bounded',
+      chatScript(
+        { tool: 'list_events', input: {} },
+        { tool: 'list_tasks', input: {} },
+        { tool: 'get_today', input: { date: '2027-01-22' } },
+        { text: 'That is a lot.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+
+    await say(client, owner, trip.id, conversation.id, 'What is planned?')
+
+    const results = toolResults(llm.current.calls[3])
+    assert.lengthOf(results, 3)
+    for (const result of results) {
+      assert.isAtMost(result.content.length, ASSISTANT_TOOL_RESULT_MAX_CHARS)
+    }
+    const [events, tasks] = results.map((result) =>
+      JSON.parse(result.content.replace(/^<data label="[^"]*">\n/, '').replace(/\n<\/data>$/, ''))
+    )
+    assert.isTrue(events.truncated)
+    assert.include(events.hint, 'from')
+    assert.isAbove(events.events.length, 0)
+    assert.isBelow(events.events.length, 100)
+    for (const event of events.events) {
+      assert.isAtMost(event.notes.length, ASSISTANT_NOTES_MAX_CHARS)
+      assert.isAtMost(event.address.length, ASSISTANT_ADDRESS_MAX_CHARS)
+    }
+    assert.isTrue(tasks.truncated)
+    assert.isAtMost(tasks.tasks[0].notes.length, ASSISTANT_NOTES_MAX_CHARS)
   })
 
   test('read tools answer the budget, today and tasks from the trip', async ({

@@ -5,7 +5,12 @@ import type { AssistantTool, ToolContext, ToolOutcome } from '#services/assistan
 import { toolData } from '#services/assistant/assistant_tool'
 import { validateToolInput } from '#services/assistant/tool_input'
 import { TripContent } from '#services/trip_content'
-import { ASSISTANT_MAX_LIST_ROWS } from '#config/assistant'
+import {
+  ASSISTANT_ADDRESS_MAX_CHARS,
+  ASSISTANT_MAX_LIST_ROWS,
+  ASSISTANT_NOTES_MAX_CHARS,
+} from '#config/assistant'
+import { clipText } from '#domain/clip_text'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -65,14 +70,14 @@ export class ListEventsTool implements AssistantTool {
         startTz: event.startTz,
         endsLocal: event.endsLocal,
         endTz: event.endTz,
-        placeName: event.placeName,
-        address: event.address,
+        placeName: clipText(event.placeName, ASSISTANT_ADDRESS_MAX_CHARS),
+        address: clipText(event.address, ASSISTANT_ADDRESS_MAX_CHARS),
         providerName: event.providerName,
         costMinor: event.costMinor,
         costCurrency: event.costCurrency,
         leaveBufferMin: event.leaveBufferMin,
         travelMin: event.travelMin,
-        notes: event.notes,
+        notes: clipText(event.notes, ASSISTANT_NOTES_MAX_CHARS),
         segments: rows.segments
           .filter((segment) => segment.eventId === event.id)
           .map((segment) => ({

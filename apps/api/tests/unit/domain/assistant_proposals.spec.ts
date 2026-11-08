@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import type { TripNight } from '@monkitrips/shared'
 import { shiftedEnd } from '#domain/event_move'
 import { nightShifts } from '#domain/night_shifts'
+import { clipText } from '#domain/clip_text'
 
 function night(date: string, cover: { eventId: string; title: string } | null): TripNight {
   return {
@@ -55,5 +56,22 @@ test.group('Assistant proposals', () => {
       { date: '2027-01-24', before: hotel, after: train },
     ])
     assert.deepEqual(nightShifts([night('2027-01-24', hotel)], [night('2027-01-24', hotel)]), [])
+  })
+})
+
+test.group('Clip text', () => {
+  test('long text is cut with an ellipsis and never exceeds the limit', ({ assert }) => {
+    const clipped = clipText('Bring cash for the boat. '.repeat(20), 30)!
+    assert.isAtMost([...clipped].length, 30)
+    assert.isTrue(clipped.endsWith('...'))
+  })
+
+  test('short text and null are kept as they are', ({ assert }) => {
+    assert.equal(clipText('Pier 3', 30), 'Pier 3')
+    assert.isNull(clipText(null, 30))
+  })
+
+  test('characters outside the basic plane are never split', ({ assert }) => {
+    assert.equal(clipText('🌴🌴🌴🌴🌴🌴', 5), '🌴🌴...')
   })
 })

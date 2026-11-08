@@ -23,5 +23,18 @@ export const ASSISTANT_MAX_EVENT_CHANGES = 10
 /** Events, documents or tasks one read tool returns at most. */
 export const ASSISTANT_MAX_LIST_ROWS = 100
 
+/**
+ * The longest text one tool result may hand the model, `<data>` wrapper
+ * included. Results are resent with every later call of the turn, so an
+ * unbounded list (a hundred events with long notes) would eat a month of
+ * the free plan's tokens in a few messages. Lists past it are cut with
+ * `truncated: true` and a hint to narrow the request.
+ */
+export const ASSISTANT_TOOL_RESULT_MAX_CHARS = 16_000
+
+/** Free text of one row in a tool result: notes, then addresses and place names. */
+export const ASSISTANT_NOTES_MAX_CHARS = 300
+export const ASSISTANT_ADDRESS_MAX_CHARS = 200
+
 /** How long a proposal waits for the member before it expires. */
 export const AI_ACTION_TTL_MS = AI_ACTION_TTL_HOURS * 60 * 60 * 1000
