@@ -6,6 +6,7 @@
  *                    = floor((B − S) / total_days)                           before the trip
  *                    = null                                                  after the trip
  *   left_today       = allowance_today − spent_today
+ *   allowance_days   = days_left_incl_today (during) | total_days (before) | 0 (after)
  *
  * Expenses still waiting for an FX rate (`baseAmountMinor: null`) are left
  * out of every sum and counted in `pendingFxCount`. Expenses queued offline
@@ -62,6 +63,12 @@ export interface BudgetStatus {
   committedPendingFxCount: number
   /** Days from today to the last day, both included; 0 after the trip. */
   daysLeftInclToday: number
+  /**
+   * The days the allowance spreads over, what a screen writes beside it:
+   * the days left including today during the trip, the trip's own days
+   * before it (not the days from today to its end), 0 after it.
+   */
+  allowanceDays: number
 }
 
 export function budgetStatus(input: BudgetStatusInput): BudgetStatus {
@@ -97,11 +104,13 @@ export function budgetStatus(input: BudgetStatusInput): BudgetStatus {
 
   const daysLeftInclToday =
     phase === 'past' ? 0 : Math.max(0, daysBetween(input.today, input.endsOn)) + 1
+  const allowanceDays =
+    phase === 'ongoing' ? daysLeftInclToday : phase === 'upcoming' ? tripTotalDays(input) : 0
   let allowance: bigint | null = null
   if (budget !== null && phase === 'ongoing') {
-    allowance = floorDiv(budget - spentBeforeToday, BigInt(daysLeftInclToday))
+    allowance = floorDiv(budget - spentBeforeToday, BigInt(allowanceDays))
   } else if (budget !== null && phase === 'upcoming') {
-    allowance = floorDiv(budget - spent, BigInt(tripTotalDays(input)))
+    allowance = floorDiv(budget - spent, BigInt(allowanceDays))
   }
 
   let committed = 0n
@@ -144,5 +153,6 @@ export function budgetStatus(input: BudgetStatusInput): BudgetStatus {
     committedMinor: committed,
     committedPendingFxCount,
     daysLeftInclToday,
+    allowanceDays,
   }
 }
