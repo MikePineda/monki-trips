@@ -19,7 +19,8 @@ export type SegmentedRole = 'radiogroup' | 'tablist'
 @Component({
   selector: 'mk-segmented',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'mk-segmented' },
+  // `role` is an input: keep it off the host, only the track carries the role.
+  host: { 'class': 'mk-segmented', '[attr.role]': 'null' },
   styles: `
     :host {
       display: inline-flex;
@@ -37,6 +38,7 @@ export type SegmentedRole = 'radiogroup' | 'tablist'
       max-width: 100%;
     }
     .mk-segmented__option {
+      position: relative;
       min-height: 36px;
       padding: 0 var(--space-2);
       border: 1px solid transparent;
@@ -46,6 +48,12 @@ export type SegmentedRole = 'radiogroup' | 'tablist'
       cursor: pointer;
       white-space: nowrap;
       transition: background-color var(--duration-fast) var(--ease-out);
+    }
+    /* 36 px segment, 44 px hit area (inside the 1 px border: 34 + 2 × 5). */
+    .mk-segmented__option::after {
+      content: '';
+      position: absolute;
+      inset: -5px -1px;
     }
     .mk-segmented__option[aria-checked='true'],
     .mk-segmented__option[aria-selected='true'] {

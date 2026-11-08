@@ -5,6 +5,22 @@ import type { ConnectionStatus } from '../../../domain/connection-status'
 import { MkConnectionStatusComponent } from './connection-status.component'
 
 describe('mk-connection-status', () => {
+  function host(status: ConnectionStatus): HTMLElement {
+    TestBed.resetTestingModule()
+    TestBed.configureTestingModule({ imports: [MkConnectionStatusComponent, i18nTesting()] })
+    const fixture = TestBed.createComponent(MkConnectionStatusComponent)
+    fixture.componentRef.setInput('status', status)
+    fixture.detectChanges()
+    return fixture.nativeElement as HTMLElement
+  }
+
+  it('is a polite live region even while synced, so the first change of state is announced', () => {
+    const element = host({ state: 'synced', count: 0 })
+
+    expect(element.getAttribute('role')).toBe('status')
+    expect(element.getAttribute('aria-live')).toBe('polite')
+  })
+
   function render(status: ConnectionStatus, lang = 'en') {
     TestBed.resetTestingModule()
     TestBed.configureTestingModule({ imports: [MkConnectionStatusComponent, i18nTesting()] })
@@ -33,7 +49,7 @@ describe('mk-connection-status', () => {
   ])('shows the copy of %o as a status with an icon', (status, copy) => {
     const element = render(status)
 
-    expect(element?.getAttribute('role')).toBe('status')
+    expect(element?.closest('[role="status"]')?.classList).toContain('mk-connection-status')
     expect(element?.dataset['state']).toBe(status.state)
     expect(element?.textContent?.replace(/\s+/g, ' ').trim()).toBe(copy)
     if (status.state === 'pending') {

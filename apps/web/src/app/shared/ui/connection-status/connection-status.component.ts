@@ -24,7 +24,8 @@ const ICONS: Record<Exclude<ConnectionState, 'synced' | 'pending'>, IconName> = 
   imports: [MkIconComponent, TranslocoPipe],
   viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'mk-connection-status' },
+  // A live region that exists while synced too, so the first change of state is announced.
+  host: { 'class': 'mk-connection-status', 'role': 'status', 'aria-live': 'polite' },
   styles: `
     :host {
       display: inline-flex;
@@ -56,7 +57,6 @@ const ICONS: Record<Exclude<ConnectionState, 'synced' | 'pending'>, IconName> = 
       @if (status.state !== 'synced') {
         <span
           [class]="'mk-connection mk-type-label mk-connection--' + status.state"
-          role="status"
           data-testid="shell.connection"
           [attr.data-state]="status.state"
         >

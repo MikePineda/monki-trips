@@ -121,6 +121,13 @@ export type QuickExpenseResult = { expense: ExpenseRecord } | undefined
             </mk-row>
           }
         </mk-stack>
+      } @else {
+        <p mk-text tone="ink-2" data-testid="money.quick.noTrip">
+          {{ 'money.quick.noTrip' | transloco }}
+        </p>
+      }
+      <!-- Its own block with one root node, so it projects into the sheet footer. -->
+      @if (trip()) {
         <button
           mkSheetFooter
           mk-button
@@ -133,10 +140,6 @@ export type QuickExpenseResult = { expense: ExpenseRecord } | undefined
         >
           {{ 'money.quick.save' | transloco }}
         </button>
-      } @else {
-        <p mk-text tone="ink-2" data-testid="money.quick.noTrip">
-          {{ 'money.quick.noTrip' | transloco }}
-        </p>
       }
     </mk-sheet>
   `,

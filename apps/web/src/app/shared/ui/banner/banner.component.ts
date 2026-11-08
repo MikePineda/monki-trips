@@ -66,6 +66,8 @@ export type BannerTone = 'print' | 'saved' | 'critical' | 'serious' | 'info'
       flex: none;
     }
     :host([data-tone='print']) .mk-banner__action {
+      --mk-ghost-ink: var(--on-print-warning);
+      --mk-ghost-decoration: underline;
       color: var(--on-print-warning);
       text-decoration: underline;
       text-underline-offset: 3px;
