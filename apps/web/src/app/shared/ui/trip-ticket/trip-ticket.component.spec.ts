@@ -13,7 +13,7 @@ import { MkTripTicketComponent } from './trip-ticket.component'
       eyebrow="Back 5 days ago"
       [route]="['Harbour City', 'Old Town']"
       stats="10 days · 9 nights · 2 countries"
-      dates="2026-05-01 to 2026-05-10"
+      dates="1 – 10 May 2026"
       amount="€150.50"
     >
       <span mkTicketStamp data-testid="probe.stamp">stamp</span>
@@ -36,7 +36,7 @@ describe('mk-trip-ticket', () => {
     expect(text).toContain('Island hop')
     expect(text).toContain('Harbour City → Old Town')
     expect(text).toContain('10 days · 9 nights · 2 countries')
-    expect(text).toContain('2026-05-01 to 2026-05-10')
+    expect(text).toContain('1 – 10 May 2026')
     expect(ticket.querySelector('[data-testid="mk-trip-ticket.amount"]')?.textContent?.trim()).toBe(
       '€150.50'
     )

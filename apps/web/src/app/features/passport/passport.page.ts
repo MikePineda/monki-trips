@@ -10,6 +10,7 @@ import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkIconButtonComponent } from '../../shared/ui/icon-button/icon-button.component'
 import { MkIconComponent } from '../../shared/ui/icon/icon.component'
+import { MkGridComponent } from '../../shared/ui/layout/grid.component'
 import { MkRowComponent } from '../../shared/ui/layout/row.component'
 import { MkSectionComponent } from '../../shared/ui/layout/section.component'
 import { MkStackComponent } from '../../shared/ui/layout/stack.component'
@@ -33,8 +34,9 @@ interface CountryPage extends StampView {
 }
 
 /**
- * The passport: a page per country, earned first, each with its stamp and
- * the stamps of its cities. A place counts once a stop there is behind us
+ * The passport: a page per country, earned first, laid out like a real
+ * passport page: the country's stamp then its cities' stamps in a grid
+ * (two per row on a phone, three when there is room). A place counts once a stop there is behind us
  * or its trip is over; the ones coming up show faded with their planned
  * date. Tapping a stamp says when and on which trip. Drawn artwork under
  * `public/stamps/` wins; every other place gets a generated stamp. The map
@@ -47,6 +49,7 @@ interface CountryPage extends StampView {
     TranslocoPipe,
     MkStackComponent,
     MkRowComponent,
+    MkGridComponent,
     MkSectionComponent,
     MkTextComponent,
     MkButtonComponent,
@@ -108,9 +111,8 @@ interface CountryPage extends StampView {
             data-testid="passport.country"
             [attr.data-code]="page.code"
           >
-            <mk-stack gap="1" align="center">
+            <mk-grid gap="1" column="md" data-testid="passport.page">
               <mk-stamp-tile
-                size="lg"
                 [code]="page.code"
                 [name]="page.place"
                 [isoDate]="page.stamp.date"
@@ -126,25 +128,21 @@ interface CountryPage extends StampView {
                 data-testid="passport.countryStamp"
                 (pick)="open(page)"
               />
-              @if (page.cities.length > 0) {
-                <mk-row gap="1" justify="center" [wrap]="true" data-testid="passport.cities">
-                  @for (city of page.cities; track city.code) {
-                    <mk-stamp-tile
-                      [code]="city.code"
-                      [name]="city.place"
-                      [isoDate]="city.stamp.date"
-                      [arrivedBy]="city.stamp.arrivedBy"
-                      [reached]="city.stamp.earned"
-                      [pendingLabel]="'passport.comingUp' | transloco"
-                      [caption]="city.place"
-                      [meta]="meta(city)"
-                      data-testid="passport.cityStamp"
-                      (pick)="open(city)"
-                    />
-                  }
-                </mk-row>
+              @for (city of page.cities; track city.code) {
+                <mk-stamp-tile
+                  [code]="city.code"
+                  [name]="city.place"
+                  [isoDate]="city.stamp.date"
+                  [arrivedBy]="city.stamp.arrivedBy"
+                  [reached]="city.stamp.earned"
+                  [pendingLabel]="'passport.comingUp' | transloco"
+                  [caption]="city.place"
+                  [meta]="meta(city)"
+                  data-testid="passport.cityStamp"
+                  (pick)="open(city)"
+                />
               }
-            </mk-stack>
+            </mk-grid>
           </mk-section>
         }
       }

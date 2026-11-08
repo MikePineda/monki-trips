@@ -24,7 +24,9 @@ import { TIME_ZONE } from '../../core/offline/time-zone'
 import { travelRecords } from '../../core/offline/travel-records'
 import { SessionStore } from '../../core/session/session.store'
 import { countKey } from '../../domain/count-key'
+import { formatDateRange } from '../../domain/date-range'
 import { localToday } from '../../domain/local-today'
+import { formatMonthYear } from '../../domain/month-year'
 import { formatMoney } from '../../domain/money'
 import { regionName } from '../../domain/region-name'
 import { historyEntries, passportInput, type HistoryEntry } from '../../domain/travel-history'
@@ -231,9 +233,7 @@ interface NewStamp {
                       (countKey('history.stats.countries', entry.countries.length)
                         | transloco: { count: entry.countries.length })
                     "
-                    [dates]="
-                      'shell.trips.dates' | transloco: { start: entry.startsOn, end: entry.endsOn }
-                    "
+                    [dates]="dates(entry)"
                     [amount]="amount(entry)"
                     data-testid="trips.item"
                   >
@@ -380,17 +380,17 @@ export default class TripsPage {
         const count = daysBetween(entry.endsOn, today)
         return count <= RECENT_DAYS
           ? { key: countKey('history.eyebrow.past', count), params: { count } }
-          : { key: 'history.eyebrow.pastLong', params: { date: this.month(entry.startsOn) } }
+          : {
+              key: 'history.eyebrow.pastLong',
+              params: { date: formatMonthYear(entry.startsOn, this.locale()) },
+            }
       }
     }
   }
 
-  private month(isoDate: string): string {
-    return new Intl.DateTimeFormat(this.locale(), {
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    }).format(new Date(`${isoDate}T00:00:00Z`))
+  /** "27 Oct – 5 Nov 2026", in the app's language. */
+  protected dates(entry: HistoryEntry): string {
+    return formatDateRange(entry.startsOn, entry.endsOn, this.locale())
   }
 
   protected amount(entry: HistoryEntry): string | undefined {

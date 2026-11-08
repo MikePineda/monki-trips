@@ -69,7 +69,7 @@ test.describe('J01 sign in, trips, sign out', () => {
     await expect(page).toHaveURL(/\/trips$/)
     await expect(page.getByTestId('trips.item')).toHaveCount(1)
     await expect(page.getByTestId('trips.item')).toContainText('Solo escape')
-    await expect(page.getByTestId('trips.item')).toContainText('2027-03-01 to 2027-03-10')
+    await expect(page.getByTestId('trips.item')).toContainText('1 – 10 Mar 2027')
 
     // A reload keeps the session (cookie) and the list (server, then device copy).
     await page.reload()

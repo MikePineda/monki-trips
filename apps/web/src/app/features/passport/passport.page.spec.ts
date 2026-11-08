@@ -146,6 +146,22 @@ describe('PassportPage', () => {
     ).toBe('2 countries · 3 cities')
   })
 
+  it('lays a country page out like a passport page: its stamp first, then its cities, in a grid', async () => {
+    await seed()
+    const { host } = await render(3)
+    const page = host.querySelector('[data-testid="passport.country"][data-code="XC"] mk-grid')!
+
+    expect(page.getAttribute('data-column')).toBe('md')
+    expect([...page.children].map((tile) => tile.getAttribute('data-testid'))).toEqual([
+      'passport.countryStamp',
+      'passport.cityStamp',
+      'passport.cityStamp',
+    ])
+    for (const tile of page.querySelectorAll('mk-stamp-tile')) {
+      expect(tile.querySelector('mk-stamp')?.getAttribute('data-size')).toBe('md')
+    }
+  })
+
   it('upcoming stamps show faded', async () => {
     await seed()
     const { host } = await render(3)

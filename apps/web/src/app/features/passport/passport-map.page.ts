@@ -2,7 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { sortedStops } from '@monkitrips/shared'
+import { intlLocale } from '../../core/i18n/intl-locale'
 import { OnlineStore } from '../../core/offline/online.store'
+import { formatMonthYear } from '../../domain/month-year'
 import { tripSeries } from '../../domain/travel-history'
 import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkIconButtonComponent } from '../../shared/ui/icon-button/icon-button.component'
@@ -84,6 +86,7 @@ import { providePassportI18n } from './passport-i18n'
 })
 export default class PassportMapPage {
   protected readonly online = inject(OnlineStore).online
+  private readonly locale = intlLocale()
   private readonly data = passportData()
 
   private readonly series = computed(() => tripSeries(this.data.records().trips))
@@ -136,7 +139,7 @@ export default class PassportMapPage {
       .map((trip) => ({
         label: trip.name,
         series: this.series().get(trip.id) ?? 1,
-        meta: trip.startDate.slice(0, 7),
+        meta: formatMonthYear(trip.startDate, this.locale()),
       }))
   })
 }
