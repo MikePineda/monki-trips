@@ -1,16 +1,16 @@
 import { Component } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
-import { MkRowComponent } from '../layout/row.component'
+import { MkStatRowComponent } from './stat-row.component'
 import { MkStatTileComponent } from './stat-tile.component'
 
 @Component({
-  imports: [MkRowComponent, MkStatTileComponent],
+  imports: [MkStatRowComponent, MkStatTileComponent],
   template: `
-    <mk-row align="stretch" gap="0">
+    <mk-stat-row>
       <mk-stat-tile eyebrow="Left today" value="€84" sub="A$138" />
       <mk-stat-tile eyebrow="Spent" value="−€18" sub="over budget" />
       <mk-stat-tile eyebrow="Pending" value="1" />
-    </mk-row>
+    </mk-stat-row>
   `,
 })
 class Host {}

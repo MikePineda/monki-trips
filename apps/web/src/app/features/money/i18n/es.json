@@ -10,9 +10,10 @@
     "overBudget": "por encima del presupuesto",
     "waitingOne": "1 espera tipo de cambio",
     "waitingOther": "{{count}} esperan tipo de cambio",
-    "leftToday": "quedan {{amount}} hoy",
-    "overDaysOne": "durante 1 día",
-    "overDaysOther": "durante {{count}} días",
+    "tripDaysOne": "en 1 día de viaje",
+    "tripDaysOther": "en {{count}} días de viaje",
+    "daysLeftOne": "en el último día",
+    "daysLeftOther": "en los {{count}} días que quedan",
     "tripEnded": "El viaje terminó"
   },
   "views": {

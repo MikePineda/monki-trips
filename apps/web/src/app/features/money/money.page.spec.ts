@@ -136,7 +136,19 @@ describe('MoneyPage', () => {
     expect(tileSub('spent')).toBe('1 waiting for a rate')
     expect(tile('remaining')).toBe(money(expected.remainingMinor!))
     expect(tile('perDay')).toBe(money(expected.allowanceTodayMinor!))
-    expect(tileSub('perDay')).toBe(`${money(expected.leftTodayMinor!)} left today`)
+    // During the trip the allowance spreads over the days left, today included (22nd to 24th).
+    expect(expected.allowanceDays).toBe(3)
+    expect(tileSub('perDay')).toBe('over 3 days left')
+  })
+
+  it('before the trip the per-day figure spreads over the trip days and says so', async () => {
+    // Today (2027-01-22) is 100 days before the end and the trip has 18 days.
+    await db.trips.put({ ...TRIP, startDate: '2027-04-14', endDate: '2027-05-01' })
+    const { tile, tileSub, until } = await render()
+
+    await until(() => expect(tileSub('perDay')).toBe('over 18 trip days'))
+    // (A$1,000 − A$315) / 18, floored to the cent.
+    expect(tile('perDay')).toBe('A$38.05')
   })
 
   it('budget table view lists the same numbers as the bars', async () => {

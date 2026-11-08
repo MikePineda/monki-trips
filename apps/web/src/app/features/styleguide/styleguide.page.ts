@@ -43,6 +43,7 @@ import {
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
 import { MkStampComponent } from '../../shared/ui/stamp/stamp.component'
+import { MkStatRowComponent } from '../../shared/ui/stat-tile/stat-row.component'
 import { MkStatTileComponent } from '../../shared/ui/stat-tile/stat-tile.component'
 import { MkSwatchComponent } from '../../shared/ui/swatch/swatch.component'
 import { MkTabBarComponent } from '../../shared/ui/tab-bar/tab-bar.component'
@@ -102,6 +103,7 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
     MkListRowComponent,
     MkEventRowComponent,
     MkTicketComponent,
+    MkStatRowComponent,
     MkStatTileComponent,
     MkBannerComponent,
     MkProgressComponent,
@@ -422,7 +424,7 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
               [eyebrow]="'styleguide.components.stats' | transloco"
               data-testid="styleguide.stats"
             >
-              <mk-row align="stretch" gap="0">
+              <mk-stat-row>
                 <mk-stat-tile
                   [eyebrow]="'styleguide.sample.statLeft' | transloco"
                   [value]="leftToday()"
@@ -437,7 +439,7 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
                   [eyebrow]="'styleguide.sample.statPending' | transloco"
                   [value]="'1'"
                 />
-              </mk-row>
+              </mk-stat-row>
             </mk-section>
 
             <mk-section
