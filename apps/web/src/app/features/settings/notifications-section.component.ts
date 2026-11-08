@@ -13,6 +13,7 @@ import { MkSwitchComponent } from '../../shared/ui/switch/switch.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
 import { InstallInstructionsSheet } from './install-instructions.sheet'
+import { ReminderSettingsComponent } from './reminder-settings.component'
 import { provideSettingsI18n, SETTINGS_ERROR_CODES } from './settings-i18n'
 
 /**
@@ -20,7 +21,8 @@ import { provideSettingsI18n, SETTINGS_ERROR_CODES } from './settings-i18n'
  * permission prompt opens from its tap), the device's name, "Send a test",
  * and the honest states where nothing can be enabled: a browser without
  * push, an iOS tab (install first, with the instructions one tap away),
- * notifications blocked in the browser, a server without keys.
+ * notifications blocked in the browser, a server without keys. Below,
+ * the account's reminder choices and the upcoming reminders.
  */
 @Component({
   selector: 'app-notifications-section',
@@ -34,6 +36,7 @@ import { provideSettingsI18n, SETTINGS_ERROR_CODES } from './settings-i18n'
     MkStackComponent,
     MkSwitchComponent,
     MkTextComponent,
+    ReminderSettingsComponent,
   ],
   providers: [provideSettingsI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,80 +47,88 @@ import { provideSettingsI18n, SETTINGS_ERROR_CODES } from './settings-i18n'
       data-testid="settings.notifications"
       [attr.data-status]="push.status()"
     >
-      <mk-stack gap="2" align="start">
-        @switch (push.status()) {
-          @case ('unsupported') {
-            <p mk-text tone="ink-2">{{ 'settings.notifications.unsupported' | transloco }}</p>
-          }
-          @case ('ios-install') {
-            <p mk-text tone="ink-2">{{ 'settings.notifications.iosInstall' | transloco }}</p>
-            <button
-              mk-button
-              variant="secondary"
-              type="button"
-              data-testid="settings.notifications.install"
-              (click)="showInstallInstructions()"
-            >
-              {{ 'settings.notifications.iosAction' | transloco }}
-            </button>
-          }
-          @case ('blocked') {
-            <p mk-text tone="ink-2">{{ 'settings.notifications.blocked' | transloco }}</p>
-          }
-          @case ('server-off') {
-            <p mk-text tone="ink-2">{{ 'settings.notifications.serverOff' | transloco }}</p>
-          }
-          @default {
-            <mk-switch
-              [checked]="push.status() === 'enabled'"
-              [disabled]="push.busy()"
-              (checkedChange)="toggle($event)"
-              testId="settings.notifications.toggle"
-            >
-              {{ 'settings.notifications.toggle' | transloco }}
-            </mk-switch>
-            @if (push.status() === 'enabled') {
-              <p mk-text variant="caption" tone="ink-2" data-testid="settings.notifications.state">
-                {{ 'settings.notifications.enabled' | transloco }}
-              </p>
+      <mk-stack gap="3">
+        <mk-stack gap="2" align="start">
+          @switch (push.status()) {
+            @case ('unsupported') {
+              <p mk-text tone="ink-2">{{ 'settings.notifications.unsupported' | transloco }}</p>
+            }
+            @case ('ios-install') {
+              <p mk-text tone="ink-2">{{ 'settings.notifications.iosInstall' | transloco }}</p>
               <button
                 mk-button
                 variant="secondary"
                 type="button"
-                [loading]="testing()"
-                data-testid="settings.notifications.test"
-                (click)="sendTest()"
+                data-testid="settings.notifications.install"
+                (click)="showInstallInstructions()"
               >
-                {{ 'settings.notifications.sendTest' | transloco }}
+                {{ 'settings.notifications.iosAction' | transloco }}
               </button>
-            } @else {
-              <mk-field
-                [label]="'settings.notifications.deviceLabel' | transloco"
-                [hint]="'settings.notifications.deviceLabelHint' | transloco"
+            }
+            @case ('blocked') {
+              <p mk-text tone="ink-2">{{ 'settings.notifications.blocked' | transloco }}</p>
+            }
+            @case ('server-off') {
+              <p mk-text tone="ink-2">{{ 'settings.notifications.serverOff' | transloco }}</p>
+            }
+            @default {
+              <mk-switch
+                [checked]="push.status() === 'enabled'"
+                [disabled]="push.busy()"
+                (checkedChange)="toggle($event)"
+                testId="settings.notifications.toggle"
               >
-                <input
-                  mkInput
-                  type="text"
-                  autocomplete="off"
-                  [value]="deviceLabel()"
-                  (input)="deviceLabelChanged($event)"
-                  data-testid="settings.notifications.deviceLabel"
-                />
-              </mk-field>
+                {{ 'settings.notifications.toggle' | transloco }}
+              </mk-switch>
+              @if (push.status() === 'enabled') {
+                <p
+                  mk-text
+                  variant="caption"
+                  tone="ink-2"
+                  data-testid="settings.notifications.state"
+                >
+                  {{ 'settings.notifications.enabled' | transloco }}
+                </p>
+                <button
+                  mk-button
+                  variant="secondary"
+                  type="button"
+                  [loading]="testing()"
+                  data-testid="settings.notifications.test"
+                  (click)="sendTest()"
+                >
+                  {{ 'settings.notifications.sendTest' | transloco }}
+                </button>
+              } @else {
+                <mk-field
+                  [label]="'settings.notifications.deviceLabel' | transloco"
+                  [hint]="'settings.notifications.deviceLabelHint' | transloco"
+                >
+                  <input
+                    mkInput
+                    type="text"
+                    autocomplete="off"
+                    [value]="deviceLabel()"
+                    (input)="deviceLabelChanged($event)"
+                    data-testid="settings.notifications.deviceLabel"
+                  />
+                </mk-field>
+              }
+              @if (needsGesture()) {
+                <p mk-text variant="caption" tone="status-warning">
+                  {{ 'settings.notifications.needsGesture' | transloco }}
+                </p>
+              }
+              <mk-api-error
+                [failure]="failure()"
+                scope="settings"
+                [knownCodes]="codes"
+                testId="settings.notifications.error"
+              />
             }
-            @if (needsGesture()) {
-              <p mk-text variant="caption" tone="status-warning">
-                {{ 'settings.notifications.needsGesture' | transloco }}
-              </p>
-            }
-            <mk-api-error
-              [failure]="failure()"
-              scope="settings"
-              [knownCodes]="codes"
-              testId="settings.notifications.error"
-            />
           }
-        }
+        </mk-stack>
+        <app-reminder-settings />
       </mk-stack>
     </mk-section>
   `,

@@ -27,6 +27,25 @@
     "serverOff": "Notifications are not set up on this server.",
     "needsGesture": "Tap the switch again to allow notifications."
   },
+  "reminders": {
+    "label": "Reminders",
+    "hint": "For your account, on every device where notifications are on.",
+    "leaveAt": "Time to leave",
+    "checkOut": "Check-out morning",
+    "tasksDue": "Tasks due",
+    "quietLabel": "Quiet hours",
+    "quietHint": "Reminders that fall inside wait until the end. Leave both empty for none.",
+    "quietStart": "From",
+    "quietEnd": "Until",
+    "quietPair": "Set both times, or leave both empty.",
+    "saveQuiet": "Save quiet hours",
+    "saved": "Reminder settings saved.",
+    "offline": "You are offline. These are the last saved settings; you can change them when you are back online.",
+    "notLoaded": "Connect once to load your reminder settings.",
+    "upcoming": "Upcoming reminders",
+    "upcomingEmptyTitle": "Nothing in the next 36 hours",
+    "upcomingEmptyBody": "Departures, check-outs and due tasks show up here a day and a half ahead."
+  },
   "install": {
     "label": "Install",
     "action": "Install the app",
