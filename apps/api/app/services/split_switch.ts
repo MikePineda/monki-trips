@@ -8,8 +8,8 @@ export function switchedToSplit(ctx: AfterWriteContext): boolean {
   return (
     ctx.op === 'upsert' &&
     ctx.previous !== null &&
-    ctx.previous.budget_mode !== 'split' &&
-    ctx.row.budget_mode === 'split'
+    ctx.previous['budget_mode'] !== 'split' &&
+    ctx.row['budget_mode'] === 'split'
   )
 }
 
@@ -64,7 +64,7 @@ export async function assignSplit(ctx: AfterWriteContext): Promise<void> {
     const payer = expense.paid_by_traveller_id ?? fallbackPayer
     if (expense.paid_by_traveller_id === null) {
       fields.push('paidByTravellerId')
-      values.paid_by_traveller_id = payer
+      values['paid_by_traveller_id'] = payer
     }
     if (!withShares.has(expense.id)) {
       fields.push('shares')
