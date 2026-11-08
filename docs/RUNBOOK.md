@@ -83,3 +83,38 @@ relevant ones:
     `config/llm.ts`: add it there. Many `error` rows mean the provider is
     failing (check the key, the base URL and the model id); the logs carry
     the status, never the prompt.
+
+## Inspect sent reminders
+
+The `push:reminders` job records every reminder in `sent_reminders` before
+it sends it (one row per account, kind, ref and fire time), so the table
+answers "did it go out, and when". Rows hold ids only, never titles.
+
+```sql
+-- The last reminders sent, newest first.
+SELECT sent_at, fire_at, kind, ref_id, trip_id, user_id
+FROM sent_reminders ORDER BY sent_at DESC LIMIT 50;
+
+-- Reminders per kind and day this week.
+SELECT date_trunc('day', sent_at) AS day, kind, count(*)
+FROM sent_reminders WHERE sent_at >= now() - interval '7 days'
+GROUP BY 1, 2 ORDER BY 1 DESC, 2;
+
+-- Sent late (more than two minutes after the planned time).
+SELECT kind, ref_id, fire_at, sent_at - fire_at AS delay
+FROM sent_reminders WHERE sent_at - fire_at > interval '2 minutes'
+ORDER BY sent_at DESC;
+
+-- What one account received (its id from the users table).
+SELECT * FROM sent_reminders WHERE user_id = '<user id>' ORDER BY fire_at DESC;
+```
+
+- A person's own choices and quiet hours are in `notification_settings`
+  (no row = every reminder, no quiet hours); `GET /api/v1/me/reminders/upcoming`
+  signed in as them lists what is planned for the next 36 hours.
+- The job only runs when push is enabled (VAPID keys set); its runs are in
+  `scheduler_runs` (`job = 'push:reminders'`, one row per minute).
+- **Stop all reminders:** set `SCHEDULER=off` and redeploy; the scheduler
+  stops ticking on every replica (the daily `push:prune` stops too). Due
+  reminders older than 15 minutes are skipped when it is turned back on, so
+  re-enabling never floods devices.
