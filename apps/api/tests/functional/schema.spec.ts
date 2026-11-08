@@ -5,6 +5,7 @@ import {
   DOCUMENT_KINDS,
   EVENT_KINDS,
   EVENT_STATUSES,
+  EXPENSE_KINDS,
   FX_SOURCES,
   TASK_ORIGINS,
   TASK_PRIORITIES,
@@ -190,6 +191,7 @@ test.group('Schema', () => {
       { table: 'tasks', column: 'priority', values: TASK_PRIORITIES },
       { table: 'tasks', column: 'origin', values: TASK_ORIGINS },
       { table: 'expenses', column: 'fx_source', values: FX_SOURCES },
+      { table: 'expenses', column: 'kind', values: EXPENSE_KINDS },
     ])
     .run(async ({ assert }, { table, column, values }) => {
       const owner = await insertUser()

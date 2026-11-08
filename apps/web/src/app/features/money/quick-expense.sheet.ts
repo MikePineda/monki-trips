@@ -202,7 +202,9 @@ export class QuickExpenseSheet {
   protected readonly categoryId = computed(() => {
     const chosen = this.chosenCategory()
     if (chosen) return chosen
-    const last = [...this.expenses()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0]
+    const last = this.expenses()
+      .filter((expense) => expense.kind !== 'settlement')
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0]
     return defaultCategoryId({
       lastUsedId: last?.categoryId ?? null,
       localHour: this.today().hour,

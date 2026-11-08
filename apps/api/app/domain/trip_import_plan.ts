@@ -266,6 +266,7 @@ export function planTripImport(input: TripImportPlanInput): TripImportPlanResult
     const { eventRef, categoryRef, paidByTravellerRef, shares } = expense
     // `baseAmountMinor` is derived from the rate on the way in, never taken from the file.
     push(path, 'expense', idOf(`expense:${index}`), {
+      kind: expense.kind ?? 'expense',
       amountMinor: expense.amountMinor,
       currency: expense.currency,
       fxRate: expense.fxRate,

@@ -250,6 +250,20 @@ const WORDS = [
                 </mk-list>
               }
             </mk-section>
+            @if (settledRows().length > 0) {
+              <mk-section [eyebrow]="'money.balances.history' | transloco">
+                <mk-list>
+                  @for (row of settledRows(); track row.id) {
+                    <mk-list-row
+                      [title]="row.title"
+                      [meta]="row.meta"
+                      [value]="row.value"
+                      testId="money.settled"
+                    />
+                  }
+                </mk-list>
+              </mk-section>
+            }
           </mk-stack>
         }
       } @else {
@@ -353,7 +367,17 @@ export default class MoneyPage {
   private readonly deviceZone = inject(TIME_ZONE)
 
   protected readonly trip = tripRecord(this.tripId)
-  protected readonly expenses = tripExpenses(this.tripId)
+  /** Every expense of the trip, settlements included (what balances count). */
+  private readonly allExpenses = tripExpenses(this.tripId)
+  /** Money spent: the budget, the bars and the list leave settlements out. */
+  protected readonly expenses = computed(() =>
+    this.allExpenses().filter((expense) => expense.kind !== 'settlement')
+  )
+  private readonly settlementExpenses = computed(() =>
+    this.allExpenses()
+      .filter((expense) => expense.kind === 'settlement')
+      .sort((a, b) => b.spentOn.localeCompare(a.spentOn) || b.updatedAt.localeCompare(a.updatedAt))
+  )
   private readonly categories = tripBudgetCategories(this.tripId)
   private readonly stops = tripStops(this.tripId)
   private readonly events = tripEvents(this.tripId)
@@ -483,7 +507,7 @@ export default class MoneyPage {
     if (!this.splitMode()) return null
     return balances({
       travellers: this.travellers().map((row) => row.id),
-      expenses: this.expenses(),
+      expenses: this.allExpenses(),
       shares: this.shares(),
       defaultPayerTravellerId: this.ownerTravellerId(),
     })
@@ -505,6 +529,24 @@ export default class MoneyPage {
           owed: this.money(row.owedMinor, this.base()),
         }),
         value: this.money(abs, this.base()),
+      }
+    })
+  })
+
+  /** "Settled": the settlements already recorded, newest first. */
+  protected readonly settledRows = computed(() => {
+    this.words()
+    const shares = this.shares()
+    return this.settlementExpenses().map((expense) => {
+      const to = shares.find((share) => share.expenseId === expense.id)?.travellerId ?? null
+      return {
+        id: expense.id,
+        title: this.transloco.translate('money.balances.paid', {
+          from: this.travellerName(expense.paidByTravellerId),
+          to: this.travellerName(to),
+        }),
+        meta: this.day(expense.spentOn),
+        value: this.money(BigInt(expense.amountMinor), expense.currency),
       }
     })
   })

@@ -148,6 +148,8 @@
     "waitingOne": "1 expense waits for a rate and is not in the balances yet.",
     "waitingOther": "{{count}} expenses wait for a rate and are not in the balances yet.",
     "settleDescription": "Settle up",
-    "someone": "Someone who left the trip"
+    "someone": "Someone who left the trip",
+    "paid": "{{from}} paid {{to}}",
+    "history": "Settled"
   }
 }

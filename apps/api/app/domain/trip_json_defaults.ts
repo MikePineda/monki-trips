@@ -127,6 +127,7 @@ export function withTripJsonDefaults(
       })
     ),
     expenses: list(raw.expenses).map((expense: Loose<TripJsonExpense>): TripJsonExpense => ({
+      kind: expense.kind ?? 'expense',
       eventRef: text(expense.eventRef),
       categoryRef: text(expense.categoryRef),
       amountMinor: expense.amountMinor!,

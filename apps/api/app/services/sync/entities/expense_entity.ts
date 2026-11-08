@@ -73,6 +73,8 @@ export const expenseEntity: EntitySpec = {
   columns: [
     { field: 'id', column: 'id', type: 'text', writable: false },
     { field: 'tripId', column: 'trip_id', type: 'text', writable: false },
+    // Set on insert only: a settlement never turns into spending or back.
+    { field: 'kind', column: 'kind', type: 'text', writable: true, immutable: true },
     {
       field: 'categoryId',
       column: 'category_id',

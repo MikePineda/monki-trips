@@ -201,6 +201,7 @@
       "type": "object",
       "required": ["amountMinor", "currency", "spentOn"],
       "properties": {
+        "kind": { "enum": ["expense", "settlement"] },
         "eventRef": { "$ref": "#/$defs/refOrNull" },
         "categoryRef": { "$ref": "#/$defs/refOrNull" },
         "amountMinor": { "$ref": "#/$defs/minor" },

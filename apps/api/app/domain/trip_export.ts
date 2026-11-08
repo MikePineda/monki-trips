@@ -131,6 +131,7 @@ export function buildTripJsonV1(input: TripExportInput): TripJsonV1 {
   }))
 
   const expenses: TripJsonExpense[] = snapshot.expenses.map((expense) => ({
+    kind: expense.kind ?? 'expense',
     eventRef: ref(eventRefs, expense.eventId),
     categoryRef: ref(categoryRefs, expense.categoryId),
     amountMinor: expense.amountMinor,
