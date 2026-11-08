@@ -549,7 +549,30 @@ answer, then 422 `E_LLM_BAD_OUTPUT`), with no tools offered.
   the nights whose cover changes), the mutations and the baseline. Accept
   and reject are the chat's; `revise` replaces the draft while `proposed`.
 - **Receipt.** The same vision path returns a `ReceiptDraft` with `missing`
-  flags for a null amount, currency or date; nothing is stored.
+  flags for a null amount, currency or date; nothing is stored. The route
+  is in the bodyparser's `processManually`: the photo is read into memory
+  by the controller after CSRF, auth, the throttle and the trip check, and
+  never touches the temp dir.
+- **Hostile files.** pdf.js runs in a `worker_thread` with a 192 MB heap
+  and a 5 s limit (`config/extraction.ts`); past either the worker is
+  terminated and the file answers 413. A stored PDF over 10 MB is refused
+  from its `size_bytes` before its bytes are fetched; a PDF pdf.js cannot
+  open (garbage behind `%PDF`, a password) answers 415 and never reaches
+  the model. Photos lose EXIF (GPS), XMP, IPTC and text chunks on the
+  server (JPEG, PNG, WebP, pure JavaScript) before they are sent; one whose
+  structure cannot be walked answers 415.
+- **One booking, one event.** A document already linked to an event
+  answers 409 `E_DOCUMENT_ALREADY_LINKED` without a model call. `revise`
+  keeps the proposal's baseline: if the document changed since, the action
+  becomes `failed` and the answer is 409 `E_AI_ACTION_STALE`. A revise that
+  loses a race reports the action's real status. `revise` is throttled to
+  30 a minute per account. The chat may call `extract_booking` once per
+  turn (`ASSISTANT_TOOL_CALLS_PER_TURN`).
+- **Discarded drafts.** A proposal without a conversation that is
+  rejected, expires or fails keeps its status but its `proposal` becomes
+  `{ kind: 'discarded' }` and its `mutations` and `baseline` are emptied.
+- **Vision on the wire.** `GET /config` answers `visionEnabled`; the web app
+  hides "Scan receipt" and "Read this booking" on photos while it is false.
 
 ### Errors
 

@@ -9,6 +9,15 @@ import { AI_ACTION_TTL_HOURS, ASSISTANT_MAX_TOOL_CALLS_PER_TURN } from '@monkitr
 export const ASSISTANT_MAX_TOOL_CALLS = ASSISTANT_MAX_TOOL_CALLS_PER_TURN
 
 /** Output tokens one member message may use across every model call of its turn. */
+/**
+ * Calls of one tool allowed in one turn, for tools that cost a model call
+ * of their own: reading a booking spends a second, larger request, so a
+ * turn reads one document at most.
+ */
+export const ASSISTANT_TOOL_CALLS_PER_TURN: Readonly<Record<string, number>> = {
+  extract_booking: 1,
+}
+
 export const ASSISTANT_MAX_OUTPUT_TOKENS_PER_TURN = 4_096
 
 /** Output tokens one model call of the turn may use (never more than what the turn has left). */

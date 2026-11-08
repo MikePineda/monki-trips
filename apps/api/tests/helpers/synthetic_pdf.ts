@@ -1,3 +1,5 @@
+import { deflateSync } from 'node:zlib'
+
 /**
  * Builds small, real PDFs for tests: one Helvetica text page per entry of
  * `pages` (each a list of lines), or a page with no text layer at all, like
@@ -55,3 +57,42 @@ export const FERRY_BOOKING_LINES = [
   'Passengers: 2 adults. Seats 12A, 12B',
   'Total paid: THB 1,200.00',
 ]
+
+/**
+ * A decompression bomb: one page whose FlateDecode content stream inflates
+ * to `inflatedBytes` of path operators, from a file of a few kilobytes.
+ */
+export function bombPdf(inflatedBytes: number): Buffer {
+  const stream = deflateSync(Buffer.alloc(inflatedBytes, '0 0 m 1 1 l S\n'), { level: 9 })
+  const objects: Buffer[] = [
+    Buffer.from('<< /Type /Catalog /Pages 2 0 R >>'),
+    Buffer.from('<< /Type /Pages /Kids [3 0 R] /Count 1 >>'),
+    Buffer.from('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>'),
+    Buffer.concat([
+      Buffer.from(`<< /Length ${stream.length} /Filter /FlateDecode >>\nstream\n`),
+      stream,
+      Buffer.from('\nendstream'),
+    ]),
+  ]
+  const parts: Buffer[] = [Buffer.from('%PDF-1.4\n')]
+  let length = parts[0].length
+  const offsets: number[] = []
+  objects.forEach((body, index) => {
+    offsets.push(length)
+    const chunk = Buffer.concat([
+      Buffer.from(`${index + 1} 0 obj\n`),
+      body,
+      Buffer.from('\nendobj\n'),
+    ])
+    parts.push(chunk)
+    length += chunk.length
+  })
+  parts.push(
+    Buffer.from(
+      `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n` +
+        offsets.map((offset) => `${String(offset).padStart(10, '0')} 00000 n \n`).join('') +
+        `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${length}\n%%EOF\n`
+    )
+  )
+  return Buffer.concat(parts)
+}

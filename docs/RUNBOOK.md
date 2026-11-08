@@ -67,8 +67,11 @@ relevant ones:
     `LLM_BASE_URL` is the endpoint's origin without `/v1/messages` (empty =
     Anthropic; for MiniMax, its Anthropic-compatible base URL from the
     provider's docs). `LLM_API_KEY` is a secret. `LLM_MODEL` is the model id
-    the endpoint expects; `LLM_VISION_MODEL` (optional) takes requests that
-    carry an image. `fake` answers 503 in production (no fixtures in the
+    the endpoint expects; `LLM_VISION_MODEL` (optional) reads photos and
+    scanned PDFs ("Scan receipt", "Read this booking" on a scan or photo).
+    Empty means vision off: those answer 503 `E_EXTRACTION_UNAVAILABLE`,
+    `/config` reports `visionEnabled: false` and the web app hides them; a
+    PDF with a text layer still reads through `LLM_MODEL`. `fake` answers 503 in production (no fixtures in the
     image); `openai` is a reserved seam that answers 503.
   - Cap: tokens per account and UTC month from `config/plans.ts` (`free`,
     `pro`; `node ace users:plan <e-mail> pro` moves an account), or

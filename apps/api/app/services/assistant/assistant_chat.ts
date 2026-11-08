@@ -26,6 +26,7 @@ import {
   ASSISTANT_MAX_OUTPUT_TOKENS_PER_TURN,
   ASSISTANT_MAX_TOKENS_PER_CALL,
   ASSISTANT_MAX_TOOL_CALLS,
+  ASSISTANT_TOOL_CALLS_PER_TURN,
 } from '#config/assistant'
 
 export interface ChatTurn {
@@ -139,6 +140,7 @@ export class AssistantChat {
     let outcome: AssistantStreamEvent | null = null
     let pending: AsyncIterable<LlmDelta> | null = first
     let toolCalls = 0
+    const callsByTool = new Map<string, number>()
     let outputTokens = 0
     try {
       for (;;) {
@@ -184,6 +186,18 @@ export class AssistantChat {
             })
             continue
           }
+          const used = callsByTool.get(call.name) ?? 0
+          const allowed = ASSISTANT_TOOL_CALLS_PER_TURN[call.name]
+          if (allowed !== undefined && used >= allowed) {
+            results.push({
+              type: 'tool_result',
+              toolUseId: call.id,
+              content: `${call.name} can run ${allowed} time(s) per turn. Ask the member to send the next one in a new message.`,
+              isError: true,
+            })
+            continue
+          }
+          callsByTool.set(call.name, used + 1)
           toolCalls += 1
           const outcomeOfTool = await this.toolbox.run(ctx, call)
           if (outcomeOfTool.action) yield { type: 'proposal', action: outcomeOfTool.action }

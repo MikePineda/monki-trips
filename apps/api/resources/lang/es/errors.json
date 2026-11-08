@@ -40,5 +40,6 @@
   "E_AI_ACTION_CLOSED": "Esta propuesta ya se decidió o ha caducado",
   "E_AI_ACTION_STALE": "El viaje cambió desde que se hizo esta propuesta. No se cambió nada; vuelve a preguntar al asistente",
   "E_AI_ACTION_NOT_REVISABLE": "Solo se puede editar una propuesta leída de una reserva",
-  "E_EXTRACTION_UNAVAILABLE": "Este servidor no está configurado para leer fotos ni archivos escaneados. Añade la reserva a mano"
+  "E_EXTRACTION_UNAVAILABLE": "Este servidor no está configurado para leer fotos ni archivos escaneados. Añade la reserva a mano",
+  "E_DOCUMENT_ALREADY_LINKED": "Este documento ya está vinculado a un evento del plan, así que no se vuelve a leer"
 }

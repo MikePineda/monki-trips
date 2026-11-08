@@ -1,5 +1,8 @@
 import { defineConfig } from '@adonisjs/core/bodyparser'
 
+/** The route pattern of `POST /trips/:tripId/receipts/extract` (start/routes.ts). */
+export const RECEIPT_EXTRACT_ROUTE = '/api/v1/trips/:tripId/receipts/extract'
+
 const bodyParserConfig = defineConfig({
   /**
    * Parse request bodies for these HTTP methods.
@@ -73,6 +76,13 @@ const bodyParserConfig = defineConfig({
      * Content types handled by the multipart parser.
      */
     types: ['multipart/form-data'],
+
+    /**
+     * A receipt photo is read in memory by its controller, after CSRF,
+     * auth, the LLM throttle and the trip check have passed, so a refused
+     * request never leaves the photo in the OS temp dir.
+     */
+    processManually: [RECEIPT_EXTRACT_ROUTE],
   },
 })
 

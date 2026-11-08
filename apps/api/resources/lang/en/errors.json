@@ -40,5 +40,6 @@
   "E_AI_ACTION_CLOSED": "This proposal was already decided or has expired",
   "E_AI_ACTION_STALE": "The trip changed since this proposal was made. Nothing was changed; ask the assistant again",
   "E_AI_ACTION_NOT_REVISABLE": "Only a proposal read from a booking can be edited",
-  "E_EXTRACTION_UNAVAILABLE": "Reading photos and scanned files is not set up on this server. Add the booking by hand"
+  "E_EXTRACTION_UNAVAILABLE": "Reading photos and scanned files is not set up on this server. Add the booking by hand",
+  "E_DOCUMENT_ALREADY_LINKED": "This document is already attached to an event in the plan, so it is not read again"
 }

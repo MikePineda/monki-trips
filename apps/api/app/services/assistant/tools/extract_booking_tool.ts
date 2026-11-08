@@ -13,6 +13,8 @@ const input = vine.compile(vine.object({ documentId: vine.string().uuid() }))
 /** What the model reads when the document cannot be read; app-written, never file content. */
 const REFUSALS: Partial<Record<ErrorCode, string>> = {
   E_ROW_NOT_FOUND: 'documentId must be the id of a document of this trip (see list_documents).',
+  E_DOCUMENT_ALREADY_LINKED:
+    'This document is already attached to an event of the trip; its booking is in the plan. Do not read it again.',
   E_UNSUPPORTED_FILE:
     'This document cannot be read: only uploaded PDFs and JPEG, PNG, WebP or GIF images can.',
   E_FILE_TOO_LARGE: 'This document is too large to read (more than 10 scanned pages or 5 MB).',
