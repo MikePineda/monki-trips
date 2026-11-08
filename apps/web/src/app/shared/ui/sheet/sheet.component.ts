@@ -1,9 +1,21 @@
 import { DialogRef } from '@angular/cdk/dialog'
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input } from '@angular/core'
 import { TranslocoPipe } from '@jsverse/transloco'
 import { MkIconButtonComponent } from '../icon-button/icon-button.component'
 import { MkIconComponent } from '../icon/icon.component'
 import { provideUiI18n } from '../ui-i18n'
+
+let nextTitleId = 0
+
+/** The part of the CDK dialog container that names the dialog (what MatDialogTitle uses). */
+interface LabelledContainer {
+  _addAriaLabelledBy(id: string): void
+  _removeAriaLabelledBy(id: string): void
+}
+
+function isLabelledContainer(container: unknown): container is LabelledContainer {
+  return typeof (container as Partial<LabelledContainer>)?._addAriaLabelledBy === 'function'
+}
 
 /**
  * The frame of a bottom sheet opened through SheetService: the 36 × 4
@@ -52,7 +64,7 @@ import { provideUiI18n } from '../ui-i18n'
   template: `
     <div class="mk-sheet__handle" aria-hidden="true"></div>
     <header class="mk-sheet__header">
-      <h2 class="mk-sheet__title mk-type-heading">{{ title() }}</h2>
+      <h2 class="mk-sheet__title mk-type-heading" [id]="titleId">{{ title() }}</h2>
       @if (ref) {
         <button
           mk-icon-button
@@ -73,4 +85,14 @@ export class MkSheetComponent {
   readonly title = input.required<string>()
 
   protected readonly ref = inject(DialogRef, { optional: true })
+  protected readonly titleId = `mk-sheet-title-${nextTitleId++}`
+
+  constructor() {
+    // A sheet opened without `label` is named by its own title.
+    const container = this.ref?.containerInstance
+    if (this.ref && !this.ref.config.ariaLabel && isLabelledContainer(container)) {
+      container._addAriaLabelledBy(this.titleId)
+      inject(DestroyRef).onDestroy(() => container._removeAriaLabelledBy(this.titleId))
+    }
+  }
 }

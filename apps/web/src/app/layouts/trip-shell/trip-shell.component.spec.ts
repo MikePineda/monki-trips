@@ -95,7 +95,7 @@ describe('TripShellComponent', () => {
     expect(host.querySelector('[data-testid="shell.name"]')?.textContent?.trim()).toBe('Trip')
   })
 
-  it('floats the add expense button to the quick expense, except in settings and on the plan', async () => {
+  it('floats the add expense button to the quick expense, except in settings and on the plan; it stays under the quick expense so the focus comes back to it', async () => {
     const router = TestBed.inject(Router)
     const { fixture, host } = await render()
     const fab = () => host.querySelector('[data-testid="shell.fab"]')
@@ -106,7 +106,7 @@ describe('TripShellComponent', () => {
     for (const [url, shown] of [
       ['/t/trip-1/more/settings', false],
       ['/t/trip-1/plan', false],
-      ['/t/trip-1/add', false],
+      ['/t/trip-1/add', true],
       ['/t/trip-1/money', true],
     ] as const) {
       await router.navigateByUrl(url)

@@ -162,6 +162,7 @@ interface DocumentLine {
         <mk-section [eyebrow]="'today.next.label' | transloco" data-testid="today.next">
           @if (ticket(); as ticket) {
             <mk-ticket
+              [headingLevel]="2"
               [title]="ticket.title"
               [time]="ticket.time"
               [zone]="ticket.zone ?? undefined"

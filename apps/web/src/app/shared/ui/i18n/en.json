@@ -61,5 +61,8 @@
   "showCard": {
     "close": "Close",
     "keptOn": "The screen stays on while this card is open"
+  },
+  "deviceFrame": {
+    "label": "Sample screen"
   }
 }

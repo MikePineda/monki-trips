@@ -1,13 +1,19 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core'
+import { TranslocoPipe } from '@jsverse/transloco'
+import { provideUiI18n } from '../ui-i18n'
 
 /**
  * A 390 × 844 phone frame for the style guide's mock screens: `surface-0`,
  * a `line-strong` edge, the top and bottom safe areas drawn as the status
  * bar and the home indicator, content clipped. Screens are projected as
  * content; a sheet mock goes in `[mkFrameSheet]` and renders over the scrim.
+ * The frame is a picture of a screen: one labelled image, its content inert,
+ * so its headings, landmarks and controls stay out of the page's outline.
  */
 @Component({
   selector: 'mk-device-frame',
+  imports: [TranslocoPipe],
+  viewProviders: [provideUiI18n()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'class': 'mk-device-frame', '[attr.data-sheet]': 'sheet() ? "" : null' },
   styles: `
@@ -25,6 +31,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
       border-radius: var(--radius-lg);
       background: var(--surface-0);
       color: var(--ink-1);
+    }
+    .mk-frame__body {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     .mk-frame__status {
       flex: none;
@@ -103,20 +114,27 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core'
     }
   `,
   template: `
-    <div class="mk-frame__status" aria-hidden="true">
-      <span>9:41</span>
-      <span class="mk-frame__cells"><i></i><i></i><i></i></span>
+    <div
+      class="mk-frame__body"
+      role="img"
+      [attr.aria-label]="'ui.deviceFrame.label' | transloco"
+      inert
+    >
+      <div class="mk-frame__status" aria-hidden="true">
+        <span>9:41</span>
+        <span class="mk-frame__cells"><i></i><i></i><i></i></span>
+      </div>
+      <div class="mk-frame__screen">
+        <ng-content select="[mkFrameTop]" />
+        <div class="mk-frame__scroll"><ng-content /></div>
+        <ng-content select="[mkFrameBottom]" />
+      </div>
+      <div class="mk-frame__fab"><ng-content select="[mkFrameFab]" /></div>
+      <div class="mk-frame__scrim" [attr.data-open]="sheet() ? '' : null">
+        <div class="mk-frame__sheet"><ng-content select="[mkFrameSheet]" /></div>
+      </div>
+      <div class="mk-frame__home" aria-hidden="true"></div>
     </div>
-    <div class="mk-frame__screen">
-      <ng-content select="[mkFrameTop]" />
-      <div class="mk-frame__scroll"><ng-content /></div>
-      <ng-content select="[mkFrameBottom]" />
-    </div>
-    <div class="mk-frame__fab"><ng-content select="[mkFrameFab]" /></div>
-    <div class="mk-frame__scrim" [attr.data-open]="sheet() ? '' : null">
-      <div class="mk-frame__sheet"><ng-content select="[mkFrameSheet]" /></div>
-    </div>
-    <div class="mk-frame__home" aria-hidden="true"></div>
   `,
 })
 export class MkDeviceFrameComponent {
