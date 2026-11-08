@@ -15,6 +15,7 @@ export interface TripContentSnapshotLike {
   emergency: { content: Record<string, unknown> } | null
   stops: { id: string; name: string; tz: string | null }[]
   events: { id: string; kind: string; title: string; startsOn: string | null }[]
+  budgetCategories: { id: string; key: string | null; budgetMinor: number | null }[]
   expenses: {
     id: string
     amountMinor: number

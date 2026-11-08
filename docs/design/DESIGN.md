@@ -376,6 +376,7 @@ Every component lives in `apps/web/src/app/shared/ui/` with the `mk-` prefix, st
 - 56 px minimum, 1px `line` between rows, never boxed; leading Lucide icon in `icon`, title in `body` at 500 (ellipsis), meta in `caption` / `ink-3`, trailing value, status (icon in status colour + word in `ink-2`) or chevron.
 - **Event row**: a 64 px mono time column (local time in `code`, zone abbreviation below in `ink-3`), title, meta, and an optional "Directions" link with the `navigation` icon.
 - **Lodging rows**: check-out and check-in as event rows with "Night N of M" in the meta; middle days show an all-day row with the `bed-double` icon.
+- A row never runs past its column. A figure value (money, a count) keeps its width and the title ellipsizes; a text value ("Where we sleep": the place beside the date) gives way instead: the date and "Night N of M" stay whole on one line each, the place wraps to two lines, right-aligned, then ellipsizes, and the chevron stays.
 - The whole row is one target; nested actions get their own 44 px targets.
 
 ### Ticket card
@@ -405,6 +406,7 @@ Every component lives in `apps/web/src/app/shared/ui/` with the `mk-` prefix, st
 ### Stat tile
 
 - Up to three in a row, separated by vertical `line` hairlines, no boxes: eyebrow, value in `title` (tabular), sub-line in `caption` / `ink-2` (base currency, "of €300").
+- The row (`mk-stat-row`) is a container: each tile starts at its own width and grows to share the line, so long values wrap 2 + 1 and stack below 240 px; the value scales from 20 px up to the `title` 24 px with the row's width (`clamp()` on `cqi`). Money is never truncated or drawn over a neighbour.
 - Values stay in ink; a negative uses U+2212 and says what it means.
 
 ### Empty state
