@@ -212,7 +212,7 @@ describe('MoneyStore', () => {
     })
   })
 
-  it('a new amount splits again equally between the same people, so the split still adds up', async () => {
+  it('a new amount scales the split in proportion, the remainder on the payer', async () => {
     await db.expenses.put(expenseRecord({ id: 'x1', amountMinor: 4500, paidByTravellerId: 'v2' }))
     await db.expenseShares.bulkPut([
       {
@@ -236,9 +236,10 @@ describe('MoneyStore', () => {
     await TestBed.inject(MoneyStore).update('x1', { amountMinor: 1001 }, 'AUD')
 
     const shares = await db.expenseShares.where('expenseId').equals('x1').toArray()
+    // 1001 × 1000/4500 = 222.4 and 1001 × 3500/4500 = 778.5: the cent left goes to the payer v2.
     expect(shares.map((row) => [row.travellerId, row.shareMinor]).sort()).toEqual([
-      ['v1', 500],
-      ['v2', 501],
+      ['v1', 222],
+      ['v2', 779],
     ])
     const last = (await mutations()).at(-1)!
     expect(last.changes['shares']).toHaveLength(2)

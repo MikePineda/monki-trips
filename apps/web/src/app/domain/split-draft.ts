@@ -1,4 +1,4 @@
-import { equalShares } from '@monkitrips/shared'
+import { equalShares, scaleShares } from '@monkitrips/shared'
 
 /** What the split sheet edits: who paid, who shares, and optional custom amounts. */
 export interface SplitDraft {
@@ -43,4 +43,19 @@ export function splitShares(
     : equalShares(amountMinor, participants, draft.payerId)
   const remainingMinor = amountMinor - shares.reduce((sum, share) => sum + share.shareMinor, 0)
   return { shares, remainingMinor, valid: participants.length > 0 && remainingMinor === 0 }
+}
+
+/**
+ * The shares to save for `amountMinor`: the draft's own when they add up;
+ * custom amounts made for another amount follow it in proportion (the
+ * remainder on the payer); an equal split stays equal. Pure.
+ */
+export function sharesFor(
+  amountMinor: number,
+  draft: SplitDraft,
+  travellerOrder: readonly string[]
+): SplitResult['shares'] {
+  const result = splitShares(amountMinor, draft, travellerOrder)
+  if (result.valid || !draft.custom) return result.shares
+  return scaleShares(amountMinor, result.shares, draft.payerId)
 }

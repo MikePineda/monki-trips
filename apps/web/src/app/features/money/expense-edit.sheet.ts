@@ -19,7 +19,7 @@ import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { provideMoneyI18n } from './money-i18n'
-import { splitShares, type SplitDraft } from '../../domain/split-draft'
+import { sharesFor, type SplitDraft } from '../../domain/split-draft'
 import { MkChipComponent } from '../../shared/ui/chip/chip.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { SplitSheet, type SplitSheetData } from './split.sheet'
@@ -361,16 +361,15 @@ export class ExpenseEditSheet {
     })
   }
 
-  /** The split to save: only one picked here; custom amounts that no longer add up split equally. */
+  /** The split to save: only one picked here; custom amounts follow a new amount in proportion. */
   private pickedSplit(): SplitChoice | undefined {
     const draft = this.chosenSplit()
     const order = this.data.split?.travellers.map((row) => row.id) ?? []
     if (!draft || !draft.payerId) return undefined
-    const result = splitShares(this.signedAmount(), draft, order)
-    const shares = result.valid
-      ? result.shares
-      : splitShares(this.signedAmount(), { ...draft, custom: null }, order).shares
-    return { paidByTravellerId: draft.payerId, shares }
+    return {
+      paidByTravellerId: draft.payerId,
+      shares: sharesFor(this.signedAmount(), draft, order),
+    }
   }
 
   protected async remove(): Promise<void> {
