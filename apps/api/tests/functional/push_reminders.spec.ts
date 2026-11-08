@@ -10,6 +10,7 @@ import { JobClaim } from '#services/scheduler/job_claim'
 import { PushRemindersJob } from '#services/scheduler/push_reminders_job'
 import { Scheduler } from '#services/scheduler/scheduler'
 import { actingAs } from '#tests/helpers/acting_as'
+import { countQueries } from '#tests/helpers/count_queries'
 import { useFakePushSender, withPushDisabled } from '#tests/helpers/fake_push'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
@@ -208,6 +209,162 @@ test.group('Push reminders job', (group) => {
     await db.assertCount('sent_reminders', 0)
   })
 
+  test('toggling quiet hours never sends a reminder again, an edited time does', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const owner = await makeUser()
+    const device = await subscribe(owner)
+    const { trip, flight } = await tripWithFlight(client, owner)
+
+    await runReminders(LEAVE_AT)
+    // 11:00–12:00 local now covers the 11:30 leave time: it moves to 12:00 (05:00Z).
+    await actingAs(client.put('/api/v1/me/notification-settings'), owner).json({
+      leaveAt: true,
+      checkOut: true,
+      tasksDue: true,
+      quietHoursStart: '11:00',
+      quietHoursEnd: '12:00',
+    })
+    await runReminders(new Date('2027-01-22T05:00:00Z'))
+    assert.lengthOf(push.sentTo(device.endpoint), 1)
+
+    // The flight moves to 15:00 local: leave at 12:30 (05:30Z), a new occurrence.
+    await pushApplied(
+      client,
+      owner,
+      mutation(
+        trip.id,
+        'event',
+        { startsLocal: '2027-01-22T15:00', endsLocal: '2027-01-22T17:00' },
+        { id: flight, changedAt: '2026-11-07T10:05:00.000Z' }
+      )
+    )
+    await runReminders(new Date('2027-01-22T05:30:00Z'))
+
+    assert.deepEqual(
+      push.sentTo(device.endpoint).map((payload) => payload.body),
+      ['Departs at 14:00. Leave at 11:30.', 'Departs at 15:00. Leave at 12:30.']
+    )
+    await db.assertCount('sent_reminders', 2)
+  })
+
+  test('the task digest goes out once per trip-local day even when the zone moves west', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    const device = await subscribe(owner)
+    const trip = await makeTrip(owner, {
+      startsOn: '2027-01-21',
+      endsOn: '2027-01-29',
+      homeTz: 'Europe/Madrid',
+    })
+    // 06:00 in Madrid (05:00Z) to 07:00 in New York (12:00Z).
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'event', {
+        kind: 'flight',
+        title: 'Flight to New Harbour',
+        status: 'booked',
+        startsLocal: '2027-01-22T06:00',
+        startTz: 'Europe/Madrid',
+        endsLocal: '2027-01-22T07:00',
+        endTz: 'America/New_York',
+      })
+    )
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'task', { title: 'Buy ferry tickets', dueOn: '2027-01-22' })
+    )
+    const digestAt = async (at: string) => {
+      clock.at = new Date(at)
+      const response = await actingAs(client.get('/api/v1/me/reminders/upcoming'), owner)
+      return response
+        .body()
+        .data.filter((reminder: { kind: string }) => reminder.kind === 'tasks_due')
+        .map((reminder: { refId: string; fireAt: string }) => [reminder.refId, reminder.fireAt])
+    }
+
+    // The evening before, the day is read in Madrid: 09:00 is 08:00Z.
+    const before = await digestAt('2027-01-21T20:00:00Z')
+    await runReminders(new Date('2027-01-22T08:00:00Z'))
+    // After landing the same day is read in New York: 09:00 is 14:00Z.
+    const after = await digestAt('2027-01-22T12:05:00Z')
+    await runReminders(new Date('2027-01-22T14:00:00Z'))
+
+    assert.deepEqual(before, [[`${trip.id}:2027-01-22`, '2027-01-22T08:00:00.000Z']])
+    assert.deepEqual(after, [[`${trip.id}:2027-01-22`, '2027-01-22T14:00:00.000Z']])
+    assert.deepEqual(
+      push.sentTo(device.endpoint).map((payload) => payload.tag),
+      [`tasks_due:${trip.id}:2027-01-22`]
+    )
+  })
+
+  test('a transient push failure is retried the next minute and sent once', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const owner = await makeUser()
+    const device = await subscribe(owner)
+    await tripWithFlight(client, owner)
+    push.answerOnceWith(device.endpoint, 503)
+
+    await runReminders(LEAVE_AT)
+    await db.assertCount('sent_reminders', 0)
+    await runReminders(new Date(LEAVE_AT.getTime() + 60_000))
+    await runReminders(new Date(LEAVE_AT.getTime() + 2 * 60_000))
+
+    // One failed attempt, then one delivery; nothing after it.
+    assert.lengthOf(push.sentTo(device.endpoint), 2)
+    await db.assertCount('sent_reminders', 1)
+  })
+
+  test('a permanent push failure is not retried', async ({ client, assert, db }) => {
+    const owner = await makeUser()
+    const device = await subscribe(owner)
+    await tripWithFlight(client, owner)
+    push.answerWith(device.endpoint, 400)
+
+    await runReminders(LEAVE_AT)
+    await runReminders(new Date(LEAVE_AT.getTime() + 60_000))
+
+    assert.lengthOf(push.sentTo(device.endpoint), 1)
+    await db.assertCount('sent_reminders', 1)
+  })
+
+  test('the job runs as many queries for five members of a trip as for one', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await makeUser()
+    await subscribe(owner)
+    const { trip } = await tripWithFlight(client, owner)
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'task', { title: 'Buy ferry tickets', dueOn: '2027-01-23' })
+    )
+    // An hour before the leave time: everything is planned, nothing is due.
+    const quietMinute = new Date(LEAVE_AT.getTime() - 60 * 60_000)
+
+    const alone = await countQueries(() => runReminders(quietMinute))
+    for (let i = 0; i < 4; i++) {
+      const member = await makeUser()
+      await subscribe(member)
+      await addMember(trip, member)
+    }
+    const shared = await countQueries(() => runReminders(quietMinute))
+
+    assert.isAbove(alone, 0)
+    assert.equal(shared, alone)
+    assert.lengthOf(push.sent, 0)
+  })
+
   test('the container scheduler registers push:reminders every minute', async ({ assert }) => {
     const scheduler = await app.container.make(Scheduler)
     const reminders = await job()
@@ -321,6 +478,32 @@ test.group('Notification settings', (group) => {
     assert.equal(half.body().errors[0].rule, 'quietHoursPair')
     assert.equal(late.body().errors[0].field, 'quietHoursStart')
     edge.assertStatus(200)
+  })
+
+  test('quiet hours that start and end at the same minute are rejected', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const user = await makeUser({ locale: 'es' })
+
+    const response = await actingAs(client.put('/api/v1/me/notification-settings'), user)
+      .header('Accept-Language', 'es')
+      .json({
+        leaveAt: true,
+        checkOut: true,
+        tasksDue: true,
+        quietHoursStart: '22:00',
+        quietHoursEnd: '22:00',
+      })
+
+    response.assertStatus(422)
+    assert.equal(response.body().errors[0].rule, 'quietHoursDistinct')
+    assert.equal(
+      response.body().errors[0].message,
+      'Las horas de silencio necesitan un inicio y un final distintos'
+    )
+    await db.assertMissing('notification_settings', { user_id: user.id })
   })
 
   test('notification settings need a signed-in account', async ({ client }) => {

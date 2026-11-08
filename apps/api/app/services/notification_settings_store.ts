@@ -9,6 +9,16 @@ interface SettingsRow {
   quiet_hours_end: string | null
 }
 
+function fromRow(row: SettingsRow): NotificationSettings {
+  return {
+    leaveAt: row.leave_at,
+    checkOut: row.check_out,
+    tasksDue: row.tasks_due,
+    quietHoursStart: row.quiet_hours_start,
+    quietHoursEnd: row.quiet_hours_end,
+  }
+}
+
 /**
  * Reads and writes `notification_settings`, one row per account. An
  * account without a row has `DEFAULT_REMINDER_SETTINGS`; saving upserts.
@@ -19,14 +29,19 @@ export class NotificationSettingsStore {
       .from('notification_settings')
       .where('user_id', userId)
       .first()) as SettingsRow | null
-    if (!row) return { ...DEFAULT_REMINDER_SETTINGS }
-    return {
-      leaveAt: row.leave_at,
-      checkOut: row.check_out,
-      tasksDue: row.tasks_due,
-      quietHoursStart: row.quiet_hours_start,
-      quietHoursEnd: row.quiet_hours_end,
-    }
+    return row ? fromRow(row) : { ...DEFAULT_REMINDER_SETTINGS }
+  }
+
+  /** The settings of every account in `userIds`, in one query; defaults for those without a row. */
+  async forUsers(userIds: readonly string[]): Promise<Map<string, NotificationSettings>> {
+    const rows =
+      userIds.length === 0
+        ? []
+        : ((await db
+            .from('notification_settings')
+            .whereIn('user_id', [...userIds])) as (SettingsRow & { user_id: string })[])
+    const byUser = new Map(rows.map((row) => [row.user_id, fromRow(row)]))
+    return new Map(userIds.map((id) => [id, byUser.get(id) ?? { ...DEFAULT_REMINDER_SETTINGS }]))
   }
 
   async save(
