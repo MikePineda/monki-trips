@@ -48,7 +48,9 @@
     "kind": {
       "expense": "Gasto",
       "task": "Tarea",
-      "event_changes": "Cambio en el plan"
+      "event_changes": "Cambio en el plan",
+      "booking": "Reserva de un archivo",
+      "discarded": "Descartada"
     },
     "accept": "Aceptar",
     "reject": "Rechazar",
@@ -139,6 +141,7 @@
       "activities": "Actividades",
       "shopping": "Compras",
       "other": "Otros"
-    }
+    },
+    "discarded": "Esta propuesta se descartó"
   }
 }

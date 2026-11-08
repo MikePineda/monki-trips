@@ -48,7 +48,9 @@
     "kind": {
       "expense": "Expense",
       "task": "Task",
-      "event_changes": "Plan change"
+      "event_changes": "Plan change",
+      "booking": "Booking from a file",
+      "discarded": "Discarded"
     },
     "accept": "Accept",
     "reject": "Reject",
@@ -139,6 +141,7 @@
       "activities": "Activities",
       "shopping": "Shopping",
       "other": "Other"
-    }
+    },
+    "discarded": "This proposal was discarded"
   }
 }
