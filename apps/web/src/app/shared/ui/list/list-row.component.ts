@@ -18,15 +18,27 @@ export interface RowStatus {
  * one navigation target. Extra content: `[mkRowLeading]`, `[mkRowTrailing]`,
  * and `[mkRowExtra]` under the meta line (a row of chips), which lets the
  * row grow past 56 px.
+ *
+ * The row never runs past its column. A `figure` value (money, a count;
+ * the default) keeps its width and the title ellipsizes. A `text` value (a
+ * place name beside a date) is the part that gives way: the title and meta
+ * stay whole on one line each, the value wraps to two lines and then
+ * ellipsizes, and the chevron stays in the row.
  */
 @Component({
   selector: 'mk-list-row',
   imports: [NgTemplateOutlet, RouterLink, MkIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { 'class': 'mk-list-row', 'role': 'listitem', '[attr.data-tone]': 'status()?.tone' },
+  host: {
+    'class': 'mk-list-row',
+    'role': 'listitem',
+    '[attr.data-tone]': 'status()?.tone',
+    '[attr.data-value-kind]': 'valueKind()',
+  },
   styles: `
     :host {
       display: block;
+      min-width: 0;
     }
     :host(:not(:last-child)) {
       border-bottom: 1px solid var(--line);
@@ -73,8 +85,34 @@ export interface RowStatus {
       display: none;
     }
     .mk-row__value {
+      flex-shrink: 0;
       color: var(--ink-1);
       white-space: nowrap;
+    }
+    :host([data-value-kind='text']) .mk-row__text {
+      flex: 0 0 auto;
+    }
+    :host([data-value-kind='text']) .mk-row__title {
+      overflow: visible;
+      text-overflow: clip;
+    }
+    :host([data-value-kind='text']) .mk-row__meta {
+      white-space: nowrap;
+    }
+    :host([data-value-kind='text']) .mk-row__value {
+      display: -webkit-box;
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      text-align: end;
+      white-space: normal;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+    mk-icon {
+      flex-shrink: 0;
     }
     .mk-row__status {
       display: inline-flex;
@@ -147,6 +185,8 @@ export class MkListRowComponent {
   readonly monoMeta = input(false)
   readonly icon = input<IconName>()
   readonly value = input<string>()
+  /** `figure` (money, a count) never shrinks; `text` (a place name) wraps to two lines and gives way. */
+  readonly valueKind = input<'figure' | 'text'>('figure')
   readonly status = input<RowStatus>()
   readonly chevron = input(false)
   readonly link = input<string | readonly string[]>()

@@ -114,4 +114,27 @@ describe('TripShellComponent', () => {
       expect(fab() !== null, url).toBe(shown)
     }
   })
+
+  it('every trip screen that floats a button keeps room for it below its content, the plan included', async () => {
+    const router = TestBed.inject(Router)
+    const { fixture, host } = await render()
+    const page = () => host.querySelector('mk-page')!
+
+    for (const [url, room] of [
+      ['/t/trip-1/today', true],
+      ['/t/trip-1/plan', true],
+      ['/t/trip-1/plan/nights', true],
+      ['/t/trip-1/docs', true],
+      ['/t/trip-1/money', true],
+      ['/t/trip-1/more', true],
+      ['/t/trip-1/more/members', true],
+      ['/t/trip-1/more/tasks', true],
+      ['/t/trip-1/more/settings', false],
+      ['/t/trip-1/add', false],
+    ] as const) {
+      await router.navigateByUrl(url)
+      fixture.detectChanges()
+      expect(page().hasAttribute('data-fab'), url).toBe(room)
+    }
+  })
 })
