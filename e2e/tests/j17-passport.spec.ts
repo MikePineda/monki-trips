@@ -151,6 +151,46 @@ test.describe('J17 history, passport and map', () => {
     )
   })
 
+  test('online, the vector map loads MapLibre from its own file and draws over the svg view', async ({
+    page,
+  }) => {
+    // A stand-in for the keyless style: no tiles, no glyphs, nothing leaves the suite.
+    await page.unroute(TILES)
+    await page.route(TILES, (route) =>
+      route.request().url().endsWith('/styles/liberty')
+        ? route.fulfill({
+            contentType: 'application/json',
+            body: JSON.stringify({
+              version: 8,
+              glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+              sources: {
+                openmaptiles: {
+                  type: 'vector',
+                  tiles: ['https://tiles.openfreemap.org/planet/{z}/{x}/{y}.pbf'],
+                },
+              },
+              layers: [{ id: 'paper', type: 'background', paint: { 'background-color': 'white' } }],
+            }),
+          })
+        : route.abort('internetdisconnected')
+    )
+    const library: string[] = []
+    page.on('request', (request) => {
+      if (/\/media\/maplibre-gl-[A-Z0-9]+\.mjs$/.test(request.url())) library.push(request.url())
+    })
+    await signIn(page, solo)
+    await page.getByTestId('trips.passport').click()
+    await page.getByTestId('passport.openMap').click()
+
+    await expect(page.getByTestId('passport.map')).toHaveAttribute('data-mode', 'map', {
+      timeout: 20_000,
+    })
+    await expect(
+      page.locator('[data-testid="passport.map"] canvas.maplibregl-canvas')
+    ).toBeVisible()
+    expect(library).toHaveLength(1)
+  })
+
   test('screenshots of the passport at 390 × 844, light and dark, and the generated stamps', async ({
     page,
   }) => {

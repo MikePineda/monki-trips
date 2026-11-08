@@ -27,17 +27,22 @@ export interface MapLibreBundle {
   cssUrl: string
 }
 
-/** Loads MapLibre GL JS: its own lazy chunk, never in the initial bundle. Tests swap it. */
+/**
+ * Loads MapLibre GL JS from its hashed file under media/ (never a root chunk
+ * the service worker would prefetch, never in the initial bundle). Tests swap it.
+ */
 export const MAPLIBRE_LOADER = new InjectionToken<() => Promise<MapLibreBundle>>(
   'MAPLIBRE_LOADER',
   {
     providedIn: 'root',
-    factory: () => async () => {
-      const [maplibre, assets] = await Promise.all([
-        import('maplibre-gl'),
-        import('./maplibre-assets'),
-      ])
-      return { maplibre, workerUrl: assets.workerUrl, cssUrl: assets.cssUrl }
+    factory: () => {
+      const document = inject(DOCUMENT)
+      return async () => {
+        const assets = await import('./maplibre-assets')
+        const url = new URL(assets.libraryUrl, document.baseURI).href
+        const maplibre = (await import(/* @vite-ignore */ url)) as MapLibreModule
+        return { maplibre, workerUrl: assets.workerUrl, cssUrl: assets.cssUrl }
+      }
     },
   }
 )

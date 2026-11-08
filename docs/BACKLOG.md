@@ -142,3 +142,4 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 4.2: stops carry `lat`/`lng` but the stop sheet has no field for them; add coordinates (or a geocoder) so the map has pins without the import.
 - 2026-11-08: WP 4.2: drawn artwork for city stamps works (`stamps.json` code `XA-HARBOUR CITY`) but no city has any yet; and the generator could print the date in the locale's month names.
 - 2026-11-08: Bundle: the initial total is over the 350 kB warning on main (350.42 kB after the split balances, 351.14 kB with WP 4.2); find what pulls uuid, the meta and online stores into main.js and split it back out.
+- 2026-11-08: WP 4.2: the MapLibre prefetch line above is fixed (the library now lives under media/); the pdf.js worker (`worker-*.js`, 1.2 MB) is still a root file the service worker prefetches.
