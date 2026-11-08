@@ -146,7 +146,10 @@ only: a later change is `E_VALIDATION_ERROR` `immutable`; budgets, Today and
 the mascot leave settlements out, balances count them; an optional `shares` array replaces the whole
 split and must sum to the amount; an `amountMinor` change without `shares`
 splits the live split again equally between its participants still travelling,
-remainder on the payer, with the mutation's clock on `shares`), `expense_share`, `emergency` (one row per
+remainder on the payer, with the mutation's clock on `shares`; on a trip in
+split mode an expense written without a split, from a device that has not
+pulled the switch, gets the switch's equal shares and the owner's traveller
+as payer when it names none), `expense_share`, `emergency` (one row per
 trip, merged per top-level key of `content`). Derived values are never
 accepted from a client and are recomputed after every merge: `startsAt`,
 `startsOn`, `endsAt` from the local times and zones (a nonexistent local
