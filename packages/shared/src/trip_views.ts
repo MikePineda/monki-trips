@@ -1,5 +1,5 @@
 /**
- * The view DTOs of `GET /trips/:tripId/{nights,budget,today}`: what the API
+ * The view DTOs of `GET /trips/:tripId/{nights,budget,balances,today}`: what the API
  * returns, with minor units as JSON numbers. They carry a `Trip` prefix so
  * they never collide with the results of the domain pipelines for the same
  * screens (`NightCoverage`, `BudgetStatus`, `TodayView` in `domain/`).
@@ -25,6 +25,30 @@ export interface TripNight {
 export interface TripNightsView {
   nights: TripNight[]
   uncoveredCount: number
+}
+
+/**
+ * Who owes whom in base minor units (`GET /trips/:tripId/balances`), from
+ * the shared `balances` domain function. `budgetMode` tells the client
+ * whether the trip shows it at all; a trip in shared mode still answers.
+ */
+export interface TripBalancesView {
+  baseCurrency: string
+  budgetMode: 'shared' | 'split'
+  /** One row per live traveller in position order, then anyone else who holds a share. */
+  balances: {
+    travellerId: string
+    displayName: string | null
+    paidMinor: number
+    owedMinor: number
+    netMinor: number
+  }[]
+  /** The fewest transfers that settle the trip (at most travellers − 1). */
+  settlements: { fromTravellerId: string; toTravellerId: string; amountMinor: number }[]
+  /** Expenses waiting for an exchange rate, not in the balances. */
+  pendingFxCount: number
+  /** Expenses with no payer and no owner traveller to fall back on, not in the balances. */
+  unassignedCount: number
 }
 
 /** Budget position in base minor units (`GET /trips/:tripId/budget`). */
