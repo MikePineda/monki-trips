@@ -552,6 +552,34 @@ describe('SyncService', () => {
     expect((await db.tasks.toArray()).map((task) => task.id)).toEqual(['k1'])
   })
 
+  it('a trip the server no longer lists takes its cached assistant conversations along', async () => {
+    const conversation = {
+      tripId: 't2',
+      title: null,
+      createdAt: 'x',
+      updatedAt: 'x',
+      messages: null,
+      actions: null,
+    }
+    await db.trips.put({
+      id: 't2',
+      name: 'Left',
+      startDate: '2027-01-01',
+      endDate: '2027-01-02',
+      baseCurrency: 'EUR',
+      updatedAt: 'x',
+    })
+    await db.aiConversations.bulkPut([
+      { ...conversation, id: 'c1', tripId: 't1' },
+      { ...conversation, id: 'c2' },
+    ])
+    api.queuePullTripIds(['t1'])
+
+    await sync.pull()
+
+    expect((await db.aiConversations.toArray()).map((row) => row.id)).toEqual(['c1'])
+  })
+
   it('an expired cursor clears the copy, keeps the outbox and pulls from scratch', async () => {
     await meta.set(META_CURSOR, 'stale')
     await meta.set(META_SYNCED_ENTITIES, syncedEntitiesKey())

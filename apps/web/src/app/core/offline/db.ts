@@ -1,4 +1,5 @@
 import { Dexie, type DexieOptions, type Table } from 'dexie'
+import type { AiConversationRecord } from './ai-conversation-record'
 import type {
   ActivityRecord,
   BudgetCategoryRecord,
@@ -54,6 +55,7 @@ export class MonkiTripsDb extends Dexie {
   declare activity: Table<ActivityRecord, string>
   declare emergency: Table<EmergencyRecord, string>
   declare phraseCards: Table<PhraseCardRecord, string>
+  declare aiConversations: Table<AiConversationRecord, string>
   declare meta: Table<MetaRecord, string>
   declare outbox: Table<OutboxRecord, string>
 
@@ -108,6 +110,12 @@ export class MonkiTripsDb extends Dexie {
     // entity mapping makes the sync service pull from scratch once.
     this.version(7).stores({
       expenseShares: 'id, tripId, expenseId, updatedAt',
+    })
+    // WP 3.2: the member's assistant conversations with their messages and
+    // proposals, cached to read offline (listed newest first). Not a sync
+    // table: the chat refills it, so no upgrade function here.
+    this.version(8).stores({
+      aiConversations: 'id, tripId, [tripId+updatedAt]',
     })
   }
 }

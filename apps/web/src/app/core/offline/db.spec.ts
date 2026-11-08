@@ -16,19 +16,20 @@ describe('MonkiTripsDb', () => {
     await db.delete()
   })
 
-  it('is called monki-trips and opens at version 7 (expense shares since WP 4.1)', async () => {
+  it('is called monki-trips and opens at version 8 (the assistant cache since WP 3.2)', async () => {
     await db.open()
 
     expect(db.name).toBe('monki-trips')
-    expect(db.verno).toBe(7)
+    expect(db.verno).toBe(8)
   })
 
-  it('holds exactly the offline tables of the plan plus travellers, the activity cache, emergency info, phrase cards and expense shares', async () => {
+  it('holds exactly the offline tables of the plan plus travellers, the activity cache, emergency info, phrase cards, expense shares and the assistant cache', async () => {
     await db.open()
 
     expect(db.tables.map((table) => table.name).sort()).toEqual(
       [
         'activity',
+        'aiConversations',
         'budgetCategories',
         'checklist',
         'docBlobs',
@@ -62,7 +63,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(7)
+    expect(upgraded.verno).toBe(8)
     expect((await upgraded.trips.get('t1'))?.name).toBe('Kept')
     expect(await upgraded.travellers.count()).toBe(0)
     expect(await upgraded.emergency.count()).toBe(0)
@@ -90,7 +91,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(7)
+    expect(upgraded.verno).toBe(8)
     expect((await upgraded.travellers.get('tr1'))?.displayName).toBe('Kept')
     expect(await upgraded.emergency.count()).toBe(0)
     upgraded.close()
@@ -120,6 +121,7 @@ describe('MonkiTripsDb', () => {
     expect(schema('activity')).toEqual(['id', 'tripId', '[tripId+createdAt]'])
     expect(schema('emergency')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('phraseCards')).toEqual(['id', 'tripId', '[tripId+language]', 'updatedAt'])
+    expect(schema('aiConversations')).toEqual(['id', 'tripId', '[tripId+updatedAt]'])
     expect(schema('meta')).toEqual(['key'])
     expect(schema('outbox')).toEqual(['id', 'state', 'createdAt'])
   })
@@ -174,7 +176,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(7)
+    expect(upgraded.verno).toBe(8)
     expect((await upgraded.expenses.get('x1'))?.tripId).toBe('t1')
     expect(await upgraded.phraseCards.count()).toBe(0)
     await upgraded.phraseCards.put({
@@ -209,7 +211,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(7)
+    expect(upgraded.verno).toBe(8)
     expect((await upgraded.expenses.get('x1'))?.tripId).toBe('t1')
     await upgraded.expenseShares.put({
       id: 's1',
@@ -221,6 +223,60 @@ describe('MonkiTripsDb', () => {
     })
     const shares = await upgraded.expenseShares.where('expenseId').equals('x1').toArray()
     expect(shares.map((row) => row.id)).toEqual(['s1'])
+    upgraded.close()
+  })
+
+  it('a version 7 database keeps its expense shares and gains an empty assistant cache at version 8', async () => {
+    const indexedDB = new IDBFactory()
+    const v7 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
+    v7.version(7).stores({
+      trips: 'id, updatedAt',
+      expenseShares: 'id, tripId, expenseId, updatedAt',
+      meta: 'key',
+      outbox: 'id, state, createdAt',
+    })
+    await v7.table('expenseShares').put({
+      id: 's1',
+      tripId: 't1',
+      expenseId: 'x1',
+      travellerId: 'v1',
+      shareMinor: 500,
+      updatedAt: 'x',
+    })
+    v7.close()
+
+    const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
+    await upgraded.open()
+
+    expect(upgraded.verno).toBe(8)
+    expect((await upgraded.expenseShares.get('s1'))?.expenseId).toBe('x1')
+    expect(await upgraded.aiConversations.count()).toBe(0)
+    await upgraded.aiConversations.bulkPut([
+      {
+        id: 'c-old',
+        tripId: 't1',
+        title: 'Older',
+        createdAt: '2026-11-01T10:00:00.000Z',
+        updatedAt: '2026-11-01T10:00:00.000Z',
+        messages: null,
+        actions: null,
+      },
+      {
+        id: 'c-new',
+        tripId: 't1',
+        title: 'Newer',
+        createdAt: '2026-11-02T10:00:00.000Z',
+        updatedAt: '2026-11-03T10:00:00.000Z',
+        messages: [],
+        actions: [],
+      },
+    ])
+    const newestFirst = await upgraded.aiConversations
+      .where('[tripId+updatedAt]')
+      .between(['t1', ''], ['t1', '\uffff'])
+      .reverse()
+      .toArray()
+    expect(newestFirst.map((row) => row.id)).toEqual(['c-new', 'c-old'])
     upgraded.close()
   })
 

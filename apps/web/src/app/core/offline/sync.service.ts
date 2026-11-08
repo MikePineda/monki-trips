@@ -172,7 +172,7 @@ export class SyncService {
       const db = await this.database
       await db.transaction(
         'rw',
-        [...SYNC_TABLES.map((table) => db.table(table)), db.meta, db.outbox],
+        [...SYNC_TABLES.map((table) => db.table(table)), db.aiConversations, db.meta, db.outbox],
         async () => {
           const pending = await this.outbox.pendingFieldsByRow(db)
           for (const change of result.changes) {
@@ -402,4 +402,6 @@ async function dropOtherTrips(db: MonkiTripsDb, tripIds: ReadonlySet<string>): P
   for (const table of TRIP_SCOPED_TABLES) {
     await db.table(table).where('tripId').anyOf(gone).delete()
   }
+  // Not a sync table, but private to the trip all the same.
+  await db.aiConversations.where('tripId').anyOf(gone).delete()
 }
