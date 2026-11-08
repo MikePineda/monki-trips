@@ -21,5 +21,7 @@ docs {
   (`POST …/ai/actions/:id/accept`). A PDF's text goes to the text model; a
   scan or a photo goes to `LLM_VISION_MODEL`. 503 E_EXTRACTION_UNAVAILABLE
   without one, 402 over the token cap, 429 throttled, 422 E_LLM_BAD_OUTPUT,
-  404 for a document of another trip.
+  404 for a document of another trip, 409 E_DOCUMENT_ALREADY_LINKED for a
+  document already attached to an event, 415 for a PDF that cannot be
+  opened, 413 for a PDF over 10 MB or one whose parse is cut off.
 }
