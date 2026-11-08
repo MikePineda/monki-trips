@@ -52,6 +52,7 @@ export interface ApiDefinition {
     nights: typeof routes['trips.nights']
     budget: typeof routes['trips.budget']
     today: typeof routes['trips.today']
+    weather: typeof routes['trips.weather']
     export: typeof routes['trips.export']
     documents: {
       store: typeof routes['trips.documents.store']

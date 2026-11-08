@@ -93,3 +93,12 @@ export const throttleLlmPerDay = limiter.define('llm_day', (ctx) =>
  * rate limit, which every account shares).
  */
 export const throttleLlm = [throttleLlmPerMinute, throttleLlmPerDay]
+
+/**
+ * Weather lookups: 120 per hour per account. Today asks once per visit and
+ * "Download everything" asks once per trip day ahead (at most 16); the
+ * shared 30-minute cache keeps the provider's free tier far away.
+ */
+export const throttleWeather = limiter.define('weather', (ctx) =>
+  limiter.allowRequests(120).every('1 hour').usingKey(accountKey(ctx))
+)

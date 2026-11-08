@@ -450,6 +450,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/trip_views_controller').default['today']>>>
     }
   }
+  'trips.weather': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/trips/:tripId/weather'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { tripId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>>
+    }
+  }
   'trips.export': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/trips/:tripId/export'
