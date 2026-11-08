@@ -92,6 +92,90 @@
     "removedCopy": "Copia sin conexión eliminada",
     "deleted": "Documento eliminado",
     "updated": "Documento actualizado",
-    "shareFailed": "No se pudo compartir el archivo"
+    "shareFailed": "No se pudo compartir el archivo",
+    "bookingAdded": "Reserva agregada al plan",
+    "bookingDiscarded": "Propuesta descartada"
+  },
+  "read": {
+    "title": "Leer con IA",
+    "action": "Leer esta reserva",
+    "reading": "Kiko está leyendo la reserva…",
+    "privacy": "El archivo se envía al proveedor de IA para leerlo. No se agrega nada hasta que lo aceptes.",
+    "offline": "Necesitas conexión para leer una reserva."
+  },
+  "review": {
+    "title": "Revisa la reserva",
+    "intro": "Esto es lo que dice la reserva. Corrige lo que esté mal y acéptala.",
+    "accept": "Aceptar",
+    "reject": "Descartar",
+    "offline": "Necesitas conexión para aceptarla o descartarla.",
+    "nights": "Noches que cambia",
+    "night": "{{date}}: {{before}} → {{after}}",
+    "noBed": "sin cama",
+    "flag": {
+      "needs_review": "Revísalo",
+      "low_confidence": "No es seguro",
+      "missing": "Falta"
+    },
+    "kind": {
+      "flight": "Vuelo",
+      "train": "Tren",
+      "ferry": "Ferry",
+      "bus": "Bus",
+      "lodging": "Dónde dormimos",
+      "tour": "Tour",
+      "other": "Otro"
+    },
+    "group": {
+      "booking": "Reserva",
+      "segment": "Tramo {{n}}",
+      "when": "Cuándo",
+      "place": "Lugar",
+      "cost": "Costo",
+      "seat": "Asiento {{n}}"
+    },
+    "field": {
+      "kind": "Tipo",
+      "title": "Título",
+      "providerName": "Proveedor",
+      "bookingCode": "Código de reserva",
+      "carrier": "Compañía",
+      "number": "Número",
+      "originName": "Desde",
+      "originCode": "Desde (código)",
+      "destName": "Hasta",
+      "destCode": "Hasta (código)",
+      "departsLocal": "Sale (hora local)",
+      "departsTz": "Zona horaria de salida",
+      "arrivesLocal": "Llega (hora local)",
+      "arrivesTz": "Zona horaria de llegada",
+      "startsLocal": "Empieza (hora local)",
+      "startTz": "Zona horaria de inicio",
+      "endsLocal": "Termina (hora local)",
+      "endTz": "Zona horaria de fin",
+      "placeName": "Lugar",
+      "address": "Dirección",
+      "addressLocal": "Dirección en la escritura local",
+      "cost": "Costo",
+      "costCurrency": "Moneda",
+      "seat": "Asiento",
+      "coach": "Vagón"
+    }
+  },
+  "errors": {
+    "network": "Sin conexión. Inténtalo cuando estés en línea.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo.",
+    "E_EXTRACTION_UNAVAILABLE": "Este servidor no puede leer escaneos ni fotos. Agrega la reserva a mano en Plan.",
+    "E_LLM_UNAVAILABLE": "El lector de IA no está disponible ahora. Inténtalo más tarde o agrega la reserva a mano.",
+    "E_LLM_QUOTA_EXCEEDED": "Usaste la cuota de IA de este mes. Por ahora agrega la reserva a mano.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Espera {{minutes}} min y vuelve a intentarlo.",
+    "E_LLM_BAD_OUTPUT": "No se pudo leer la reserva. Inténtalo de nuevo o agrégala a mano.",
+    "E_UNSUPPORTED_FILE": "Este tipo de archivo no se puede leer. Usa un PDF o una foto.",
+    "E_FILE_TOO_LARGE": "Este archivo es demasiado grande para leerlo.",
+    "E_ROW_NOT_FOUND": "Esto ya no está en el viaje.",
+    "E_AI_ACTION_STALE": "El viaje cambió desde que se leyó. Lee la reserva otra vez.",
+    "E_AI_ACTION_CLOSED": "Esta propuesta ya se decidió o caducó.",
+    "E_AI_ACTION_NOT_REVISABLE": "Esta propuesta ya no se puede cambiar.",
+    "E_VALIDATION_ERROR": "Algunos campos necesitan una corrección."
   }
 }

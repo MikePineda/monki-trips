@@ -92,6 +92,90 @@
     "removedCopy": "Offline copy removed",
     "deleted": "Document deleted",
     "updated": "Document updated",
-    "shareFailed": "Could not share the file"
+    "shareFailed": "Could not share the file",
+    "bookingAdded": "Booking added to the plan",
+    "bookingDiscarded": "Proposal discarded"
+  },
+  "read": {
+    "title": "Read with AI",
+    "action": "Read this booking",
+    "reading": "Kiko is reading the booking…",
+    "privacy": "The file is sent to the AI provider to read it. Nothing is added until you accept.",
+    "offline": "You need a connection to read a booking."
+  },
+  "review": {
+    "title": "Check the booking",
+    "intro": "This is what the booking says. Fix anything that is wrong, then accept.",
+    "accept": "Accept",
+    "reject": "Discard",
+    "offline": "You need a connection to accept or discard it.",
+    "nights": "Nights this changes",
+    "night": "{{date}}: {{before}} → {{after}}",
+    "noBed": "no bed",
+    "flag": {
+      "needs_review": "Check this",
+      "low_confidence": "Not sure",
+      "missing": "Missing"
+    },
+    "kind": {
+      "flight": "Flight",
+      "train": "Train",
+      "ferry": "Ferry",
+      "bus": "Bus",
+      "lodging": "Where we sleep",
+      "tour": "Tour",
+      "other": "Other"
+    },
+    "group": {
+      "booking": "Booking",
+      "segment": "Leg {{n}}",
+      "when": "When",
+      "place": "Place",
+      "cost": "Cost",
+      "seat": "Seat {{n}}"
+    },
+    "field": {
+      "kind": "Type",
+      "title": "Title",
+      "providerName": "Provider",
+      "bookingCode": "Booking code",
+      "carrier": "Carrier",
+      "number": "Number",
+      "originName": "From",
+      "originCode": "From (code)",
+      "destName": "To",
+      "destCode": "To (code)",
+      "departsLocal": "Departs (local time)",
+      "departsTz": "Departure time zone",
+      "arrivesLocal": "Arrives (local time)",
+      "arrivesTz": "Arrival time zone",
+      "startsLocal": "Starts (local time)",
+      "startTz": "Start time zone",
+      "endsLocal": "Ends (local time)",
+      "endTz": "End time zone",
+      "placeName": "Place",
+      "address": "Address",
+      "addressLocal": "Address in the local script",
+      "cost": "Cost",
+      "costCurrency": "Currency",
+      "seat": "Seat",
+      "coach": "Coach"
+    }
+  },
+  "errors": {
+    "network": "No connection. Try again when you are online.",
+    "unknown": "Something went wrong. Try again.",
+    "E_EXTRACTION_UNAVAILABLE": "This server cannot read scans or photos. Add the booking by hand in Plan.",
+    "E_LLM_UNAVAILABLE": "The AI reader is not available right now. Try again later or add the booking by hand.",
+    "E_LLM_QUOTA_EXCEEDED": "You have used this month's AI allowance. Add the booking by hand for now.",
+    "E_TOO_MANY_REQUESTS": "Too many tries. Wait {{minutes}} min and try again.",
+    "E_LLM_BAD_OUTPUT": "The booking could not be read. Try again or add it by hand.",
+    "E_UNSUPPORTED_FILE": "This file type cannot be read. Use a PDF or a photo.",
+    "E_FILE_TOO_LARGE": "This file is too large to read.",
+    "E_ROW_NOT_FOUND": "This is no longer on the trip.",
+    "E_AI_ACTION_STALE": "The trip changed since this was read. Read the booking again.",
+    "E_AI_ACTION_CLOSED": "This proposal was already decided or has expired.",
+    "E_AI_ACTION_NOT_REVISABLE": "This proposal can no longer be changed.",
+    "E_VALIDATION_ERROR": "Some fields need a fix."
   }
 }

@@ -9,6 +9,7 @@ import {
 } from '@angular/core'
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import type { DocumentTag } from '@monkitrips/shared'
+import { type ApiFailure, toApiFailure } from '../../core/api/api-failure'
 import { intlLocale } from '../../core/i18n/intl-locale'
 import { DocumentCopiesStore, type StorageStatus } from '../../core/offline/document-copies.store'
 import { DocumentsStore } from '../../core/offline/documents.store'
@@ -17,9 +18,11 @@ import { documentRecord, tripEvents } from '../../core/offline/trip-queries'
 import { documentOfflineState } from '../../domain/document-offline-state'
 import { formatFileSize } from '../../domain/file-size'
 import { storagePressure } from '../../domain/storage-warning'
+import { MkApiErrorComponent } from '../../shared/ui/api-error/api-error.component'
 import { MkBannerComponent } from '../../shared/ui/banner/banner.component'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkChipComponent } from '../../shared/ui/chip/chip.component'
+import { MkEmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component'
 import { MkDocumentPreviewComponent } from '../../shared/ui/document-preview/document-preview.component'
 import { MkFieldComponent } from '../../shared/ui/field/field.component'
 import { MkInputDirective } from '../../shared/ui/field/input.directive'
@@ -30,10 +33,19 @@ import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkListRowComponent } from '../../shared/ui/list/list-row.component'
 import { MkListComponent } from '../../shared/ui/list/list.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
+import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkSwitchComponent } from '../../shared/ui/switch/switch.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { TOAST_WITH_ACTION_DURATION_MS, ToastService } from '../../shared/ui/toast/toast.service'
+import { BOOKING_EXTRACTION_API } from './booking-extraction-api'
+import { readableAsBooking } from './booking-readable'
+import {
+  BookingReviewSheet,
+  type BookingReviewData,
+  type BookingReviewResult,
+} from './booking-review.sheet'
 import { provideDocsI18n } from './docs-i18n'
+import { EXTRACTION_ERROR_CODES } from './extraction-error-codes'
 import { fileOf, download, shareOrDownload } from './document-share'
 import { OFFLINE_STATE_LOOK, TAGS, TAG_ICONS, toggleTag } from './document-tags'
 
@@ -47,17 +59,21 @@ export interface DocumentDetailData {
  * there is one, so it opens offline; images by object URL, PDFs drawn by
  * pdf.js), download, share, the "Save offline" switch with the device's
  * storage estimate, the tags and the event, delete with undo. A link opens
- * in the browser instead.
+ * in the browser instead. A PDF or a photo can be read as a booking
+ * (online, through the AI provider): the proposal opens in the review
+ * sheet and nothing is written until the member accepts it.
  */
 @Component({
   selector: 'app-document-detail-sheet',
   imports: [
     TranslocoPipe,
     MkSheetComponent,
+    MkApiErrorComponent,
     MkBannerComponent,
     MkButtonComponent,
     MkChipComponent,
     MkDocumentPreviewComponent,
+    MkEmptyStateComponent,
     MkFieldComponent,
     MkInputDirective,
     MkIconComponent,
@@ -151,6 +167,47 @@ export interface DocumentDetailData {
                 </button>
               </mk-row>
             </mk-stack>
+
+            @if (readable()) {
+              <mk-section [eyebrow]="'docs.read.title' | transloco">
+                <mk-stack gap="1" data-testid="docs.detail.read">
+                  @if (reading()) {
+                    <mk-empty-state
+                      mascot="thinking"
+                      [title]="'docs.read.reading' | transloco"
+                      data-testid="docs.detail.reading"
+                    />
+                  } @else {
+                    <button
+                      mk-button
+                      variant="secondary"
+                      size="block"
+                      type="button"
+                      [disabled]="!online()"
+                      data-testid="docs.detail.readBooking"
+                      (click)="readBooking()"
+                    >
+                      <mk-icon name="file-text" [size]="18" />
+                      {{ 'docs.read.action' | transloco }}
+                    </button>
+                  }
+                  @if (!online()) {
+                    <p mk-text variant="caption" tone="ink-2" data-testid="docs.detail.readOffline">
+                      {{ 'docs.read.offline' | transloco }}
+                    </p>
+                  }
+                  <p mk-text variant="caption" tone="ink-2" data-testid="docs.detail.readPrivacy">
+                    {{ 'docs.read.privacy' | transloco }}
+                  </p>
+                  <mk-api-error
+                    [failure]="readFailure()"
+                    scope="docs"
+                    [knownCodes]="readErrorCodes"
+                    testId="docs.detail.readError"
+                  />
+                </mk-stack>
+              </mk-section>
+            }
 
             <mk-section [eyebrow]="'docs.detail.offlineState' | transloco">
               <mk-stack gap="1">
@@ -281,6 +338,8 @@ export class DocumentDetailSheet {
   private readonly store = inject(DocumentsStore)
   private readonly copies = inject(DocumentCopiesStore)
   private readonly toasts = inject(ToastService)
+  private readonly sheets = inject(SheetService)
+  private readonly extraction = inject(BOOKING_EXTRACTION_API)
   private readonly transloco = inject(TranslocoService)
   private readonly window = inject(DOCUMENT).defaultView
   private readonly locale = intlLocale()
@@ -289,6 +348,7 @@ export class DocumentDetailSheet {
   protected readonly tags = TAGS
   protected readonly tagIcons = TAG_ICONS
   protected readonly look = OFFLINE_STATE_LOOK
+  protected readonly readErrorCodes = EXTRACTION_ERROR_CODES
 
   private readonly docId = signal(this.data.docId)
   private readonly tripId = signal(this.data.tripId)
@@ -301,6 +361,10 @@ export class DocumentDetailSheet {
   protected readonly opening = signal(false)
   protected readonly bytes = signal<Blob | null>(null)
   protected readonly needsConnection = signal(false)
+  protected readonly reading = signal(false)
+  protected readonly readFailure = signal<ApiFailure | null>(null)
+  /** A PDF or an image file can be read as a booking. */
+  protected readonly readable = computed(() => readableAsBooking(this.document()))
   private readonly device = signal<Pick<StorageStatus, 'estimate' | 'persisted'> | null>(null)
   /** The estimate read on open and after each change, against the copies' live size. */
   protected readonly storage = computed<StorageStatus | null>(() => {
@@ -362,6 +426,27 @@ export class DocumentDetailSheet {
       }
     } catch {
       this.toasts.show({ message: this.transloco.translate('docs.toast.shareFailed') })
+    }
+  }
+
+  /** Asks the server to read the file, then opens the proposal for review. */
+  protected async readBooking(): Promise<void> {
+    const document = this.document()
+    if (!document || !this.online() || this.reading()) {
+      return
+    }
+    this.reading.set(true)
+    this.readFailure.set(null)
+    try {
+      const action = await this.extraction.extract(this.data.tripId, document.id)
+      this.sheets.open<BookingReviewResult, BookingReviewData>(BookingReviewSheet, {
+        data: { tripId: this.data.tripId, action },
+        label: this.transloco.translate('docs.review.title'),
+      })
+    } catch (error) {
+      this.readFailure.set(toApiFailure(error))
+    } finally {
+      this.reading.set(false)
     }
   }
 

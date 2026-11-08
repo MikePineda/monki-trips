@@ -1,5 +1,6 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog'
 import { TestBed } from '@angular/core/testing'
+import type { AiAction } from '@monkitrips/shared'
 import { DEMO_TRIP_RECORD } from '../../../testing/fake-trip-content'
 import { FakeDeviceStorage } from '../../../testing/fake-device-storage'
 import { FakeDocumentsApi, documentRow } from '../../../testing/fake-documents-api'
@@ -10,21 +11,52 @@ import {
   resetOfflineTesting,
 } from '../../../testing/offline-testing'
 import { settle } from '../../../testing/settle'
+import { ApiFailure } from '../../core/api/api-failure'
 import type { MonkiTripsDb } from '../../core/offline/db'
 import { DocumentCopiesStore } from '../../core/offline/document-copies.store'
 import { toDocumentRecord } from '../../core/offline/document-record'
 import { PDF_RENDERER } from '../../shared/ui/document-preview/pdf-renderer'
+import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { ToastService } from '../../shared/ui/toast/toast.service'
+import { BOOKING_EXTRACTION_API, type BookingExtractionApi } from './booking-extraction-api'
+import { BookingReviewSheet } from './booking-review.sheet'
 import { DocumentDetailSheet, type DocumentDetailData } from './document-detail.sheet'
 
 const BYTES = '%PDF-voucher'
 const BYTES_SHA = '11ab3b6b17c86444aa1357652cbcb92886fa5a53315409760f52512eabe6d76f'
+
+/** A proposed extract_booking action; the review sheet's own spec covers its contents. */
+const PROPOSED = { id: 'act-1', tool: 'extract_booking', status: 'proposed' } as AiAction
+
+/** The extraction routes, answering what the spec sets. */
+class ScriptedExtractionApi implements BookingExtractionApi {
+  extracted: string[] = []
+  answer: () => Promise<AiAction> = () => Promise.resolve(PROPOSED)
+
+  extract(_tripId: string, documentId: string): Promise<AiAction> {
+    this.extracted.push(documentId)
+    return this.answer()
+  }
+
+  revise(): Promise<AiAction> {
+    return Promise.reject(new Error('not used here'))
+  }
+
+  accept(): Promise<AiAction> {
+    return Promise.reject(new Error('not used here'))
+  }
+
+  reject(): Promise<AiAction> {
+    return Promise.reject(new Error('not used here'))
+  }
+}
 
 describe('DocumentDetailSheet', () => {
   let db: MonkiTripsDb
   let api: FakeDocumentsApi
   let storage: FakeDeviceStorage
   let rendered: number
+  let extraction: ScriptedExtractionApi
 
   beforeEach(async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
@@ -32,6 +64,7 @@ describe('DocumentDetailSheet', () => {
     api = new FakeDocumentsApi()
     storage = new FakeDeviceStorage()
     rendered = 0
+    extraction = new ScriptedExtractionApi()
     api.files.set('voucher', new Blob([BYTES], { type: 'application/pdf' }))
     TestBed.configureTestingModule({
       imports: [DocumentDetailSheet, i18nTesting()],
@@ -49,6 +82,7 @@ describe('DocumentDetailSheet', () => {
           useValue: { tripId: 'trip-1', docId: 'voucher' } satisfies DocumentDetailData,
         },
         { provide: DialogRef, useValue: { close: () => undefined } },
+        { provide: BOOKING_EXTRACTION_API, useValue: extraction },
       ],
     })
     await db.trips.put(DEMO_TRIP_RECORD)
@@ -180,5 +214,94 @@ describe('DocumentDetailSheet', () => {
     await vi.waitFor(async () =>
       expect((await db.tasks.toArray()).map((task) => task.sourceDocumentId)).toEqual(['voucher'])
     )
+  })
+
+  it('read this booking is offered only for pdf and image files and only online', async () => {
+    const offered = async (overrides: Parameters<typeof documentRow>[0]) => {
+      await db.docs.put(toDocumentRecord(documentRow({ id: 'voucher', ...overrides })))
+      const { fixture, host } = await render()
+      const button = host.querySelector('[data-testid="docs.detail.readBooking"]')
+      const answer = button ? (button.hasAttribute('disabled') ? 'disabled' : 'enabled') : 'absent'
+      fixture.destroy()
+      return answer
+    }
+
+    expect(await offered({ mime: 'application/pdf' })).toBe('enabled')
+    expect(await offered({ mime: 'image/jpeg' })).toBe('enabled')
+    expect(await offered({ mime: 'text/plain' })).toBe('absent')
+    expect(await offered({ mime: null })).toBe('absent')
+    expect(
+      await offered({
+        kind: 'link',
+        mime: null,
+        url: 'https://example.com/voucher',
+        sizeBytes: null,
+      })
+    ).toBe('absent')
+
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    window.dispatchEvent(new Event('offline'))
+    await db.docs.put(toDocumentRecord(documentRow({ id: 'voucher' })))
+    const { host } = await render()
+    expect(
+      host.querySelector('[data-testid="docs.detail.readBooking"]')?.hasAttribute('disabled')
+    ).toBe(true)
+    expect(host.querySelector('[data-testid="docs.detail.readOffline"]')?.textContent).toContain(
+      'You need a connection to read a booking.'
+    )
+  })
+
+  it('read this booking says the file is sent to the ai provider', async () => {
+    const { host } = await render()
+
+    expect(host.querySelector('[data-testid="docs.detail.readPrivacy"]')?.textContent).toContain(
+      'The file is sent to the AI provider'
+    )
+  })
+
+  it('read this booking shows kiko thinking, then opens the proposal for review', async () => {
+    let answer!: (action: AiAction) => void
+    extraction.answer = () => new Promise((resolve) => (answer = resolve))
+    const open = vi.spyOn(TestBed.inject(SheetService), 'open').mockReturnValue(null as never)
+    const { host, until, click } = await render()
+
+    await click('docs.detail.readBooking')
+
+    await until(() =>
+      expect(host.querySelector('[data-testid="docs.detail.reading"] mk-mascot')).not.toBeNull()
+    )
+    expect(
+      host
+        .querySelector('[data-testid="docs.detail.reading"] mk-mascot')
+        ?.getAttribute('data-state')
+    ).toBe('thinking')
+    answer(PROPOSED)
+    await until(() => expect(open).toHaveBeenCalledTimes(1))
+    expect(open.mock.calls[0][0]).toBe(BookingReviewSheet)
+    expect(open.mock.calls[0][1]?.data).toEqual({ tripId: 'trip-1', action: PROPOSED })
+    expect(extraction.extracted).toEqual(['voucher'])
+    await until(() => expect(host.querySelector('[data-testid="docs.detail.reading"]')).toBeNull())
+  })
+
+  it('extraction unavailable shows that the server cannot read scans', async () => {
+    extraction.answer = () =>
+      Promise.reject(
+        new ApiFailure({
+          kind: 'http',
+          status: 503,
+          code: 'E_EXTRACTION_UNAVAILABLE',
+          message: 'No vision model',
+        })
+      )
+    const { host, until, click } = await render()
+
+    await click('docs.detail.readBooking')
+
+    await until(() => {
+      const error = host.querySelector('[data-testid="docs.detail.readError"]')
+      expect(error?.getAttribute('data-code')).toBe('E_EXTRACTION_UNAVAILABLE')
+      expect(error?.textContent).toContain('This server cannot read scans or photos')
+      expect(error?.textContent).toContain('by hand')
+    })
   })
 })

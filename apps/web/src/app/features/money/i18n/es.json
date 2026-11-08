@@ -152,5 +152,38 @@
     "paid": "{{from}} pagó a {{to}}",
     "history": "Saldado",
     "leftTrip": "dejó el viaje y no se puede saldar aquí"
+  },
+  "scan": {
+    "action": "Escanear recibo",
+    "reading": "Kiko está leyendo el recibo…",
+    "privacy": "La foto se envía al proveedor de IA para leerla y no se guarda.",
+    "offline": "Necesitas conexión para escanear un recibo.",
+    "confirm": "Revisa lo que dice el recibo y guarda.",
+    "from": "De {{merchant}}",
+    "date": "Fecha",
+    "flagged": "{{field}}: {{reason}}",
+    "flag": {
+      "needs_review": "Revísalo",
+      "low_confidence": "No es seguro",
+      "missing": "Falta"
+    },
+    "field": {
+      "amount": "Monto",
+      "currency": "Moneda",
+      "spentOn": "Fecha",
+      "categoryKey": "Categoría",
+      "merchant": "Comercio"
+    }
+  },
+  "errors": {
+    "network": "Sin conexión. Inténtalo cuando estés en línea.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo.",
+    "E_EXTRACTION_UNAVAILABLE": "Este servidor no puede leer fotos. Escribe el monto.",
+    "E_LLM_UNAVAILABLE": "El lector de IA no está disponible ahora. Escribe el monto.",
+    "E_LLM_QUOTA_EXCEEDED": "Usaste la cuota de IA de este mes. Escribe el monto.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos. Espera {{minutes}} min y vuelve a intentarlo.",
+    "E_LLM_BAD_OUTPUT": "No se pudo leer el recibo. Prueba con otra foto o escribe el monto.",
+    "E_UNSUPPORTED_FILE": "Esta foto no se puede leer. Usa una imagen JPEG, PNG o WebP.",
+    "E_FILE_TOO_LARGE": "Esta foto es demasiado grande para leerla."
   }
 }

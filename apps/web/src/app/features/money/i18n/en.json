@@ -152,5 +152,38 @@
     "paid": "{{from}} paid {{to}}",
     "history": "Settled",
     "leftTrip": "left the trip and cannot be settled here"
+  },
+  "scan": {
+    "action": "Scan receipt",
+    "reading": "Kiko is reading the receipt…",
+    "privacy": "The photo is sent to the AI provider to read it and is not kept.",
+    "offline": "You need a connection to scan a receipt.",
+    "confirm": "Check what the receipt says, then save.",
+    "from": "From {{merchant}}",
+    "date": "Date",
+    "flagged": "{{field}}: {{reason}}",
+    "flag": {
+      "needs_review": "Check this",
+      "low_confidence": "Not sure",
+      "missing": "Missing"
+    },
+    "field": {
+      "amount": "Amount",
+      "currency": "Currency",
+      "spentOn": "Date",
+      "categoryKey": "Category",
+      "merchant": "Shop"
+    }
+  },
+  "errors": {
+    "network": "No connection. Try again when you are online.",
+    "unknown": "Something went wrong. Try again.",
+    "E_EXTRACTION_UNAVAILABLE": "This server cannot read photos. Type the amount instead.",
+    "E_LLM_UNAVAILABLE": "The AI reader is not available right now. Type the amount instead.",
+    "E_LLM_QUOTA_EXCEEDED": "You have used this month's AI allowance. Type the amount instead.",
+    "E_TOO_MANY_REQUESTS": "Too many tries. Wait {{minutes}} min and try again.",
+    "E_LLM_BAD_OUTPUT": "The receipt could not be read. Try another photo or type the amount.",
+    "E_UNSUPPORTED_FILE": "This photo cannot be read. Use a JPEG, PNG or WebP picture.",
+    "E_FILE_TOO_LARGE": "This photo is too large to read."
   }
 }
