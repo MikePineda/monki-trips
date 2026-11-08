@@ -17,7 +17,45 @@ import type { MonkiTripsDb } from '../../core/offline/db'
 import { OnlineStore } from '../../core/offline/online.store'
 import { FAKE_SESSION_USER } from '../../../testing/fake-session-api'
 import { SessionStore } from '../../core/session/session.store'
+import { blankStop } from '../../../testing/fake-trip-content'
+import { expenseRecord } from '../../../testing/money-fixtures'
+import { MetaStore } from '../../core/offline/meta.store'
 import TripsPage from './trips.page'
+
+/** TEST_NOW is 2026-11-07: one trip on the road, one coming up, one we are back from. */
+const ONGOING = {
+  ...DEVICE_TRIP_FIELDS(),
+  id: 'on',
+  name: 'Long loop',
+  startDate: '2026-11-01',
+  endDate: '2026-11-20',
+}
+const UPCOMING = {
+  ...DEVICE_TRIP_FIELDS(),
+  id: 'up',
+  name: 'Snow week',
+  startDate: '2027-02-01',
+  endDate: '2027-02-07',
+}
+const PAST = {
+  ...DEVICE_TRIP_FIELDS(),
+  id: 'past',
+  name: 'Island hop',
+  startDate: '2026-05-01',
+  endDate: '2026-05-10',
+}
+/** Back four days ago: Kiko still celebrates. */
+const JUST_BACK = {
+  ...DEVICE_TRIP_FIELDS(),
+  id: 'back',
+  name: 'Coast run',
+  startDate: '2026-10-25',
+  endDate: '2026-11-03',
+}
+
+function DEVICE_TRIP_FIELDS() {
+  return { baseCurrency: 'EUR', updatedAt: '2026-11-07T00:00:00.000Z' }
+}
 
 const DEVICE_TRIP = {
   id: 'trip-1',
@@ -143,6 +181,204 @@ describe('TripsPage', () => {
       '/verify-email'
     )
     expect(host.querySelector('[data-testid="trips.create"]')).toBeNull()
+  })
+
+  it('history groups trips by phase: on the road, coming up, then where we have been', async () => {
+    vi.spyOn(TestBed.inject(OnlineStore), 'online').mockReturnValue(false)
+    await db.trips.bulkPut([PAST, UPCOMING, ONGOING])
+    const { fixture, host } = await render()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelectorAll('[data-testid="trips.item"]')).toHaveLength(3)
+    })
+    const sections = [...host.querySelectorAll('[data-testid^="history."]')]
+      .map((section) => section.getAttribute('data-testid'))
+      .filter((id) => ['history.ongoing', 'history.upcoming', 'history.past'].includes(id!))
+    expect(sections).toEqual(['history.ongoing', 'history.upcoming', 'history.past'])
+    const names = (phase: string) =>
+      [...host.querySelectorAll(`[data-testid="history.${phase}"] [data-testid="trips.item"]`)].map(
+        (item) => item.querySelector('.mk-trip-ticket__title')?.textContent?.trim()
+      )
+    expect(names('ongoing')).toEqual(['Long loop'])
+    expect(names('upcoming')).toEqual(['Snow week'])
+    expect(names('past')).toEqual(['Island hop'])
+    expect(host.querySelector('[data-testid="history.ongoing"]')?.textContent).toContain(
+      'Day 7 of 20'
+    )
+    expect(host.querySelector('[data-testid="history.upcoming"]')?.textContent).toContain(
+      'In 86 days'
+    )
+    expect(host.querySelector('[data-testid="history.noPast"]')).toBeNull()
+  })
+
+  it('a past trip is a ticket with its route, days, nights, countries, total spent and cover stamp', async () => {
+    vi.spyOn(TestBed.inject(OnlineStore), 'online').mockReturnValue(false)
+    await db.trips.put(PAST)
+    await db.stops.bulkPut([
+      blankStop({
+        id: 's1',
+        tripId: 'past',
+        position: 0,
+        name: 'Harbour City',
+        countryCode: 'XC',
+        arriveOn: '2026-05-01',
+        departOn: '2026-05-05',
+      }),
+      blankStop({
+        id: 's2',
+        tripId: 'past',
+        position: 1,
+        name: 'Old Town',
+        countryCode: 'XD',
+        arriveOn: '2026-05-05',
+        departOn: '2026-05-10',
+      }),
+    ])
+    await db.expenses.bulkPut([
+      expenseRecord({ id: 'x1', tripId: 'past', baseAmountMinor: 12_000 }),
+      expenseRecord({ id: 'x2', tripId: 'past', baseAmountMinor: 3_050 }),
+    ])
+    const { fixture, host } = await render()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelector('[data-testid="trips.item.stamp"]')).not.toBeNull()
+    })
+    const ticket = host.querySelector('[data-testid="trips.item"]')!
+    const text = ticket.textContent!.replace(/\s+/g, ' ')
+    expect(ticket.getAttribute('href')).toBe('/t/past/today')
+    expect(text).toContain('Harbour City → Old Town')
+    expect(text).toContain('10 days · 9 nights · 2 countries')
+    expect(text).toContain('2026-05-01 to 2026-05-10')
+    expect(ticket.querySelector('[data-testid="mk-trip-ticket.amount"]')?.textContent?.trim()).toBe(
+      '€150.50'
+    )
+    const stamp = ticket.querySelector('[data-testid="trips.item.stamp"]')!
+    expect(stamp.getAttribute('data-code')).toBe('XC')
+    expect(stamp.getAttribute('aria-label')).toBe('Stamp of Harbour City')
+    expect(stamp.hasAttribute('data-reached')).toBe(true)
+  })
+
+  it('without a past trip, Kiko says the stamps land here when a trip ends', async () => {
+    vi.spyOn(TestBed.inject(OnlineStore), 'online').mockReturnValue(false)
+    await db.trips.put(UPCOMING)
+    const { fixture, host } = await render()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelector('[data-testid="history.noPast"]')).not.toBeNull()
+    })
+    expect(
+      host.querySelector('[data-testid="history.noPast"] mk-mascot')?.getAttribute('data-state')
+    ).toBe('asleep')
+    expect(host.querySelector('[data-testid="history.noPast"]')?.textContent).toContain(
+      SCOPE_CATALOGUES.history.en.empty.pastTitle
+    )
+  })
+
+  it('a trip that ended this week has Kiko celebrating its new stamps, stamped in only the first time', async () => {
+    vi.spyOn(TestBed.inject(OnlineStore), 'online').mockReturnValue(false)
+    await db.trips.bulkPut([JUST_BACK, PAST])
+    await db.stops.bulkPut([
+      blankStop({
+        id: 's1',
+        tripId: 'back',
+        position: 0,
+        name: 'Lantern Bay',
+        countryCode: 'XC',
+        arriveOn: '2026-10-25',
+        departOn: '2026-10-30',
+      }),
+      blankStop({
+        id: 's2',
+        tripId: 'back',
+        position: 1,
+        name: 'Saltmarsh',
+        countryCode: 'XC',
+        arriveOn: '2026-10-30',
+        departOn: '2026-11-03',
+      }),
+      blankStop({
+        id: 's3',
+        tripId: 'past',
+        position: 0,
+        name: 'Old Town',
+        countryCode: 'XD',
+        arriveOn: '2026-05-01',
+        departOn: '2026-05-10',
+      }),
+    ])
+    const { fixture, host } = await render()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelectorAll('[data-testid="history.newStamp"]')).toHaveLength(3)
+    })
+    const party = host.querySelector('[data-testid="history.celebration"]')!
+    expect(party.querySelector('mk-mascot')?.getAttribute('data-state')).toBe('celebrating')
+    expect(party.textContent).toContain(SCOPE_CATALOGUES.history.en.celebration.title)
+    expect(party.textContent).toContain('Coast run is in the passport')
+    expect(
+      [...party.querySelectorAll('[data-testid="history.newStamp"]')].map((stamp) =>
+        stamp.getAttribute('aria-label')
+      )
+    ).toEqual(['XC', 'Lantern Bay', 'Saltmarsh'])
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(
+        party.querySelector('[data-testid="history.newStamp"]')?.hasAttribute('data-animate')
+      ).toBe(true)
+    })
+    expect(await TestBed.inject(MetaStore).get('history.stampsSeen.back')).toBe(true)
+    expect(party.querySelector('[data-testid="history.openPassport"]')?.getAttribute('href')).toBe(
+      '/passport'
+    )
+  })
+
+  it('the new stamps do not stamp themselves in again on the next visit', async () => {
+    vi.spyOn(TestBed.inject(OnlineStore), 'online').mockReturnValue(false)
+    await db.trips.put(JUST_BACK)
+    await db.stops.put(
+      blankStop({
+        id: 's1',
+        tripId: 'back',
+        name: 'Lantern Bay',
+        countryCode: 'XC',
+        arriveOn: '2026-10-25',
+        departOn: '2026-10-30',
+      })
+    )
+    await TestBed.inject(MetaStore).set('history.stampsSeen.back', true)
+    const { fixture, host } = await render()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelector('[data-testid="history.newStamp"]')).not.toBeNull()
+    })
+    await settle(fixture)
+    expect(
+      host.querySelector('[data-testid="history.newStamp"]')?.hasAttribute('data-animate')
+    ).toBe(false)
+  })
+
+  it('nothing to celebrate once the week after the trip is over', async () => {
+    vi.spyOn(TestBed.inject(OnlineStore), 'online').mockReturnValue(false)
+    await db.trips.put(PAST)
+    const { fixture, host } = await render()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(host.querySelector('[data-testid="trips.item"]')).not.toBeNull()
+    })
+    expect(host.querySelector('[data-testid="history.celebration"]')).toBeNull()
+  })
+
+  it('opens the passport from the header', async () => {
+    const { host } = await render()
+    expect(host.querySelector('[data-testid="trips.passport"]')?.getAttribute('href')).toBe(
+      '/passport'
+    )
   })
 
   it('creates a trip from the sheet and opens it', async () => {

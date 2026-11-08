@@ -156,6 +156,15 @@ describe('app routes', () => {
     expect((await navigate('/settings')).has('settings.lang.en')).toBe(true)
   })
 
+  it('the passport and its map open from the trip list, inside the shell', async () => {
+    expect((await navigate('/trips')).has('trips.passport')).toBe(true)
+    expect((await navigate('/passport')).has('passport.empty')).toBe(true)
+    const map = await navigate('/passport/map')
+    expect(map.url).toBe('/passport/map')
+    expect(map.has('passport.map')).toBe(true)
+    expect(map.has('shell.nav.settings')).toBe(true)
+  })
+
   it('unknown paths fall back to the trip list', async () => {
     expect((await navigate('/nowhere')).url).toBe('/trips')
   })

@@ -1,0 +1,37 @@
+{
+  "title": "Nuestros viajes",
+  "passport": "Pasaporte",
+  "sections": {
+    "ongoing": "En ruta",
+    "upcoming": "Próximos",
+    "past": "Donde hemos estado"
+  },
+  "eyebrow": {
+    "ongoing": "Día {{day}} de {{total}}",
+    "upcomingOne": "En {{count}} día",
+    "upcomingOther": "En {{count}} días",
+    "pastOne": "De vuelta hace {{count}} día",
+    "pastOther": "De vuelta hace {{count}} días",
+    "pastLong": "{{date}}"
+  },
+  "stats": {
+    "daysOne": "{{count}} día",
+    "daysOther": "{{count}} días",
+    "nightsOne": "{{count}} noche",
+    "nightsOther": "{{count}} noches",
+    "countriesOne": "{{count}} país",
+    "countriesOther": "{{count}} países"
+  },
+  "spent": "Gastado {{amount}}",
+  "cover": "Sello de {{place}}",
+  "celebration": {
+    "title": "Sellos nuevos",
+    "body": "{{trip}} ya está en el pasaporte. ¡Bienvenidos de vuelta!",
+    "open": "Abrir el pasaporte",
+    "mascot": "Kiko celebrando"
+  },
+  "empty": {
+    "pastTitle": "Aún no hay sellos",
+    "pastBody": "Cuando termina un viaje, sus países y ciudades llegan al pasaporte."
+  }
+}

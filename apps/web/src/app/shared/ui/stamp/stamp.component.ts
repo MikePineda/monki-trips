@@ -41,7 +41,7 @@ let nextId = 0
     '[attr.data-animate]': 'animate() ? "" : null',
     '[style.--mk-stamp-size.px]': 'px()',
     '[style.--mk-stamp-rotation.deg]': 'rotation()',
-    '[style.--mk-stamp-ink]': 'artwork() ? null : design().inkVar',
+    '[style.--mk-stamp-ink]': 'artwork() ? "var(--stamp-ink)" : design().inkVar',
     '[style.--mk-stamp-artwork]': 'artwork() ? "url(" + artwork() + ")" : null',
   },
   styles: `
@@ -51,7 +51,7 @@ let nextId = 0
       width: var(--mk-stamp-size);
       height: var(--mk-stamp-size);
       flex: none;
-      color: var(--mk-stamp-ink, var(--stamp-ink));
+      color: var(--mk-stamp-ink);
       transform: rotate(var(--mk-stamp-rotation));
     }
     :host(:not([data-reached])) {
@@ -270,7 +270,8 @@ export class MkStampComponent {
       place: this.name(),
       date: this.isoDate(),
       label: this.isoDate() ? null : this.date(),
-      code: this.code(),
+      // `XA-HARBOUR CITY` (a city's artwork key) prints as its country, `XA`.
+      code: this.code().split('-')[0],
       arrivedBy: this.arrivedBy(),
     })
   )

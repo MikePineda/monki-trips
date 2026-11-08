@@ -23,6 +23,10 @@ import planEn from '../app/features/plan/i18n/en.json'
 import planEs from '../app/features/plan/i18n/es.json'
 import eventsEn from '../app/features/plan/events/i18n/en.json'
 import eventsEs from '../app/features/plan/events/i18n/es.json'
+import historyEn from '../app/features/trips/i18n/en.json'
+import historyEs from '../app/features/trips/i18n/es.json'
+import passportEn from '../app/features/passport/i18n/en.json'
+import passportEs from '../app/features/passport/i18n/es.json'
 import todayEn from '../app/features/today/i18n/en.json'
 import todayEs from '../app/features/today/i18n/es.json'
 import tasksEn from '../app/features/tasks/i18n/en.json'
@@ -52,9 +56,11 @@ export const SCOPE_CATALOGUES = {
   docs: { en: docsEn, es: docsEs },
   emergency: { en: emergencyEn, es: emergencyEs },
   events: { en: eventsEn, es: eventsEs },
+  history: { en: historyEn, es: historyEs },
   members: { en: membersEn, es: membersEs },
   money: { en: moneyEn, es: moneyEs },
   offline: { en: offlineEn, es: offlineEs },
+  passport: { en: passportEn, es: passportEs },
   phrases: { en: phrasesEn, es: phrasesEs },
   plan: { en: planEn, es: planEs },
   settings: { en: settingsEn, es: settingsEs },

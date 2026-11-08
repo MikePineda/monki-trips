@@ -7,9 +7,9 @@ import { tripMemberGuard } from './core/session/trip-member.guard'
 /**
  * Top-level routes. `auth-layout` frames the public pages (sign-in, sign-up,
  * invitations, e-mail verification, password reset); the shell frames the
- * trip list, the not-found page, the share inbox and settings behind
- * `authGuard`; the trip shell (`/t/:tripId`) adds `tripMemberGuard` and the
- * five tabs. `/t/current` resolves the active trip (manifest shortcut).
+ * trip list, the passport and its map, the not-found page, the share inbox
+ * and settings behind `authGuard`; the trip shell (`/t/:tripId`) adds
+ * `tripMemberGuard` and the five tabs. `/t/current` resolves the active trip (manifest shortcut).
  * `/styleguide` is public. Unknown paths go to the trip list.
  */
 /**
@@ -62,6 +62,11 @@ export const routes: Routes = [
       { path: 'trips', loadComponent: () => import('./features/trips/trips.page') },
       { path: 'not-found', loadComponent: () => import('./features/trips/trip-not-found.page') },
       { path: 'share', loadComponent: () => import('./features/share/share-inbox.page') },
+      { path: 'passport', loadComponent: () => import('./features/passport/passport.page') },
+      {
+        path: 'passport/map',
+        loadComponent: () => import('./features/passport/passport-map.page'),
+      },
       settingsRoute('settings'),
     ],
   },
