@@ -7,7 +7,8 @@ import { validateToolInput } from '#services/assistant/tool_input'
 import { Clock } from '#services/clock'
 import { TripContent } from '#services/trip_content'
 import { taskUrgency } from '#domain/task_urgency'
-import { ASSISTANT_MAX_LIST_ROWS } from '#config/assistant'
+import { ASSISTANT_MAX_LIST_ROWS, ASSISTANT_NOTES_MAX_CHARS } from '#config/assistant'
+import { clipText } from '#domain/clip_text'
 
 const input = vine.compile(vine.object({ includeDone: vine.boolean().optional() }))
 
@@ -41,7 +42,7 @@ export class ListTasksTool implements AssistantTool {
         id: task.id,
         title: task.title,
         titleKey: task.titleKey,
-        notes: task.notes,
+        notes: clipText(task.notes, ASSISTANT_NOTES_MAX_CHARS),
         dueOn: task.dueOn,
         priority: task.priority,
         eventId: task.eventId,
