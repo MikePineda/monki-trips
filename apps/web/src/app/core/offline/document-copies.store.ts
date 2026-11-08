@@ -2,6 +2,7 @@ import { Injectable, Injector, computed, inject, signal } from '@angular/core'
 import { DOCUMENTS_API } from '../api/documents-api'
 import { storagePressure, type StoragePressure } from '../../domain/storage-warning'
 import { CLOCK } from './clock'
+import { docBlob } from './doc-blob'
 import { DEVICE_STORAGE, type StorageEstimateBytes } from './device-storage'
 import { liveSignal } from './live'
 import { MetaStore } from './meta.store'
@@ -46,7 +47,7 @@ export interface StorageStatus extends StoragePressure {
 /**
  * Offline copies of document files, in Dexie `docBlobs` (not Cache
  * Storage, so the hash can be checked): "Save offline" fetches the bytes
- * through the short signed URL, hashes them and keeps blob + sha256; the
+ * through the short signed URL, hashes them and keeps bytes + sha256; the
  * list compares that hash with the server's. The first save asks the
  * browser to persist the origin's storage.
  */
@@ -85,14 +86,15 @@ export class DocumentCopiesStore {
     this.inFlight.update((ids) => new Set([...ids, document.id]))
     try {
       const blob = await this.api.download(document.tripId, document.id)
-      const sha256 = await sha256Hex(blob)
+      const bytes = await blob.arrayBuffer()
+      const sha256 = await sha256Hex(bytes)
       const db = await this.database
       await db.docBlobs.put({
         docId: document.id,
         sha256,
-        size: blob.size,
+        size: bytes.byteLength,
         mime: blob.type || document.mime || 'application/octet-stream',
-        blob,
+        bytes,
         savedAt: this.clock(),
       })
       await this.requestPersistOnce()
@@ -139,7 +141,7 @@ export class DocumentCopiesStore {
    */
   async open(document: Pick<DocRecord, 'id' | 'tripId'>): Promise<Blob> {
     const copy = await this.get(document.id)
-    return copy ? copy.blob : this.api.download(document.tripId, document.id)
+    return copy ? docBlob(copy) : this.api.download(document.tripId, document.id)
   }
 
   async remove(docId: string): Promise<void> {

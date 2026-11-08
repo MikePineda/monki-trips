@@ -50,6 +50,25 @@ describe('DocumentCopiesStore', () => {
     await vi.waitFor(() => expect(copies.copies().get('doc-1')?.sha256).toBe(BYTES_SHA))
   })
 
+  it('keeps the bytes as an ArrayBuffer, never a Blob, which WebKit refuses to store in private sessions', async () => {
+    await copies.save(documentRow({ id: 'doc-1', sha256: BYTES_SHA }))
+
+    const stored = await db.docBlobs.get('doc-1')
+    expect(Object.prototype.toString.call(stored?.bytes)).toBe('[object ArrayBuffer]')
+    expect(stored?.bytes?.byteLength).toBe(BYTES.length)
+    expect(stored).not.toHaveProperty('blob')
+  })
+
+  it('opens the saved copy as a blob of the file type with the same bytes', async () => {
+    await copies.save(documentRow({ id: 'doc-1', sha256: BYTES_SHA }))
+    api.failWith = new TypeError('Failed to fetch')
+
+    const opened = await copies.open(documentRow({ id: 'doc-1' }))
+
+    expect(opened.type).toBe('application/pdf')
+    expect(await opened.text()).toBe(BYTES)
+  })
+
   it('asks the browser to persist storage the first time only', async () => {
     await copies.save(documentRow({ id: 'doc-1' }))
     await copies.save(documentRow({ id: 'doc-1' }))
