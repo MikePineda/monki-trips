@@ -130,3 +130,5 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: Web: segmented controls with `role="tablist"` have no arrow-key navigation or roving tabindex; add the APG tabs keyboard model (or use the radiogroup role where the content does not change).
 - 2026-11-08: E2E: `overflowing()` is copied in `j05c-narrow-screens.spec.ts` and `a11y.spec.ts`; move it to `e2e/overflowing.ts` once the parallel J05c packages land.
 - 2026-11-08: Web: the styleguide's tokens section shifts the layout by 0.22 (CLS) while it loads; reserve its height or render the contrast table at once.
+- 2026-11-08: CI: `e2e-webkit` is green on the QA-2 pull request with real fixes; make it a required check after 10 consecutive green runs on `main`.
+- 2026-11-08: Web: J02 logs `NG0950` (a required input read before it is set) twice on WebKit only, without failing; find the component and make the input safe to read early.
