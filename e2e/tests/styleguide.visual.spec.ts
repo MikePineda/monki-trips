@@ -19,6 +19,7 @@ const SECTIONS = [
   'rows',
   'event-rows',
   'ticket',
+  'assistant',
   'segmented',
   'stats',
   'banners',

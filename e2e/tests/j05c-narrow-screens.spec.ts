@@ -4,6 +4,7 @@ import type { Page } from '@playwright/test'
 import { soloAccount, type E2eAccount } from '../accounts.ts'
 import { randomUUID } from 'node:crypto'
 import { ApiSession } from '../api-session.ts'
+import { mockAssistantConversation } from '../assistant-mock.ts'
 import { seedDepartureTrip } from '../departure-trip.ts'
 import { expect, test } from '../fixtures.ts'
 import { seedNarrowTrip, type NarrowTrip } from '../narrow-trip.ts'
@@ -19,8 +20,9 @@ import { signIn } from '../sign-in.ts'
  * the viewport. The Notifications section of Settings (switches, quiet
  * hours, upcoming reminders) stays inside the screen too, and so do the
  * Balances segment of a split trip (long names, four-digit nets, the
- * "Mark as settled" buttons) and the trip history, the passport and its map
- * with long place names.
+ * "Mark as settled" buttons), the trip history, the passport and its map
+ * with long place names, and Kiko's chat with an open proposal, its
+ * composer above the tab bar.
  *
  * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
  * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
@@ -322,6 +324,35 @@ test.describe('J05c trip screens on a narrow phone', () => {
       /fallback|loading|map/
     )
     expect(await overflowing(page), '/passport/map').toEqual([])
+  })
+
+  test('Kiko keeps an open proposal inside the screen and the composer above the tab bar', async ({
+    page,
+  }) => {
+    await signIn(page, solo)
+    await page.goto(await mockAssistantConversation(page, trip.tripId))
+    const proposal = page.getByTestId('assistant.proposal')
+    await expect(proposal).toHaveAttribute('data-status', 'proposed')
+    // The long event title and both nights stay inside the card, flags included.
+    await expect(proposal.getByTestId('ui.proposal.flag')).toHaveCount(2)
+    expect(await overflowing(page)).toEqual([])
+    // One floating control on this screen: the composer, never the expense button.
+    await expect(page.getByTestId('shell.fab')).toHaveCount(0)
+
+    const viewport = page.viewportSize()!
+    const tabBar = (await page.locator('mk-tab-bar').boundingBox())!
+    for (const where of ['top', 'end'] as const) {
+      if (where === 'end') await scrollToEnd(page)
+      const composer = (await page.getByTestId('assistant.composer').boundingBox())!
+      // Flush on the tab bar (sub-pixel rounding aside).
+      expect(composer.y + composer.height, where).toBeLessThanOrEqual(tabBar.y + 1)
+      expect(composer.y, where).toBeGreaterThan(0)
+      expect(composer.x + composer.width, where).toBeLessThanOrEqual(viewport.width)
+    }
+    // At the end of the conversation the decision buttons scroll clear of the composer.
+    const composer = (await page.getByTestId('assistant.composer').boundingBox())!
+    const accept = (await page.getByTestId('assistant.proposal.accept').boundingBox())!
+    expect(accept.y + accept.height).toBeLessThanOrEqual(composer.y)
   })
 
   test('the Notifications settings section stays inside the screen, upcoming reminders included', async ({

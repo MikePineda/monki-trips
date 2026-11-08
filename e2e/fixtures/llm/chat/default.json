@@ -1,0 +1,1045 @@
+{
+  "model": "fake-chat-model",
+  "responses": [
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    },
+    {
+      "content": "I drafted the expense for you to check.",
+      "toolCalls": [
+        {
+          "id": "toolu_e2e_expense",
+          "name": "add_expense",
+          "input": {
+            "amount": "350",
+            "currency": "THB",
+            "category": "food",
+            "description": "Pad thai"
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 60
+      }
+    },
+    {
+      "content": " Accept it and it goes into Money.",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 20
+      }
+    }
+  ]
+}
