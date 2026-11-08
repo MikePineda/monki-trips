@@ -14,7 +14,8 @@ const BUILD_FIXTURES = fileURLToPath(
  * fixtures (and the production image must not ship them), so without this
  * every generation answers 503. The API's own fixtures go first, then the
  * suite's overrides (`e2e/fixtures/llm/<purpose>/<case>.json`: synthetic
- * Thai phrase cards for J16). Only the main process copies; workers load
+ * Thai phrase cards for J16; for J18 a chat whose every turn proposes one
+ * expense and then answers, so each turn uses two scripted calls). Only the main process copies; workers load
  * the config again and find the files in place.
  *
  * It runs from playwright.config.ts because the `webServer` starts before

@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import type { Browser, Locator, Page } from '@playwright/test'
 import { soloAccount, type E2eAccount } from '../accounts.ts'
 import { ApiSession } from '../api-session.ts'
+import { mockAssistantConversation } from '../assistant-mock.ts'
 import { expect, test } from '../fixtures.ts'
 import { seedTodayTrip } from '../today-trip.ts'
 import { signIn } from '../sign-in.ts'
@@ -11,6 +12,8 @@ import { signIn } from '../sign-in.ts'
  * dark, on the synthetic Harbour escape trip (e2e/today-trip.ts) in split
  * mode, with a traveller without an account and one expense they share, so
  * the Balances segment has a settle-up line, signed in as the trip's owner.
+ * Kiko's chat with an open proposal is a synthetic conversation
+ * (e2e/assistant-mock.ts).
  *
  * - axe-core with the WCAG 2.0 A/AA, 2.1 AA and 2.2 AA rules: zero
  *   violations, or a dated entry in EXCEPTIONS with its reason.
@@ -203,6 +206,17 @@ function signedInScreens(t: Arranged): Screen[] {
       open: go(`${trip}/more/offline`, (p) => p.getByTestId('offline.ready')),
     },
     { name: 'phrases', open: go(`${trip}/more/phrases`, (p) => p.getByTestId('phrases')) },
+    {
+      name: 'assistant new chat',
+      open: go(`${trip}/more/assistant`, (p) => p.getByTestId('assistant.suggestion')),
+    },
+    {
+      name: 'assistant chat with a proposal',
+      open: async (page) => {
+        await page.goto(await mockAssistantConversation(page, t.tripId))
+        await visible(page.getByTestId('assistant.proposal.accept'))
+      },
+    },
     {
       name: 'trip settings',
       open: go(`${trip}/more/settings`, (p) =>
