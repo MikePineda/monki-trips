@@ -49,6 +49,16 @@ export function proposalView(action: AiAction, t: Translate, locale: string): Pr
       return taskView(proposal, t, locale)
     case 'event_changes':
       return eventChangesView(proposal, t, locale)
+    case 'booking':
+      return { ...eventChangesView(proposal.changes, t, locale), kind: t('proposal.kind.booking') }
+    case 'discarded':
+      return {
+        kind: t('proposal.kind.discarded'),
+        icon: 'circle-x',
+        title: t('proposal.discarded'),
+        summary: null,
+        changes: [],
+      }
   }
 }
 

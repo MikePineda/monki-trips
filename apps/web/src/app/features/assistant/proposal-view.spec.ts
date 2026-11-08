@@ -101,4 +101,49 @@ describe('proposalView', () => {
       label: 'Not applied',
     })
   })
+
+  it('a booking read by the chat shows the event it adds', () => {
+    const changes: AiEventChangesProposal = {
+      kind: 'event_changes',
+      summary: null,
+      events: [
+        {
+          op: 'add',
+          eventId: 'e1',
+          kind: 'ferry',
+          title: 'Ferry to Example Island',
+          status: 'booked',
+          fields: [{ field: 'title', before: null, after: 'Ferry to Example Island' }],
+        },
+      ],
+      nights: [],
+      uncoveredBefore: 0,
+      uncoveredAfter: 0,
+    }
+    const proposal = {
+      kind: 'booking' as const,
+      documentId: 'd1',
+      eventId: 'e1',
+      source: 'text' as const,
+      draft: {} as never,
+      review: [],
+      changes,
+    }
+
+    const view = proposalView(aiAction({ tool: 'extract_booking', proposal }), t, 'en-AU')
+
+    expect(view.kind).toBe('Booking from a file')
+    expect(view.changes.length).toBeGreaterThan(0)
+  })
+
+  it('a discarded proposal shows that nothing is left to decide', () => {
+    const view = proposalView(
+      aiAction({ tool: 'extract_booking', proposal: { kind: 'discarded' } }),
+      t,
+      'en-AU'
+    )
+
+    expect(view.title).toBe('This proposal was discarded')
+    expect(view.changes).toEqual([])
+  })
 })
