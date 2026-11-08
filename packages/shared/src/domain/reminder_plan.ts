@@ -1,8 +1,10 @@
 /**
  * Which push reminders a trip member gets in the next hours, computed from
  * the trips' content, the member's settings and `now`. The same input
- * always yields the same `(kind, refId, fireAt)` keys, so the scheduler can
- * plan every minute and record what it sent under that key.
+ * always yields the same `(kind, refId, nominalFireAt)` keys, so the
+ * scheduler can plan every minute and record what it sent under that key.
+ * `nominalFireAt` is the fire time before quiet hours: toggling them moves
+ * `fireAt` but never the key, while an edited event time is a new key.
  *
  * - `leave_at`: flights, trains, ferries and buses, at the leave time
  *   (`leave_at.ts`) read in the departure zone.
@@ -86,7 +88,8 @@ export interface ReminderPlanInput {
 export type ReminderParams = Readonly<Record<string, string | number>>
 
 /**
- * A reminder to send at `fireAt`. `titleKey`/`bodyKey` are catalog-neutral
+ * A reminder to send at `fireAt`; `nominalFireAt` is when it would fire
+ * without quiet hours (the dedupe key). `titleKey`/`bodyKey` are catalog-neutral
  * i18n keys (`reminders.<kind>.title`) rendered with `params`; `url` is a
  * path of the web app, opened when the notification is tapped.
  */
@@ -95,6 +98,7 @@ export interface PlannedReminder {
   tripId: string
   refId: string
   fireAt: IsoInstant
+  nominalFireAt: IsoInstant
   titleKey: string
   bodyKey: string
   params: ReminderParams
@@ -181,6 +185,7 @@ interface Draft {
   tripId: string
   refId: string
   fireMs: number
+  nominalMs: number
   params: ReminderParams
   url: string
 }
@@ -199,6 +204,7 @@ function leaveAtDrafts(trip: ReminderTrip, quiet: QuietHours | null): Draft[] {
       tripId: trip.id,
       refId: event.id,
       fireMs: afterQuietHours(leaveMs, offsetMin, quiet, startsMs),
+      nominalMs: leaveMs,
       params: {
         tripName: trip.name,
         title: event.title,
@@ -230,11 +236,13 @@ function checkOutDrafts(trip: ReminderTrip, quiet: QuietHours | null): Draft[] {
     }
     const endsMs = epochMs(event.ends.at)
     const offsetMin = event.ends.offsetMin
+    const noticeMs = checkOutMs(event.ends)
     drafts.push({
       kind: 'check_out',
       tripId: trip.id,
       refId: event.id,
-      fireMs: afterQuietHours(checkOutMs(event.ends), offsetMin, quiet, endsMs),
+      fireMs: afterQuietHours(noticeMs, offsetMin, quiet, endsMs),
+      nominalMs: noticeMs,
       params: {
         tripName: trip.name,
         title: event.title,
@@ -323,6 +331,7 @@ function taskDigestDrafts(
       tripId: trip.id,
       refId: `${trip.id}:${day}`,
       fireMs: afterQuietHours(nineMs, offsetMin, quiet, endOfDayMs),
+      nominalMs: nineMs,
       params: {
         tripName: trip.name,
         count: tasks.length,
@@ -366,6 +375,7 @@ export function planReminders(input: ReminderPlanInput): PlannedReminder[] {
       tripId: draft.tripId,
       refId: draft.refId,
       fireAt: new Date(draft.fireMs).toISOString(),
+      nominalFireAt: new Date(draft.nominalMs).toISOString(),
       titleKey: `reminders.${draft.kind}.title`,
       bodyKey: `reminders.${draft.kind}.body`,
       params: draft.params,

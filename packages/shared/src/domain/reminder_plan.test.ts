@@ -111,6 +111,7 @@ test('leave at reminder fires at the leave time in the event zone', () => {
       tripId: 'trip-1',
       refId: 'ev-flight',
       fireAt: '2027-03-10T02:00:00.000Z',
+      nominalFireAt: '2027-03-10T02:00:00.000Z',
       titleKey: 'reminders.leave_at.title',
       bodyKey: 'reminders.leave_at.body',
       params: {
@@ -167,6 +168,7 @@ test('check out reminder fires an hour before', () => {
       refId: 'ev-hotel',
       // 10:00 at +540.
       fireAt: '2027-03-10T01:00:00.000Z',
+      nominalFireAt: '2027-03-10T01:00:00.000Z',
       titleKey: 'reminders.check_out.title',
       bodyKey: 'reminders.check_out.body',
       params: { tripName: 'Demo Loop', title: 'Quay Lodge', checkOutTime: '11:00' },
@@ -225,6 +227,7 @@ test('daily task digest at nine local', () => {
       tripId: 'trip-1',
       refId: 'trip-1:2027-03-10',
       fireAt: '2027-03-10T00:00:00.000Z',
+      nominalFireAt: '2027-03-10T00:00:00.000Z',
       titleKey: 'reminders.tasks_due.title',
       bodyKey: 'reminders.tasks_due.body',
       params: {
@@ -240,6 +243,7 @@ test('daily task digest at nine local', () => {
       tripId: 'trip-1',
       refId: 'trip-1:2027-03-11',
       fireAt: '2027-03-11T00:00:00.000Z',
+      nominalFireAt: '2027-03-11T00:00:00.000Z',
       titleKey: 'reminders.tasks_due.title',
       bodyKey: 'reminders.tasks_due.body',
       params: { tripName: 'Demo Loop', count: 2, titles: 'Renew insurance, Pack', more: 0 },
@@ -559,4 +563,58 @@ test('half-set or malformed quiet hours are ignored', () => {
     bad.map((r) => r.fireAt),
     ['2027-03-09T20:30:00.000Z']
   )
+})
+
+test('a reminder moved by quiet hours keeps its nominal fire time', () => {
+  const flight = event({
+    id: 'ev-early',
+    kind: 'flight',
+    // Leave at 05:30 local (20:30Z the day before); 22:00–07:00 moves it to 07:00 local.
+    starts: zonedFromLocal('2027-03-10T08:00', 540, 'Harbour/Zone'),
+  })
+  const trip = harbourTrip({ events: [flight] })
+  const now = '2027-03-09T12:00:00.000Z'
+
+  const [quiet] = plan(now, [trip], {
+    tasksDue: false,
+    quietHoursStart: '22:00',
+    quietHoursEnd: '07:00',
+  })
+  const [loud] = plan(now, [trip], { tasksDue: false })
+
+  assert.equal(quiet?.fireAt, '2027-03-09T22:00:00.000Z')
+  assert.equal(quiet?.nominalFireAt, '2027-03-09T20:30:00.000Z')
+  assert.equal(loud?.fireAt, '2027-03-09T20:30:00.000Z')
+  assert.equal(loud?.nominalFireAt, '2027-03-09T20:30:00.000Z')
+})
+
+test('toggling quiet hours keeps every reminder under the same dedupe key', () => {
+  const trip = harbourTrip({
+    events: [
+      event({
+        id: 'ev-early',
+        kind: 'flight',
+        starts: zonedFromLocal('2027-03-10T08:00', 540, 'Harbour/Zone'),
+      }),
+      event({
+        id: 'ev-hotel',
+        kind: 'lodging',
+        starts: zonedFromLocal('2027-03-08T15:00', 540, 'Harbour/Zone'),
+        ends: zonedFromLocal('2027-03-10T11:00', 540, 'Harbour/Zone'),
+      }),
+    ],
+    tasks: [task({ id: 'due', dueOn: '2027-03-10' })],
+  })
+  const key = (r: PlannedReminder) => `${r.kind}|${r.refId}|${r.nominalFireAt}`
+  const now = '2027-03-09T12:00:00.000Z'
+
+  const loud = plan(now, [trip])
+  // The digest moves from 09:00 to 09:30 local; the flight and the check-out stay.
+  const quiet = plan(now, [trip], { quietHoursStart: '05:00', quietHoursEnd: '09:30' })
+
+  assert.notDeepEqual(
+    quiet.map((r) => r.fireAt),
+    loud.map((r) => r.fireAt)
+  )
+  assert.deepEqual(quiet.map(key).sort(), loud.map(key).sort())
 })
