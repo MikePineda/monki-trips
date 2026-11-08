@@ -51,7 +51,7 @@ import { MkMascotComponent } from '../../shared/ui/mascot/mascot.component'
 import { MkRouteChipComponent } from '../../shared/ui/route-chip/route-chip.component'
 import { MkSegmentedComponent } from '../../shared/ui/segmented/segmented.component'
 import { stampArtworkName } from '../../shared/ui/stamp/stamp-artwork'
-import { MkStampTileComponent } from '../../shared/ui/stamp/stamp-tile.component'
+import { MkStampComponent } from '../../shared/ui/stamp/stamp.component'
 import { MkStatRowComponent } from '../../shared/ui/stat-tile/stat-row.component'
 import { MkStatTileComponent } from '../../shared/ui/stat-tile/stat-tile.component'
 import { MkSwitchComponent } from '../../shared/ui/switch/switch.component'
@@ -124,7 +124,7 @@ const CATEGORY_KEYS = [
     MkStatTileComponent,
     MkListComponent,
     MkListRowComponent,
-    MkStampTileComponent,
+    MkStampComponent,
     MkMapComponent,
     MkSegmentedComponent,
     MkBarChartComponent,
@@ -235,19 +235,20 @@ const CATEGORY_KEYS = [
               } @else {
                 <mk-grid gap="1" column="md" data-testid="recap.stamps">
                   @for (stamp of stamps(); track stamp.key) {
-                    <mk-stamp-tile
-                      [code]="stamp.code"
-                      [name]="stamp.place"
-                      [isoDate]="stamp.date"
-                      [arrivedBy]="stamp.arrivedBy"
-                      [caption]="stamp.place"
-                      [meta]="stampDay(stamp.date)"
-                      [label]="
-                        'recap.stamps.stamp'
-                          | transloco: { place: stamp.place, date: stampDay(stamp.date) }
-                      "
-                      data-testid="recap.stamp"
-                    />
+                    <mk-stack gap="half" align="center" data-testid="recap.stamp">
+                      <mk-stamp
+                        size="md"
+                        [code]="stamp.code"
+                        [name]="stamp.place"
+                        [isoDate]="stamp.date"
+                        [arrivedBy]="stamp.arrivedBy"
+                        [label]="
+                          'recap.stamps.stamp'
+                            | transloco: { place: stamp.place, date: stampDay(stamp.date) }
+                        "
+                      />
+                      <p mk-text variant="caption" tone="ink-2">{{ stamp.place }}</p>
+                    </mk-stack>
                   }
                 </mk-grid>
               }
