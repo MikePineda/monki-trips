@@ -8,7 +8,8 @@ import { taskChanges } from '#validators/sync/entities'
  * tasks (`manual`) or checklist items (`template`, with the item's key;
  * `titleKey` is derived from it); both are fixed once the row exists.
  * `document` and `ai` tasks and the source document are server-owned
- * (print tasks, accepted AI actions). A checklist item the trip already
+ * (print tasks, accepted AI actions: a task written `via: assistant` is
+ * `ai`). A checklist item the trip already
  * has (same `templateItemKey`, made on another device or by the template
  * route) answers `duplicate` with the server's row instead of a second
  * row: the partial unique index on `(trip_id, template_item_key)` is the
@@ -66,7 +67,8 @@ export const taskEntity: EntitySpec = {
       columns.done_by = merged.doneAt ? (merged.doneBy ?? ctx.userId) : null
     }
     if (ctx.inserting) {
-      const origin = merged.origin === 'template' ? 'template' : 'manual'
+      const origin =
+        merged.origin === 'template' ? 'template' : ctx.via === 'assistant' ? 'ai' : 'manual'
       columns.origin = origin
       if (origin === 'template') {
         if (typeof merged.templateItemKey === 'string') {

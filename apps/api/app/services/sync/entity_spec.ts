@@ -136,6 +136,8 @@ export interface DeriveContext {
   changedAt: number
   /** Validated fields of `changes` that are not columns (an expense's `shares`), for the hooks. */
   extras: Record<string, unknown>
+  /** How the write arrived: `app` (sync push, import) or `assistant` (an accepted proposal). */
+  via: 'app' | 'assistant'
 }
 
 export interface DeriveResult {
