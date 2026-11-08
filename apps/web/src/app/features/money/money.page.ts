@@ -243,7 +243,7 @@ const WORDS = [
                           variant="secondary"
                           size="sm"
                           type="button"
-                          [disabled]="row.blocked"
+                          [disabled]="row.blocked || settling().has(row.id)"
                           data-testid="money.settle.mark"
                           (click)="markSettled(row)"
                         >
@@ -398,6 +398,8 @@ export default class MoneyPage {
   protected readonly phases = EXPENSE_PHASES.filter((phase) => phase !== 'after')
   protected readonly view = signal<MoneyView>('budget')
   protected readonly budgetView = signal<BudgetView>('chart')
+  /** Settle-up lines being recorded: their button stays disabled until the write lands. */
+  protected readonly settling = signal<ReadonlySet<string>>(new Set())
   protected readonly phaseFilter = signal<ReadonlySet<ExpensePhase>>(new Set())
   protected readonly categoryFilter = signal<ReadonlySet<string | null>>(new Set())
 
@@ -721,12 +723,29 @@ export default class MoneyPage {
 
   /** "Mark as settled": the debtor pays the creditor back, through the outbox. */
   protected async markSettled(row: {
+    id: string
     from: string
     to: string
     amountMinor: bigint
   }): Promise<void> {
     const trip = this.trip()
-    if (!trip) return
+    if (!trip || this.settling().has(row.id)) return
+    this.settling.update((set) => new Set(set).add(row.id))
+    try {
+      await this.recordSettlement(trip, row)
+    } finally {
+      this.settling.update((set) => {
+        const next = new Set(set)
+        next.delete(row.id)
+        return next
+      })
+    }
+  }
+
+  private async recordSettlement(
+    trip: { id: string; baseCurrency: string },
+    row: { from: string; to: string; amountMinor: bigint }
+  ): Promise<void> {
     const other = this.categories().find((category) => category.key === 'other')
     await this.store.settle({
       tripId: trip.id,
@@ -737,6 +756,7 @@ export default class MoneyPage {
       categoryId: other?.id ?? null,
       spentOn: this.today(),
       description: this.transloco.translate('money.balances.settleDescription'),
+      balancesVersion: String(this.expenses().length),
     })
     this.toasts.show({ message: this.transloco.translate('money.toast.settled') })
   }

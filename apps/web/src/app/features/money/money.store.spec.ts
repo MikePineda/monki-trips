@@ -316,6 +316,7 @@ describe('MoneyStore', () => {
       categoryId: 'cat-other',
       spentOn: '2027-01-21',
       description: 'Settle up',
+      balancesVersion: '1',
     })
 
     expect(await db.expenses.get(settled.id)).toMatchObject({
@@ -329,6 +330,32 @@ describe('MoneyStore', () => {
     })
     const shares = await db.expenseShares.where('expenseId').equals(settled.id).toArray()
     expect(shares.map((row) => [row.travellerId, row.shareMinor])).toEqual([['v1', 4500]])
+  })
+
+  it('settling the same pair on the same balances twice records one settlement', async () => {
+    const store = TestBed.inject(MoneyStore)
+    const input = {
+      tripId: 'trip-1',
+      baseCurrency: 'AUD',
+      fromTravellerId: 'v2',
+      toTravellerId: 'v1',
+      amountMinor: 4500,
+      categoryId: 'cat-other',
+      spentOn: '2027-01-21',
+      description: 'Settle up',
+      balancesVersion: '3',
+    }
+
+    // Two taps, or the two people settling on their own phones before either synced.
+    const first = await store.settle(input)
+    const second = await store.settle(input)
+
+    expect(second.id).toBe(first.id)
+    expect(await db.expenses.count()).toBe(1)
+    expect(await db.expenseShares.count()).toBe(1)
+    // New expenses since: the same pair settling again is a new settlement.
+    const later = await store.settle({ ...input, balancesVersion: '4' })
+    expect(later.id).not.toBe(first.id)
   })
 
   it('category and trip budgets are written through the outbox', async () => {
