@@ -421,7 +421,7 @@ test.group('Expenses', (group) => {
     assert.isNull(share.deleted_at)
   })
 
-  test('changing the amount alone must keep the live split adding up', async ({
+  test('changing the amount alone splits it again equally between the same people', async ({
     client,
     assert,
   }) => {
@@ -500,10 +500,23 @@ test.group('Expenses', (group) => {
       mutation(trip.id, 'expense', { amountMinor: 700 }, { id: unsplit.id })
     )
 
-    assert.equal(alone.status, 'rejected')
+    // A device that never saw the split moves the amount: the same two people share it equally.
+    assert.equal(alone.status, 'applied')
+    const shares = await db
+      .from('expense_shares')
+      .where('expense_id', id)
+      .whereNull('deleted_at')
+      .select('traveller_id', 'share_minor')
+    assert.sameDeepMembers(
+      shares.map((share) => [share.traveller_id, Number(share.share_minor)]),
+      [
+        [traveller.id, 2000],
+        [friend.id, 2000],
+      ]
+    )
     assert.deepEqual(
-      alone.error?.errors?.map((e) => [e.field, e.rule]),
-      [['amountMinor', 'sharesSum']]
+      alone.shares?.map((share) => share.shareMinor).reduce((a, b) => a + b, 0),
+      4000
     )
     assert.equal(described.status, 'applied')
     assert.equal(together.status, 'applied')
