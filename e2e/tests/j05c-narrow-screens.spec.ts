@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { Page } from '@playwright/test'
@@ -17,9 +18,10 @@ import { signIn } from '../sign-in.ts'
  * right edge (Where we sleep included: dates whole, long titles kept in
  * the row, the Phrases cards too) and the floating button stays inside
  * the viewport. The Notifications section of Settings (switches, quiet
- * hours, upcoming reminders) stays inside the screen too, and so does the
+ * hours, upcoming reminders) stays inside the screen too, and so do the
  * Balances segment of a split trip (long names, four-digit nets, the
- * "Mark as settled" buttons).
+ * "Mark as settled" buttons) and the trip history, the passport and its map
+ * with long place names.
  *
  * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
  * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
@@ -266,6 +268,61 @@ test.describe('J05c trip screens on a narrow phone', () => {
     const fab = await expectFabInside(page, 'shell.fab')
     const last = await page.getByTestId('phrases.translate').boundingBox()
     expect(last!.y + last!.height).toBeLessThanOrEqual(fab.y)
+  })
+
+  test('the trip history and the passport stay inside the screen, long places included', async ({
+    page,
+  }) => {
+    const arrange = await ApiSession.signIn(solo)
+    try {
+      await arrange.push(trip.tripId, [
+        {
+          entity: 'stop',
+          id: randomUUID(),
+          changes: {
+            position: 0,
+            name: 'The Long Lagoon Of Seven Bridges',
+            countryCode: 'XC',
+            lat: -8.5,
+            lng: 115.25,
+            tz: 'UTC',
+            arriveOn: trip.startsOn,
+            departOn: trip.startsOn,
+          },
+        },
+        {
+          entity: 'stop',
+          id: randomUUID(),
+          changes: {
+            position: 1,
+            name: 'Riverside Guesthouse Quarter',
+            countryCode: 'XD',
+            lat: 13.75,
+            lng: 100.5,
+            tz: 'UTC',
+            arriveOn: trip.startsOn,
+            departOn: trip.endsOn,
+          },
+        },
+      ])
+    } finally {
+      await arrange.dispose()
+    }
+
+    // The tile provider is never reached from the suite: the map stays the SVG view.
+    await page.route(/^https:\/\/tiles\.openfreemap\.org\//, (route) => route.abort())
+    await signIn(page, solo)
+    await expect(page.getByTestId('trips.item')).toContainText('The Long Lagoon Of Seven Bridges')
+    expect(await overflowing(page), '/trips').toEqual([])
+    await page.getByTestId('trips.passport').click()
+    await expect(page.getByTestId('passport.countryStamp')).toHaveCount(2)
+    expect(await overflowing(page), '/passport').toEqual([])
+    await page.getByTestId('passport.openMap').click()
+    await expect(page.getByTestId('passport.map')).toHaveAttribute(
+      'data-mode',
+      /fallback|loading|map/
+    )
+    expect(await overflowing(page), '/passport/map').toEqual([])
   })
 
   test('the Notifications settings section stays inside the screen, upcoming reminders included', async ({
