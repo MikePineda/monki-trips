@@ -133,3 +133,6 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: CI: `e2e-webkit` is green on the QA-2 pull request with real fixes; make it a required check after 10 consecutive green runs on `main`.
 - 2026-11-08: Web: J02 logs `NG0950` (a required input read before it is set) twice on WebKit only, without failing; find the component and make the input safe to read early.
 - 2026-11-08: E2E WebKit: J01 "the custom service worker controls the page" was flaky once on the QA-2 rebase (sign-in stayed on /login past the 5 s `toHaveURL`, passed on retry; never seen on main); if it repeats, keep the trace (upload the WebKit report on flaky runs too) and find the cause.
+- 2026-11-08: WP 4.1: a "Mark as settled" expense counts as spending in the budget figures (spent, remaining, per category); give settlements a marker (an additive `expenses.kind` or `is_settlement`) and leave them out of `budget_status`.
+- 2026-11-08: WP 4.1: when a stale split loses on the server (`partial`, `rejectedFields: ['shares']`), the device keeps its own share rows until the next full pull; have the conflict path refetch the expense's shares.
+- 2026-11-08: WP 4.1: custom amounts in the split sheet accept positive numbers only, so a refund (negative amount) can only be split equally; accept a sign or derive it from the expense.
