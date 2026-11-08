@@ -32,6 +32,13 @@ export const LLM_CHARS_PER_TOKEN = 4
 export const LLM_IMAGE_TOKEN_ESTIMATE = 1_600
 
 /**
+ * A PDF sent as a document block is read page by page as text and as an
+ * image (Anthropic counts roughly 1.5k to 3k tokens a page); the estimate
+ * takes the upper middle.
+ */
+export const LLM_DOCUMENT_PAGE_TOKEN_ESTIMATE = 2_500
+
+/**
  * A `pending` usage row reserves the tokens of a call in flight. One older
  * than this belongs to a process that died before settling it, and stops
  * counting against the cap.

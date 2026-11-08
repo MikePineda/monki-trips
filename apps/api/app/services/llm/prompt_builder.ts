@@ -1,4 +1,4 @@
-import type { LlmMessage } from '#services/llm/llm_provider'
+import type { LlmContentBlock, LlmMessage } from '#services/llm/llm_provider'
 
 /**
  * Builds prompts that keep instructions and data apart. Anything a person
@@ -29,6 +29,16 @@ export class PromptBuilder {
   /** A user turn written by the app (trusted). */
   user(text: string): this {
     this.messages.push({ role: 'user', content: text })
+    return this
+  }
+
+  /**
+   * A user turn of content blocks: a file the model looks at (image, PDF)
+   * next to app-written text. Text from a document still goes through
+   * `untrusted()` before it becomes a block.
+   */
+  userBlocks(blocks: LlmContentBlock[]): this {
+    this.messages.push({ role: 'user', content: blocks })
     return this
   }
 

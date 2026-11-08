@@ -160,6 +160,53 @@ test.group('Anthropic compatible provider', () => {
     }
   })
 
+  test('a pdf document block goes to the vision model in the messages api shape', async ({
+    assert,
+  }) => {
+    const endpoint = await fakeEndpoint([json(200, okMessage)])
+    try {
+      const provider = new AnthropicCompatibleProvider({
+        baseUrl: endpoint.baseUrl,
+        apiKey: 'k',
+        model: 'text-model',
+        visionModel: 'vision-model',
+      })
+
+      await provider.complete({
+        ...request,
+        tools: undefined,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'document', mimeType: 'application/pdf', data: 'JVBERi0=', pages: 2 },
+              { type: 'text', text: 'Read it.' },
+            ],
+          },
+        ],
+      })
+
+      const [sent] = endpoint.received
+      assert.equal(sent.body.model, 'vision-model')
+      assert.deepEqual(sent.body.messages[0].content[0], {
+        type: 'document',
+        source: { type: 'base64', media_type: 'application/pdf', data: 'JVBERi0=' },
+      })
+    } finally {
+      await endpoint.close()
+    }
+  })
+
+  test('vision is available only when a vision model is set', ({ assert }) => {
+    assert.isTrue(
+      new AnthropicCompatibleProvider({ apiKey: 'k', model: 't', visionModel: 'v' }).supportsVision
+    )
+    assert.isFalse(new AnthropicCompatibleProvider({ apiKey: 'k', model: 't' }).supportsVision)
+    assert.isFalse(
+      new AnthropicCompatibleProvider({ apiKey: 'k', model: 't', visionModel: '' }).supportsVision
+    )
+  })
+
   test('without a vision model an image goes to the main model', ({ assert }) => {
     const provider = new AnthropicCompatibleProvider({ apiKey: 'k', model: 'text-model' })
 
