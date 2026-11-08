@@ -39,5 +39,7 @@ docs {
   validated again (422 with `draft.<path>` fields), its mutations, baseline
   and diff are recomputed and the flags of changed fields dropped. Only the
   account that asked for it (else 404), only while `proposed` (409
-  E_AI_ACTION_CLOSED); any other tool answers 409 E_AI_ACTION_NOT_REVISABLE.
+  E_AI_ACTION_CLOSED with the real status); any other tool answers 409
+  E_AI_ACTION_NOT_REVISABLE; 409 E_AI_ACTION_STALE when the document changed
+  since the proposal. 30 a minute per account (429).
 }
