@@ -183,6 +183,12 @@ export class ApiSession {
     return id
   }
 
+  /** The session's cookies as one `Cookie` header, for a tool that cannot sign in (Lighthouse). */
+  async cookieHeader(): Promise<string> {
+    const cookies = (await this.context.storageState()).cookies
+    return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ')
+  }
+
   async dispose(): Promise<void> {
     await this.context.dispose()
   }
