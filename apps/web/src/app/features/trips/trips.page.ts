@@ -96,7 +96,7 @@ interface NewStamp {
   template: `
     <mk-stack gap="2">
       <mk-row gap="1" justify="between" [wrap]="true">
-        <h1 mk-text variant="title">{{ 'history.title' | transloco }}</h1>
+        <h1 mk-text variant="title">{{ 'shell.trips.title' | transloco }}</h1>
         <mk-row gap="1">
           <a
             mk-button
