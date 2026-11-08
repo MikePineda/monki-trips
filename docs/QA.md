@@ -35,6 +35,14 @@ temporary capability probe on the CI runner, 2026-11-08.
 | J10 ready to fly: red before download everything, green after | Playwright-WebKit limitation (no DevTools protocol, no installed app)                      | On WebKit the journey emulates the Home Screen app (`e2e/installed-iphone-app.ts`: `navigator.standalone`, persistent storage), the counterpart of the Chromium durable-storage grant, and expects "Running as the installed app". | `browser.newBrowserCDPSession: CDP session is only available in Chromium`; the probe saw `persist()` answer false and no `navigator.standalone`.                                 |
 | J14 notifications: enable on the device, send a test          | Playwright-WebKit limitation                                                               | Only this test is skipped on WebKit; a new WebKit test checks that Safari asks to install the app first. Manual check N1 below.                                                                                                    | `Can't find variable: PushManager`; the probe saw no `PushManager` and no `Notification`; the section showed `ios-install`, which is correct in Safari.                          |
 
+J18 (Kiko, the trip assistant, 2026-11-08) is expected to pass on `mobile-webkit`:
+the chat streams over a `fetch` body reader (Safari has `ReadableStream`
+bodies), and the CI WebKit job runs its own API, so J18 owns the fake LLM's
+chat script there too. Not verified in a cloud session (Playwright's WebKit
+cannot be installed in the VM); if CI disagrees, classify it in the table
+above. The keyboard lift of the composer (`visualViewport`) is checked by
+hand on an iPhone: K1 below.
+
 ## iPhone manual checks
 
 Run on a real iPhone (iOS 16.4 or later) against a staging or self-hosted
@@ -46,6 +54,7 @@ synthetic trip only.
 | I1 install the PWA         | In Safari: Share, Add to Home Screen, Add. Open it from the Home Screen and sign in. | Opens full screen; Ready to fly shows "Running as the installed app".                                                  |
 | I2 ready to fly            | In the installed app: More, Offline, Download everything.                            | "Everything is on this phone"; every check green, storage persisted.                                                   |
 | I3 airplane mode cold boot | After I2: force-quit the app, turn on airplane mode, open it from the Home Screen.   | Today shows the day, tonight's stay and the saved documents; a saved pdf opens in the quick view.                      |
+| K1 Kiko on the keyboard    | In the installed app: More, Kiko, tap the message field so the keyboard opens.       | The field and Send stay above the keyboard while typing; closing the keyboard puts the composer back above the tabs.   |
 | N1 notification test       | In the installed app: Settings, Notifications, enable, allow, Send a test.           | The test notification arrives on the lock screen; in Safari (not installed) the section asks to install the app first. |
 
 ## Cloud smoke
