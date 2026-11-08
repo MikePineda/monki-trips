@@ -5,6 +5,7 @@ import {
   todayView,
   type BudgetExpense,
   type DocumentTag,
+  type ExpenseKind,
   type IsoDate,
   type MascotInput,
   type MascotState,
@@ -70,6 +71,8 @@ export interface TodayTaskRow {
 
 export interface TodayExpenseRow {
   id: string
+  /** A settlement between travellers is not spending. */
+  kind?: ExpenseKind
   eventId: string | null
   amountMinor: number
   currency: string
@@ -191,6 +194,7 @@ function domainTasks(tasks: readonly TodayTaskRow[]): TripTask[] {
 export function budgetExpenses(expenses: readonly TodayExpenseRow[]): BudgetExpense[] {
   return expenses.map((expense) => ({
     id: expense.id,
+    kind: expense.kind,
     eventId: expense.eventId,
     amountMinor: expense.amountMinor,
     currency: expense.currency,

@@ -187,3 +187,17 @@ test('amounts may arrive as strings or numbers', () => {
   })
   assert.equal(status.spentMinor, 1_005n)
 })
+
+test('a settlement between travellers is not spending', () => {
+  const status = budgetStatus({
+    ...budget,
+    today: '2026-01-13',
+    expenses: [
+      ...beforeToday,
+      expense('2026-01-13', 4_500n, { kind: 'settlement' }),
+      expense('2026-01-12', null, { kind: 'settlement', currency: 'THB' }),
+    ],
+  })
+  const without = budgetStatus({ ...budget, today: '2026-01-13', expenses: beforeToday })
+  assert.deepEqual(status, without)
+})

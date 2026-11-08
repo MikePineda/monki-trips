@@ -70,6 +70,7 @@ export class TripViews {
       endsOn: trip.endsOn.toISODate()!,
       today: today ?? DateTime.fromJSDate(this.clock.now()).setZone(trip.homeTz).toISODate()!,
       expenses: rows.expenses.map((expense) => ({
+        kind: expense.kind,
         categoryId: expense.categoryId,
         baseAmountMinor: expense.baseAmountMinor,
         spentOn: expense.spentOn,

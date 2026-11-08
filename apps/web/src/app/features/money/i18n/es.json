@@ -148,6 +148,8 @@
     "waitingOne": "1 gasto espera un tipo de cambio y aún no cuenta en los saldos.",
     "waitingOther": "{{count}} gastos esperan un tipo de cambio y aún no cuentan en los saldos.",
     "settleDescription": "Saldar cuentas",
-    "someone": "Alguien que dejó el viaje"
+    "someone": "Alguien que dejó el viaje",
+    "paid": "{{from}} pagó a {{to}}",
+    "history": "Saldado"
   }
 }

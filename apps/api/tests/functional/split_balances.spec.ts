@@ -6,7 +6,7 @@ import { actingAs } from '#tests/helpers/acting_as'
 import { makeUser } from '#tests/helpers/make_user'
 import { addMember, makeTrip } from '#tests/helpers/make_trip'
 import { useFixedClock } from '#tests/helpers/fixed_clock'
-import { mutation, pushApplied } from '#tests/helpers/sync'
+import { mutation, pushApplied, pushOne } from '#tests/helpers/sync'
 
 /** The live shares of an expense as `[travellerId, shareMinor]`, by traveller. */
 async function liveShares(expenseId: string): Promise<[string, number][]> {
@@ -209,6 +209,114 @@ test.group('Split budget mode', (group) => {
     ])
     assert.equal(view.pendingFxCount, 0)
     assert.equal(view.balances[1].travellerId, editorTraveller)
+  })
+
+  test('mark as settled zeroes the pair and leaves Spent unchanged', async ({ client, assert }) => {
+    const { owner, trip, ownerTraveller, friendTraveller } = await tripOfThree(client)
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'trip', { budgetMode: 'split' }, { id: trip.id })
+    )
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        amountMinor: 9000,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        paidByTravellerId: ownerTraveller,
+        shares: [
+          { id: randomUUID(), travellerId: ownerTraveller, shareMinor: 4500 },
+          { id: randomUUID(), travellerId: friendTraveller, shareMinor: 4500 },
+        ],
+      })
+    )
+    const read = async () => {
+      const budget = await actingAs(client.get(`/api/v1/trips/${trip.id}/budget`), owner)
+      const today = await actingAs(
+        client.get(`/api/v1/trips/${trip.id}/today`).qs({ at: '2027-01-21T02:00:00.000Z' }),
+        owner
+      )
+      return {
+        spent: budget.body().data.spentMinor,
+        categories: budget.body().data.perCategory,
+        leftToday: today.body().data.leftTodayMinor,
+      }
+    }
+    const before = await read()
+
+    const settlement = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        kind: 'settlement',
+        amountMinor: 4500,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        description: 'Settle up',
+        paidByTravellerId: friendTraveller,
+        shares: [{ id: randomUUID(), travellerId: ownerTraveller, shareMinor: 4500 }],
+      })
+    )
+
+    assert.equal(settlement.kind, 'settlement')
+    assert.deepEqual(await read(), before)
+    assert.equal(before.spent, 9000)
+    const balances = await actingAs(client.get(`/api/v1/trips/${trip.id}/balances`), owner)
+    assert.deepEqual(
+      balances.body().data.balances.map((row: { netMinor: number }) => row.netMinor),
+      [0, 0, 0]
+    )
+  })
+
+  test('the kind of an expense is set on insert and never changes', async ({ client, assert }) => {
+    const { owner, trip } = await tripOfThree(client)
+    const plain = await pushApplied<Expense>(
+      client,
+      owner,
+      mutation(trip.id, 'expense', { amountMinor: 1000, currency: 'AUD', spentOn: '2027-01-21' })
+    )
+    assert.equal(plain.kind, 'expense')
+
+    const result = await pushOne(
+      client,
+      owner,
+      mutation(trip.id, 'expense', { kind: 'settlement' }, { id: plain.id })
+    )
+
+    assert.equal(result.status, 'rejected')
+    assert.deepEqual(
+      result.error?.errors?.map((error) => [error.field, error.rule]),
+      [['kind', 'immutable']]
+    )
+  })
+
+  test('a settlement survives an export and an import', async ({ client, assert }) => {
+    const { owner, trip, ownerTraveller, friendTraveller } = await tripOfThree(client)
+    await pushApplied(
+      client,
+      owner,
+      mutation(trip.id, 'expense', {
+        kind: 'settlement',
+        amountMinor: 4500,
+        currency: 'AUD',
+        spentOn: '2027-01-21',
+        paidByTravellerId: friendTraveller,
+        shares: [{ id: randomUUID(), travellerId: ownerTraveller, shareMinor: 4500 }],
+      })
+    )
+
+    const exported = await actingAs(client.get(`/api/v1/trips/${trip.id}/export`), owner)
+    const document = exported.body()
+    assert.equal(document.expenses[0].kind, 'settlement')
+    const imported = await actingAs(client.post('/api/v1/trips/import'), owner).json(document)
+    imported.assertStatus(201)
+    const snapshot = await actingAs(
+      client.get(`/api/v1/trips/${imported.body().data.tripId}/snapshot`),
+      owner
+    )
+    assert.equal(snapshot.body().data.expenses[0].kind, 'settlement')
   })
 
   test('balances answer 404 to non members', async ({ client }) => {

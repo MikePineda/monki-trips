@@ -7,6 +7,16 @@ export const FX_SOURCES = ['frankfurter', 'manual', 'identity'] as const
 
 export type FxSource = (typeof FX_SOURCES)[number]
 
+/**
+ * What an expense is, mirrored by the CHECK constraint on `expenses.kind`:
+ * money spent, or a transfer between travellers that settles a split
+ * ("Mark as settled"). Budgets, Today and the mascot leave settlements
+ * out; balances count them. Set on insert, never changed.
+ */
+export const EXPENSE_KINDS = ['expense', 'settlement'] as const
+
+export type ExpenseKind = (typeof EXPENSE_KINDS)[number]
+
 /** The default categories every trip starts with (`budget_categories.key`). */
 export const DEFAULT_BUDGET_CATEGORY_KEYS = [
   'accommodation',
@@ -40,6 +50,8 @@ export interface BudgetCategory {
 export interface Expense {
   id: string
   tripId: string
+  /** `settlement` for a "Mark as settled" transfer; absent on rows from servers before WP 4.1. */
+  kind?: ExpenseKind
   categoryId: string | null
   eventId: string | null
   amountMinor: number

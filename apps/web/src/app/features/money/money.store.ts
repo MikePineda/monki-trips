@@ -64,6 +64,7 @@ export type ExpenseChanges = Partial<
 
 /** Fields of an expense the API writes; the rest (`baseAmountMinor`, `createdBy`) is derived. */
 const WRITABLE = [
+  'kind',
   'categoryId',
   'eventId',
   'amountMinor',
@@ -147,9 +148,10 @@ export class MoneyStore {
   }
 
   /**
-   * "Mark as settled": the debtor pays the creditor back, recorded as an
-   * expense in the base currency that the debtor paid and only the
-   * creditor shares, which brings the pair's balance to zero.
+   * "Mark as settled": the debtor pays the creditor back, recorded as a
+   * `settlement` in the base currency that the debtor paid and only the
+   * creditor shares, which brings the pair's balance to zero. Budgets,
+   * Today and the expense list leave settlements out.
    */
   async settle(input: SettlementInput): Promise<ExpenseRecord> {
     const now = this.clock()
@@ -157,6 +159,7 @@ export class MoneyStore {
       {
         id: uuidv7(),
         tripId: input.tripId,
+        kind: 'settlement',
         categoryId: input.categoryId,
         eventId: null,
         amountMinor: input.amountMinor,
@@ -188,6 +191,7 @@ export class MoneyStore {
         id: record.id,
         changes: {
           ...pick(record, [
+            'kind',
             'categoryId',
             'amountMinor',
             'currency',

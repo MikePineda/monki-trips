@@ -330,10 +330,12 @@ describe('MoneyPage', () => {
       ])
     })
 
-    it('mark as settled zeroes the pair', async () => {
+    it('mark as settled zeroes the pair and leaves Spent unchanged', async () => {
       await db.trips.put({ ...TRIP, budgetMode: 'split' })
-      const { byId, tap, until, host } = await render()
+      const { byId, tap, until, host, tile, all } = await render()
       await until(() => expect(byId('money.view.balances')).not.toBeNull())
+      const spent = tile('spent')
+      expect(spent).toMatch(/120\.00/)
       await tap(byId('money.view.balances'))
       await until(() => expect(settlements(host)).toHaveLength(2))
 
@@ -343,10 +345,9 @@ describe('MoneyPage', () => {
       expect(settlements(host)[0]).toMatch(/Traveller C pays Traveller B/)
       const first = host.querySelector<HTMLElement>('[data-testid="money.balance"]')!
       expect(first.textContent).toContain('settled')
-      const settlement = (await db.expenses.toArray()).find(
-        (row) => row.description === 'Settle up'
-      )
+      const settlement = (await db.expenses.toArray()).find((row) => row.kind === 'settlement')
       expect(settlement).toMatchObject({
+        description: 'Settle up',
         paidByTravellerId: 'v3',
         amountMinor: 3500,
         currency: 'AUD',
@@ -354,6 +355,16 @@ describe('MoneyPage', () => {
         syncState: 'pending',
       })
       expect(TestBed.inject(ToastService).toasts()[0].message).toBe('Marked as settled')
+      // Shown as history under Balances, never as spending.
+      await until(() => expect(all('[data-testid="money.settled"]')).toHaveLength(1))
+      expect(all('[data-testid="money.settled"]')[0].textContent).toMatch(
+        /Traveller C paid Traveller A.*35\.00/s
+      )
+      expect(tile('spent')).toBe(spent)
+      await tap(byId('money.view.expenses'))
+      await until(() => expect(all('[data-testid="money.expense"]')).toHaveLength(2))
+      await tap(byId('money.view.budget'))
+      expect(host.textContent).not.toContain('155.00')
     })
 
     it('expense rows say who paid and between how many', async () => {

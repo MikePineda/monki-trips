@@ -1,7 +1,9 @@
 import { DateTime } from 'luxon'
-import type { TripBudgetView, EventStatus } from '@monkitrips/shared'
+import type { ExpenseKind, TripBudgetView, EventStatus } from '@monkitrips/shared'
 
 export interface BudgetExpense {
+  /** A settlement between travellers is not spending: it is left out, counts included. */
+  kind?: ExpenseKind
   categoryId: string | null
   /** Converted amount, or null while the rate is missing. */
   baseAmountMinor: number | null
@@ -50,7 +52,8 @@ function daysBetween(from: string, to: string): number {
  * Mirrors the shared `budget_status`.
  */
 export function budgetStatus(input: BudgetStatusInput): TripBudgetView {
-  const converted = input.expenses.filter(
+  const spending = input.expenses.filter((expense) => expense.kind !== 'settlement')
+  const converted = spending.filter(
     (expense): expense is BudgetExpense & { baseAmountMinor: number } =>
       expense.baseAmountMinor !== null
   )
@@ -59,7 +62,7 @@ export function budgetStatus(input: BudgetStatusInput): TripBudgetView {
   const spentMinor = sum(converted)
   const spentTodayMinor = sum(converted.filter((expense) => expense.spentOn === input.today))
   const spentBeforeToday = sum(converted.filter((expense) => expense.spentOn < input.today))
-  const pendingFxCount = input.expenses.length - converted.length
+  const pendingFxCount = spending.length - converted.length
 
   const budget = input.budgetMinor
   const remainingMinor = budget === null ? null : budget - spentMinor

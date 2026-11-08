@@ -165,6 +165,23 @@ describe('todayScreen', () => {
     expect(screen.view.budget.pendingSyncCount).toBe(1)
   })
 
+  it('a settlement between travellers leaves today and the mascot alone', () => {
+    const base = input({
+      trip: { ...TRIP, budgetTotalMinor: 1_000 },
+      expenses: [expense({ id: 'lunch', amountMinor: 500, baseAmountMinor: 500 })],
+    })
+    const settled = todayScreen({
+      ...base,
+      expenses: [
+        ...base.expenses,
+        expense({ id: 'settle', kind: 'settlement', amountMinor: 90_000, baseAmountMinor: 90_000 }),
+      ],
+    })
+
+    expect(settled.view.budget).toEqual(todayScreen(base).view.budget)
+    expect(settled.mascotInput).toEqual(todayScreen(base).mascotInput)
+  })
+
   it('mascot is worried when a document of the day has no verified copy', () => {
     const events = [placedEvent('2027-01-21T15:00', 'Asia/Bangkok', { id: 'tour', kind: 'tour' })]
     const doc = blankDocument({ id: 'd1', eventId: 'tour', tags: ['show_on_phone'] })

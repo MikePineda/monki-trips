@@ -11,9 +11,12 @@
  * Expenses still waiting for an FX rate (`baseAmountMinor: null`) are left
  * out of every sum and counted in `pendingFxCount`. Expenses queued offline
  * (`syncPending`) count like any other. An expense dated outside the trip
- * (a flight bought months before) still counts in `spent`. `committedMinor`
+ * (a flight bought months before) still counts in `spent`. A settlement
+ * (`kind: 'settlement'`, money moving between travellers) is no spending
+ * and is left out of everything, counts included. `committedMinor`
  * is the cost of active priced events that no expense has recorded yet.
  */
+import type { ExpenseKind } from '../expense.ts'
 import { convertToBase } from './convert_to_base.ts'
 import { compareIsoDate, daysBetween, type IsoDate } from './iso_date.ts'
 import { floorDiv, toMinor, type MinorUnits } from './minor_units.ts'
@@ -22,6 +25,8 @@ import { isActiveEvent, type TripEvent } from './trip_event.ts'
 
 export interface BudgetExpense {
   id?: string
+  /** A settlement between travellers is not spending: it is left out. */
+  kind?: ExpenseKind
   eventId?: string | null
   amountMinor: MinorUnits
   currency: string
@@ -82,6 +87,9 @@ export function budgetStatus(input: BudgetStatusInput): BudgetStatus {
   let pendingSyncCount = 0
   const expensedEvents = new Set<string>()
   for (const expense of input.expenses) {
+    if (expense.kind === 'settlement') {
+      continue
+    }
     if (expense.eventId) {
       expensedEvents.add(expense.eventId)
     }

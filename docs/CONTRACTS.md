@@ -141,7 +141,9 @@ creates `origin: manual` tasks, or `origin: template` ones with a
 and `titleKey` never change once the row exists, `document` and `ai` origins
 are server-made, and an insert whose `templateItemKey` the trip already has
 answers `duplicate` with the server's row instead of a second one),
-`budget_category`, `expense` (an optional `shares` array replaces the whole
+`budget_category`, `expense` (`kind` is `expense` or `settlement`, set on insert
+only: a later change is `E_VALIDATION_ERROR` `immutable`; budgets, Today and
+the mascot leave settlements out, balances count them; an optional `shares` array replaces the whole
 split and must sum to the amount; an `amountMinor` change without `shares`
 must still match the live split), `expense_share`, `emergency` (one row per
 trip, merged per top-level key of `content`). Derived values are never
@@ -214,7 +216,8 @@ is `TripJsonV1` in `@monkitrips/shared`.
   `event-3`, `segment-1`, `document-1`, `category-food`); events carry
   `stopRef`, segments nest inside their event and seats inside their
   segment (`travellerRef`, `documentRef`), expenses carry `eventRef`,
-  `categoryRef`, `paidByTravellerRef` and `shares[].travellerRef`, tasks
+  `categoryRef`, `paidByTravellerRef` and `shares[].travellerRef` (and
+  their `kind`: `settlement` round-trips, absent reads as `expense`), tasks
   `eventRef` and `sourceDocumentRef`, documents `eventRef`. Database ids and
   account ids never appear: `members` keeps role and display name only.
 - **Times** are local wall clocks next to their IANA zone (`startsLocal` +

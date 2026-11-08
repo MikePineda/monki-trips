@@ -4,7 +4,7 @@ import type { DocumentTag } from './domain/trip_document.ts'
 import type { EventKind, EventStatus } from './domain/trip_event.ts'
 import type { TaskOrigin, TaskPriority } from './domain/trip_task.ts'
 import type { EmergencyInfoContent } from './emergency_info.ts'
-import type { FxSource } from './expense.ts'
+import type { ExpenseKind, FxSource } from './expense.ts'
 import type { TripMemberRole } from './trip_member_role.ts'
 import type { UserProfile } from './user.ts'
 
@@ -155,6 +155,8 @@ export interface TripJsonExpenseShare {
 }
 
 export interface TripJsonExpense {
+  /** `settlement` for a transfer that settles a split; absent (an expense) in files before WP 4.1. */
+  kind?: ExpenseKind
   eventRef: string | null
   categoryRef: string | null
   amountMinor: number

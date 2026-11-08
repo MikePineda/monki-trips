@@ -1,6 +1,7 @@
 import vine from '@vinejs/vine'
 import {
   BUDGET_MODES,
+  EXPENSE_KINDS,
   DOCUMENT_KINDS,
   DOCUMENT_TAGS,
   EVENT_KINDS,
@@ -183,6 +184,7 @@ export const expenseSharesField = vine
 
 export const expenseChanges = vine.compile(
   vine.object({
+    kind: vine.enum(EXPENSE_KINDS).optional(),
     categoryId: refField.nullable().optional(),
     eventId: refField.nullable().optional(),
     amountMinor: minorField().optional(),
