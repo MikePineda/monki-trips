@@ -245,6 +245,46 @@ describe('MoneyStore', () => {
     expect(last.changes['shares']).toHaveLength(2)
   })
 
+  it('a new amount is split only between people still on the trip', async () => {
+    await db.travellers.bulkPut([
+      {
+        id: 'v1',
+        tripId: 'trip-1',
+        displayName: 'Traveller A',
+        userId: null,
+        position: 0,
+        updatedAt: 'x',
+      },
+      {
+        id: 'v2',
+        tripId: 'trip-1',
+        displayName: 'Traveller B',
+        userId: null,
+        position: 1,
+        updatedAt: 'x',
+      },
+    ])
+    await db.expenses.put(expenseRecord({ id: 'x1', amountMinor: 3000, paidByTravellerId: 'v1' }))
+    await db.expenseShares.bulkPut(
+      ['v1', 'v2', 'gone'].map((travellerId, index) => ({
+        id: `s${index}`,
+        tripId: 'trip-1',
+        expenseId: 'x1',
+        travellerId,
+        shareMinor: 1000,
+        updatedAt: 'x',
+      }))
+    )
+
+    await TestBed.inject(MoneyStore).update('x1', { amountMinor: 1001 }, 'AUD')
+
+    const shares = await db.expenseShares.where('expenseId').equals('x1').toArray()
+    expect(shares.map((row) => [row.travellerId, row.shareMinor]).sort()).toEqual([
+      ['v1', 501],
+      ['v2', 500],
+    ])
+  })
+
   it('undo of a delete brings the split back with the expense', async () => {
     await db.expenses.put(expenseRecord({ id: 'x1', amountMinor: 4500, paidByTravellerId: 'v1' }))
     await db.expenseShares.put({

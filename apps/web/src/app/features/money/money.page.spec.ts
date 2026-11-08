@@ -367,6 +367,26 @@ describe('MoneyPage', () => {
       expect(host.textContent).not.toContain('155.00')
     })
 
+    it('a settle up line with someone who left the trip cannot be marked as settled', async () => {
+      await db.trips.put({ ...TRIP, budgetMode: 'split' })
+      // Traveller C left the trip: the row is gone from the device, the share stays.
+      await db.travellers.delete('v3')
+      const { byId, tap, until, host } = await render()
+      await until(() => expect(byId('money.view.balances')).not.toBeNull())
+      await tap(byId('money.view.balances'))
+
+      await until(() => expect(settlements(host).length).toBeGreaterThan(0))
+      const gone = [
+        ...host.querySelectorAll<HTMLElement>('[data-testid="money.settlement"]'),
+      ].filter((row) => row.textContent?.includes('Someone who left the trip'))
+      expect(gone.length).toBeGreaterThan(0)
+      for (const row of gone) {
+        const button = row.querySelector<HTMLButtonElement>('[data-testid="money.settle.mark"]')
+        expect(button?.disabled).toBe(true)
+        expect(row.textContent).toContain('left the trip and cannot be settled here')
+      }
+    })
+
     it('expense rows say who paid and between how many', async () => {
       await db.trips.put({ ...TRIP, budgetMode: 'split' })
       const { byId, tap, until, host } = await render()
