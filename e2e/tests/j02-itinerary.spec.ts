@@ -35,7 +35,15 @@ test.describe('J02 itinerary', () => {
     }
   })
 
-  test('a stop, two events, the day list with chips and the event detail', async ({ page }) => {
+  test('a stop, two events, the day list with chips and the event detail', async ({
+    page,
+    browserName,
+  }) => {
+    // "Directions" opens Apple Maps on iOS (the iPhone project is the WebKit one), Google Maps elsewhere.
+    const directions =
+      browserName === 'webkit'
+        ? 'https://maps.apple.com/?daddr=14%20Quay%20Lane'
+        : 'https://www.google.com/maps/dir/?api=1&destination=14%20Quay%20Lane'
     await signIn(page, solo)
     await page.goto(`/t/${tripId}`)
     // A trip that has not started opens on its summary.
@@ -95,7 +103,7 @@ test.describe('J02 itinerary', () => {
     await expect(page.getByTestId('plan.day.free')).toHaveCount(2)
     await expect(day('2027-03-02').getByTestId('plan.event.directions')).toHaveAttribute(
       'href',
-      'https://www.google.com/maps/dir/?api=1&destination=14%20Quay%20Lane'
+      directions
     )
 
     // The event detail is a sheet on its own URL.
@@ -104,10 +112,7 @@ test.describe('J02 itinerary', () => {
     const detail = page.getByRole('dialog')
     await expect(detail.getByTestId('events.detail.starts')).toContainText('Tue 2 Mar 09:30')
     await expect(detail.getByTestId('events.detail.address')).toContainText('14 Quay Lane')
-    await expect(detail.getByTestId('events.detail.directions')).toHaveAttribute(
-      'href',
-      'https://www.google.com/maps/dir/?api=1&destination=14%20Quay%20Lane'
-    )
+    await expect(detail.getByTestId('events.detail.directions')).toHaveAttribute('href', directions)
     await detail.getByTestId('ui.sheet.close').click()
     await expect(page).toHaveURL(new RegExp(`/t/${tripId}/plan$`))
 
