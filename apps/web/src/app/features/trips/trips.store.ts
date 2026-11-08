@@ -6,6 +6,7 @@ import { TRIPS_API } from '../../core/api/trips-api'
 import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { liveSignal } from '../../core/offline/live'
 import { OnlineStore } from '../../core/offline/online.store'
+import { SyncService } from '../../core/offline/sync.service'
 import type { TripRecord } from '../../core/offline/records'
 import { toTripRecord } from '../../core/offline/trip-record'
 import { SessionStore } from '../../core/session/session.store'
@@ -15,7 +16,9 @@ export type NewTripInput = Omit<CreateTripInput, 'id'>
 /**
  * The trips on this device, newest change first, straight from Dexie: the
  * list never waits for the network. `refresh()` asks `GET /trips` and
- * replaces the device's rows with the server's live list; `create()` posts
+ * replaces the device's rows with the server's live list, then asks the
+ * sync loop for every trip's content (the history and the passport read
+ * it); `create()` posts
  * a trip with a client id (idempotent on retry) and caches it. A 401 while
  * online ends the session; any other failure is kept for the page to show
  * next to the saved data.
@@ -26,6 +29,7 @@ export class TripsStore {
   private readonly api = inject(TRIPS_API)
   private readonly online = inject(OnlineStore)
   private readonly session = inject(SessionStore)
+  private readonly sync = inject(SyncService)
 
   readonly trips = liveSignal<TripRecord[]>(
     (db) => db.trips.orderBy('updatedAt').reverse().toArray(),
@@ -51,6 +55,8 @@ export class TripsStore {
         await db.trips.bulkPut(list.map((trip) => toTripRecord(trip)))
       })
       this.failure.set(null)
+      // The history and the passport read every trip's stops: bring them now, not at the next sync tick.
+      this.sync.pull().catch(() => undefined)
     } catch (error) {
       const failure = toFailure(error)
       if (!(await this.session.handleUnauthorized(failure))) {

@@ -137,3 +137,7 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: WP 4.1: when a stale split loses on the server (`partial`, `rejectedFields: ['shares']`), the device keeps its own share rows until the next full pull; have the conflict path refetch the expense's shares.
 - 2026-11-08: WP 4.1: custom amounts in the split sheet accept positive numbers only, so a refund (negative amount) can only be split equally; accept a sign or derive it from the expense.
 - 2026-11-08: WP 4.1 review: done in the same PR: settlements carry `expenses.kind = settlement` and leave every budget figure, and a pushed split always ends as the server keeps it (push results carry the live shares). Custom splits now follow a new amount in proportion; refunds still split only equally in the sheet.
+- 2026-11-08: WP 4.2: the service worker's `app` group prefetches every root `*.js`, so MapLibre's lazy chunk (1.1 MB, useless offline) is downloaded on install; name the chunk or move it under a folder the group excludes.
+- 2026-11-08: WP 4.2: visited countries are highlighted by their label only (OpenMapTiles has no country polygons); a small simplified boundaries GeoJSON would let the map fill them.
+- 2026-11-08: WP 4.2: stops carry `lat`/`lng` but the stop sheet has no field for them; add coordinates (or a geocoder) so the map has pins without the import.
+- 2026-11-08: WP 4.2: drawn artwork for city stamps works (`stamps.json` code `XA-HARBOUR CITY`) but no city has any yet; and the generator could print the date in the locale's month names.

@@ -27,7 +27,7 @@ function round(value: number): number {
   return Math.round(value * 100) / 100
 }
 
-const MIN_WIDTH = 60
+const MIN_WIDTH = 120
 
 export function worldViewBox(points: readonly LngLat[]): ViewBox {
   if (points.length === 0) {
