@@ -1,0 +1,212 @@
+import { mkdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import type { Page } from '@playwright/test'
+import { soloAccount, type E2eAccount } from '../accounts.ts'
+import { expect, test } from '../fixtures.ts'
+import { seedNarrowTrip, type NarrowTrip } from '../narrow-trip.ts'
+import { signIn } from '../sign-in.ts'
+
+/**
+ * J05c: the trip screens on a narrow phone (360 × 780) with four-digit
+ * amounts and long place names. The Money figures never overlap, the per
+ * day figure before the trip spreads over the trip's days, the last line
+ * of a list scrolls clear of the floating button, nothing runs past the
+ * right edge (Where we sleep included: dates whole, long titles kept in
+ * the row) and the floating button stays inside the viewport.
+ *
+ * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
+ * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
+ * (E2E_SCREENSHOTS=before names them `*-before.png`).
+ */
+test.use({ serviceWorkers: 'block', viewport: { width: 360, height: 780 } })
+
+const SCREENSHOTS = fileURLToPath(new URL('../screenshots/money/', import.meta.url))
+
+interface Box {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+function overlaps(a: Box, b: Box): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+}
+
+/**
+ * Elements whose visible box runs past the right or left edge of the
+ * viewport. What an ancestor clips (`overflow` other than visible) is not
+ * visible, so the box is cut to each clipping ancestor first.
+ */
+async function overflowing(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const width = document.documentElement.clientWidth
+    const found: string[] = []
+    for (const element of Array.from(document.body.querySelectorAll('*'))) {
+      const box = element.getBoundingClientRect()
+      if (box.width === 0 || box.height === 0) continue
+      let left = box.left
+      let right = box.right
+      for (let up = element.parentElement; up && up !== document.body; up = up.parentElement) {
+        if (getComputedStyle(up).overflowX === 'visible') continue
+        const clip = up.getBoundingClientRect()
+        left = Math.max(left, clip.left)
+        right = Math.min(right, clip.right)
+      }
+      if (right <= left) continue
+      if (right > width + 0.5 || left < -0.5) {
+        const id = element.getAttribute('data-testid')
+        found.push(`${element.tagName.toLowerCase()}${id ? `[${id}]` : ''} ${left}–${right}`)
+      }
+    }
+    if (document.documentElement.scrollWidth > width) {
+      found.push(`document scrollWidth ${document.documentElement.scrollWidth} > ${width}`)
+    }
+    return found
+  })
+}
+
+async function scrollToEnd(page: Page): Promise<void> {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+}
+
+async function expectFabInside(page: Page, testId: string): Promise<Box> {
+  const fab = await page.getByTestId(testId).boundingBox()
+  expect(fab).not.toBeNull()
+  const viewport = page.viewportSize()!
+  expect(fab!.x).toBeGreaterThanOrEqual(0)
+  expect(fab!.y).toBeGreaterThanOrEqual(0)
+  expect(fab!.x + fab!.width).toBeLessThanOrEqual(viewport.width)
+  expect(fab!.y + fab!.height).toBeLessThanOrEqual(viewport.height)
+  return fab!
+}
+
+test.describe('J05c trip screens on a narrow phone', () => {
+  let solo: E2eAccount
+  let trip: NarrowTrip
+
+  test.beforeEach(async ({}, testInfo) => {
+    solo = soloAccount(testInfo.project.name, 'j05c')
+    trip = await seedNarrowTrip(solo)
+  })
+
+  test('the Money figures never overlap and the last category clears the floating button', async ({
+    page,
+  }) => {
+    await signIn(page, solo)
+    await page.goto(`/t/${trip.tripId}/money`)
+    await expect(page.getByTestId('money.stat.spent')).toContainText('A$3,175.48')
+    await expect(page.getByTestId('money.stat.remaining')).toContainText('A$4,773.12')
+    // Before the trip the allowance spreads over the trip's 18 days, not the 100 days to its end.
+    await expect(page.getByTestId('money.stat.perDay')).toContainText('A$265.17')
+    await expect(page.getByTestId('money.stat.perDay')).toContainText('over 18 trip days')
+
+    const tiles = await page.locator('[data-testid="money.stats"] mk-stat-tile').all()
+    expect(tiles).toHaveLength(3)
+    const parts: Box[] = []
+    for (const tile of tiles) {
+      for (const part of await tile.locator('p').all()) {
+        parts.push((await part.boundingBox())!)
+      }
+    }
+    for (let i = 0; i < parts.length; i++) {
+      for (let j = i + 1; j < parts.length; j++) {
+        expect(overlaps(parts[i], parts[j]), `stat parts ${i} and ${j} overlap`).toBe(false)
+      }
+    }
+    // No money is cut short: every value is drawn whole.
+    for (const value of await page.locator('[data-testid="money.stats"] .mk-stat__value').all()) {
+      const fits = await value.evaluate((element) => element.scrollWidth <= element.clientWidth)
+      expect(fits).toBe(true)
+    }
+
+    // Food without spending reads like the others: an amount, then "of" its budget.
+    const food = page.getByTestId('money.budget.chart.bar').filter({ hasText: 'Food' })
+    await expect(food).toContainText('A$0.00')
+    await expect(food).toContainText('of A$1,450.00')
+
+    expect(await overflowing(page)).toEqual([])
+    await scrollToEnd(page)
+    const fab = await expectFabInside(page, 'shell.fab')
+    const last = await page.getByTestId('money.budget.chart.bar').last().boundingBox()
+    expect(last!.y + last!.height).toBeLessThanOrEqual(fab.y)
+  })
+
+  test('Where we sleep keeps whole dates and long titles inside the row', async ({ page }) => {
+    await signIn(page, solo)
+    await page.goto(`/t/${trip.tripId}/plan/nights`)
+    await expect(page.getByTestId('plan.night')).toHaveCount(17)
+    await expect(page.getByTestId('plan.night').nth(9)).toContainText('On board')
+
+    expect(await overflowing(page)).toEqual([])
+    for (const row of await page.getByTestId('plan.night').all()) {
+      const title = row.locator('.mk-row__title')
+      const meta = row.locator('.mk-row__meta')
+      expect(await title.textContent()).not.toMatch(/…$/)
+      expect(await title.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+        true
+      )
+      // "Night 2 of 17" stays on one line.
+      const metaBox = (await meta.boundingBox())!
+      expect(metaBox.height).toBeLessThan(24)
+    }
+    // The night on board keeps its chevron inside the row.
+    const onBoard = page.getByTestId('plan.night').nth(9)
+    const chevron = await onBoard.locator('.mk-row__chevron').boundingBox()
+    expect(chevron).not.toBeNull()
+    expect(chevron!.x + chevron!.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+
+    await scrollToEnd(page)
+    const fab = await expectFabInside(page, 'plan.add')
+    const last = await page.getByTestId('plan.night').last().boundingBox()
+    expect(last!.y + last!.height).toBeLessThanOrEqual(fab.y)
+  })
+
+  test('every trip screen with the floating button stays inside the viewport', async ({ page }) => {
+    await signIn(page, solo)
+    // The device holds the trip once the Money figures show; then every screen reads it.
+    await page.goto(`/t/${trip.tripId}/money`)
+    await expect(page.getByTestId('money.stat.perDay')).toContainText('A$265.17')
+    const screens = [
+      { path: 'today', fab: 'shell.fab' },
+      { path: 'plan', fab: 'plan.add' },
+      { path: 'docs', fab: 'shell.fab' },
+      { path: 'money', fab: 'shell.fab' },
+      { path: 'more', fab: 'shell.fab' },
+      { path: 'more/members', fab: 'shell.fab' },
+      { path: 'more/tasks', fab: 'shell.fab' },
+    ]
+    for (const screen of screens) {
+      await page.goto(`/t/${trip.tripId}/${screen.path}`)
+      await expect(page.getByTestId(screen.fab), screen.path).toBeVisible()
+      expect(await overflowing(page), screen.path).toEqual([])
+      await scrollToEnd(page)
+      await expectFabInside(page, screen.fab)
+      // The page keeps room below its content for the floating button.
+      const room = await page.evaluate(() => {
+        const main = document.querySelector('mk-page')!
+        return parseFloat(getComputedStyle(main).paddingBottom)
+      })
+      expect(room, screen.path).toBeGreaterThanOrEqual(56 + 64)
+    }
+  })
+
+  test('screenshots of Money and Where we sleep at 390 × 844, light and dark', async ({ page }) => {
+    const mode = process.env.E2E_SCREENSHOTS
+    test.skip(!mode, 'set E2E_SCREENSHOTS=1 to refresh them')
+    // E2E_SCREENSHOTS=before keeps a copy of the screens before a layout fix, for a PR.
+    const suffix = mode === 'before' ? '-before' : ''
+    mkdirSync(SCREENSHOTS, { recursive: true })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await signIn(page, solo)
+    for (const scheme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme: scheme })
+      await page.goto(`/t/${trip.tripId}/money`)
+      await expect(page.getByTestId('money.stat.perDay')).toContainText('A$265.17')
+      await page.screenshot({ path: `${SCREENSHOTS}money-390-${scheme}${suffix}.png` })
+      await page.goto(`/t/${trip.tripId}/plan/nights`)
+      await expect(page.getByTestId('plan.night')).toHaveCount(17)
+      await page.screenshot({ path: `${SCREENSHOTS}where-we-sleep-390-${scheme}${suffix}.png` })
+    }
+  })
+})
