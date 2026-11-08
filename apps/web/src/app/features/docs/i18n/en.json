@@ -101,7 +101,8 @@
     "action": "Read this booking",
     "reading": "Kiko is reading the booking…",
     "privacy": "The file is sent to the AI provider to read it. Nothing is added until you accept.",
-    "offline": "You need a connection to read a booking."
+    "offline": "You need a connection to read a booking.",
+    "linked": "This document is already attached to an event in the plan."
   },
   "review": {
     "title": "Check the booking",
@@ -160,7 +161,8 @@
       "costCurrency": "Currency",
       "seat": "Seat",
       "coach": "Coach"
-    }
+    },
+    "legUnsaved": "This leg is not saved until both times have a zone"
   },
   "errors": {
     "network": "No connection. Try again when you are online.",
@@ -176,6 +178,7 @@
     "E_AI_ACTION_STALE": "The trip changed since this was read. Read the booking again.",
     "E_AI_ACTION_CLOSED": "This proposal was already decided or has expired.",
     "E_AI_ACTION_NOT_REVISABLE": "This proposal can no longer be changed.",
-    "E_VALIDATION_ERROR": "Some fields need a fix."
+    "E_VALIDATION_ERROR": "Some fields need a fix.",
+    "E_DOCUMENT_ALREADY_LINKED": "This document is already attached to an event in the plan."
   }
 }

@@ -11,6 +11,7 @@ export const FAKE_APP_CONFIG: AppConfig = {
   pushEnabled: true,
   vapidPublicKey:
     'BJT8n4mGFig1eRSRezUN_1iZzDuim2OD5KrJzqtXgR8MBLTmVl1OVY8vuhGeVv2MdAswfZtGdXtS-YSU117sKFg',
+  visionEnabled: true,
 }
 
 /** In-memory stand-in with knobs for registration and the invitation it previews. */

@@ -56,7 +56,8 @@ function copyDraft(draft: BookingDraft): BookingDraft {
 /**
  * What the model read from a booking, for the member to check before
  * anything is written: every field editable, the ones the server flagged
- * marked with an icon and a word (never colour alone), the nights the
+ * marked with an icon and a word (never colour alone), a leg accept would
+ * skip (a time or a zone missing) flagged the same way, the nights the
  * booking would cover. Accept sends the member's corrections first
  * (`revise`) when there are any, then accepts; the event and the
  * document's link arrive with the next pull. Reject discards the proposal.
@@ -111,6 +112,18 @@ function copyDraft(draft: BookingDraft): BookingDraft {
             [attr.data-testid]="'docs.review.group.' + group.id"
           >
             <mk-stack gap="1">
+              @if (group.unsaved) {
+                <mk-row>
+                  <mk-chip
+                    variant="status"
+                    tone="warning"
+                    icon="alert-triangle"
+                    [attr.data-testid]="'docs.review.unsaved.' + group.id"
+                  >
+                    {{ 'docs.review.legUnsaved' | transloco }}
+                  </mk-chip>
+                </mk-row>
+              }
               @for (field of group.fields; track field.path) {
                 <mk-stack gap="half">
                   <mk-field

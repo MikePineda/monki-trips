@@ -280,6 +280,44 @@ describe('BookingReviewSheet', () => {
     expect(lines[0].textContent).toContain('no bed → Harbour Inn')
   })
 
+  it('legs are hidden for a booking that is not transport', async () => {
+    setup(bookingAction({ draft: { ...DRAFT, kind: 'lodging' }, review: [] }))
+    const { find, fixture } = await render()
+
+    expect(find('docs.review.group.segments.0')).toBeNull()
+    expect(find('docs.review.field.segments.0.departsLocal')).toBeNull()
+    expect(find('docs.review.group.when')).not.toBeNull()
+
+    const kind = find('docs.review.field.kind') as HTMLSelectElement
+    kind.value = 'train'
+    kind.dispatchEvent(new Event('change'))
+    await settle(fixture)
+    expect(find('docs.review.field.segments.0.departsLocal')).not.toBeNull()
+
+    kind.value = 'tour'
+    kind.dispatchEvent(new Event('change'))
+    await settle(fixture)
+    expect(find('docs.review.group.segments.0')).toBeNull()
+  })
+
+  it('a leg without both times and zones is flagged as not saved', async () => {
+    const [leg] = DRAFT.segments
+    setup(bookingAction({ draft: { ...DRAFT, segments: [{ ...leg, arrivesTz: null }] } }))
+    const { find, fixture } = await render()
+
+    const flag = find('docs.review.unsaved.segments.0')!
+    expect(flag.textContent?.trim()).toBe('This leg is not saved until both times have a zone')
+    expect(flag.querySelector('mk-icon')).not.toBeNull()
+
+    typeInto(find('docs.review.field.segments.0.arrivesTz') as HTMLInputElement, 'Asia/Tokyo')
+    await settle(fixture)
+    expect(find('docs.review.unsaved.segments.0')).toBeNull()
+
+    typeInto(find('docs.review.field.segments.0.departsLocal') as HTMLInputElement, '')
+    await settle(fixture)
+    expect(find('docs.review.unsaved.segments.0')).not.toBeNull()
+  })
+
   it('offline the decisions are disabled with a reason', async () => {
     setup(bookingAction(), false)
     const { find } = await render()

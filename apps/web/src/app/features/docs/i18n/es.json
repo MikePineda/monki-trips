@@ -101,7 +101,8 @@
     "action": "Leer esta reserva",
     "reading": "Kiko está leyendo la reserva…",
     "privacy": "El archivo se envía al proveedor de IA para leerlo. No se agrega nada hasta que lo aceptes.",
-    "offline": "Necesitas conexión para leer una reserva."
+    "offline": "Necesitas conexión para leer una reserva.",
+    "linked": "Este documento ya está asociado a un evento del plan."
   },
   "review": {
     "title": "Revisa la reserva",
@@ -160,7 +161,8 @@
       "costCurrency": "Moneda",
       "seat": "Asiento",
       "coach": "Vagón"
-    }
+    },
+    "legUnsaved": "Este tramo no se guarda hasta que las dos horas tengan zona horaria"
   },
   "errors": {
     "network": "Sin conexión. Inténtalo cuando estés en línea.",
@@ -176,6 +178,7 @@
     "E_AI_ACTION_STALE": "El viaje cambió desde que se leyó. Lee la reserva otra vez.",
     "E_AI_ACTION_CLOSED": "Esta propuesta ya se decidió o caducó.",
     "E_AI_ACTION_NOT_REVISABLE": "Esta propuesta ya no se puede cambiar.",
-    "E_VALIDATION_ERROR": "Algunos campos necesitan una corrección."
+    "E_VALIDATION_ERROR": "Algunos campos necesitan una corrección.",
+    "E_DOCUMENT_ALREADY_LINKED": "Este documento ya está asociado a un evento del plan."
   }
 }

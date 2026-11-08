@@ -10,6 +10,7 @@ import {
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import type { DocumentTag } from '@monkitrips/shared'
 import { type ApiFailure, toApiFailure } from '../../core/api/api-failure'
+import { AppConfigStore } from '../../core/api/app-config.store'
 import { intlLocale } from '../../core/i18n/intl-locale'
 import { DocumentCopiesStore, type StorageStatus } from '../../core/offline/document-copies.store'
 import { DocumentsStore } from '../../core/offline/documents.store'
@@ -60,8 +61,10 @@ export interface DocumentDetailData {
  * pdf.js), download, share, the "Save offline" switch with the device's
  * storage estimate, the tags and the event, delete with undo. A link opens
  * in the browser instead. A PDF or a photo can be read as a booking
- * (online, through the AI provider): the proposal opens in the review
- * sheet and nothing is written until the member accepts it.
+ * (online, through the AI provider; a photo only while the server can
+ * read photos): the proposal opens in the review sheet and nothing is
+ * written until the member accepts it. A document already attached to an
+ * event says so instead.
  */
 @Component({
   selector: 'app-document-detail-sheet',
@@ -168,7 +171,13 @@ export interface DocumentDetailData {
               </mk-row>
             </mk-stack>
 
-            @if (readable()) {
+            @if (document.eventId && readableAsBooking(document)) {
+              <mk-section [eyebrow]="'docs.read.title' | transloco">
+                <p mk-text variant="caption" tone="ink-2" data-testid="docs.detail.readLinked">
+                  {{ 'docs.read.linked' | transloco }}
+                </p>
+              </mk-section>
+            } @else if (readable()) {
               <mk-section [eyebrow]="'docs.read.title' | transloco">
                 <mk-stack gap="1" data-testid="docs.detail.read">
                   @if (reading()) {
@@ -343,6 +352,7 @@ export class DocumentDetailSheet {
   private readonly transloco = inject(TranslocoService)
   private readonly window = inject(DOCUMENT).defaultView
   private readonly locale = intlLocale()
+  private readonly appConfig = inject(AppConfigStore)
   protected readonly online = inject(OnlineStore).online
 
   protected readonly tags = TAGS
@@ -363,8 +373,15 @@ export class DocumentDetailSheet {
   protected readonly needsConnection = signal(false)
   protected readonly reading = signal(false)
   protected readonly readFailure = signal<ApiFailure | null>(null)
-  /** A PDF or an image file can be read as a booking. */
-  protected readonly readable = computed(() => readableAsBooking(this.document()))
+  protected readonly readableAsBooking = readableAsBooking
+  /**
+   * A PDF, or an image while the server can read photos, that is not yet
+   * attached to an event (the server answers 409 for one that is).
+   */
+  protected readonly readable = computed(() => {
+    const document = this.document()
+    return !document?.eventId && readableAsBooking(document, this.appConfig.visionEnabled())
+  })
   private readonly device = signal<Pick<StorageStatus, 'estimate' | 'persisted'> | null>(null)
   /** The estimate read on open and after each change, against the copies' live size. */
   protected readonly storage = computed<StorageStatus | null>(() => {
@@ -391,6 +408,7 @@ export class DocumentDetailSheet {
 
   constructor() {
     void this.refreshStorage()
+    void this.appConfig.load()
   }
 
   protected size(bytes: number | null): string {
