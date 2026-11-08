@@ -32,7 +32,9 @@
       "emptyBody": "Add the places you will stay in, in order: they give the route and the local time of every event.",
       "dates": "{{arrive}} to {{depart}}",
       "undated": "Dates to decide"
-    }
+    },
+    "recap": "Trip recap",
+    "recapSoFar": "The trip so far"
   },
   "edit": {
     "title": "Edit trip",

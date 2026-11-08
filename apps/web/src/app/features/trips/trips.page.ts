@@ -174,7 +174,16 @@ interface NewStamp {
                 />
               }
             </mk-row>
-            <mk-row justify="end">
+            <mk-row justify="end" gap="1" [wrap]="true">
+              <a
+                mk-button
+                variant="ghost"
+                size="sm"
+                [routerLink]="['/t', party.id, 'recap']"
+                data-testid="history.openRecap"
+              >
+                {{ 'history.celebration.recap' | transloco }}
+              </a>
               <a
                 mk-button
                 variant="ghost"
@@ -219,7 +228,7 @@ interface NewStamp {
                 @for (entry of group.entries; track entry.id) {
                   <a
                     mk-trip-ticket
-                    [routerLink]="['/t', entry.id, 'today']"
+                    [routerLink]="['/t', entry.id, entry.phase === 'past' ? 'recap' : 'today']"
                     [title]="entry.name"
                     [eyebrow]="eyebrow(entry).key | transloco: eyebrow(entry).params"
                     [route]="entry.route"

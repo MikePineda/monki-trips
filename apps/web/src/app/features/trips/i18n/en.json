@@ -27,7 +27,8 @@
     "title": "New stamps",
     "body": "{{trip}} is in the passport. Welcome back!",
     "open": "Open the passport",
-    "mascot": "Kiko celebrating"
+    "mascot": "Kiko celebrating",
+    "recap": "See the trip recap"
   },
   "empty": {
     "pastTitle": "No stamps yet",

@@ -123,6 +123,21 @@ import { provideTripI18n } from './trip-i18n'
         </mk-banner>
       }
 
+      @if (hasRecap()) {
+        <mk-row justify="start">
+          <a
+            mk-button
+            variant="secondary"
+            size="sm"
+            [routerLink]="['/t', tripId(), 'recap']"
+            data-testid="trip.summary.recap"
+          >
+            <mk-icon name="stamp" [size]="18" />
+            {{ recapKey() | transloco }}
+          </a>
+        </mk-row>
+      }
+
       <mk-section [eyebrow]="'trip.summary.route' | transloco">
         @if (chips().length > 0) {
           <mk-row gap="1" [wrap]="true" data-testid="trip.summary.route">
@@ -243,6 +258,15 @@ export default class SummaryPage {
       countries: summary?.countryCount ?? 0,
     }
   })
+
+  /** Once the trip has started there is something to recap ("so far" until it ends). */
+  protected readonly hasRecap = computed(() => {
+    const phase = this.summary()?.phase
+    return phase === 'past' || phase === 'ongoing'
+  })
+  protected readonly recapKey = computed(() =>
+    this.summary()?.phase === 'past' ? 'trip.summary.recap' : 'trip.summary.recapSoFar'
+  )
 
   protected readonly phaseKey = computed(() => {
     const summary = this.summary()
