@@ -27,8 +27,9 @@ test.describe('J20 trip recap', () => {
   let solo: E2eAccount
   let tripId: string
 
-  test.beforeEach(async ({ page }, testInfo) => {
-    await page.route(TILES, (route) => route.abort('internetdisconnected'))
+  test.beforeEach(async ({ context }, testInfo) => {
+    // On the context, not the page: with the service worker on, its fetches skip page routes.
+    await context.route(TILES, (route) => route.abort('internetdisconnected'))
     solo = soloAccount(testInfo.project.name, 'j20')
     const api = await ApiSession.signIn(solo)
     try {
