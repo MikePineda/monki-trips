@@ -2,6 +2,7 @@ import type {
   BudgetCategory,
   EmergencyInfoContent,
   Expense,
+  ExpenseShare,
   EventSegmentRow,
   PhraseCard,
   SegmentSeat,
@@ -156,6 +157,14 @@ export interface ChecklistRecord extends TripScopedRecord {
  */
 export type ExpenseRecord = Omit<Expense, 'deletedAt'> & SyncedRecord
 
+/**
+ * One traveller's part of an expense (split mode): the API's `ExpenseShare`
+ * without the tombstone, in the expense's own currency. The live shares of
+ * an expense add up to its amount; the device writes them as a whole
+ * through the expense's `shares` field, never one by one.
+ */
+export type ExpenseShareRecord = Omit<ExpenseShare, 'deletedAt'> & SyncedRecord
+
 /** A budget line of a trip: a default one (`key`) or a custom one (`name`), with an optional budget. */
 export type BudgetCategoryRecord = Omit<BudgetCategory, 'deletedAt'> & SyncedRecord
 
@@ -232,6 +241,7 @@ export interface SyncRowMap {
   tasks: TaskRecord
   checklist: ChecklistRecord
   expenses: ExpenseRecord
+  expenseShares: ExpenseShareRecord
   budgetCategories: BudgetCategoryRecord
   members: MemberRecord
   travellers: TravellerRecord
@@ -252,6 +262,7 @@ export const SYNC_TABLES: readonly SyncTable[] = [
   'tasks',
   'checklist',
   'expenses',
+  'expenseShares',
   'budgetCategories',
   'members',
   'travellers',

@@ -401,6 +401,40 @@ describe('SyncService', () => {
     expect(await db.tasks.get('k1')).toBeUndefined()
   })
 
+  it('the shares of an expense whose new split is pending are left alone by a pull', async () => {
+    const mine = {
+      id: 's-new',
+      tripId: 't1',
+      expenseId: 'x1',
+      travellerId: 'v1',
+      shareMinor: 1250,
+      updatedAt: 'x',
+    }
+    await db.expenseShares.put(mine)
+    await db.expenseShares.put({ ...mine, id: 's-old', travellerId: 'v2', shareMinor: 600 })
+    await outbox.enqueue({
+      tripId: 't1',
+      kind: 'expense.upsert',
+      payload: {
+        entity: 'expense',
+        op: 'upsert',
+        id: 'x1',
+        changes: { shares: [{ id: 's-new', travellerId: 'v1', shareMinor: 1250 }] },
+        changedAt: '2026-11-07T12:00:00.000Z',
+      },
+    })
+    api.queuePullChanges(
+      { table: 'expenseShares', row: { ...mine, id: 's-other', travellerId: 'v3' } },
+      { table: 'expenseShares', row: { id: 's-old' }, deleted: true },
+      { table: 'expenseShares', row: { ...mine, id: 's-elsewhere', expenseId: 'x2' } }
+    )
+
+    await sync.pull()
+
+    const ids = (await db.expenseShares.toArray()).map((row) => row.id).sort()
+    expect(ids).toEqual(['s-elsewhere', 's-new', 's-old'])
+  })
+
   it('drops the trips the server no longer lists, with their rows', async () => {
     await db.trips.bulkPut([
       {

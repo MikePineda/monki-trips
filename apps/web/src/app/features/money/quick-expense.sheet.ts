@@ -1,7 +1,7 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog'
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { TranslocoPipe } from '@jsverse/transloco'
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { minorUnitExponent } from '@monkitrips/shared'
 import { LangStore } from '../../core/i18n/lang.store'
 import { CLOCK } from '../../core/offline/clock'
@@ -19,6 +19,7 @@ import { KNOWN_CURRENCIES } from '../../domain/currency-for-country'
 import { defaultCategoryId, defaultCurrency } from '../../domain/expense-defaults'
 import { formatLocaleFor } from '../../domain/locale'
 import { formatMoney, keypadToMinor } from '../../domain/money'
+import { defaultSplit, splitShares, type SplitDraft } from '../../domain/split-draft'
 import { tripToday } from '../../domain/trip-today'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkChipComponent } from '../../shared/ui/chip/chip.component'
@@ -28,11 +29,13 @@ import { MkKeypadComponent } from '../../shared/ui/keypad/keypad.component'
 import { MkRowComponent } from '../../shared/ui/layout/row.component'
 import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
+import { SheetService } from '../../shared/ui/sheet/sheet.service'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { scopedLabels } from '../../core/i18n/scoped-labels'
 import { CATEGORY_LABEL_KEYS, categoryLabel } from './category-label'
 import { provideMoneyI18n } from './money-i18n'
 import { MoneyStore } from './money.store'
+import { SplitSheet, type SplitSheetData } from './split.sheet'
 
 export interface QuickExpenseData {
   tripId: string
@@ -48,7 +51,9 @@ export type QuickExpenseResult = { expense: ExpenseRecord } | undefined
  * types the amount, may tap another category chip, and saves. The details
  * (description, event, rate) come later in the edit sheet: the expense is
  * saved with `needsDetails`. Written to Dexie through the outbox, so it
- * works offline; the rate is attached by the server on sync.
+ * works offline; the rate is attached by the server on sync. In split
+ * mode the expense is paid by me and shared equally by everyone unless
+ * the split chip says otherwise, so the three taps stay three.
  */
 @Component({
   selector: 'app-quick-expense-sheet',
@@ -100,6 +105,20 @@ export type QuickExpenseResult = { expense: ExpenseRecord } | undefined
             [decimals]="decimals()"
             [autofocus]="true"
           />
+          @if (splitMode()) {
+            <mk-row gap="1" [wrap]="true">
+              <mk-chip
+                [selectable]="true"
+                [selected]="splitOpen()"
+                (selectedChange)="openSplit()"
+                icon="users"
+                [attr.aria-label]="'money.split.open' | transloco"
+                data-testid="money.quick.split"
+              >
+                {{ splitLabel().key | transloco: splitLabel().params }}
+              </mk-chip>
+            </mk-row>
+          }
           @if (categories().length > 0) {
             <mk-row
               gap="1"
@@ -152,6 +171,8 @@ export class QuickExpenseSheet {
   private readonly lang = inject(LangStore)
   private readonly clock = inject(CLOCK)
   private readonly deviceZone = inject(TIME_ZONE)
+  private readonly sheets = inject(SheetService)
+  private readonly transloco = inject(TranslocoService)
 
   private readonly tripId = signal(this.data.tripId)
   protected readonly trip = tripRecord(this.tripId)
@@ -164,6 +185,8 @@ export class QuickExpenseSheet {
   protected readonly chosenCurrency = signal<string | null>(null)
   protected readonly chosenCategory = signal<string | null>(null)
   protected readonly saving = signal(false)
+  protected readonly chosenSplit = signal<SplitDraft | null>(null)
+  protected readonly splitOpen = signal(false)
 
   /** The place's today, read when the sheet opens. */
   private readonly today = computed(() => tripToday(this.clock(), this.deviceZone, this.stops()))
@@ -191,10 +214,60 @@ export class QuickExpenseSheet {
     formatMoney(this.amountMinor() ?? 0, this.currency(), formatLocaleFor(this.lang.lang()))
   )
 
+  protected readonly splitMode = computed(
+    () => this.trip()?.budgetMode === 'split' && this.travellers().length > 0
+  )
+  private readonly travellerIds = computed(() => this.travellers().map((row) => row.id))
+  private readonly meId = computed(() => {
+    const me = this.session.user()?.id
+    return this.travellers().find((row) => me && row.userId === me)?.id ?? null
+  })
+  private readonly split = computed(
+    () => this.chosenSplit() ?? defaultSplit(this.travellerIds(), this.meId())
+  )
+  /** The shares to save; custom amounts that no longer add up fall back to an equal split. */
+  private readonly shares = computed(() => {
+    const amount = this.amountMinor() ?? 0
+    const result = splitShares(amount, this.split(), this.travellerIds())
+    return result.valid
+      ? result.shares
+      : splitShares(amount, { ...this.split(), custom: null }, this.travellerIds()).shares
+  })
+  protected readonly splitLabel = computed(() => {
+    const draft = this.split()
+    const name = (id: string | null) =>
+      this.travellers().find((row) => row.id === id)?.displayName ?? ''
+    const count = draft.participantIds.length
+    return count === 1
+      ? {
+          key: 'money.split.chipOne',
+          params: { payer: name(draft.payerId), name: name(draft.participantIds[0] ?? null) },
+        }
+      : { key: 'money.split.chip', params: { payer: name(draft.payerId), count } }
+  })
+
   private readonly categoryWords = scopedLabels('money', CATEGORY_LABEL_KEYS)
 
   protected categoryName(category: BudgetCategoryRecord): string {
     return categoryLabel(category, this.categoryWords())
+  }
+
+  protected openSplit(): void {
+    this.splitOpen.set(true)
+    const data: SplitSheetData = {
+      amountMinor: this.amountMinor() ?? 0,
+      currency: this.currency(),
+      travellers: this.travellers().map((row) => ({ id: row.id, name: row.displayName })),
+      draft: this.split(),
+    }
+    const ref = this.sheets.open<SplitDraft, SplitSheetData>(SplitSheet, {
+      data,
+      label: this.transloco.translate('money.split.title'),
+    })
+    ref.closed.subscribe((draft) => {
+      this.splitOpen.set(false)
+      if (draft) this.chosenSplit.set(draft)
+    })
   }
 
   protected async save(): Promise<void> {
@@ -205,7 +278,7 @@ export class QuickExpenseSheet {
     }
     this.saving.set(true)
     try {
-      const me = this.session.user()?.id
+      const split = this.splitMode()
       const expense = await this.store.addQuick({
         tripId: trip.id,
         baseCurrency: trip.baseCurrency,
@@ -213,7 +286,8 @@ export class QuickExpenseSheet {
         currency: this.currency(),
         categoryId: this.categoryId(),
         spentOn: this.today().date,
-        paidByTravellerId: this.travellers().find((row) => me && row.userId === me)?.id ?? null,
+        paidByTravellerId: split ? this.split().payerId : this.meId(),
+        shares: split ? this.shares() : null,
       })
       this.ref.close({ expense })
     } finally {

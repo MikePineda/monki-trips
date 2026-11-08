@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core'
-import { convertToBase } from '@monkitrips/shared'
+import { convertToBase, equalShares } from '@monkitrips/shared'
 import { v7 as uuidv7 } from 'uuid'
 import { CLOCK } from '../../core/offline/clock'
 import type { MonkiTripsDb } from '../../core/offline/db'
 import type { OutboxMutation } from '../../core/offline/mutation'
 import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { OutboxStore } from '../../core/offline/outbox.store'
-import type { ExpenseRecord } from '../../core/offline/records'
+import type { ExpenseRecord, ExpenseShareRecord } from '../../core/offline/records'
 import { SyncService } from '../../core/offline/sync.service'
 import { TripContentStore } from '../../core/offline/trip-content.store'
 
@@ -20,6 +20,38 @@ export interface QuickExpenseInput {
   spentOn: string
   /** The person's own traveller, when the device knows it (shared mode never shows it). */
   paidByTravellerId: string | null
+  /** Split mode: who shares the expense, adding up to `amountMinor`. */
+  shares?: readonly SplitShare[] | null
+}
+
+/** One traveller's part of an expense, in the expense's currency. */
+export interface SplitShare {
+  travellerId: string
+  shareMinor: number
+}
+
+/** Who paid an expense and who shares it; the shares add up to its amount. */
+export interface SplitChoice {
+  paidByTravellerId: string
+  shares: readonly SplitShare[]
+}
+
+/** A deleted expense with its split, what undo needs to bring both back. */
+export type RemovedExpense = ExpenseRecord & { removedShares?: readonly SplitShare[] }
+
+/** A transfer between two travellers recorded as an expense (`settle`). */
+export interface SettlementInput {
+  tripId: string
+  baseCurrency: string
+  fromTravellerId: string
+  toTravellerId: string
+  /** In base minor units, positive. */
+  amountMinor: number
+  /** The trip's `other` category. */
+  categoryId: string | null
+  spentOn: string
+  /** "Settle up", in the person's language. */
+  description: string
 }
 
 /** What the edit sheet may change; `fxRate` set means "use this rate" (manual), null means "look it up". */
@@ -52,7 +84,10 @@ const WRITABLE = [
  * device never invents an exchange rate: an expense in another currency
  * waits for the server to attach the rate of its day (`baseAmountMinor`
  * null, "waiting for rate"), unless the person typed one; an expense in
- * the base currency converts at 1 at once, as the server will.
+ * the base currency converts at 1 at once, as the server will. In split
+ * mode an expense carries its shares: the device writes the share rows and
+ * sends them as the expense's `shares` field, which the server replaces as
+ * a whole.
  */
 @Injectable({ providedIn: 'root' })
 export class MoneyStore {
@@ -86,21 +121,88 @@ export class MoneyStore {
       syncState: 'pending',
     }
     const local = withLocalBase(record, input.baseCurrency)
-    await this.write(local, {
-      entity: 'expense',
-      op: 'upsert',
-      id: local.id,
-      changes: pick(record, [
-        'categoryId',
-        'amountMinor',
-        'currency',
-        'spentOn',
-        'paidByTravellerId',
-        'needsDetails',
-      ]),
-      changedAt: now,
-    })
+    const shares = shareRecords(local, input.shares ?? [], now)
+    await this.write(
+      local,
+      {
+        entity: 'expense',
+        op: 'upsert',
+        id: local.id,
+        changes: {
+          ...pick(record, [
+            'categoryId',
+            'amountMinor',
+            'currency',
+            'spentOn',
+            'paidByTravellerId',
+            'needsDetails',
+          ]),
+          ...(shares.length > 0 ? { shares: shares.map(wireShare) } : {}),
+        },
+        changedAt: now,
+      },
+      shares
+    )
     return local
+  }
+
+  /**
+   * "Mark as settled": the debtor pays the creditor back, recorded as an
+   * expense in the base currency that the debtor paid and only the
+   * creditor shares, which brings the pair's balance to zero.
+   */
+  async settle(input: SettlementInput): Promise<ExpenseRecord> {
+    const now = this.clock()
+    const record = withLocalBase(
+      {
+        id: uuidv7(),
+        tripId: input.tripId,
+        categoryId: input.categoryId,
+        eventId: null,
+        amountMinor: input.amountMinor,
+        currency: input.baseCurrency.toUpperCase(),
+        fxRate: null,
+        fxRateDate: null,
+        fxSource: null,
+        baseAmountMinor: null,
+        spentOn: input.spentOn,
+        description: input.description,
+        paidByTravellerId: input.fromTravellerId,
+        needsDetails: false,
+        createdBy: null,
+        updatedAt: now,
+        syncState: 'pending',
+      },
+      input.baseCurrency
+    )
+    const shares = shareRecords(
+      record,
+      [{ travellerId: input.toTravellerId, shareMinor: input.amountMinor }],
+      now
+    )
+    await this.write(
+      record,
+      {
+        entity: 'expense',
+        op: 'upsert',
+        id: record.id,
+        changes: {
+          ...pick(record, [
+            'categoryId',
+            'amountMinor',
+            'currency',
+            'spentOn',
+            'description',
+            'paidByTravellerId',
+            'needsDetails',
+          ]),
+          shares: shares.map(wireShare),
+        },
+        changedAt: now,
+      },
+      shares
+    )
+    return record
   }
 
   /**
@@ -108,15 +210,39 @@ export class MoneyStore {
    * (`needsDetails: false`). A new amount, currency or day without a typed
    * rate drops the stored one so the server looks the right rate up.
    */
-  async update(id: string, changes: ExpenseChanges, baseCurrency: string): Promise<void> {
+  async update(
+    id: string,
+    changes: ExpenseChanges,
+    baseCurrency: string,
+    split?: SplitChoice
+  ): Promise<void> {
     const now = this.clock()
     const db = await this.database
-    await db.transaction('rw', [db.expenses, db.outbox], async () => {
+    await db.transaction('rw', [db.expenses, db.expenseShares, db.outbox], async () => {
       const current = await db.expenses.get(id)
       if (!current) {
         throw new Error(`Expense not found on this device: ${id}`)
       }
       const sent: Record<string, unknown> = { ...changes, needsDetails: false }
+      const stored = await db.expenseShares.where('expenseId').equals(id).toArray()
+      const amount = changes.amountMinor ?? current.amountMinor
+      let shares: readonly SplitShare[] | null = split?.shares ?? null
+      if (split) {
+        sent['paidByTravellerId'] = split.paidByTravellerId
+      } else if (amount !== current.amountMinor && stored.length > 0) {
+        // The split must still add up: the same people, equally, the remainder on the payer.
+        shares = equalShares(
+          amount,
+          stored.map((share) => share.travellerId),
+          current.paidByTravellerId
+        )
+      }
+      if (shares) {
+        const rows = shareRecords(current, shares, now)
+        await db.expenseShares.bulkDelete(stored.map((share) => share.id))
+        await db.expenseShares.bulkPut(rows)
+        sent['shares'] = rows.map(wireShare)
+      }
       if ('currency' in changes && changes.currency) {
         sent['currency'] = changes.currency.toUpperCase()
       }
@@ -149,16 +275,25 @@ export class MoneyStore {
   }
 
   /** Removes the expense from the device and queues its deletion; returns it for undo. */
-  async remove(id: string): Promise<ExpenseRecord> {
+  async remove(id: string): Promise<RemovedExpense> {
     const now = this.clock()
     const db = await this.database
-    let removed: ExpenseRecord | undefined
-    await db.transaction('rw', [db.expenses, db.outbox], async () => {
-      removed = await db.expenses.get(id)
-      if (!removed) {
+    let removed: RemovedExpense | undefined
+    await db.transaction('rw', [db.expenses, db.expenseShares, db.outbox], async () => {
+      const expense = await db.expenses.get(id)
+      if (!expense) {
         throw new Error(`Expense not found on this device: ${id}`)
       }
+      const shares = await db.expenseShares.where('expenseId').equals(id).toArray()
+      removed = {
+        ...expense,
+        removedShares: shares.map((share) => ({
+          travellerId: share.travellerId,
+          shareMinor: share.shareMinor,
+        })),
+      }
       await db.expenses.delete(id)
+      await db.expenseShares.bulkDelete(shares.map((share) => share.id))
       await this.outbox.enqueueMutation(db, removed.tripId, {
         entity: 'expense',
         op: 'delete',
@@ -176,16 +311,25 @@ export class MoneyStore {
    * may already be a tombstone on the server, and a tombstone always wins)
    * with every field the person gave, rate included.
    */
-  async restore(expense: ExpenseRecord): Promise<ExpenseRecord> {
+  async restore(expense: RemovedExpense): Promise<ExpenseRecord> {
     const now = this.clock()
-    const record: ExpenseRecord = { ...expense, id: uuidv7(), updatedAt: now, syncState: 'pending' }
-    await this.write(record, {
-      entity: 'expense',
-      op: 'upsert',
-      id: record.id,
-      changes: pick(record, WRITABLE),
-      changedAt: now,
-    })
+    const { removedShares, ...rest } = expense
+    const record: ExpenseRecord = { ...rest, id: uuidv7(), updatedAt: now, syncState: 'pending' }
+    const shares = shareRecords(record, removedShares ?? [], now)
+    await this.write(
+      record,
+      {
+        entity: 'expense',
+        op: 'upsert',
+        id: record.id,
+        changes: {
+          ...pick(record, WRITABLE),
+          ...(shares.length > 0 ? { shares: shares.map(wireShare) } : {}),
+        },
+        changedAt: now,
+      },
+      shares
+    )
     return record
   }
 
@@ -225,10 +369,15 @@ export class MoneyStore {
     })
   }
 
-  private async write(record: ExpenseRecord, mutation: OutboxMutation): Promise<void> {
+  private async write(
+    record: ExpenseRecord,
+    mutation: OutboxMutation,
+    shares: readonly ExpenseShareRecord[] = []
+  ): Promise<void> {
     const db: MonkiTripsDb = await this.database
-    await db.transaction('rw', [db.expenses, db.outbox], async () => {
+    await db.transaction('rw', [db.expenses, db.expenseShares, db.outbox], async () => {
       await db.expenses.put(record)
+      await db.expenseShares.bulkPut([...shares])
       await this.outbox.enqueueMutation(db, record.tripId, mutation)
     })
     this.sync.requestPush()
@@ -264,6 +413,32 @@ function withLocalBase(expense: ExpenseRecord, baseCurrency: string): ExpenseRec
     }
   }
   return { ...expense, baseAmountMinor: null }
+}
+
+/** Share rows of `expense` with fresh ids, pending like the expense itself. */
+function shareRecords(
+  expense: Pick<ExpenseRecord, 'id' | 'tripId'>,
+  shares: readonly SplitShare[],
+  now: string
+): ExpenseShareRecord[] {
+  return shares.map((share) => ({
+    id: uuidv7(),
+    tripId: expense.tripId,
+    expenseId: expense.id,
+    travellerId: share.travellerId,
+    shareMinor: share.shareMinor,
+    updatedAt: now,
+    syncState: 'pending',
+  }))
+}
+
+/** A share as the expense's `shares` field carries it. */
+function wireShare(share: ExpenseShareRecord): {
+  id: string
+  travellerId: string
+  shareMinor: number
+} {
+  return { id: share.id, travellerId: share.travellerId, shareMinor: share.shareMinor }
 }
 
 function pick(record: ExpenseRecord, fields: readonly string[]): Record<string, unknown> {

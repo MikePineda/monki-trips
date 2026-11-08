@@ -176,6 +176,7 @@ export class SyncService {
         async () => {
           const pending = await this.outbox.pendingFieldsByRow(db)
           for (const change of result.changes) {
+            if (await splitPending(db, change, pending)) continue
             await apply(db, change, pending.get(change.row.id))
           }
           if (result.tripIds) {
@@ -320,6 +321,27 @@ async function apply(
   if (change.table === 'tasks' && change.row.origin === 'document' && change.row.sourceDocumentId) {
     await dropOptimisticPrintTasks(db, change.row.id, change.row.sourceDocumentId)
   }
+}
+
+/**
+ * A pulled share of an expense whose own new split (`shares`) is still in
+ * the outbox, or whose deletion is: the device keeps its split until the
+ * server answers. The push replaces the split as a whole and the next pull
+ * brings the server's version of every share it touched.
+ */
+async function splitPending(
+  db: MonkiTripsDb,
+  change: SyncChange,
+  pending: ReadonlyMap<string, ReadonlySet<string>>
+): Promise<boolean> {
+  if (change.table !== 'expenseShares') {
+    return false
+  }
+  const expenseId = change.deleted
+    ? (await db.expenseShares.get(change.row.id))?.expenseId
+    : change.row.expenseId
+  const fields = expenseId === undefined ? undefined : pending.get(expenseId)
+  return fields !== undefined && (fields.has('shares') || fields.has('*'))
 }
 
 /**

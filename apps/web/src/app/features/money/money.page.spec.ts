@@ -238,4 +238,146 @@ describe('MoneyPage', () => {
     await until(() => expect(all('[data-testid="money.expense"]')).toHaveLength(3))
     expect(host.textContent).toContain('Flight out')
   })
+
+  describe('split trips', () => {
+    const traveller = (
+      id: string,
+      displayName: string,
+      userId: string | null,
+      position: number
+    ) => ({
+      id,
+      tripId: 'trip-1',
+      displayName,
+      userId,
+      position,
+      updatedAt: 'x',
+    })
+    const share = (id: string, expenseId: string, travellerId: string, shareMinor: number) => ({
+      id,
+      tripId: 'trip-1',
+      expenseId,
+      travellerId,
+      shareMinor,
+      updatedAt: 'x',
+    })
+
+    beforeEach(async () => {
+      await db.expenses.clear()
+      await db.travellers.bulkPut([
+        traveller('v1', 'Traveller A', 'owner-user', 0),
+        traveller('v2', 'Traveller B', 'local-traveller', 1),
+        traveller('v3', 'Traveller C', null, 2),
+      ])
+      await db.members.put({
+        id: 'm1',
+        tripId: 'trip-1',
+        userId: 'owner-user',
+        role: 'owner',
+        updatedAt: 'x',
+      })
+      await db.expenses.bulkPut([
+        expenseRecord({
+          id: 'dinner',
+          categoryId: 'cat-food',
+          amountMinor: 9000,
+          baseAmountMinor: 9000,
+          description: 'Dinner',
+          paidByTravellerId: 'v1',
+          spentOn: '2027-01-21',
+        }),
+        // No shares yet (made before the switch): everyone shares it equally.
+        expenseRecord({
+          id: 'taxi',
+          categoryId: 'cat-transport',
+          amountMinor: 3000,
+          baseAmountMinor: 3000,
+          description: 'Taxi',
+          paidByTravellerId: 'v2',
+          spentOn: '2027-01-22',
+        }),
+      ])
+      await db.expenseShares.bulkPut([
+        share('s1', 'dinner', 'v1', 4500),
+        share('s2', 'dinner', 'v3', 4500),
+      ])
+    })
+
+    const settlements = (host: HTMLElement) =>
+      [...host.querySelectorAll<HTMLElement>('[data-testid="money.settlement"]')].map((row) =>
+        row.textContent?.replace(/\s+/g, ' ').trim()
+      )
+
+    it('balances show the minimal settle up', async () => {
+      await db.trips.put({ ...TRIP, budgetMode: 'split' })
+      const { byId, tap, until, host } = await render()
+      await until(() => expect(byId('money.view.balances')).not.toBeNull())
+
+      await tap(byId('money.view.balances'))
+
+      await until(() =>
+        expect(host.querySelectorAll('[data-testid="money.balance"]')).toHaveLength(3)
+      )
+      const rows = [...host.querySelectorAll<HTMLElement>('[data-testid="money.balance"]')]
+      expect(rows.map((row) => row.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+        expect.stringMatching(/Traveller A.*gets back.*A?\$35\.00/),
+        expect.stringMatching(/Traveller B.*gets back.*A?\$20\.00/),
+        expect.stringMatching(/Traveller C.*owes.*A?\$55\.00/),
+      ])
+      expect(settlements(host)).toEqual([
+        expect.stringMatching(/Traveller C pays Traveller A.*35\.00/),
+        expect.stringMatching(/Traveller C pays Traveller B.*20\.00/),
+      ])
+    })
+
+    it('mark as settled zeroes the pair', async () => {
+      await db.trips.put({ ...TRIP, budgetMode: 'split' })
+      const { byId, tap, until, host } = await render()
+      await until(() => expect(byId('money.view.balances')).not.toBeNull())
+      await tap(byId('money.view.balances'))
+      await until(() => expect(settlements(host)).toHaveLength(2))
+
+      await tap(host.querySelector<HTMLElement>('[data-testid="money.settle.mark"]'))
+
+      await until(() => expect(settlements(host)).toHaveLength(1))
+      expect(settlements(host)[0]).toMatch(/Traveller C pays Traveller B/)
+      const first = host.querySelector<HTMLElement>('[data-testid="money.balance"]')!
+      expect(first.textContent).toContain('settled')
+      const settlement = (await db.expenses.toArray()).find(
+        (row) => row.description === 'Settle up'
+      )
+      expect(settlement).toMatchObject({
+        paidByTravellerId: 'v3',
+        amountMinor: 3500,
+        currency: 'AUD',
+        categoryId: 'cat-other',
+        syncState: 'pending',
+      })
+      expect(TestBed.inject(ToastService).toasts()[0].message).toBe('Marked as settled')
+    })
+
+    it('expense rows say who paid and between how many', async () => {
+      await db.trips.put({ ...TRIP, budgetMode: 'split' })
+      const { byId, tap, until, host } = await render()
+      await tap(byId('money.view.expenses'))
+
+      await until(() =>
+        expect(host.querySelector('[data-expense-id="dinner"]')?.textContent).toContain(
+          'Paid by Traveller A · split 2 ways'
+        )
+      )
+      expect(host.querySelector('[data-expense-id="taxi"]')?.textContent).toContain(
+        'Paid by Traveller B · split 3 ways'
+      )
+    })
+
+    it('shared mode hides payer and shares', async () => {
+      const { byId, tap, until, host } = await render()
+      await tap(byId('money.view.expenses'))
+
+      await until(() => expect(host.querySelector('[data-expense-id="dinner"]')).not.toBeNull())
+      expect(host.textContent).not.toContain('Paid by')
+      expect(byId('money.view.balances')).toBeNull()
+    })
+  })
 })

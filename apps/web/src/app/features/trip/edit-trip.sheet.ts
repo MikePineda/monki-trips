@@ -105,33 +105,34 @@ interface EditTripModel {
               <input mkInput type="date" [formField]="form.endsOn" data-testid="trip.edit.endsOn" />
             </mk-field>
           </mk-row>
-          <mk-row gap="2" align="start">
-            <mk-field
-              mkRowGrow
-              [label]="'trip.edit.baseCurrency' | transloco"
-              [hint]="
-                (ownerOnly() ? 'trip.edit.ownerOnly' : 'trip.edit.baseCurrencyHint') | transloco
-              "
-              [required]="true"
-              [error]="fieldError(form.baseCurrency)"
-            >
-              <input
-                mkInput
-                variant="code"
-                type="text"
-                autocapitalize="characters"
-                [formField]="form.baseCurrency"
-                data-testid="trip.edit.baseCurrency"
-              />
-            </mk-field>
-            <mk-field mkRowGrow [label]="'trip.edit.budgetMode' | transloco" [required]="true">
-              <select mkInput [formField]="form.budgetMode" data-testid="trip.edit.budgetMode">
-                @for (mode of budgetModes; track mode) {
-                  <option [value]="mode">{{ 'trip.edit.budget.' + mode | transloco }}</option>
-                }
-              </select>
-            </mk-field>
-          </mk-row>
+          <mk-field
+            [label]="'trip.edit.baseCurrency' | transloco"
+            [hint]="
+              (ownerOnly() ? 'trip.edit.ownerOnly' : 'trip.edit.baseCurrencyHint') | transloco
+            "
+            [required]="true"
+            [error]="fieldError(form.baseCurrency)"
+          >
+            <input
+              mkInput
+              variant="code"
+              type="text"
+              autocapitalize="characters"
+              [formField]="form.baseCurrency"
+              data-testid="trip.edit.baseCurrency"
+            />
+          </mk-field>
+          <mk-field
+            [label]="'trip.edit.budgetMode' | transloco"
+            [hint]="'trip.edit.budgetModeHint' | transloco"
+            [required]="true"
+          >
+            <select mkInput [formField]="form.budgetMode" data-testid="trip.edit.budgetMode">
+              @for (mode of budgetModes; track mode) {
+                <option [value]="mode">{{ 'trip.edit.budget.' + mode | transloco }}</option>
+              }
+            </select>
+          </mk-field>
           <mk-field
             [label]="'trip.edit.budgetTotal' | transloco"
             [hint]="'trip.edit.budgetTotalHint' | transloco: { currency: currency() }"

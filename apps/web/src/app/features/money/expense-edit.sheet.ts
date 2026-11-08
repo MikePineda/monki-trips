@@ -1,7 +1,7 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog'
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
 import { FormField, form, maxLength, pattern, required, submit } from '@angular/forms/signals'
-import { TranslocoPipe } from '@jsverse/transloco'
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco'
 import { minorUnitExponent } from '@monkitrips/shared'
 import { fieldError } from '../../core/forms/field-error'
 import { LangStore } from '../../core/i18n/lang.store'
@@ -19,7 +19,16 @@ import { MkStackComponent } from '../../shared/ui/layout/stack.component'
 import { MkSheetComponent } from '../../shared/ui/sheet/sheet.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { provideMoneyI18n } from './money-i18n'
-import { MoneyStore, type ExpenseChanges } from './money.store'
+import { splitShares, type SplitDraft } from '../../domain/split-draft'
+import { MkChipComponent } from '../../shared/ui/chip/chip.component'
+import { SheetService } from '../../shared/ui/sheet/sheet.service'
+import { SplitSheet, type SplitSheetData } from './split.sheet'
+import {
+  MoneyStore,
+  type ExpenseChanges,
+  type RemovedExpense,
+  type SplitChoice,
+} from './money.store'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 /** A positive decimal with at most 10 decimals, as `fx_rate numeric(24,10)` stores it. */
@@ -32,10 +41,12 @@ export interface ExpenseEditData {
   categories: readonly { id: string; label: string }[]
   /** Events an expense may be linked to (id and title). */
   events: readonly { id: string; title: string }[]
+  /** Split mode: the travellers and the expense's split as it stands; absent in shared mode. */
+  split?: { travellers: readonly { id: string; name: string }[]; draft: SplitDraft }
 }
 
 export type ExpenseEditResult =
-  { outcome: 'saved' } | { outcome: 'deleted'; expense: ExpenseRecord }
+  { outcome: 'saved' } | { outcome: 'deleted'; expense: RemovedExpense }
 
 interface ExpenseEditModel {
   currency: string
@@ -63,6 +74,7 @@ interface ExpenseEditModel {
     MkInputDirective,
     MkKeypadComponent,
     MkButtonComponent,
+    MkChipComponent,
     MkRowComponent,
     MkRowGrowDirective,
     MkStackComponent,
@@ -136,6 +148,23 @@ interface ExpenseEditModel {
               {{ 'money.edit.rateBase' | transloco }}
             </p>
           }
+          @if (data.split) {
+            <mk-stack gap="half">
+              <p mk-text variant="label">{{ 'money.edit.split' | transloco }}</p>
+              <mk-row gap="1" [wrap]="true">
+                <mk-chip
+                  [selectable]="true"
+                  [selected]="splitOpen()"
+                  (selectedChange)="openSplit()"
+                  icon="users"
+                  [attr.aria-label]="'money.split.open' | transloco"
+                  data-testid="money.edit.split"
+                >
+                  {{ splitLabel().key | transloco: splitLabel().params }}
+                </mk-chip>
+              </mk-row>
+            </mk-stack>
+          }
           <mk-field
             [label]="'money.edit.description' | transloco"
             [error]="fieldError(form.description)"
@@ -205,9 +234,14 @@ export class ExpenseEditSheet {
   private readonly store = inject(MoneyStore)
   private readonly lang = inject(LangStore)
   private readonly ref = inject<DialogRef<ExpenseEditResult>>(DialogRef)
+  private readonly sheets = inject(SheetService)
+  private readonly transloco = inject(TranslocoService)
 
   protected readonly fieldError = fieldError
   protected readonly busy = signal(false)
+  protected readonly splitOpen = signal(false)
+  /** The split the person picked in this sheet; null keeps the stored one. */
+  private readonly chosenSplit = signal<SplitDraft | null>(null)
   protected readonly currencies = [
     ...new Set([this.data.expense.currency, this.data.baseCurrency, ...KNOWN_CURRENCIES]),
   ]
@@ -256,6 +290,44 @@ export class ExpenseEditSheet {
     }
   })
 
+  private readonly split = computed(() => this.chosenSplit() ?? this.data.split?.draft ?? null)
+  protected readonly splitLabel = computed(() => {
+    const draft = this.split()
+    const travellers = this.data.split?.travellers ?? []
+    const name = (id: string | null) => travellers.find((row) => row.id === id)?.name ?? ''
+    const count = draft?.participantIds.length ?? 0
+    return count === 1
+      ? {
+          key: 'money.split.chipOne',
+          params: { payer: name(draft!.payerId), name: name(draft!.participantIds[0] ?? null) },
+        }
+      : { key: 'money.split.chip', params: { payer: name(draft?.payerId ?? null), count } }
+  })
+  /** The amount as the expense stores it: a refund stays negative. */
+  private readonly signedAmount = computed(
+    () => (this.data.expense.amountMinor < 0 ? -1 : 1) * (this.amountMinor() ?? 0)
+  )
+
+  protected openSplit(): void {
+    const split = this.data.split
+    const draft = this.split()
+    if (!split || !draft) return
+    this.splitOpen.set(true)
+    const ref = this.sheets.open<SplitDraft, SplitSheetData>(SplitSheet, {
+      data: {
+        amountMinor: this.signedAmount(),
+        currency: this.currency(),
+        travellers: split.travellers,
+        draft,
+      },
+      label: this.transloco.translate('money.split.title'),
+    })
+    ref.closed.subscribe((picked) => {
+      this.splitOpen.set(false)
+      if (picked) this.chosenSplit.set(picked)
+    })
+  }
+
   protected async save(event: Event): Promise<void> {
     event.preventDefault()
     const amountMinor = this.amountMinor()
@@ -280,13 +352,25 @@ export class ExpenseEditSheet {
         if (eventId !== expense.eventId) changes.eventId = eventId
         const rate = value.rate.trim()
         if (!this.isBase() && rate !== this.storedRate) changes.fxRate = rate || null
-        await this.store.update(expense.id, changes, this.data.baseCurrency)
+        await this.store.update(expense.id, changes, this.data.baseCurrency, this.pickedSplit())
         this.ref.close({ outcome: 'saved' })
       } finally {
         this.busy.set(false)
       }
       return undefined
     })
+  }
+
+  /** The split to save: only one picked here; custom amounts that no longer add up split equally. */
+  private pickedSplit(): SplitChoice | undefined {
+    const draft = this.chosenSplit()
+    const order = this.data.split?.travellers.map((row) => row.id) ?? []
+    if (!draft || !draft.payerId) return undefined
+    const result = splitShares(this.signedAmount(), draft, order)
+    const shares = result.valid
+      ? result.shares
+      : splitShares(this.signedAmount(), { ...draft, custom: null }, order).shares
+    return { paidByTravellerId: draft.payerId, shares }
   }
 
   protected async remove(): Promise<void> {

@@ -51,7 +51,8 @@
     "budgetTotalHint": "In {{currency}}; leave empty for no budget.",
     "homeTz": "Home time zone",
     "save": "Save changes",
-    "saved": "Trip saved"
+    "saved": "Trip saved",
+    "budgetModeHint": "Shared: one pot for everyone. Split: each expense records who paid and who shares it, and Money shows who owes whom."
   },
   "stop": {
     "newTitle": "New stop",

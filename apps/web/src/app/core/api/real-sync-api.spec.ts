@@ -78,9 +78,9 @@ describe('RealSyncApi', () => {
           { entity: 'task', row: TASK_ROW },
           { entity: 'task', row: { ...TASK_ROW, id: 'k2', deletedAt: '2026-11-07T12:00:00.000Z' } },
           {
-            entity: 'expense_share',
-            row: { id: 's1', tripId: 't1' } as never,
-          },
+            entity: 'an_entity_from_a_newer_server',
+            row: { id: 's1', tripId: 't1' },
+          } as never,
         ],
         tripIds: ['t1'],
         cursor: 'c2',
@@ -96,6 +96,49 @@ describe('RealSyncApi', () => {
     expect(result.changes).toEqual([
       { table: 'tasks', row: expect.objectContaining({ id: 'k1', title: 'Buy an adapter' }) },
       { table: 'tasks', row: { id: 'k2' }, deleted: true },
+    ])
+  })
+
+  it('pulls expense shares into the device expenseShares table, tombstones included', async () => {
+    const share = {
+      id: 's1',
+      tripId: 't1',
+      expenseId: 'x1',
+      travellerId: 'v1',
+      shareMinor: 4500,
+      deletedAt: null,
+      updatedAt: '2026-11-07T10:00:00.000Z',
+    }
+    const { loader } = clientWith({
+      pull: () => ({
+        changes: [
+          { entity: 'expense_share', row: share },
+          {
+            entity: 'expense_share',
+            row: { ...share, id: 's2', deletedAt: '2026-11-07T11:00:00.000Z' },
+          },
+        ],
+        tripIds: ['t1'],
+        cursor: 'c2',
+        hasMore: false,
+      }),
+    })
+
+    const result = await new RealSyncApi(loader).pull(null)
+
+    expect(result.changes).toEqual([
+      {
+        table: 'expenseShares',
+        row: {
+          id: 's1',
+          tripId: 't1',
+          expenseId: 'x1',
+          travellerId: 'v1',
+          shareMinor: 4500,
+          updatedAt: '2026-11-07T10:00:00.000Z',
+        },
+      },
+      { table: 'expenseShares', row: { id: 's2' }, deleted: true },
     ])
   })
 
