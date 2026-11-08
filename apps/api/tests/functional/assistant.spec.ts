@@ -21,6 +21,14 @@ import i18nManager from '@adonisjs/i18n/services/main'
 import type { ToolContext } from '#services/assistant/assistant_tool'
 import { ProposeEventChangesTool } from '#services/assistant/tools/propose_event_changes_tool'
 import { AssistantChat } from '#services/assistant/assistant_chat'
+import { FakeLlmProvider } from '#services/llm/fake_llm_provider'
+import {
+  LlmProvider,
+  type LlmDelta,
+  type LlmRequest,
+  type LlmStreamOptions,
+} from '#services/llm/llm_provider'
+import { DateTime } from 'luxon'
 import type { LlmToolResultBlock } from '#services/llm/llm_provider'
 import Trip from '#models/trip'
 import type User from '#models/user'
@@ -463,6 +471,9 @@ test.group('Trip assistant', (group) => {
     assert.equal(llm.current.calls[6].toolChoice, 'none')
     assert.lengthOf(toolResults(llm.current.calls[6]), 6)
     assert.equal(events.at(-1)?.type, 'done')
+    const usage = await db.from('llm_usage').where('user_id', owner.id)
+    assert.lengthOf(usage, 7, 'every call, the forced answer included, leaves a usage row')
+    assert.isTrue(usage.every((row) => row.status === 'ok' && row.purpose === 'chat'))
   })
 
   test('untrusted event titles reach the model inside data', async ({ client, assert }) => {
@@ -952,6 +963,179 @@ test.group('Trip assistant', (group) => {
         message: 'The AI assistant is not available right now. Try again in a moment',
       },
     ])
+  })
+
+  test('a task pointing at an event of another trip is refused by the write path', async ({
+    client,
+    assert,
+  }) => {
+    const otherTrip = await makeTrip(owner, { name: 'Other trip' })
+    const foreign = await addEvent(otherTrip.id, { title: 'Bravo tour' })
+    llm.current.script(
+      'chat',
+      'foreign-task',
+      chatScript(
+        { tool: 'create_task', input: { title: 'Bring the tickets', eventId: foreign } },
+        { text: 'Sorry.' }
+      )
+    )
+    const conversation = await startConversation(client, owner, trip.id)
+
+    const { events } = await say(client, owner, trip.id, conversation.id, 'Tickets')
+
+    assert.isEmpty(proposals(events))
+    const [refused] = toolResults(llm.current.calls[1])
+    assert.isTrue(refused.isError)
+    assert.include(refused.content, 'not part of this trip')
+    assert.isEmpty(await db.from('ai_actions').where('trip_id', trip.id))
+  })
+
+  test('several tool calls in one answer share the limit of six', async ({ client, assert }) => {
+    const calls = ['get_trip', 'list_tasks', 'list_documents', 'get_budget_status'].map(
+      (name, index) => ({ id: `toolu_many_${index}`, name, input: {} })
+    )
+    llm.current.script('chat', 'many', {
+      responses: [{ toolCalls: calls, usage: { inputTokens: 200, outputTokens: 30 } }],
+    })
+    const conversation = await startConversation(client, owner, trip.id)
+
+    const { events } = await say(client, owner, trip.id, conversation.id, 'Everything')
+
+    assert.lengthOf(
+      llm.current.calls,
+      3,
+      'four calls, then two more and two refused, then the answer'
+    )
+    assert.equal(llm.current.calls[2].toolChoice, 'none')
+    const results = toolResults(llm.current.calls[2])
+    assert.lengthOf(results, 8)
+    const refused = results.filter((result) => result.content.startsWith('Tool call limit reached'))
+    assert.lengthOf(refused, 2)
+    assert.isTrue(refused.every((result) => result.isError))
+    assert.equal(events.at(-1)?.type, 'done')
+  })
+
+  test('the turn stops once it used its output tokens', async ({ client, assert }) => {
+    llm.current.script('chat', 'wordy', {
+      responses: [
+        {
+          toolCalls: [{ id: 'toolu_wordy', name: 'get_trip', input: {} }],
+          usage: { inputTokens: 200, outputTokens: 1000 },
+        },
+      ],
+    })
+    const conversation = await startConversation(client, owner, trip.id)
+
+    const { events } = await say(client, owner, trip.id, conversation.id, 'Tell me all')
+
+    assert.deepEqual(
+      llm.current.calls.map((call) => call.maxTokens),
+      [1024, 1024, 1024, 1024, 96]
+    )
+    assert.equal(events.at(-1)?.type, 'done')
+  })
+
+  test('the cap reached after text was streamed ends the turn with an error event', async ({
+    client,
+    assert,
+    cleanup,
+  }) => {
+    /** Answers like the fake, and spends the whole month's tokens once its first answer is out. */
+    class SpendingProvider extends FakeLlmProvider {
+      async *stream(request: LlmRequest, options?: LlmStreamOptions): AsyncIterable<LlmDelta> {
+        yield* super.stream(request, options)
+        if (this.calls.length === 1) {
+          await db.table('llm_usage').insert({
+            user_id: owner.id,
+            purpose: 'chat',
+            provider: 'fake',
+            model: 'fake-chat-model',
+            tokens_in: PLANS.free.llmMonthlyTokenCap,
+            tokens_out: 0,
+            status: 'ok',
+            created_at: '2026-11-07T09:00:00Z',
+          })
+        }
+      }
+    }
+    const provider = new SpendingProvider(app.makePath('tests/fixtures/llm'))
+    provider.script('chat', 'spent', {
+      responses: [
+        {
+          content: 'Let me check.',
+          toolCalls: [{ id: 'toolu_spent', name: 'get_trip', input: {} }],
+        },
+        { content: 'Never sent.' },
+      ],
+    })
+    app.container.swap(LlmProvider, () => provider)
+    cleanup(() => app.container.restore(LlmProvider))
+    const conversation = await startConversation(client, owner, trip.id)
+
+    const { response, events } = await say(client, owner, trip.id, conversation.id, 'Check')
+
+    response.assertStatus(200)
+    const text = events.flatMap((event) => (event.type === 'text' ? [event.text] : [])).join('')
+    assert.equal(text, 'Let me check.')
+    assert.deepInclude(events.at(-1), { type: 'error', code: 'E_LLM_QUOTA_EXCEEDED' })
+    assert.lengthOf(provider.calls, 1)
+    const [answer] = await db
+      .from('ai_messages')
+      .where('conversation_id', conversation.id)
+      .where('role', 'assistant')
+    assert.equal(answer.content, 'Let me check.')
+  })
+
+  test('accept answers 404 once the member left the trip or the trip was deleted', async ({
+    client,
+    assert,
+  }) => {
+    const editor = await makeUser()
+    const membership = await addMember(trip, editor)
+    llm.current.script(
+      'chat',
+      'gone',
+      chatScript(
+        { tool: 'create_task', input: { title: 'Return the scooter' } },
+        { tool: 'create_task', input: { title: 'Pack the snorkels' } },
+        { text: 'Two proposals.' }
+      )
+    )
+    const editorConversation = await startConversation(client, editor, trip.id)
+    const { events: editorEvents } = await say(client, editor, trip.id, editorConversation.id, 'Go')
+    const [editorAction] = proposals(editorEvents)
+    llm.current.script(
+      'chat',
+      'gone-owner',
+      chatScript({ tool: 'create_task', input: { title: 'Cancel the hotel' } }, { text: 'Ok.' })
+    )
+    const ownerConversation = await startConversation(client, owner, trip.id)
+    const { events: ownerEvents } = await say(client, owner, trip.id, ownerConversation.id, 'Go')
+    const [ownerAction] = proposals(ownerEvents)
+
+    membership.deletedAt = DateTime.now()
+    await membership.save()
+    const afterLeaving: ApiResponse = await decide(
+      client,
+      editor,
+      trip.id,
+      editorAction.id,
+      'accept'
+    )
+    await db.from('trips').where('id', trip.id).update({ deleted_at: new Date() })
+    const afterDeletion: ApiResponse = await decide(
+      client,
+      owner,
+      trip.id,
+      ownerAction.id,
+      'accept'
+    )
+
+    for (const response of [afterLeaving, afterDeletion]) {
+      response.assertStatus(404)
+      response.assertBodyContains({ code: 'E_ROW_NOT_FOUND' })
+    }
+    assert.isEmpty(await db.from('tasks').where('trip_id', trip.id).where('origin', 'ai'))
   })
 
   test('read tools answer the budget, today and tasks from the trip', async ({
