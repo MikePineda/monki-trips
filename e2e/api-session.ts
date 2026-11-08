@@ -108,6 +108,19 @@ export class ApiSession {
     return body.data
   }
 
+  /** Who owes whom on the trip (`GET /trips/:tripId/balances`), minor units as numbers. */
+  async balances(tripId: string): Promise<{
+    balances: { travellerId: string; displayName: string | null; netMinor: number }[]
+    settlements: { fromTravellerId: string; toTravellerId: string; amountMinor: number }[]
+  }> {
+    const response = await this.context.get(`/api/v1/trips/${tripId}/balances`)
+    await this.expectOk(response, 'GET /trips/:tripId/balances')
+    const body = (await response.json()) as {
+      data: Awaited<ReturnType<ApiSession['balances']>>
+    }
+    return body.data
+  }
+
   /** Soft-deletes every trip the account owns, so a journey starts from an empty list. */
   async deleteAllTrips(): Promise<void> {
     for (const id of await this.tripIds()) {

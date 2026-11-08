@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { Page } from '@playwright/test'
 import { soloAccount, type E2eAccount } from '../accounts.ts'
+import { randomUUID } from 'node:crypto'
 import { ApiSession } from '../api-session.ts'
 import { seedDepartureTrip } from '../departure-trip.ts'
 import { expect, test } from '../fixtures.ts'
@@ -16,7 +17,9 @@ import { signIn } from '../sign-in.ts'
  * right edge (Where we sleep included: dates whole, long titles kept in
  * the row, the Phrases cards too) and the floating button stays inside
  * the viewport. The Notifications section of Settings (switches, quiet
- * hours, upcoming reminders) stays inside the screen too.
+ * hours, upcoming reminders) stays inside the screen too, and so does the
+ * Balances segment of a split trip (long names, four-digit nets, the
+ * "Mark as settled" buttons).
  *
  * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
  * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
@@ -197,6 +200,44 @@ test.describe('J05c trip screens on a narrow phone', () => {
       })
       expect(room, screen.path).toBeGreaterThanOrEqual(56 + 64)
     }
+  })
+
+  test('the Balances segment keeps long names, nets and settle buttons inside the screen', async ({
+    page,
+  }) => {
+    const arrange = await ApiSession.signIn(solo)
+    try {
+      const friends = [
+        'Traveller B with a very long display name',
+        'Traveller C from somewhere far away',
+      ].map((displayName, index) => ({ id: randomUUID(), displayName, position: index + 1 }))
+      await arrange.push(trip.tripId, [
+        ...friends.map((friend) => ({
+          entity: 'traveller',
+          id: friend.id,
+          changes: { displayName: friend.displayName, position: friend.position },
+        })),
+        { entity: 'trip', id: trip.tripId, changes: { budgetMode: 'split' } },
+      ])
+    } finally {
+      await arrange.dispose()
+    }
+
+    await signIn(page, solo)
+    await page.goto(`/t/${trip.tripId}/money`)
+    await page.getByTestId('money.view.balances').click()
+    await expect(page.getByTestId('money.balance')).toHaveCount(3)
+    await expect(page.getByTestId('money.settlement')).toHaveCount(2)
+
+    expect(await overflowing(page)).toEqual([])
+    for (const button of await page.getByTestId('money.settle.mark').all()) {
+      const box = (await button.boundingBox())!
+      expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+    }
+    await scrollToEnd(page)
+    const fab = await expectFabInside(page, 'shell.fab')
+    const last = await page.getByTestId('money.settlement').last().boundingBox()
+    expect(last!.y + last!.height).toBeLessThanOrEqual(fab.y)
   })
 
   test('the Phrases page keeps long cards inside the row and clears the floating button', async ({
