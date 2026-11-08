@@ -18,11 +18,17 @@ export interface BaselineRow {
 }
 
 export interface DryRunResult {
+  mutations: SyncMutation[]
   results: SyncMutationResult[]
+  /** The trip's live content before the mutations, read in the same snapshot as the baseline. */
+  before: TripContentRows
   /** The trip's live content as it would be after the mutations. */
   after: TripContentRows
   baseline: BaselineRow[]
 }
+
+/** Turns the trip as it is into the mutations a proposal stands for; may throw `ToolInputError`. */
+export type DryRunPlan = (before: TripContentRows) => SyncMutation[]
 
 /** Carries the dry run's result out of the transaction it rolls back. */
 class DryRunRollback extends Error {
@@ -38,7 +44,14 @@ class DryRunRollback extends Error {
  * will apply it on accept (entity validators, derived instants, references
  * inside the trip, LWW), and the diff is computed from the trip as it
  * would really be. Nothing is written: no row, no activity, no stored
- * mutation. A rejection becomes a `ToolInputError` naming fields and rules.
+ * mutation.
+ *
+ * The trip row is locked first, as every trip write does, so the content
+ * the plan reads, the baseline stamps and the mutations' outcome all come
+ * from one state of the trip that no other write can change midway. A
+ * rejection, or a mutation that would not apply in full (a field that
+ * loses the merge), becomes a `ToolInputError` naming fields and rules,
+ * and nothing is proposed.
  */
 @inject()
 export class MutationDryRun {
@@ -47,9 +60,19 @@ export class MutationDryRun {
     private readonly content: TripContent
   ) {}
 
-  async run(user: User, trip: Trip, mutations: SyncMutation[], i18n: I18n): Promise<DryRunResult> {
+  async run(user: User, trip: Trip, i18n: I18n, plan: DryRunPlan): Promise<DryRunResult> {
     try {
       await db.transaction(async (trx) => {
+        const locked = await trx
+          .from('trips')
+          .where('id', trip.id)
+          .whereNull('deleted_at')
+          .forUpdate()
+          .select('id')
+          .first()
+        if (!locked) throw new ToolInputError('This trip no longer exists.')
+        const before = await this.content.load(trip.id, trx)
+        const mutations = plan(before)
         const baseline: BaselineRow[] = []
         for (const mutation of mutations) {
           const spec = PUSH_ENTITIES[mutation.entity]
@@ -69,12 +92,14 @@ export class MutationDryRun {
         }
         const results: SyncMutationResult[] = []
         for (const mutation of mutations) {
-          results.push(
-            await this.applier.applyWithin(trx, user, mutation, i18n, { via: 'assistant' })
-          )
+          const result = await this.applier.applyWithin(trx, user, mutation, i18n, {
+            via: 'assistant',
+          })
+          if (result.status !== 'applied') throw notApplied(result)
+          results.push(result)
         }
         const after = await this.content.load(trip.id, trx)
-        throw new DryRunRollback({ results, after, baseline })
+        throw new DryRunRollback({ mutations, results, before, after, baseline })
       })
     } catch (error) {
       if (error instanceof DryRunRollback) return error.result
@@ -83,6 +108,14 @@ export class MutationDryRun {
     }
     throw new Error('dry run finished without a result')
   }
+}
+
+/** A dry-run result other than `applied`: the fields that lost, never their values. */
+function notApplied(result: SyncMutationResult): ToolInputError {
+  const fields = result.rejectedFields?.length ? `: ${result.rejectedFields.join(', ')}` : ''
+  return new ToolInputError(
+    `The change would not apply in full (${result.status}${fields}); someone changed these fields more recently. Read the trip again before proposing.`
+  )
 }
 
 /** What the model reads about a refused change: the code and the failing fields and rules, never values. */
