@@ -68,6 +68,12 @@ export const ERROR_CODES = {
   E_LLM_UNAVAILABLE: 503,
   /** The model answered twice with something the schema refuses. */
   E_LLM_BAD_OUTPUT: 422,
+
+  // Trip assistant
+  /** The proposal was already accepted, rejected, expired or failed: it cannot be decided again. */
+  E_AI_ACTION_CLOSED: 409,
+  /** The trip changed since the proposal was made: nothing was applied, ask the assistant again. */
+  E_AI_ACTION_STALE: 409,
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES
