@@ -19,7 +19,7 @@ import { KNOWN_CURRENCIES } from '../../domain/currency-for-country'
 import { defaultCategoryId, defaultCurrency } from '../../domain/expense-defaults'
 import { formatLocaleFor } from '../../domain/locale'
 import { formatMoney, keypadToMinor } from '../../domain/money'
-import { defaultSplit, splitShares, type SplitDraft } from '../../domain/split-draft'
+import { defaultSplit, sharesFor, type SplitDraft } from '../../domain/split-draft'
 import { tripToday } from '../../domain/trip-today'
 import { MkButtonComponent } from '../../shared/ui/button/button.component'
 import { MkChipComponent } from '../../shared/ui/chip/chip.component'
@@ -227,14 +227,10 @@ export class QuickExpenseSheet {
   private readonly split = computed(
     () => this.chosenSplit() ?? defaultSplit(this.travellerIds(), this.meId())
   )
-  /** The shares to save; custom amounts that no longer add up fall back to an equal split. */
-  private readonly shares = computed(() => {
-    const amount = this.amountMinor() ?? 0
-    const result = splitShares(amount, this.split(), this.travellerIds())
-    return result.valid
-      ? result.shares
-      : splitShares(amount, { ...this.split(), custom: null }, this.travellerIds()).shares
-  })
+  /** The shares to save; custom amounts made for another amount follow it in proportion. */
+  private readonly shares = computed(() =>
+    sharesFor(this.amountMinor() ?? 0, this.split(), this.travellerIds())
+  )
   protected readonly splitLabel = computed(() => {
     const draft = this.split()
     const name = (id: string | null) =>

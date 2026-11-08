@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core'
-import { convertToBase, equalShares } from '@monkitrips/shared'
+import { convertToBase, scaleShares } from '@monkitrips/shared'
 import { v7 as uuidv7 } from 'uuid'
 import { CLOCK } from '../../core/offline/clock'
 import type { MonkiTripsDb } from '../../core/offline/db'
@@ -234,12 +234,8 @@ export class MoneyStore {
       if (split) {
         sent['paidByTravellerId'] = split.paidByTravellerId
       } else if (amount !== current.amountMinor && stored.length > 0) {
-        // The split must still add up: the same people, equally, the remainder on the payer.
-        shares = equalShares(
-          amount,
-          stored.map((share) => share.travellerId),
-          current.paidByTravellerId
-        )
+        // The split must still add up: the same people, in proportion, the remainder on the payer.
+        shares = scaleShares(amount, stored, current.paidByTravellerId)
       }
       if (shares) {
         const rows = shareRecords(current, shares, now)

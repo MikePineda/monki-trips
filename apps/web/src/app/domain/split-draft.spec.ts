@@ -1,4 +1,4 @@
-import { defaultSplit, splitShares } from './split-draft'
+import { defaultSplit, sharesFor, splitShares } from './split-draft'
 
 const TRAVELLERS = ['v1', 'v2', 'v3']
 
@@ -59,5 +59,32 @@ describe('split draft', () => {
     expect(
       splitShares(1000, { payerId: 'v1', participantIds: [], custom: null }, TRAVELLERS).valid
     ).toBe(false)
+  })
+
+  it('custom amounts follow a new amount in proportion, the remainder on the payer', () => {
+    const draft = { payerId: 'v2', participantIds: ['v1', 'v2'], custom: { v1: 1000, v2: 3500 } }
+
+    expect(sharesFor(1001, draft, TRAVELLERS)).toEqual([
+      { travellerId: 'v1', shareMinor: 222 },
+      { travellerId: 'v2', shareMinor: 779 },
+    ])
+    expect(sharesFor(4500, draft, TRAVELLERS)).toEqual([
+      { travellerId: 'v1', shareMinor: 1000 },
+      { travellerId: 'v2', shareMinor: 3500 },
+    ])
+  })
+
+  it('an equal split stays equal for a new amount', () => {
+    expect(
+      sharesFor(
+        900,
+        { payerId: 'v1', participantIds: ['v1', 'v2', 'v3'], custom: null },
+        TRAVELLERS
+      )
+    ).toEqual([
+      { travellerId: 'v1', shareMinor: 300 },
+      { travellerId: 'v2', shareMinor: 300 },
+      { travellerId: 'v3', shareMinor: 300 },
+    ])
   })
 })
