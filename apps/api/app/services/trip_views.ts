@@ -42,7 +42,11 @@ export class TripViews {
   ) {}
 
   async nights(trip: Trip): Promise<TripNightsView> {
-    const { events } = await this.content.load(trip.id)
+    return this.nightsOf(trip, await this.content.load(trip.id))
+  }
+
+  /** The nights view over rows the caller already has (the assistant diffs it before and after a proposal). */
+  nightsOf(trip: Trip, { events }: Pick<TripContentRows, 'events'>): TripNightsView {
     const nights = nightCoverage({
       startsOn: trip.startsOn.toISODate()!,
       endsOn: trip.endsOn.toISODate()!,

@@ -27,6 +27,14 @@ import { MutationRejected, problemMessage } from '#services/sync/mutation_reject
 import { mergedWire, rowToWire, wireToColumns } from '#services/sync/row_wire'
 import { liveRowInTrip } from '#services/sync/table_writes'
 
+/** How a write reached the applier, recorded in `trip_activity.via`. */
+export type WriteVia = 'app' | 'assistant'
+
+export interface ApplyWithinOptions {
+  /** `assistant` when an accepted proposal writes in the member's name. Default `app`. */
+  via?: WriteVia
+}
+
 /**
  * The one write path of trip content (`POST /sync/push`), one mutation at a
  * time, each in its own transaction:
@@ -88,11 +96,12 @@ export class MutationApplier {
     trx: TransactionClientContract,
     user: User,
     mutation: SyncMutation,
-    i18n: I18n
+    i18n: I18n,
+    options: ApplyWithinOptions = {}
   ): Promise<SyncMutationResult> {
     const now = this.clock.now()
     const changedAt = this.changedAtOf(mutation, now, i18n)
-    return this.applyInTransaction(trx, user, mutation, i18n, now, changedAt)
+    return this.applyInTransaction(trx, user, mutation, i18n, now, changedAt, options.via)
   }
 
   /** The mutation's `changedAt` as epoch ms, clamped to the accepted window; not an instant → validation rejection. */
@@ -175,7 +184,8 @@ export class MutationApplier {
     mutation: SyncMutation,
     i18n: I18n,
     now: Date,
-    changedAt: number
+    changedAt: number,
+    via: WriteVia = 'app'
   ): Promise<SyncMutationResult> {
     const membership = (await trx
       .from('trip_members')
@@ -218,6 +228,7 @@ export class MutationApplier {
       inserting: current === null,
       changedAt,
       extras: {},
+      via,
     }
 
     if (mutation.op === 'delete') {
@@ -517,6 +528,7 @@ export class MutationApplier {
         entity_id: mutation.id,
         action,
         fields,
+        via: ctx.via,
       })
     }
     const result: SyncMutationResult = {
