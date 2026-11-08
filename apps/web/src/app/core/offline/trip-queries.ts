@@ -6,6 +6,7 @@ import type {
   EventRecord,
   ExpenseRecord,
   MemberRecord,
+  PhraseCardRecord,
   SeatRecord,
   SegmentRecord,
   StopRecord,
@@ -109,5 +110,17 @@ export function tripWeather(
     async (db, id) =>
       id ? (((await db.meta.get(id))?.value as CachedWeather | undefined) ?? null) : null,
     null
+  )
+}
+
+/** The trip's phrase card sets, one per language, by language tag. */
+export function tripPhraseCards(tripId: Signal<string>): Signal<PhraseCardRecord[]> {
+  return liveSignalFor(
+    tripId,
+    async (db, id) =>
+      (await db.phraseCards.where('tripId').equals(id).toArray()).sort((a, b) =>
+        a.language.localeCompare(b.language)
+      ),
+    []
   )
 }

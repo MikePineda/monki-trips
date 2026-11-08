@@ -78,8 +78,8 @@ describe('RealSyncApi', () => {
           { entity: 'task', row: TASK_ROW },
           { entity: 'task', row: { ...TASK_ROW, id: 'k2', deletedAt: '2026-11-07T12:00:00.000Z' } },
           {
-            entity: 'phrase_card',
-            row: { id: 'p1', tripId: 't1' } as never,
+            entity: 'expense_share',
+            row: { id: 's1', tripId: 't1' } as never,
           },
         ],
         tripIds: ['t1'],
@@ -96,6 +96,65 @@ describe('RealSyncApi', () => {
     expect(result.changes).toEqual([
       { table: 'tasks', row: expect.objectContaining({ id: 'k1', title: 'Buy an adapter' }) },
       { table: 'tasks', row: { id: 'k2' }, deleted: true },
+    ])
+  })
+
+  it('pulls phrase cards into the device phraseCards table, tombstones included', async () => {
+    const set = {
+      id: 'p1',
+      tripId: 't1',
+      language: 'th',
+      cards: [
+        {
+          category: 'greetings',
+          prompt: 'Hello',
+          phrase: 'สวัสดี',
+          romanization: null,
+          note: null,
+        },
+      ],
+      model: 'fake-phrase-model',
+      createdBy: null,
+      deletedAt: null,
+      updatedAt: '2026-11-07T10:00:00.000Z',
+    }
+    const { loader } = clientWith({
+      pull: () => ({
+        changes: [
+          { entity: 'phrase_card', row: set },
+          {
+            entity: 'phrase_card',
+            row: { ...set, id: 'p0', deletedAt: '2026-11-07T09:00:00.000Z' },
+          },
+        ],
+        tripIds: ['t1'],
+        cursor: 'c2',
+        hasMore: false,
+      }),
+    })
+
+    const result = await new RealSyncApi(loader).pull(null)
+
+    expect(result.changes).toEqual([
+      {
+        table: 'phraseCards',
+        row: {
+          id: 'p1',
+          tripId: 't1',
+          language: 'th',
+          cards: [
+            {
+              category: 'greetings',
+              prompt: 'Hello',
+              phrase: 'สวัสดี',
+              romanization: null,
+              note: null,
+            },
+          ],
+          updatedAt: '2026-11-07T10:00:00.000Z',
+        },
+      },
+      { table: 'phraseCards', row: { id: 'p0' }, deleted: true },
     ])
   })
 

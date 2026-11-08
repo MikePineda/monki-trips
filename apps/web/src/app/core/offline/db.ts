@@ -11,6 +11,7 @@ import type {
   MemberRecord,
   MetaRecord,
   OutboxRecord,
+  PhraseCardRecord,
   SeatRecord,
   SegmentRecord,
   StayRecord,
@@ -50,6 +51,7 @@ export class MonkiTripsDb extends Dexie {
   declare travellers: Table<TravellerRecord, string>
   declare activity: Table<ActivityRecord, string>
   declare emergency: Table<EmergencyRecord, string>
+  declare phraseCards: Table<PhraseCardRecord, string>
   declare meta: Table<MetaRecord, string>
   declare outbox: Table<OutboxRecord, string>
 
@@ -93,6 +95,12 @@ export class MonkiTripsDb extends Dexie {
     this.version(5).stores({
       expenses: 'id, tripId, [tripId+spentOn], updatedAt',
       budgetCategories: 'id, tripId, updatedAt',
+    })
+    // WP 3.0b: phrase cards, one row per trip and language (read-only on the
+    // device). Like money, the new entity mapping makes the sync service pull
+    // from scratch once, so no upgrade function here.
+    this.version(6).stores({
+      phraseCards: 'id, tripId, [tripId+language], updatedAt',
     })
   }
 }

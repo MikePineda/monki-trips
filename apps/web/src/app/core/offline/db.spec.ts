@@ -16,14 +16,14 @@ describe('MonkiTripsDb', () => {
     await db.delete()
   })
 
-  it('is called monki-trips and opens at version 5 (money since WP 2.2)', async () => {
+  it('is called monki-trips and opens at version 6 (phrase cards since WP 3.0b)', async () => {
     await db.open()
 
     expect(db.name).toBe('monki-trips')
-    expect(db.verno).toBe(5)
+    expect(db.verno).toBe(6)
   })
 
-  it('holds exactly the offline tables of the plan plus travellers, the activity cache and emergency info', async () => {
+  it('holds exactly the offline tables of the plan plus travellers, the activity cache, emergency info and phrase cards', async () => {
     await db.open()
 
     expect(db.tables.map((table) => table.name).sort()).toEqual(
@@ -39,6 +39,7 @@ describe('MonkiTripsDb', () => {
         'members',
         'meta',
         'outbox',
+        'phraseCards',
         'seats',
         'segments',
         'stays',
@@ -60,7 +61,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(5)
+    expect(upgraded.verno).toBe(6)
     expect((await upgraded.trips.get('t1'))?.name).toBe('Kept')
     expect(await upgraded.travellers.count()).toBe(0)
     expect(await upgraded.emergency.count()).toBe(0)
@@ -88,7 +89,7 @@ describe('MonkiTripsDb', () => {
     const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(5)
+    expect(upgraded.verno).toBe(6)
     expect((await upgraded.travellers.get('tr1'))?.displayName).toBe('Kept')
     expect(await upgraded.emergency.count()).toBe(0)
     upgraded.close()
@@ -117,6 +118,7 @@ describe('MonkiTripsDb', () => {
     expect(schema('travellers')).toEqual(['id', 'tripId', 'updatedAt'])
     expect(schema('activity')).toEqual(['id', 'tripId', '[tripId+createdAt]'])
     expect(schema('emergency')).toEqual(['id', 'tripId', 'updatedAt'])
+    expect(schema('phraseCards')).toEqual(['id', 'tripId', '[tripId+language]', 'updatedAt'])
     expect(schema('meta')).toEqual(['key'])
     expect(schema('outbox')).toEqual(['id', 'state', 'createdAt'])
   })
@@ -151,6 +153,41 @@ describe('MonkiTripsDb', () => {
       value: 'old-cursor',
     })
     expect(await upgraded.meta.get('trip.active')).toEqual({ key: 'trip.active', value: 't1' })
+    upgraded.close()
+  })
+
+  it('a version 5 database keeps its expenses and gains an empty phrase cards table at version 6', async () => {
+    const indexedDB = new IDBFactory()
+    const v5 = new Dexie('monki-trips', { indexedDB, IDBKeyRange })
+    v5.version(5).stores({
+      trips: 'id, updatedAt',
+      expenses: 'id, tripId, [tripId+spentOn], updatedAt',
+      meta: 'key',
+      outbox: 'id, state, createdAt',
+    })
+    await v5
+      .table('expenses')
+      .put({ id: 'x1', tripId: 't1', spentOn: '2027-01-15', updatedAt: 'x' })
+    v5.close()
+
+    const upgraded = new MonkiTripsDb({ indexedDB, IDBKeyRange })
+    await upgraded.open()
+
+    expect(upgraded.verno).toBe(6)
+    expect((await upgraded.expenses.get('x1'))?.tripId).toBe('t1')
+    expect(await upgraded.phraseCards.count()).toBe(0)
+    await upgraded.phraseCards.put({
+      id: 'set-1',
+      tripId: 't1',
+      language: 'th',
+      cards: [],
+      updatedAt: 'x',
+    })
+    const thai = await upgraded.phraseCards
+      .where('[tripId+language]')
+      .equals(['t1', 'th'])
+      .toArray()
+    expect(thai.map((row) => row.id)).toEqual(['set-1'])
     upgraded.close()
   })
 

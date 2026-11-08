@@ -5,6 +5,7 @@ import { ENTITY_TABLES } from '../offline/entity-tables'
 import { toEventRecord } from '../offline/event-record'
 import { toBudgetCategoryRecord, toExpenseRecord } from '../offline/expense-record'
 import { toMemberRecord } from '../offline/member-record'
+import { toPhraseCardRecord } from '../offline/phrase-card-record'
 import { toSeatRecord } from '../offline/seat-record'
 import { toSegmentRecord } from '../offline/segment-record'
 import { toStopRecord } from '../offline/stop-record'
@@ -170,6 +171,10 @@ export function toDeviceChange(change: WireChange): SyncChange[] {
       return change.row.deletedAt
         ? [{ table: 'emergency', row: { id: change.row.tripId }, deleted: true }]
         : [{ table: 'emergency', row: toEmergencyRecord(change.row) }]
+    case 'phrase_card':
+      return change.row.deletedAt
+        ? [{ table: 'phraseCards', row: { id: change.row.id }, deleted: true }]
+        : [{ table: 'phraseCards', row: toPhraseCardRecord(change.row) }]
     default:
       return []
   }
