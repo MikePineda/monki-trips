@@ -105,6 +105,30 @@ test('after the trip there is no allowance, only the balance', () => {
   assert.equal(status.allowanceTodayMinor, null)
   assert.equal(status.leftTodayMinor, null)
   assert.equal(status.remainingMinor, 90_000n)
+  assert.equal(status.allowanceDays, 0)
+})
+
+test('before the trip the allowance spreads over the trip days', () => {
+  // 18 days that start 82 days from today: 100 days left, yet the allowance
+  // divides by the 18 days of the trip, and says so.
+  const status = budgetStatus({
+    startsOn: '2027-01-29',
+    endsOn: '2027-02-15',
+    baseCurrency: 'AUD',
+    budgetTotalMinor: 794_860n,
+    today: '2026-11-08',
+    expenses: [expense('2026-11-05', 317_548n)],
+  })
+  assert.equal(status.phase, 'upcoming')
+  assert.equal(status.daysLeftInclToday, 100)
+  assert.equal(status.allowanceDays, 18)
+  assert.equal(status.allowanceTodayMinor, 26_517n)
+})
+
+test('during the trip the allowance spreads over the days left including today', () => {
+  const status = budgetStatus({ ...budget, today: '2026-01-13', expenses: beforeToday })
+  assert.equal(status.allowanceDays, 9)
+  assert.equal(status.allowanceTodayMinor, 10_000n)
 })
 
 test('an expense outside the trip range still counts as spent', () => {
