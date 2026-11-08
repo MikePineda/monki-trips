@@ -27,6 +27,25 @@
     "serverOff": "Las notificaciones no están configuradas en este servidor.",
     "needsGesture": "Toca el interruptor otra vez para permitir las notificaciones."
   },
+  "reminders": {
+    "label": "Recordatorios",
+    "hint": "Para tu cuenta, en cada dispositivo con las notificaciones activadas.",
+    "leaveAt": "Hora de salir",
+    "checkOut": "Mañana del check-out",
+    "tasksDue": "Tareas que vencen",
+    "quietLabel": "Horas de silencio",
+    "quietHint": "Los recordatorios que caigan dentro esperan hasta el final. Deja las dos vacías para no usarlas.",
+    "quietStart": "Desde",
+    "quietEnd": "Hasta",
+    "quietPair": "Pon las dos horas o deja las dos vacías.",
+    "saveQuiet": "Guardar horas de silencio",
+    "saved": "Ajustes de recordatorios guardados.",
+    "offline": "Estás sin conexión. Estos son los últimos ajustes guardados; podrás cambiarlos cuando vuelvas a tener conexión.",
+    "notLoaded": "Conéctate una vez para cargar tus ajustes de recordatorios.",
+    "upcoming": "Próximos recordatorios",
+    "upcomingEmptyTitle": "Nada en las próximas 36 horas",
+    "upcomingEmptyBody": "Las salidas, los check-outs y las tareas que vencen aparecen aquí con un día y medio de antelación."
+  },
   "install": {
     "label": "Instalar",
     "action": "Instalar la app",
