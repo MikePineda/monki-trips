@@ -39,7 +39,8 @@
       "schema": "{field} does not match the trip JSON v1 schema",
       "unresolvedRef": "{field} names a ref that is not in the file",
       "duplicateRef": "{field} repeats a ref already used in the file",
-      "quietHoursPair": "Quiet hours need both a start and an end"
+      "quietHoursPair": "Quiet hours need both a start and an end",
+      "quietHoursDistinct": "Quiet hours need a start and an end that differ"
     },
     "fields": {
       "email": "e-mail",
