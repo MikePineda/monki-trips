@@ -123,6 +123,16 @@ function signedInScreens(t: Arranged): Screen[] {
   }
   return [
     { name: 'trips', open: go('/trips', (p) => p.getByTestId('trips.list')) },
+    { name: 'passport', open: go('/passport', (p) => p.getByTestId('passport.openMap')) },
+    {
+      name: 'passport map',
+      open: async (page) => {
+        // The tile provider is never reached from the suite: the map is the SVG view.
+        await page.route(/^https:\/\/tiles\.openfreemap\.org\//, (route) => route.abort())
+        await page.goto('/passport/map')
+        await visible(page.locator('[data-testid="passport.map"][data-mode="fallback"]'))
+      },
+    },
     { name: 'today', open: go(`${trip}/today`, (p) => p.getByTestId('today.day')) },
     { name: 'summary', open: go(`${trip}/summary`, (p) => p.getByTestId('trip.summary.dates')) },
     { name: 'plan days', open: go(`${trip}/plan`, (p) => p.getByTestId('plan.event')) },
