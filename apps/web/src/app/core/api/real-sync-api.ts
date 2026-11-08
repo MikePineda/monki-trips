@@ -90,6 +90,12 @@ export class RealSyncApi implements SyncApi {
 
 function collect(result: SyncPushResult, mutation: SyncMutation, outcome: SyncMutationResult) {
   const table = ENTITY_TABLES[mutation.entity]
+  if (mutation.entity === 'expense' && outcome.shares) {
+    ;(result.expenseShares ??= []).push({
+      expenseId: mutation.id,
+      shares: outcome.shares.filter((share) => !share.deletedAt).map(toExpenseShareRecord),
+    })
+  }
   switch (outcome.status) {
     case 'applied':
     case 'duplicate':

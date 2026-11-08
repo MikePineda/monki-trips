@@ -5,6 +5,7 @@ import type { I18n } from '@adonisjs/i18n'
 import { errors as vineErrors } from '@vinejs/vine'
 import {
   SYNC_CHANGED_AT_WINDOW_DAYS,
+  type ExpenseShare,
   type SyncMutation,
   type SyncMutationResult,
   type SyncResultStatus,
@@ -15,7 +16,7 @@ import { clampChangedAt, lwwMerge } from '#domain/lww_merge'
 import { parseIsoInstant } from '#domain/iso_instant'
 import { isUniqueViolation } from '#exceptions/unique_violation'
 import { dataRejection } from '#services/sync/data_rejection'
-import { PUSH_ENTITIES } from '#services/sync/entity_registry'
+import { PULL_ENTITIES, PUSH_ENTITIES } from '#services/sync/entity_registry'
 import {
   columnsByField,
   type ColumnSpec,
@@ -55,6 +56,37 @@ export class MutationApplier {
   constructor(private readonly clock: Clock) {}
 
   async apply(user: User, mutation: SyncMutation, i18n: I18n): Promise<SyncMutationResult> {
+    return this.withShares(mutation, await this.applyOne(user, mutation, i18n))
+  }
+
+  /**
+   * An expense's result carries the live split the server keeps, whatever
+   * the outcome: the device replaces its own shares with these, so a split
+   * that lost or was refused never lingers on it.
+   */
+  private async withShares(
+    mutation: SyncMutation,
+    result: SyncMutationResult
+  ): Promise<SyncMutationResult> {
+    if (mutation.entity !== 'expense' || !result.row) return result
+    const spec = PULL_ENTITIES.expense_share
+    const rows = (await db
+      .from(spec.table)
+      .where('expense_id', mutation.id)
+      .where('trip_id', mutation.tripId)
+      .whereNull('deleted_at')
+      .orderBy('id')) as DbRow[]
+    return {
+      ...result,
+      shares: rows.map((row) => rowToWire(spec, row)) as unknown as ExpenseShare[],
+    }
+  }
+
+  private async applyOne(
+    user: User,
+    mutation: SyncMutation,
+    i18n: I18n
+  ): Promise<SyncMutationResult> {
     const now = this.clock.now()
 
     const replay = await this.replayOf(user, mutation, i18n)

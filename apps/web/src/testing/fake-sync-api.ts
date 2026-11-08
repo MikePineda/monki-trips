@@ -1,4 +1,4 @@
-import type { OutboxRecord, SyncChange } from '../app/core/offline/records'
+import type { OutboxRecord, SyncChange, ExpenseShareRecord } from '../app/core/offline/records'
 import type { SyncApi, SyncPullResult, SyncPushResult } from '../app/core/offline/sync-api'
 
 export type SyncApiCall = { kind: 'pull'; cursor: string | null } | { kind: 'push'; ids: string[] }
@@ -17,6 +17,10 @@ export class FakeSyncApi implements SyncApi {
   private pendingTripIds: string[] | undefined
   private readonly rejections = new Map<string, string>()
   private readonly conflicts = new Map<string, SyncChange>()
+  private readonly serverShares = new Map<
+    string,
+    NonNullable<SyncPushResult['expenseShares']>[number]
+  >()
 
   /** The next pull answers these changes. */
   queuePullChanges(...changes: SyncChange[]): void {
@@ -46,6 +50,11 @@ export class FakeSyncApi implements SyncApi {
   /** The next push of mutation `id` conflicts; the server answers `serverRow`. */
   conflictNext(id: string, serverRow: SyncChange): void {
     this.conflicts.set(id, serverRow)
+  }
+
+  /** The next push of mutation `id` answers the expense's live shares as the server holds them. */
+  sharesNext(id: string, expenseId: string, shares: ExpenseShareRecord[]): void {
+    this.serverShares.set(id, { expenseId, shares })
   }
 
   /** Ids of every pushed mutation, in order. */
@@ -87,6 +96,11 @@ export class FakeSyncApi implements SyncApi {
         result.conflicts.push({ id, serverRow })
       } else {
         result.accepted.push(id)
+      }
+      const shares = this.serverShares.get(id)
+      if (shares) {
+        this.serverShares.delete(id)
+        ;(result.expenseShares ??= []).push(shares)
       }
     }
     return result
