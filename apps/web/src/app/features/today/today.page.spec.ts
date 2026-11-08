@@ -11,6 +11,7 @@ import {
   placedEvent,
 } from '../../../testing/fake-trip-content'
 import { FakeWeatherProvider } from '../../../testing/fake-weather-provider'
+import { tripWeatherFixture } from '../../../testing/weather-fixtures'
 import { expenseRecord } from '../../../testing/money-fixtures'
 import { i18nTesting } from '../../../testing/i18n-testing'
 import {
@@ -239,17 +240,61 @@ describe('TodayPage', () => {
     expect(host.querySelector('[data-testid="today.documents"]')).toBeNull()
   })
 
-  it('shows the cached weather with its age, and hides the row without it', async () => {
+  it('shows the cached weather of the day with its age, max/min, rain and attribution, offline', async () => {
     await seedDay()
     await db.meta.put({
-      key: weatherKey(DEMO_TRIP_ID),
-      value: { temperatureC: 17.6, condition: 'rain', updatedAt: '2027-01-21T02:00:00.000Z' },
+      key: weatherKey(DEMO_TRIP_ID, '2027-01-21'),
+      value: { ...tripWeatherFixture(), updatedAt: '2027-01-21T02:00:00.000Z' },
+    })
+    const { host, text, until } = await render()
+
+    await until(() => expect(text('today.weather.summary')).toBe('18° · Rain'))
+    expect(text('today.weather.range')).toBe('21° / 13° · 80% rain')
+    expect(text('today.weather.age')).toMatch(/^Updated 3 hrs? ago$/)
+    expect(text('today.weather.attribution')).toBe('Weather data by Open-Meteo.com')
+    expect(host.querySelector('[data-testid="today.weather"] use')?.getAttribute('href')).toBe(
+      'sprite/lucide.svg#cloud-rain'
+    )
+    expect(weather.asked).toEqual([])
+  })
+
+  it('a later day without a current reading shows the sky of the day', async () => {
+    await seedDay()
+    await db.meta.put({
+      key: weatherKey(DEMO_TRIP_ID, '2027-01-21'),
+      value: {
+        ...tripWeatherFixture({ current: null }),
+        updatedAt: '2027-01-21T02:00:00.000Z',
+      },
     })
     const { text, until } = await render()
 
-    await until(() => expect(text('today.weather')).toContain('18° · Rain'))
-    expect(text('today.weather')).toMatch(/Updated 3 hrs? ago/)
-    expect(weather.asked).toEqual([])
+    await until(() => expect(text('today.weather.summary')).toBe('Rain'))
+  })
+
+  it('hides the row when nothing is cached for the day shown', async () => {
+    await seedDay()
+    await db.meta.put({
+      key: weatherKey(DEMO_TRIP_ID, '2027-01-20'),
+      value: {
+        ...tripWeatherFixture({ date: '2027-01-20' }),
+        updatedAt: '2027-01-20T02:00:00.000Z',
+      },
+    })
+    const { host, text, until } = await render()
+
+    await until(() => expect(text('today.day')).toBe('Day 2 of 5 · Port Vellmar'))
+    expect(host.querySelector('[data-testid="today.weather"]')).toBeNull()
+  })
+
+  it('online it asks the day once and shows what it cached', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+    await seedDay()
+    const { text, until } = await render()
+
+    await until(() => expect(text('today.weather.summary')).toBe('18° · Rain'))
+    expect(weather.asked).toEqual([{ tripId: DEMO_TRIP_ID, date: '2027-01-21' }])
+    expect(await db.meta.get(weatherKey(DEMO_TRIP_ID, '2027-01-21'))).toBeDefined()
   })
 
   it('before the trip it previews day 1', async () => {

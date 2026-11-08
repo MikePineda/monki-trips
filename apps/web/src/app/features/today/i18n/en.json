@@ -63,11 +63,19 @@
   },
   "weather": {
     "now": "{{degrees}}° · {{condition}}",
+    "range": "{{max}}° / {{min}}°",
+    "rain": "{{percent}}% rain",
     "age": "Updated {{age}}",
-    "clear": "Clear",
-    "cloudy": "Cloudy",
-    "rain": "Rain",
-    "snow": "Snow",
-    "storm": "Storm"
+    "attribution": "Weather data by {{name}}",
+    "conditions": {
+      "clear": "Clear",
+      "partly_cloudy": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "thunderstorm": "Thunderstorm",
+      "snow": "Snow"
+    }
   }
 }

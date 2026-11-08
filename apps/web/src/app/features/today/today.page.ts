@@ -11,7 +11,7 @@ import {
 } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { TranslocoPipe } from '@jsverse/transloco'
-import type { DocumentTag, MascotState } from '@monkitrips/shared'
+import type { DocumentTag, MascotState, WeatherCondition } from '@monkitrips/shared'
 import { intlLocale } from '../../core/i18n/intl-locale'
 import { scopedLabels } from '../../core/i18n/scoped-labels'
 import { CLOCK } from '../../core/offline/clock'
@@ -30,7 +30,7 @@ import {
   tripTasks,
   tripWeather,
 } from '../../core/offline/trip-queries'
-import { WeatherStore, type WeatherCondition } from '../../core/offline/weather'
+import { WeatherStore } from '../../core/offline/weather'
 import { countKey } from '../../domain/count-key'
 import { countdownKey, countdownParts } from '../../domain/countdown'
 import { formatDayDate } from '../../domain/day-date'
@@ -65,10 +65,13 @@ const TICK_MS = 30_000
 
 const WEATHER_ICONS: Record<WeatherCondition, IconName> = {
   clear: 'sun',
+  partly_cloudy: 'cloud-sun',
   cloudy: 'cloud',
+  fog: 'cloud-fog',
+  drizzle: 'cloud-drizzle',
   rain: 'cloud-rain',
+  thunderstorm: 'cloud-lightning',
   snow: 'snowflake',
-  storm: 'cloud-lightning',
 }
 
 interface DocumentLine {
@@ -390,22 +393,39 @@ interface DocumentLine {
 
         @if (weather(); as weather) {
           <mk-section data-testid="today.weather">
-            <mk-row gap="1" [wrap]="true">
-              <span mk-text variant="label">
-                <mk-icon [name]="weather.icon" [size]="16" />
-                {{
-                  'today.weather.now'
-                    | transloco
-                      : {
-                          degrees: weather.degrees,
-                          condition: (weather.conditionKey | transloco),
-                        }
-                }}
-              </span>
-              <span mk-text variant="caption" tone="ink-3">
-                {{ 'today.weather.age' | transloco: { age: weather.age } }}
-              </span>
-            </mk-row>
+            <mk-stack gap="0">
+              <mk-row gap="1" [wrap]="true">
+                <span mk-text variant="label" data-testid="today.weather.summary">
+                  <mk-icon [name]="weather.icon" [size]="16" />
+                  @if (weather.degrees !== null) {
+                    {{
+                      'today.weather.now'
+                        | transloco
+                          : {
+                              degrees: weather.degrees,
+                              condition: (weather.conditionKey | transloco),
+                            }
+                    }}
+                  } @else {
+                    {{ weather.conditionKey | transloco }}
+                  }
+                </span>
+                @if (weather.range; as range) {
+                  <span mk-text variant="caption" tone="ink-2" data-testid="today.weather.range">
+                    {{ 'today.weather.range' | transloco: range }}
+                    @if (range.rain !== null) {
+                      · {{ 'today.weather.rain' | transloco: { percent: range.rain } }}
+                    }
+                  </span>
+                }
+                <span mk-text variant="caption" tone="ink-3" data-testid="today.weather.age">
+                  {{ 'today.weather.age' | transloco: { age: weather.age } }}
+                </span>
+              </mk-row>
+              <p mk-text variant="caption" tone="ink-3" data-testid="today.weather.attribution">
+                {{ 'today.weather.attribution' | transloco: { name: weather.source } }}
+              </p>
+            </mk-stack>
           </mk-section>
         }
       </mk-stack>
@@ -443,7 +463,6 @@ export default class TodayPage {
   private readonly copies = inject(DocumentCopiesStore).copies
   private readonly tasks = tripTasks(this.tripId)
   private readonly expenses = tripExpenses(this.tripId)
-  private readonly cachedWeather = tripWeather(this.tripId)
 
   /** "Now", moved on by a timer so the countdown ticks; read from CLOCK. */
   private readonly now = signal(this.clockNow())
@@ -460,7 +479,6 @@ export default class TodayPage {
       segments: this.segments(),
       tasks: this.tasks(),
       expenses: this.expenses(),
-      weather: this.cachedWeather(),
       now: this.now(),
       deviceZone: this.deviceZone,
     })
@@ -500,6 +518,7 @@ export default class TodayPage {
 
   /** The day Today shows (day 1 before the trip): the vault picks its documents. */
   private readonly shownDate = computed(() => this.screen()?.view.today ?? '')
+  private readonly cachedWeather = tripWeather(this.tripId, this.shownDate)
   private readonly needed = this.documentsStore.documentsNeededToday(this.tripId, this.shownDate)
   private readonly todayDocs = computed(() => todayDocuments(this.needed(), this.copies()))
 
@@ -543,15 +562,6 @@ export default class TodayPage {
     return phone && href ? { text: phone, href } : null
   })
 
-  /** Coordinates of the stop Today is in, when it has them. */
-  private readonly weatherPlace = computed(() => {
-    const stopId = this.screen()?.view.stop?.id
-    const stop = this.stops().find((row) => row.id === stopId)
-    return stop && typeof stop.lat === 'number' && typeof stop.lng === 'number'
-      ? { lat: stop.lat, lng: stop.lng }
-      : null
-  })
-
   protected readonly money = computed(() => {
     const screen = this.screen()
     const trip = this.trip()
@@ -574,22 +584,36 @@ export default class TodayPage {
     return { hero, base: rate ? baseText : null, over }
   })
 
+  /** The cached weather of the day Today shows: now (or the day's sky), max/min, rain, age. */
   protected readonly weather = computed(() => {
     const screen = this.screen()
-    const weather = screen?.view.weather
-    if (!screen || !weather) {
+    const weather = this.cachedWeather()
+    if (!screen || !weather || weather.date !== screen.view.today) {
+      return null
+    }
+    const day = weather.daily.find((entry) => entry.date === weather.date) ?? null
+    const condition = weather.current?.condition ?? day?.condition
+    if (!condition) {
       return null
     }
     return {
-      icon: WEATHER_ICONS[weather.condition],
-      conditionKey: `today.weather.${weather.condition}`,
-      degrees: Math.round(weather.temperatureC),
+      icon: WEATHER_ICONS[condition],
+      conditionKey: `today.weather.conditions.${condition}`,
+      degrees: weather.current ? Math.round(weather.current.temperatureC) : null,
+      range: day
+        ? {
+            max: Math.round(day.maxC),
+            min: Math.round(day.minC),
+            rain: day.precipitationProbabilityPct,
+          }
+        : null,
       age: relativeTime({
         instant: weather.updatedAt,
         now: screen.view.now,
         timeZone: screen.view.tz,
         locale: this.locale(),
       }),
+      source: weather.attribution.name,
     }
   })
 
@@ -597,15 +621,15 @@ export default class TodayPage {
     inject(SyncService).requestSync()
     const timer = setInterval(() => this.now.set(this.clockNow()), TICK_MS)
     inject(DestroyRef).onDestroy(() => clearInterval(timer))
-    // Online, the stop's weather is read once; offline the cached reading shows with its age.
-    let asked = false
+    // Online, the day's weather is read once per visit; offline the cached copy shows with its age.
+    let asked = ''
     effect(() => {
-      const place = this.weatherPlace()
-      if (asked || !place || !this.online()) {
+      const date = this.shownDate()
+      if (!date || asked === date || !this.online()) {
         return
       }
-      asked = true
-      void this.weatherStore.refresh(this.tripId(), place, this.clockNow())
+      asked = date
+      void this.weatherStore.refresh(this.tripId(), date)
     })
   }
 

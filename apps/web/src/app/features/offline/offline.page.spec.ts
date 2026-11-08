@@ -7,6 +7,7 @@ import { apiFakes, provideApiTesting } from '../../../testing/api-testing'
 import { FakeCacheStorage } from '../../../testing/fake-cache-storage'
 import { FakeDeviceStorage } from '../../../testing/fake-device-storage'
 import { FakeDocumentsApi } from '../../../testing/fake-documents-api'
+import { FakeWeatherProvider } from '../../../testing/fake-weather-provider'
 import { DEMO_TRIP_ID, DEMO_TRIP_RECORD, blankDocument } from '../../../testing/fake-trip-content'
 import { i18nTesting } from '../../../testing/i18n-testing'
 import {
@@ -23,6 +24,7 @@ import { toDocumentRecord } from '../../core/offline/document-record'
 import { META_LAST_OFFLINE_BOOT_AT, META_LAST_PULL_AT } from '../../core/offline/meta.store'
 import { sha256Hex } from '../../core/offline/sha256'
 import { TIME_ZONE } from '../../core/offline/time-zone'
+import { WEATHER_PROVIDER, weatherKey } from '../../core/offline/weather'
 import {
   CACHE_STORAGE,
   LOCALE_ASSETS,
@@ -45,6 +47,7 @@ describe('OfflinePage (Ready to fly)', () => {
   let storage: FakeDeviceStorage
   let documents: FakeDocumentsApi
   let online: boolean
+  let weather: FakeWeatherProvider
 
   const url = (path: string) => new URL(path, document.baseURI).href
 
@@ -55,6 +58,7 @@ describe('OfflinePage (Ready to fly)', () => {
     caches = new FakeCacheStorage()
     storage = new FakeDeviceStorage()
     documents = new FakeDocumentsApi()
+    weather = new FakeWeatherProvider()
     // The worker answers every asset fetch and keeps it, like ngsw does.
     vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
       caches.put(String(input))
@@ -71,6 +75,7 @@ describe('OfflinePage (Ready to fly)', () => {
         { provide: HEALTH_API, useValue: { health: async () => REPORT } },
         { provide: CACHE_STORAGE, useValue: caches },
         { provide: SERVICE_WORKER_CONTAINER, useValue: { controller: {} } },
+        { provide: WEATHER_PROVIDER, useValue: weather },
       ],
     })
   })
@@ -198,6 +203,28 @@ describe('OfflinePage (Ready to fly)', () => {
       expect(await caches.match(url(path)), path).toBeDefined()
     }
     expect(await db.meta.get(META_LAST_PULL_AT)).toEqual({ key: META_LAST_PULL_AT, value: NOW })
+    // The forecast reaches 16 days ahead (8 to 23 January): the trip days inside it are kept.
+    expect(weather.asked.map((asked) => asked.date)).toEqual([
+      '2027-01-20',
+      '2027-01-21',
+      '2027-01-22',
+      '2027-01-23',
+    ])
+    expect(await db.meta.get(weatherKey(DEMO_TRIP_ID, '2027-01-23'))).toBeDefined()
+  })
+
+  it('a weather outage does not stop download everything', async () => {
+    await db.trips.put(DEMO_TRIP_RECORD)
+    weather.fail = true
+    const { host, text, until } = await render()
+    await until(() =>
+      expect(host.querySelector('[data-testid="offline.download.action"]')).not.toBeNull()
+    )
+
+    ;(host.querySelector('[data-testid="offline.download.action"]') as HTMLButtonElement).click()
+
+    await until(() => expect(text('offline.download.outcome')).toBe('Everything is on this phone'))
+    expect(weather.asked).toHaveLength(4)
   })
 
   it('download everything needs a connection and says so', async () => {

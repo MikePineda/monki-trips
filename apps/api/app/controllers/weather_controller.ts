@@ -1,13 +1,10 @@
-import vine from '@vinejs/vine'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { ApiEnvelope, TripWeather } from '@monkitrips/shared'
 import { ApiException } from '#exceptions/api_exception'
 import { TripWeatherService } from '#services/weather/trip_weather_service'
 import { WeatherUnavailableError } from '#services/weather/weather_provider'
-import { dateField } from '#validators/sync/fields'
-
-const weatherQuery = vine.compile(vine.object({ date: dateField }))
+import { weatherQueryValidator } from '#validators/weather'
 
 /**
  * `GET /trips/:tripId/weather?date=`: the weather of the place the trip is
@@ -20,7 +17,7 @@ export default class WeatherController {
   constructor(private readonly weather: TripWeatherService) {}
 
   async show(ctx: HttpContext): Promise<ApiEnvelope<TripWeather | null>> {
-    const { date } = await weatherQuery.validate(ctx.request.qs(), {
+    const { date } = await weatherQueryValidator.validate(ctx.request.qs(), {
       meta: undefined,
       messagesProvider: ctx.i18n.createMessagesProvider(),
     })
