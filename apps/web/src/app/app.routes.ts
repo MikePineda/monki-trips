@@ -124,6 +124,7 @@ export const routes: Routes = [
         ],
       },
       { path: 'today', loadComponent: () => import('./features/today/today.page') },
+      { path: 'recap', loadComponent: () => import('./features/recap/recap.page') },
       {
         path: 'more',
         children: [
