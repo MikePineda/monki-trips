@@ -130,6 +130,9 @@ router
                   .get('trips/:tripId/budget', [controllers.TripViews, 'budget'])
                   .as('trips.budget')
                 router
+                  .get('trips/:tripId/balances', [controllers.TripViews, 'balances'])
+                  .as('trips.balances')
+                router
                   .get('trips/:tripId/today', [controllers.TripViews, 'today'])
                   .as('trips.today')
                 router

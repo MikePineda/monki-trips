@@ -79,6 +79,9 @@ const CASES: Record<string, IsolationCase> = {
   'trips.budget': {
     request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/budget`), a),
   },
+  'trips.balances': {
+    request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/balances`), a),
+  },
   'trips.today': {
     request: (c, v, a) => actingAs(c.get(`/api/v1/trips/${v.trip.id}/today`), a),
   },

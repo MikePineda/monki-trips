@@ -1,14 +1,20 @@
 import vine from '@vinejs/vine'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import type { ApiEnvelope, TripBudgetView, TripNightsView, TripTodayView } from '@monkitrips/shared'
+import type {
+  ApiEnvelope,
+  TripBalancesView,
+  TripBudgetView,
+  TripNightsView,
+  TripTodayView,
+} from '@monkitrips/shared'
 import { TripViews } from '#services/trip_views'
 import { instantField } from '#validators/sync/fields'
 import { parseIsoInstant } from '#domain/iso_instant'
 
 const todayQuery = vine.compile(vine.object({ at: instantField.optional() }))
 
-/** The computed views of a trip: where we sleep, the budget position and Today. Members only. */
+/** The computed views of a trip: where we sleep, the budget position, who owes whom and Today. Members only. */
 @inject()
 export default class TripViewsController {
   constructor(private readonly views: TripViews) {}
@@ -19,6 +25,10 @@ export default class TripViewsController {
 
   async budget(ctx: HttpContext): Promise<ApiEnvelope<TripBudgetView>> {
     return { data: await this.views.budget(ctx.trip) }
+  }
+
+  async balances(ctx: HttpContext): Promise<ApiEnvelope<TripBalancesView>> {
+    return { data: await this.views.balances(ctx.trip) }
   }
 
   /** `?at=` names the instant to compute for (ISO); the clock otherwise. */

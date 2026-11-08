@@ -1,10 +1,12 @@
 import type { EntitySpec } from '#services/sync/entity_spec'
+import { assignSplit, switchedToSplit } from '#services/split_switch'
 import { tripChanges } from '#validators/sync/entities'
 
 /**
  * The trip row itself through push: name, dates, budget and home zone.
  * `baseCurrency` is owner-only and locked once expenses exist (the applier
- * enforces both). Trips are created by `POST /trips` and deleted by
+ * enforces both). Switching `budgetMode` to split gives every expense a
+ * payer and a split in the same transaction (`split_switch`). Trips are created by `POST /trips` and deleted by
  * `DELETE /trips/:tripId`, never by push.
  */
 export const tripEntity: EntitySpec = {
@@ -40,5 +42,8 @@ export const tripEntity: EntitySpec = {
       problems.push({ field: 'endsOn', rule: 'afterOrEqual' })
     }
     return { columns: {}, problems }
+  },
+  async afterWrite(ctx) {
+    if (switchedToSplit(ctx)) await assignSplit(ctx)
   },
 }

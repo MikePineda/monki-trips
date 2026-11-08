@@ -224,6 +224,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"budget"]],
     types: placeholder as Registry['trips.budget']['types'],
   },
+  'trips.balances': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/trips/:tripId/balances',
+    tokens: [[0,"api"],[0,"v1"],[0,"trips"],[1,"tripId"],[0,"balances"]],
+    types: placeholder as Registry['trips.balances']['types'],
+  },
   'trips.today': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/trips/:tripId/today',

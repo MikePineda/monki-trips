@@ -1,6 +1,9 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
+import db from '@adonisjs/lucid/services/db'
+import { balances } from '@monkitrips/shared'
 import type {
+  TripBalancesView,
   TripBudgetView,
   TripNightsView,
   TripTodayView,
@@ -8,7 +11,9 @@ import type {
 } from '@monkitrips/shared'
 import type Trip from '#models/trip'
 import { Clock } from '#services/clock'
+import { ownerTravellerId } from '#services/owner_traveller'
 import { TripContent, type TripContentRows } from '#services/trip_content'
+import Traveller from '#models/traveller'
 import { budgetStatus } from '#domain/budget_status'
 import { nightCoverage, type NightEvent } from '#domain/night_coverage'
 import { todayView, todayZone, type TodayEvent } from '#domain/today_view'
@@ -30,7 +35,7 @@ function nightEvent(event: TripEventRow): NightEvent {
 }
 
 /**
- * The computed views of a trip (`/nights`, `/budget`, `/today`), built from
+ * The computed views of a trip (`/nights`, `/budget`, `/balances`, `/today`), built from
  * the same pure functions the client runs offline, over the trip's live
  * content. "Now" always comes from the clock.
  */
@@ -79,6 +84,45 @@ export class TripViews {
         budgetMinor: category.budgetMinor,
       })),
     })
+  }
+
+  /**
+   * Who owes whom, with the shared `balances` function the device runs
+   * offline. An expense without a payer counts as the owner's, as the
+   * switch to split assigns it.
+   */
+  async balances(trip: Trip): Promise<TripBalancesView> {
+    const rows = await this.content.load(trip.id)
+    const travellers = await Traveller.query()
+      .where('trip_id', trip.id)
+      .whereNull('deleted_at')
+      .orderBy('position')
+      .orderBy('created_at')
+    const result = balances({
+      travellers: travellers.map((traveller) => traveller.id),
+      expenses: rows.expenses,
+      shares: rows.expenseShares,
+      defaultPayerTravellerId: await ownerTravellerId(db.connection(), trip.id),
+    })
+    const names = new Map(travellers.map((traveller) => [traveller.id, traveller.displayName]))
+    return {
+      baseCurrency: trip.baseCurrency,
+      budgetMode: trip.budgetMode,
+      balances: result.balances.map((row) => ({
+        travellerId: row.travellerId,
+        displayName: names.get(row.travellerId) ?? null,
+        paidMinor: Number(row.paidMinor),
+        owedMinor: Number(row.owedMinor),
+        netMinor: Number(row.netMinor),
+      })),
+      settlements: result.settlements.map((transfer) => ({
+        fromTravellerId: transfer.fromTravellerId,
+        toTravellerId: transfer.toTravellerId,
+        amountMinor: Number(transfer.amountMinor),
+      })),
+      pendingFxCount: result.pendingFxCount,
+      unassignedCount: result.unassignedCount,
+    }
   }
 
   async today(trip: Trip, at?: Date): Promise<TripTodayView> {
