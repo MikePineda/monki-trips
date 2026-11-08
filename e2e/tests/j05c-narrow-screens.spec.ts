@@ -82,6 +82,9 @@ async function expectFabInside(page: Page, testId: string): Promise<Box> {
 }
 
 test.describe('J05c trip screens on a narrow phone', () => {
+  // Every test wipes the account's trips in beforeEach: run them one after the other.
+  test.describe.configure({ mode: 'default' })
+
   let solo: E2eAccount
   let trip: NarrowTrip
 
