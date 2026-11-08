@@ -154,7 +154,7 @@ interface ProposalCard {
           mascot="happy"
           mascotSize="sm"
           layout="compact"
-          [title]="'assistant.title' | transloco"
+          [title]="'assistant.introTitle' | transloco"
           [body]="'assistant.intro' | transloco"
           data-testid="assistant.intro"
         />
@@ -202,9 +202,13 @@ interface ProposalCard {
               [attr.data-author]="entry.author"
             >
               @if (entry.text) {
-                <p mk-text [preserveLines]="true" data-testid="assistant.message.text">
-                  {{ entry.text }}
-                </p>
+                <!-- textContent, not interpolation: the template's own whitespace would show under pre-wrap. Never HTML. -->
+                <p
+                  mk-text
+                  [preserveLines]="true"
+                  [textContent]="entry.text"
+                  data-testid="assistant.message.text"
+                ></p>
               }
               @for (card of cardsFor(entry.id); track card.action.id) {
                 <ng-container *ngTemplateOutlet="proposal; context: { $implicit: card }" />
