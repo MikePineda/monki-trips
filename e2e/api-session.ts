@@ -26,6 +26,15 @@ export interface TripContentSnapshotLike {
   }[]
 }
 
+/** `NotificationSettings` of @monkitrips/shared: which reminders the account gets, quiet hours `HH:MM`. */
+export interface NotificationSettingsLike {
+  leaveAt: boolean
+  checkOut: boolean
+  tasksDue: boolean
+  quietHoursStart: string | null
+  quietHoursEnd: string | null
+}
+
 /** One `/sync/push` mutation without the bookkeeping (`mutationId`, `tripId`, `changedAt`; `op` defaults to upsert). */
 export interface SeedMutation {
   entity: string
@@ -102,6 +111,19 @@ export class ApiSession {
     return body.data
   }
 
+  /** Replaces the account's reminder settings (`PUT /me/notification-settings`). */
+  async saveNotificationSettings(settings: NotificationSettingsLike): Promise<void> {
+    await this.write('put', '/api/v1/me/notification-settings', settings)
+  }
+
+  /** The account's reminder settings as the API stores them. */
+  async notificationSettings(): Promise<NotificationSettingsLike> {
+    const response = await this.context.get('/api/v1/me/notification-settings')
+    await this.expectOk(response, 'GET /me/notification-settings')
+    const body = (await response.json()) as { data: NotificationSettingsLike }
+    return body.data
+  }
+
   /**
    * Writes trip content the way the app does, through `POST /sync/push`;
    * fails when a mutation is not applied.
@@ -146,7 +168,7 @@ export class ApiSession {
   }
 
   private async write(
-    method: 'post' | 'delete',
+    method: 'post' | 'put' | 'delete',
     path: string,
     data?: unknown
   ): Promise<APIResponse> {

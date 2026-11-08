@@ -1,5 +1,6 @@
 import { soloAccount, type E2eAccount } from '../accounts.ts'
 import { ApiSession } from '../api-session.ts'
+import { seedDepartureTrip } from '../departure-trip.ts'
 import { expect, test } from '../fixtures.ts'
 import { RAW_KEY, signIn } from '../sign-in.ts'
 
@@ -86,6 +87,61 @@ test.describe('J14 notifications', () => {
       expect(await after.sendPushTest()).toEqual({ sent: 0, pruned: 0, failed: 0 })
     } finally {
       await after.dispose()
+    }
+  })
+
+  test('reminder choices stick across a reload and shape the upcoming reminders', async ({
+    page,
+  }, testInfo) => {
+    // Its own account: this journey replaces the account's trips and settings.
+    const traveller = soloAccount(testInfo.project.name, 'j14')
+    const arrange = await ApiSession.signIn(traveller)
+    try {
+      await arrange.saveNotificationSettings({
+        leaveAt: true,
+        checkOut: true,
+        tasksDue: true,
+        quietHoursStart: null,
+        quietHoursEnd: null,
+      })
+    } finally {
+      await arrange.dispose()
+    }
+    const { tripId, flightId } = await seedDepartureTrip(traveller)
+
+    await signIn(page, traveller)
+    await page.goto('/settings')
+    const reminders = page.getByTestId('settings.reminders')
+    await expect(reminders).toHaveAttribute('data-ready', 'true')
+    const leaveAt = page.getByTestId('settings.reminders.leaveAt')
+    await expect(leaveAt).toHaveAttribute('aria-checked', 'true')
+
+    // The flight in twelve hours plans a "time to leave" that opens the flight.
+    const leaveRow = reminders.locator(
+      '[data-testid="settings.reminders.upcoming.row"][data-kind="leave_at"]'
+    )
+    await expect(leaveRow).toHaveCount(1)
+    await expect(leaveRow).toContainText('Flight to Port Vellmar')
+    await expect(leaveRow.locator('a')).toHaveAttribute('href', `/t/${tripId}/plan/e/${flightId}`)
+
+    // Turning "Time to leave" off saves at once and plans it away.
+    await leaveAt.click()
+    await expect(leaveAt).toHaveAttribute('aria-checked', 'false')
+    await expect(leaveRow).toHaveCount(0)
+    await expect(page.getByTestId('settings.reminders.upcoming.empty')).toBeVisible()
+
+    // The choice lives on the server: a reload keeps it off.
+    await page.reload()
+    await expect(reminders).toHaveAttribute('data-ready', 'true')
+    await expect(leaveAt).toHaveAttribute('aria-checked', 'false')
+    await expect(leaveRow).toHaveCount(0)
+    expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
+
+    const check = await ApiSession.signIn(traveller)
+    try {
+      expect(await check.notificationSettings()).toMatchObject({ leaveAt: false, checkOut: true })
+    } finally {
+      await check.dispose()
     }
   })
 })
