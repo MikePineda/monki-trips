@@ -202,14 +202,24 @@ jobs:
       # The release binary, verified against a pinned SHA-256, instead of
       # gitleaks-action (license key for organisations, one more third-party
       # action with repo access).
+      # The archive is cached so a release-host outage cannot fail this required
+      # check; the checksum below is verified on every run, cached or not.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/gitleaks
+          key: gitleaks-${{ env.GITLEAKS_VERSION }}-${{ env.GITLEAKS_SHA256 }}
+
       - name: Install gitleaks (checksum verified)
         run: |
-          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          curl -fsSL --retry 6 --retry-all-errors --retry-delay 10 -o "$RUNNER_TEMP/$archive" \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
-          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          archive="$HOME/.cache/gitleaks/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          mkdir -p "$(dirname "$archive")"
+          if [ ! -f "$archive" ]; then
+            curl -fsSL --retry 10 --retry-all-errors --retry-delay 15 -o "$archive" \
+              "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/$(basename "$archive")"
+          fi
+          echo "${GITLEAKS_SHA256}  $archive" | sha256sum --check --strict
           mkdir -p "$RUNNER_TEMP/gitleaks"
-          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/gitleaks" gitleaks
+          tar -xzf "$archive" -C "$RUNNER_TEMP/gitleaks" gitleaks
           echo "$RUNNER_TEMP/gitleaks" >>"$GITHUB_PATH"
 
       - name: Scan the pull request commits
