@@ -70,7 +70,8 @@
       "offline": "Sin conexión",
       "members": "Miembros",
       "activity": "Actividad",
-      "phrases": "Frases"
+      "phrases": "Frases",
+      "assistant": "Kiko, el asistente del viaje"
     }
   },
   "notFound": {

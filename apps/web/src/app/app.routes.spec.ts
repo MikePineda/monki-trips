@@ -151,6 +151,19 @@ describe('app routes', () => {
     expect((await navigate('/t/demo-trip/more/offline')).has('offline.ready')).toBe(true)
   })
 
+  it('kiko opens from more as a new chat, and a conversation keeps the same page when the url names it', async () => {
+    expect((await navigate('/t/demo-trip/more')).has('trip.more.assistant')).toBe(true)
+    const fresh = await navigate('/t/demo-trip/more/assistant')
+    expect(fresh.has('assistant.intro')).toBe(true)
+    const page = fresh.harness.routeDebugElement?.componentInstance as unknown
+
+    const named = await navigate('/t/demo-trip/more/assistant/conv-1')
+
+    expect(named.has('assistant.composer')).toBe(true)
+    expect(named.harness.routeDebugElement?.componentInstance).toBe(page)
+    expect((await navigate('/t/demo-trip/more/assistant/conv-1/extra')).url).toBe('/trips')
+  })
+
   it('the share inbox and settings are reachable outside a trip', async () => {
     expect((await navigate('/share')).has('share.title')).toBe(true)
     expect((await navigate('/settings')).has('settings.lang.en')).toBe(true)

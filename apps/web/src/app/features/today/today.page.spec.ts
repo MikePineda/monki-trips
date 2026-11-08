@@ -182,6 +182,17 @@ describe('TodayPage', () => {
     )
   })
 
+  it('one quiet link opens Kiko', async () => {
+    await seedDay()
+    const { host, text, until } = await render()
+
+    await until(() => expect(text('today.assistant')).toBe('Ask Kiko about the trip'))
+    const links = host.querySelectorAll('[data-testid="today.assistant"]')
+    expect(links).toHaveLength(1)
+    expect(links[0]?.getAttribute('href')).toBe(`/t/${DEMO_TRIP_ID}/more/assistant`)
+    expect(host.querySelector('mk-mascot[data-state="thinking"]')).toBeNull()
+  })
+
   it('tonight’s address card is one tap away: "Show to driver" opens it full screen', async () => {
     await seedDay()
     const { host, until } = await render()

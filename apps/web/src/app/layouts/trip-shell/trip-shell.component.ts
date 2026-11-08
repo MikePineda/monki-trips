@@ -27,8 +27,9 @@ export const TRIP_TABS: readonly { id: string; icon: IconName }[] = [
  * The frame inside a trip (`/t/:tripId`): header with a way back to the
  * list, the trip name (from the device's copy) and the connection
  * indicator; the routed tab below; the five-tab bar at the bottom; the
- * "Add expense" FAB everywhere but settings, the Plan tab (its own FAB) and
- * the quick expense itself.
+ * "Add expense" FAB everywhere but settings, the assistant chat (its
+ * composer sticks to the bottom), the Plan tab (its own FAB) and the quick
+ * expense itself.
  * Entering a trip makes it the active one for the "Add expense" shortcut.
  */
 @Component({
@@ -107,14 +108,15 @@ export class TripShellComponent {
     { initialValue: this.router.url }
   )
   /**
-   * The quick-expense button, on every trip screen but settings, and
+   * The quick-expense button, on every trip screen but settings and the
+   * assistant (its composer is the screen's one floating control), and
    * under the quick expense sheet on its own route. The Plan tab floats its own "Add event" button and a
    * screen has one floating control (DESIGN.md), so it hides there too.
    */
   protected readonly showFab = computed(() => {
     const path = this.url().split(/[?#]/)[0]
     // Kept under the sheet on `/add`, so the sheet gives the focus back to it on close.
-    return !/\/(more\/settings|plan)(\/|$)/.test(path)
+    return !/\/(more\/settings|more\/assistant|plan)(\/|$)/.test(path)
   })
 
   /**
@@ -123,7 +125,7 @@ export class TripShellComponent {
    */
   protected readonly floatsButton = computed(() => {
     const path = this.url().split(/[?#]/)[0]
-    return !/\/more\/settings(\/|$)/.test(path) && !/\/add$/.test(path)
+    return !/\/more\/(settings|assistant)(\/|$)/.test(path) && !/\/add$/.test(path)
   })
 
   protected readonly title = computed(() => this.trip()?.name ?? this.untitled())
