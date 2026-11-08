@@ -2,6 +2,8 @@ import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { Page } from '@playwright/test'
 import { soloAccount, type E2eAccount } from '../accounts.ts'
+import { ApiSession } from '../api-session.ts'
+import { seedDepartureTrip } from '../departure-trip.ts'
 import { expect, test } from '../fixtures.ts'
 import { seedNarrowTrip, type NarrowTrip } from '../narrow-trip.ts'
 import { signIn } from '../sign-in.ts'
@@ -12,7 +14,9 @@ import { signIn } from '../sign-in.ts'
  * day figure before the trip spreads over the trip's days, the last line
  * of a list scrolls clear of the floating button, nothing runs past the
  * right edge (Where we sleep included: dates whole, long titles kept in
- * the row) and the floating button stays inside the viewport.
+ * the row) and the floating button stays inside the viewport. The
+ * Notifications section of Settings (switches, quiet hours, upcoming
+ * reminders) stays inside the screen too.
  *
  * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
  * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
@@ -191,6 +195,45 @@ test.describe('J05c trip screens on a narrow phone', () => {
         return parseFloat(getComputedStyle(main).paddingBottom)
       })
       expect(room, screen.path).toBeGreaterThanOrEqual(56 + 64)
+    }
+  })
+
+  test('the Notifications settings section stays inside the screen, upcoming reminders included', async ({
+    page,
+  }) => {
+    // A flight in twelve hours gives the upcoming list a "time to leave" row.
+    const arrange = await ApiSession.signIn(solo)
+    try {
+      await arrange.saveNotificationSettings({
+        leaveAt: true,
+        checkOut: true,
+        tasksDue: true,
+        quietHoursStart: '22:30',
+        quietHoursEnd: '07:00',
+      })
+    } finally {
+      await arrange.dispose()
+    }
+    const departure = await seedDepartureTrip(solo)
+
+    await signIn(page, solo)
+    for (const path of [`/t/${departure.tripId}/more/settings`, '/settings']) {
+      await page.goto(path)
+      const reminders = page.getByTestId('settings.reminders')
+      await expect(reminders, path).toHaveAttribute('data-ready', 'true')
+      await expect(page.getByTestId('settings.notifications'), path).toBeVisible()
+      await expect(page.getByTestId('settings.reminders.upcoming.row'), path).toHaveCount(1)
+      await page.getByTestId('settings.notifications').scrollIntoViewIfNeeded()
+      expect(await overflowing(page), path).toEqual([])
+      // Quiet hours keep both ends whole side by side.
+      const start = (await page.getByTestId('settings.reminders.quietStart').boundingBox())!
+      const end = (await page.getByTestId('settings.reminders.quietEnd').boundingBox())!
+      expect(overlaps(start, end), `${path}: quiet hours overlap`).toBe(false)
+      // The reminder's time is drawn whole inside its row.
+      const value = page.locator('[data-testid="settings.reminders.upcoming.row"] .mk-row__value')
+      expect(await value.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+        true
+      )
     }
   })
 
