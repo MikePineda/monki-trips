@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
+import { stageLlmFixtures } from './llm-fixtures.ts'
 import { ensureVapidKeys } from './vapid-keys.ts'
 
 /**
@@ -14,6 +15,8 @@ import { ensureVapidKeys } from './vapid-keys.ts'
 process.loadEnvFile(fileURLToPath(new URL('./e2e.env', import.meta.url)))
 // A VAPID pair for this run only, handed to the API through the environment.
 ensureVapidKeys()
+// The fake LLM's answers, next to the built API (J16 generates phrase cards).
+stageLlmFixtures()
 
 if (!process.env.PORT) {
   throw new Error(

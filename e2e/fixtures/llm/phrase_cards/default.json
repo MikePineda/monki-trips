@@ -1,0 +1,12 @@
+{
+  "model": "fake-phrase-model",
+  "responses": [
+    {
+      "content": "{\"cards\": [{\"category\": \"greetings\", \"prompt\": \"Hello\", \"phrase\": \"สวัสดีครับ\", \"romanization\": \"sawatdee khrap\", \"note\": null}, {\"category\": \"greetings\", \"prompt\": \"Thank you\", \"phrase\": \"ขอบคุณครับ\", \"romanization\": \"khop khun khrap\", \"note\": null}, {\"category\": \"reservation\", \"prompt\": \"I have a reservation under {name}\", \"phrase\": \"ผมจองไว้ในชื่อ {name}\", \"romanization\": \"phom jong wai nai chue {name}\", \"note\": \"Show it at the front desk.\"}, {\"category\": \"lodging_address\", \"prompt\": \"Please take me to this address\", \"phrase\": \"กรุณาไปส่งที่ 9 ถนนตัวอย่าง\", \"romanization\": \"karuna pai song thi 9 thanon tua yang\", \"note\": \"Synthetic address.\"}, {\"category\": \"food\", \"prompt\": \"No peanuts, please\", \"phrase\": \"ไม่ใส่ถั่วลิสงนะครับ\", \"romanization\": \"mai sai thua lisong na khrap\", \"note\": null}, {\"category\": \"food\", \"prompt\": \"The bill, please\", \"phrase\": \"เช็คบิลด้วยครับ\", \"romanization\": \"chek bin duay khrap\", \"note\": null}, {\"category\": \"emergency\", \"prompt\": \"Please call an ambulance\", \"phrase\": \"ช่วยเรียกรถพยาบาลด้วยครับ\", \"romanization\": \"chuay riak rot phayaban duay khrap\", \"note\": null}, {\"category\": \"numbers\", \"prompt\": \"How much is it?\", \"phrase\": \"เท่าไหร่ครับ\", \"romanization\": \"thao rai khrap\", \"note\": null}]}",
+      "usage": {
+        "inputTokens": 900,
+        "outputTokens": 600
+      }
+    }
+  ]
+}
