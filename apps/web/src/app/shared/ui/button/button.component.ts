@@ -65,12 +65,9 @@ export type ButtonSize = 'md' | 'sm' | 'block'
     :host([data-variant='destructive']) {
       color: var(--status-critical);
     }
-    /* A tinted container (the print banner) hands the ghost its own ink and underline. */
     :host([data-variant='ghost']) {
       background: transparent;
-      color: var(--mk-ghost-ink, var(--accent));
-      text-decoration: var(--mk-ghost-decoration, none);
-      text-underline-offset: 3px;
+      color: var(--accent);
       padding: 0 var(--space-1);
     }
     :host([data-size='sm']) {

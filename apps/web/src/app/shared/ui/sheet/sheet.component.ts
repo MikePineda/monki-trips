@@ -90,7 +90,7 @@ export class MkSheetComponent {
   constructor() {
     // A sheet opened without `label` is named by its own title.
     const container = this.ref?.containerInstance
-    if (this.ref && !this.ref.config.ariaLabel && isLabelledContainer(container)) {
+    if (this.ref && !this.ref.config?.ariaLabel && isLabelledContainer(container)) {
       container._addAriaLabelledBy(this.titleId)
       inject(DestroyRef).onDestroy(() => container._removeAriaLabelledBy(this.titleId))
     }
