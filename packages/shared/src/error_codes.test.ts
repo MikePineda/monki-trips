@@ -22,6 +22,7 @@ test('the codes the plan names keep their status', () => {
   assert.equal(ERROR_CODES.E_FILE_TOO_LARGE, 413)
   assert.equal(ERROR_CODES.E_UNSUPPORTED_FILE, 415)
   assert.equal(ERROR_CODES.E_FX_UNAVAILABLE, 503)
+  assert.equal(ERROR_CODES.E_WEATHER_UNAVAILABLE, 503)
   assert.equal(ERROR_CODES.E_LLM_QUOTA_EXCEEDED, 402)
   assert.equal(ERROR_CODES.E_LLM_UNAVAILABLE, 503)
   assert.equal(ERROR_CODES.E_LLM_BAD_OUTPUT, 422)
