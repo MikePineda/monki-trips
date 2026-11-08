@@ -1,0 +1,12 @@
+{
+  "model": "fake-extract-model",
+  "responses": [
+    {
+      "content": "{\"kind\": \"ferry\", \"title\": \"Ferry to Aldermoor\", \"providerName\": \"Demo Ferry Lines\", \"bookingCode\": \"DEMO42\", \"segments\": [{\"carrier\": \"Demo Ferry Lines\", \"number\": null, \"originName\": \"Port Vellmar\", \"originCode\": null, \"destName\": \"Aldermoor\", \"destCode\": null, \"departsLocal\": \"2027-03-02T09:00\", \"departsTz\": null, \"arrivesLocal\": \"2027-03-02T11:30\", \"arrivesTz\": \"Europe/Lisbon\"}], \"startsLocal\": null, \"startTz\": null, \"endsLocal\": null, \"endTz\": null, \"placeName\": null, \"address\": null, \"addressLocal\": null, \"cost\": \"48.00\", \"costCurrency\": \"EUR\", \"seats\": [], \"needsReview\": [], \"lowConfidence\": [\"segments.0.departsLocal\"]}",
+      "usage": {
+        "inputTokens": 900,
+        "outputTokens": 220
+      }
+    }
+  ]
+}

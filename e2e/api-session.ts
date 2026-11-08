@@ -11,7 +11,14 @@ export interface TripContentSnapshotLike {
     origin: string
     sourceDocumentId?: string | null
   }[]
-  documents: { id: string; title: string; kind: string; tags: string[]; sha256: string | null }[]
+  documents: {
+    id: string
+    title: string
+    kind: string
+    tags: string[]
+    sha256: string | null
+    eventId?: string | null
+  }[]
   emergency: { content: Record<string, unknown> } | null
   stops: { id: string; name: string; tz: string | null }[]
   events: { id: string; kind: string; title: string; startsOn: string | null }[]

@@ -146,3 +146,8 @@ Dated one-liners. New ideas mid-session land here; the master triages them.
 - 2026-11-08: API: `tests/fixtures/llm/chat/tool-call.json` calls `add_expense` with `amountMinor`, but the tool validates `amount` as a decimal string; fix the fixture (the e2e chat fixture uses `amount`).
 - 2026-11-08: Web: delete a Kiko chat from the list as well (today only from inside the open conversation, behind a confirm).
 - 2026-11-08: Web: the initial bundle is past the 350 kB warning on `main` already (350.42 kB; 350.75 kB with the assistant, whose page is a lazy 29.65 kB chunk); find savings in the shell (budget work package).
+- 2026-11-08: WP 3.3: seat lines read from a booking land in the event's notes; map them to `segment_seats` once the review sheet can pick the traveller for each line.
+- 2026-11-08: WP 3.3: a scanned receipt's merchant is shown but not saved (the quick expense add has no description field); pass it through once `addQuick` takes one.
+- 2026-11-08: WP 3.3: the docs and money extraction clients are hand-written `fetch` (features cannot import each other); move them to `core/api` or the Tuyau client.
+- 2026-11-08: WP 3.3: `mk-api-error` cannot show the 402 `resetsOn` date, so the extraction quota message gives no reset day; let it take payload fields.
+- 2026-11-08: WP 3.3: owner probe after deploy: one real "Read this booking" on a text PDF, one on a scan and one receipt photo against the configured endpoint (MiniMax's Anthropic-compatible API may not accept `document` blocks; then a scan needs `LLM_VISION_MODEL` pointed at a model that does).
