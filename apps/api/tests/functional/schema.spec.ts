@@ -59,6 +59,8 @@ const EXPECTED_TABLES = [
   'emergency_info',
   'phrase_cards',
   'trip_activity',
+  'notification_settings',
+  'sent_reminders',
 ]
 
 async function columnsOf(table: string): Promise<string[]> {
