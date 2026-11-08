@@ -3,6 +3,7 @@ import type {
   EmergencyInfoContent,
   Expense,
   EventSegmentRow,
+  PhraseCard,
   SegmentSeat,
   TaskOrigin,
   TaskPriority,
@@ -123,6 +124,18 @@ export interface EmergencyRecord extends TripScopedRecord {
   schemaVersion: number
 }
 
+/**
+ * The phrase cards of one trip and language, as `POST /trips/:tripId/phrase-cards`
+ * generated them. Read-only on the device: the pull (`phrase_card`) and the
+ * generate call write it. A card that names a person keeps the `{name}`
+ * placeholder; the device fills it only when it shows the card.
+ */
+export interface PhraseCardRecord extends TripScopedRecord {
+  /** Canonical BCP 47 tag (`th`, `pt-BR`). */
+  language: string
+  cards: PhraseCard[]
+}
+
 export interface ChecklistRecord extends TripScopedRecord {
   label: string
   checked: boolean
@@ -216,6 +229,7 @@ export interface SyncRowMap {
   members: MemberRecord
   travellers: TravellerRecord
   emergency: EmergencyRecord
+  phraseCards: PhraseCardRecord
 }
 
 export type SyncTable = keyof SyncRowMap
@@ -235,6 +249,7 @@ export const SYNC_TABLES: readonly SyncTable[] = [
   'members',
   'travellers',
   'emergency',
+  'phraseCards',
 ]
 
 /** One row the server changed: an upsert, or a delete (a tombstone needs only the id). */
