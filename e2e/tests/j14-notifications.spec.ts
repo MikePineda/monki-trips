@@ -12,6 +12,10 @@ import { RAW_KEY, signIn } from '../sign-in.ts'
  * key, the API registration and the service worker are all real.
  */
 function stubPushService({ endpoint }: { endpoint: string }) {
+  // Playwright's WebKit has no Push API at all; there is nothing to stand in for.
+  if (typeof PushManager === 'undefined') {
+    return
+  }
   const KEY = 'e2e.push.subscribed'
   const subscription = () => ({
     endpoint,
@@ -47,7 +51,15 @@ test.describe('J14 notifications', () => {
 
   test('enables notifications on the device, sends a test and the API knows the device', async ({
     page,
+    browserName,
   }) => {
+    test.skip(
+      browserName === 'webkit',
+      'Playwright WebKit exposes no PushManager ("Can\'t find variable: PushManager"), and iOS ' +
+        'grants push only to a Home Screen web app (16.4+), which Playwright cannot install ' +
+        '(https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/). ' +
+        'Covered by the "notification test" iPhone manual check in docs/QA.md.'
+    )
     await signIn(page, solo)
     await page.goto('/settings')
     const section = page.getByTestId('settings.notifications')
@@ -88,6 +100,24 @@ test.describe('J14 notifications', () => {
     } finally {
       await after.dispose()
     }
+  })
+
+  test('in Safari on iPhone, asks to install the app before offering notifications', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName !== 'webkit',
+      'Only the iPhone project runs Safari outside the Home Screen'
+    )
+    await signIn(page, solo)
+    await page.goto('/settings')
+    const section = page.getByTestId('settings.notifications')
+    await expect(section).toHaveAttribute('data-status', 'ios-install')
+    await expect(section).toContainText('notifications work only from the installed app')
+    await expect(page.getByTestId('settings.notifications.toggle')).toHaveCount(0)
+    await page.getByTestId('settings.notifications.install').click()
+    await expect(page.getByRole('dialog')).toContainText('Add to your Home Screen')
   })
 
   test('reminder choices stick across a reload and shape the upcoming reminders', async ({

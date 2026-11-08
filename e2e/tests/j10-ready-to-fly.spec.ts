@@ -1,6 +1,7 @@
 import { soloAccount, type E2eAccount } from '../accounts.ts'
 import { grantDurableStorage } from '../durable-storage.ts'
 import { expect, test } from '../fixtures.ts'
+import { emulateInstalledIphoneApp } from '../installed-iphone-app.ts'
 import { RAW_KEY, signIn } from '../sign-in.ts'
 import { seedTodayTrip } from '../today-trip.ts'
 
@@ -17,9 +18,20 @@ test.describe('J10 ready to fly', () => {
     ;({ tripId } = await seedTodayTrip(solo))
   })
 
-  test('red before download everything, all green after', async ({ page, browser, baseURL }) => {
+  test('red before download everything, all green after', async ({
+    page,
+    browser,
+    baseURL,
+    browserName,
+  }) => {
     // What an installed app gets on a phone; a fresh headless profile does not.
-    await grantDurableStorage(browser, page, new URL(baseURL ?? '').origin)
+    // On iOS the check also requires the installed app (Safari keeps separate data).
+    const iphone = browserName === 'webkit'
+    if (iphone) {
+      await emulateInstalledIphoneApp(page)
+    } else {
+      await grantDurableStorage(browser, page, new URL(baseURL ?? '').origin)
+    }
     await signIn(page, solo)
     await page.goto(`/t/${tripId}/more/offline`)
 
@@ -40,7 +52,7 @@ test.describe('J10 ready to fly', () => {
     await expect(summary).toHaveText('This phone is ready to fly')
     await expect(page.locator('[data-testid^="offline.fix."]')).toHaveCount(0)
     await expect(page.getByTestId('offline.check.installed')).toContainText(
-      'Not needed on this device'
+      iphone ? 'Running as the installed app' : 'Not needed on this device'
     )
     expect(await page.locator('body').innerText()).not.toMatch(RAW_KEY)
   })
