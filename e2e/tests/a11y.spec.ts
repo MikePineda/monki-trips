@@ -442,6 +442,83 @@ test.describe('QA-1 accessibility audit of every screen', () => {
     expect(found, found.join('\n')).toEqual([])
   })
 
+  test('every screen has one main landmark, one page title and no skipped heading level', async ({
+    page,
+    browser,
+  }) => {
+    const found: string[] = []
+    const outline = (target: Page) =>
+      target.evaluate(() => {
+        const problems: string[] = []
+        const mains = document.querySelectorAll('main, [role="main"]')
+        if (mains.length !== 1) problems.push(`${mains.length} main landmarks`)
+        // A sheet is its own dialog; the page outline is what lies outside it.
+        const outside = (element: Element) =>
+          !element.closest('[role="dialog"], [aria-hidden="true"], [hidden], [inert]')
+        const dialog = document.querySelector('[role="dialog"]')
+        if (dialog) {
+          // An open sheet hides the page from assistive technology: it carries its own name and title.
+          const named = dialog.getAttribute('aria-label') || dialog.getAttribute('aria-labelledby')
+          if (!named) problems.push('a sheet without an accessible name')
+          if (!dialog.querySelector('h2')) problems.push('a sheet without an h2 title')
+        } else {
+          const titles = Array.from(document.querySelectorAll('h1')).filter(outside)
+          if (titles.length !== 1) problems.push(`${titles.length} h1`)
+        }
+        let previous = 0
+        for (const heading of Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
+          if (!outside(heading)) continue
+          const level = Number(heading.tagName[1])
+          if (previous > 0 && level > previous + 1) {
+            problems.push(`h${previous} then h${level} "${heading.textContent?.trim()}"`)
+          }
+          previous = level
+        }
+        return problems
+      })
+    await signIn(page, owner)
+    for (const screen of signedInScreens(arranged)) {
+      await screen.open(page)
+      for (const problem of await outline(page)) found.push(`${screen.name}: ${problem}`)
+    }
+    const out = await signedOutPage(browser, 'light')
+    try {
+      for (const screen of signedOutScreens(arranged)) {
+        await screen.open(out)
+        for (const problem of await outline(out)) found.push(`${screen.name}: ${problem}`)
+      }
+    } finally {
+      await out.context().close()
+    }
+    expect(found, found.join('\n')).toEqual([])
+  })
+
+  test('a sheet keeps the focus inside while open and gives it back to its opener', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await signIn(page, owner)
+    const openers = [
+      { path: `/t/${arranged.tripId}/money`, opener: page.getByTestId('shell.fab') },
+      { path: `/t/${arranged.tripId}/plan`, opener: page.getByTestId('plan.event').first() },
+    ]
+    for (const { path, opener } of openers) {
+      await page.goto(path)
+      await opener.focus()
+      await page.keyboard.press('Enter')
+      const sheet = page.getByRole('dialog')
+      await expect(sheet, path).toBeVisible()
+      for (let i = 0; i < 25; i++) {
+        await page.keyboard.press('Tab')
+        const inside = await sheet.evaluate((dialog) => dialog.contains(document.activeElement))
+        expect(inside, `${path}: Tab ${i + 1} left the sheet`).toBe(true)
+      }
+      await page.keyboard.press('Escape')
+      await expect(sheet, path).toHaveCount(0)
+      await expect(opener, `${path}: focus back on the opener`).toBeFocused()
+    }
+  })
+
   test('the lang attribute follows the active language', async ({ page }) => {
     await signIn(page, owner)
     await page.goto(`/t/${arranged.tripId}/today`)
