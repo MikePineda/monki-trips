@@ -182,6 +182,47 @@ describe('TodayPage', () => {
     )
   })
 
+  it('tonight’s address card is one tap away: "Show to driver" opens it full screen', async () => {
+    await seedDay()
+    const { host, until } = await render()
+    await until(() =>
+      expect(host.querySelector('[data-testid="today.tonight.name"]')).not.toBeNull()
+    )
+    expect(host.querySelector('[data-testid="today.tonight.showDriver"]')).toBeNull()
+
+    await db.phraseCards.put({
+      id: 'set-el',
+      tripId: DEMO_TRIP_ID,
+      language: 'el',
+      cards: [
+        {
+          category: 'greetings',
+          prompt: 'Hello',
+          phrase: 'Γεια σας',
+          romanization: null,
+          note: null,
+        },
+        {
+          category: 'lodging_address',
+          prompt: 'Please take me to this address',
+          phrase: 'Παρακαλώ, Οδός Προκυμαίας 14',
+          romanization: null,
+          note: null,
+        },
+      ],
+      updatedAt: '2026-11-07T00:00:00.000Z',
+    })
+
+    await until(() =>
+      expect(
+        host.querySelector('[data-testid="today.tonight.showDriver"]')?.getAttribute('href')
+      ).toMatch(/\/more\/phrases\/show\/set-el(:|%3A)1$/)
+    )
+    expect(host.querySelector('[data-testid="today.tonight.showDriver"]')?.textContent).toContain(
+      'Show to driver'
+    )
+  })
+
   it('print band marks the task done through the outbox', async () => {
     await seedDay()
     const { host, until } = await render()

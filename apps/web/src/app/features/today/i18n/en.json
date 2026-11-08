@@ -47,7 +47,8 @@
     "alertBody": "Add lodging, or an overnight transport, for tonight.",
     "findStay": "Find a stay",
     "lastDayTitle": "No night to plan",
-    "lastDayBody": "The trip ends today."
+    "lastDayBody": "The trip ends today.",
+    "showDriver": "Show to driver"
   },
   "money": {
     "label": "Left today",
