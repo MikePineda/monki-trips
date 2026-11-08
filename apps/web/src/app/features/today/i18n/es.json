@@ -63,11 +63,19 @@
   },
   "weather": {
     "now": "{{degrees}}° · {{condition}}",
+    "range": "{{max}}° / {{min}}°",
+    "rain": "{{percent}} % de lluvia",
     "age": "Actualizado {{age}}",
-    "clear": "Despejado",
-    "cloudy": "Nublado",
-    "rain": "Lluvia",
-    "snow": "Nieve",
-    "storm": "Tormenta"
+    "attribution": "Datos meteorológicos de {{name}}",
+    "conditions": {
+      "clear": "Despejado",
+      "partly_cloudy": "Parcialmente nublado",
+      "cloudy": "Nublado",
+      "fog": "Niebla",
+      "drizzle": "Llovizna",
+      "rain": "Lluvia",
+      "thunderstorm": "Tormenta",
+      "snow": "Nieve"
+    }
   }
 }

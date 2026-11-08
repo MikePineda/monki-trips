@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core'
+import { computed, type Signal } from '@angular/core'
 import { liveSignalFor } from './live'
 import type {
   BudgetCategoryRecord,
@@ -13,7 +13,7 @@ import type {
   TravellerRecord,
   TripRecord,
 } from './records'
-import { weatherKey, type TripWeather } from './weather'
+import { weatherKey, type CachedWeather } from './weather'
 
 /**
  * Live reads of one trip's content from the device, keyed by a trip id
@@ -98,12 +98,16 @@ export function documentRecord(
   )
 }
 
-/** The weather cached for a trip, or null: Today hides the row without it. */
-export function tripWeather(tripId: Signal<string>): Signal<TripWeather | null> {
+/** The weather cached for a trip day, or null: Today hides the row without it. */
+export function tripWeather(
+  tripId: Signal<string>,
+  date: Signal<string>
+): Signal<CachedWeather | null> {
+  const key = computed(() => (date() ? weatherKey(tripId(), date()) : ''))
   return liveSignalFor(
-    tripId,
+    key,
     async (db, id) =>
-      ((await db.meta.get(weatherKey(id)))?.value as TripWeather | undefined) ?? null,
+      id ? (((await db.meta.get(id))?.value as CachedWeather | undefined) ?? null) : null,
     null
   )
 }

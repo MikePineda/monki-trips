@@ -9,19 +9,30 @@ import {
 } from '../../core/offline/meta.store'
 import { OfflineReadinessStore } from '../../core/offline/offline-readiness.store'
 import { OnlineStore } from '../../core/offline/online.store'
+import { OFFLINE_DB } from '../../core/offline/offline-db'
 import { OutboxStore } from '../../core/offline/outbox.store'
 import { SyncService } from '../../core/offline/sync.service'
+import { TIME_ZONE } from '../../core/offline/time-zone'
+import { WeatherStore, forecastDates } from '../../core/offline/weather'
 import { AppVersionStore } from '../../core/pwa/app-version.store'
 import { AssetCache, type CachedAssets } from '../../core/pwa/asset-cache'
 import { InstallService } from '../../core/pwa/install.service'
 import { StorageProbe, type StorageState } from '../../core/pwa/storage-probe'
 import { UpdateService } from '../../core/pwa/update.service'
+import { calendarDateIn } from '../../domain/relative-time'
 
 /** The worker app.config registers (`provideServiceWorker('sw.js')`). */
 const SERVICE_WORKER_SCRIPT = 'sw.js'
 
 /** The steps of "Download everything", in order. */
-export const DOWNLOAD_STEPS = ['sync', 'version', 'documents', 'storage', 'assets'] as const
+export const DOWNLOAD_STEPS = [
+  'sync',
+  'version',
+  'documents',
+  'weather',
+  'storage',
+  'assets',
+] as const
 
 export type DownloadStep = (typeof DOWNLOAD_STEPS)[number]
 
@@ -58,7 +69,7 @@ function platformOf(ios: boolean, userAgent: string): Platform {
  * "Ready to fly" for one trip: gathers the device facts (service worker,
  * Dexie, storage, platform) and lets `offline_readiness` decide the seven
  * checks; runs "Download everything" (pull, every document saved and
- * verified, storage persisted, caches warmed) with its progress, and the
+ * verified, the forecast of the days ahead, storage persisted, caches warmed) with its progress, and the
  * fix of each check. Provided by the page, keyed by `tripId`.
  */
 @Injectable()
@@ -75,6 +86,9 @@ export class ReadyToFlyStore {
   private readonly storage = inject(StorageProbe)
   private readonly install = inject(InstallService)
   private readonly online = inject(OnlineStore).online
+  private readonly database = inject(OFFLINE_DB)
+  private readonly weather = inject(WeatherStore)
+  private readonly timeZone = inject(TIME_ZONE)
 
   /** The trip the page shows; the live queries follow it. */
   readonly tripId = signal('')
@@ -162,6 +176,11 @@ export class ReadyToFlyStore {
       const failedDocuments = result.failed.length
       done = base + Math.max(1, result.saved.length + result.failed.length)
 
+      step = 'weather'
+      at(step)
+      await this.saveForecast()
+      done += 1
+
       step = 'storage'
       at(step)
       await this.storage.persist()
@@ -182,6 +201,23 @@ export class ReadyToFlyStore {
       this.progressState.set(null)
       await this.refresh()
     }
+  }
+
+  /**
+   * The weather of every trip day the forecast reaches (16 days from today
+   * on this device), kept for Today offline. Best effort: a day the server
+   * cannot answer keeps its old copy and never stops the download.
+   */
+  private async saveForecast(): Promise<void> {
+    const trip = await (await this.database).trips.get(this.tripId())
+    if (!trip) {
+      return
+    }
+    const today = calendarDateIn(this.clock(), this.timeZone)
+    await this.weather.refreshDays(
+      trip.id,
+      forecastDates({ startsOn: trip.startDate, endsOn: trip.endDate }, today)
+    )
   }
 
   /** Sync now: refreshes the snapshot and sends the outbox. */

@@ -457,10 +457,10 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { tripId: ParamValue }
-      query: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/weather').weatherQueryValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/weather_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'trips.export': {
