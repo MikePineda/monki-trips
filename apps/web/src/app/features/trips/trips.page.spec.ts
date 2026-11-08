@@ -130,7 +130,8 @@ describe('TripsPage', () => {
 
     expect(link.getAttribute('href')).toBe('/t/trip-1/today')
     expect(link.textContent).toContain('Sample trip')
-    expect(link.textContent).toContain('2027-01-20 to 2027-02-06')
+    expect(link.textContent).toContain('20 Jan – 6 Feb 2027')
+    expect(link.textContent).not.toContain('2027-01-20')
     expect(host.querySelector('[data-testid="trips.empty"]')).toBeNull()
   })
 
@@ -264,7 +265,8 @@ describe('TripsPage', () => {
     expect(ticket.getAttribute('href')).toBe('/t/past/today')
     expect(text).toContain('Harbour City → Old Town')
     expect(text).toContain('10 days · 9 nights · 2 countries')
-    expect(text).toContain('2026-05-01 to 2026-05-10')
+    expect(text).toContain('1 – 10 May 2026')
+    expect(text).not.toMatch(/\d{4}-\d{2}-\d{2}/)
     expect(ticket.querySelector('[data-testid="mk-trip-ticket.amount"]')?.textContent?.trim()).toBe(
       '€150.50'
     )

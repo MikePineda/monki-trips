@@ -103,6 +103,9 @@ describe('PassportMapPage', () => {
       'Harbour City, Old Town'
     )
     expect(host.querySelectorAll('[data-testid="mk-map-legend.item"]')).toHaveLength(1)
+    expect(host.querySelector('[data-testid="mk-map-legend.item"]')?.textContent).toContain(
+      'May 2026'
+    )
     expect(fetchStyle).not.toHaveBeenCalled()
     expect(loader).not.toHaveBeenCalled()
   })

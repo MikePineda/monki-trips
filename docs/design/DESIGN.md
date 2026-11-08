@@ -466,7 +466,8 @@ Every component lives in `apps/web/src/app/shared/ui/` with the `mk-` prefix, st
 - A place not reached yet is a dashed `ink-3` ring with "Not yet" (or "Coming up" in the passport).
 - Stamps appear only on the trip history, the passport and in empty states; never on Today, money or charts. A generated fallback is used when no artwork exists for the place.
 - **Generated stamps** (`shared/ui/stamp/stamp-generator.ts`): a place without artwork in `public/stamps/` gets a stamp drawn in code, seeded by the place name and the visit date, so it is the same on every render and offline. The seed picks the shape (circle, rounded rectangle, octagon, oval), one of four inks (`stamp-ink-1` blue, `-2` red, `-3` green, `-4` violet), the tilt (−8° to +8°), a solid or dotted inner line and two small stars. The place runs along the top arc of round stamps and straight across the others (squeezed to fit, never past the ring); the date prints day first (`02.05.2026`); the bottom line is the country code; the icon says how the travellers arrived (plane, train, boat, car; a star when unknown). Ink texture is an SVG filter on alpha only: no colour leaves the tokens.
-- Sizes: `sm` 64 px (the cover stamp of a trip row), `md` 112 px, `lg` 160 px (a country page of the passport).
+- Sizes: `sm` 64 px (the cover stamp of a trip row), `md` 112 px (the passport), `lg` 160 px.
+- A passport page reads like a real one: the country's stamp first, then its cities', in an `mk-grid` of equal columns (two per row at 360–390 px, three from about 470 px), each a 44 px+ tap target with its place and date below.
 - A place coming up (a later stop or an upcoming trip) is the faded form: `ink-3`, dashed outline, no texture, "Coming up" with the planned date. Tapping a stamp in the passport says when and on which trip.
 - A newly earned stamp stamps itself in once (scale and tilt, 520 ms); never under reduced motion.
 
