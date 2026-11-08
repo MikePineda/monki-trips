@@ -1,0 +1,113 @@
+{
+  "title": "Resumen del viaje",
+  "titleSoFar": "El viaje hasta ahora",
+  "back": "Volver al viaje",
+  "dates": "{{start}} – {{end}}",
+  "phase": {
+    "past": "¡Bienvenidos de vuelta! Aquí está el viaje, de principio a fin.",
+    "ongoing": "Día {{day}} de {{total}}: el resumen hasta ahora.",
+    "upcoming": "Aún no ha empezado: el resumen se llena mientras viajáis."
+  },
+  "mascot": {
+    "celebrating": "Kiko celebrando",
+    "happy": "Kiko de viaje"
+  },
+  "route": "Ruta",
+  "stats": {
+    "label": "El viaje en números",
+    "days": "Días",
+    "daysSoFar": "{{count}} hasta ahora",
+    "nights": "Noches",
+    "countries": "Países",
+    "cities": "Ciudades",
+    "distance": "Recorrido",
+    "distanceValue": "{{km}} km",
+    "distanceUnknown": "Sin coordenadas",
+    "straightLine": "En línea recta",
+    "skippedOne": "{{count}} parada sin coordenadas queda fuera de la distancia.",
+    "skippedOther": "{{count}} paradas sin coordenadas quedan fuera de la distancia.",
+    "flights": "Vuelos",
+    "trains": "Trenes",
+    "ferries": "Ferris"
+  },
+  "nights": {
+    "title": "Dónde dormimos",
+    "hotel": "En una cama",
+    "train": "En un tren nocturno",
+    "plane": "En un avión",
+    "other": "En marcha, de otra forma",
+    "uncovered": "Sin registrar",
+    "value": "{{count}}"
+  },
+  "stamps": {
+    "title": "Sellos de este viaje",
+    "empty": "Aún no hay sellos: llegan cuando una parada queda atrás.",
+    "stamp": "Sello de {{place}}, {{date}}"
+  },
+  "map": {
+    "title": "En el mapa",
+    "label": "Mapa del viaje: {{places}}"
+  },
+  "money": {
+    "title": "Gastos",
+    "spent": "Gastado",
+    "perDay": "Por día",
+    "perDayNone": "—",
+    "budget": "Presupuesto",
+    "budgetLeft": "Quedan {{amount}}",
+    "budgetOver": "{{amount}} por encima",
+    "budgetOf": "de {{amount}}",
+    "noBudget": "Sin presupuesto",
+    "biggest": "Mayor gasto",
+    "topCurrency": "Más gastado en",
+    "topCurrencyValue": "{{currency}} · {{amount}}",
+    "pendingOne": "{{count}} gasto espera su tipo de cambio y aún no cuenta.",
+    "pendingOther": "{{count}} gastos esperan su tipo de cambio y aún no cuentan.",
+    "settlementsOne": "{{count}} liquidación entre viajeros no es un gasto y queda fuera.",
+    "settlementsOther": "{{count}} liquidaciones entre viajeros no son gastos y quedan fuera.",
+    "byCategory": "Gastos por categoría",
+    "viewLabel": "Ver los gastos como",
+    "chart": "Gráfico",
+    "table": "Tabla",
+    "category": "Categoría",
+    "amount": "Gastado",
+    "share": "Parte",
+    "uncategorised": "Sin categoría",
+    "empty": "No hay gastos registrados en este viaje."
+  },
+  "categories": {
+    "accommodation": "Alojamiento",
+    "transport": "Transporte",
+    "food": "Comida y bebida",
+    "activities": "Actividades",
+    "shopping": "Compras",
+    "other": "Otros"
+  },
+  "balances": {
+    "title": "Quién debe a quién",
+    "getsBack": "recupera",
+    "owes": "debe",
+    "settled": "en paz",
+    "someone": "Alguien",
+    "allSettled": "Todos están en paz."
+  },
+  "share": {
+    "title": "Guárdalo",
+    "includeMoney": "Incluir el dinero en la imagen",
+    "save": "Guardar como imagen",
+    "saving": "Dibujando la imagen…",
+    "shared": "Resumen compartido",
+    "downloaded": "Imagen del resumen guardada",
+    "failed": "No se pudo dibujar la imagen en este dispositivo",
+    "footer": "monki-trips · resumen del viaje",
+    "privacy": "La imagen nunca muestra códigos de reserva, direcciones ni documentos."
+  },
+  "csv": {
+    "action": "Exportar gastos (CSV)",
+    "offline": "Exportar los gastos necesita conexión."
+  },
+  "empty": {
+    "title": "Aún no hay nada que resumir",
+    "body": "Añade paradas, planes o gastos y el resumen se llena solo."
+  }
+}

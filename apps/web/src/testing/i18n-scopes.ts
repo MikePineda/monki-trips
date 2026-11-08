@@ -29,6 +29,8 @@ import historyEn from '../app/features/trips/i18n/en.json'
 import historyEs from '../app/features/trips/i18n/es.json'
 import passportEn from '../app/features/passport/i18n/en.json'
 import passportEs from '../app/features/passport/i18n/es.json'
+import recapEn from '../app/features/recap/i18n/en.json'
+import recapEs from '../app/features/recap/i18n/es.json'
 import todayEn from '../app/features/today/i18n/en.json'
 import todayEs from '../app/features/today/i18n/es.json'
 import tasksEn from '../app/features/tasks/i18n/en.json'
@@ -66,6 +68,7 @@ export const SCOPE_CATALOGUES = {
   passport: { en: passportEn, es: passportEs },
   phrases: { en: phrasesEn, es: phrasesEs },
   plan: { en: planEn, es: planEs },
+  recap: { en: recapEn, es: recapEs },
   settings: { en: settingsEn, es: settingsEs },
   share: { en: shareEn, es: shareEs },
   shell: { en: shellEn, es: shellEs },

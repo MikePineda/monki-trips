@@ -1,0 +1,113 @@
+{
+  "title": "Trip recap",
+  "titleSoFar": "The trip so far",
+  "back": "Back to the trip",
+  "dates": "{{start}} – {{end}}",
+  "phase": {
+    "past": "Welcome back! Here is the trip, start to finish.",
+    "ongoing": "Day {{day}} of {{total}}: the recap so far.",
+    "upcoming": "Not started yet: the recap fills in as you travel."
+  },
+  "mascot": {
+    "celebrating": "Kiko celebrating",
+    "happy": "Kiko on the road"
+  },
+  "route": "Route",
+  "stats": {
+    "label": "The trip in numbers",
+    "days": "Days",
+    "daysSoFar": "{{count}} so far",
+    "nights": "Nights",
+    "countries": "Countries",
+    "cities": "Cities",
+    "distance": "Travelled",
+    "distanceValue": "{{km}} km",
+    "distanceUnknown": "No coordinates",
+    "straightLine": "In a straight line",
+    "skippedOne": "{{count}} stop without coordinates is left out of the distance.",
+    "skippedOther": "{{count}} stops without coordinates are left out of the distance.",
+    "flights": "Flights",
+    "trains": "Trains",
+    "ferries": "Ferries"
+  },
+  "nights": {
+    "title": "Where we slept",
+    "hotel": "In a bed",
+    "train": "On a night train",
+    "plane": "On a plane",
+    "other": "On the move, otherwise",
+    "uncovered": "Not recorded",
+    "value": "{{count}}"
+  },
+  "stamps": {
+    "title": "Stamps from this trip",
+    "empty": "No stamps yet: they land once a stop is behind you.",
+    "stamp": "Stamp of {{place}}, {{date}}"
+  },
+  "map": {
+    "title": "On the map",
+    "label": "Map of the trip: {{places}}"
+  },
+  "money": {
+    "title": "Spending",
+    "spent": "Spent",
+    "perDay": "Per day",
+    "perDayNone": "—",
+    "budget": "Budget",
+    "budgetLeft": "{{amount}} left",
+    "budgetOver": "{{amount}} over",
+    "budgetOf": "of {{amount}}",
+    "noBudget": "No budget",
+    "biggest": "Biggest expense",
+    "topCurrency": "Most spent in",
+    "topCurrencyValue": "{{currency}} · {{amount}}",
+    "pendingOne": "{{count}} expense waits for its exchange rate and is not counted yet.",
+    "pendingOther": "{{count}} expenses wait for their exchange rate and are not counted yet.",
+    "settlementsOne": "{{count}} settlement between travellers is not spending and is left out.",
+    "settlementsOther": "{{count}} settlements between travellers are not spending and are left out.",
+    "byCategory": "Spending by category",
+    "viewLabel": "Show spending as",
+    "chart": "Chart",
+    "table": "Table",
+    "category": "Category",
+    "amount": "Spent",
+    "share": "Share",
+    "uncategorised": "No category",
+    "empty": "No expenses recorded on this trip."
+  },
+  "categories": {
+    "accommodation": "Accommodation",
+    "transport": "Transport",
+    "food": "Food and drink",
+    "activities": "Activities",
+    "shopping": "Shopping",
+    "other": "Other"
+  },
+  "balances": {
+    "title": "Who owes whom",
+    "getsBack": "gets back",
+    "owes": "owes",
+    "settled": "settled",
+    "someone": "Someone",
+    "allSettled": "Everyone is settled."
+  },
+  "share": {
+    "title": "Keep it",
+    "includeMoney": "Include money in the image",
+    "save": "Save as image",
+    "saving": "Drawing the image…",
+    "shared": "Recap shared",
+    "downloaded": "Recap image saved",
+    "failed": "The image could not be drawn on this device",
+    "footer": "monki-trips · trip recap",
+    "privacy": "The image never shows booking codes, addresses or documents."
+  },
+  "csv": {
+    "action": "Export expenses (CSV)",
+    "offline": "Exporting the expenses needs a connection."
+  },
+  "empty": {
+    "title": "Nothing to recap yet",
+    "body": "Add stops, plans or expenses and the recap fills in on its own."
+  }
+}
