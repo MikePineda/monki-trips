@@ -113,7 +113,9 @@ describe('StyleguidePage', () => {
 
   it('shows the two sample stamps, a generated one and one not reached yet', () => {
     const { host } = render()
-    const stamps = [...host.querySelectorAll('[data-testid="styleguide.stamps"] mk-stamp')]
+    const stamps = [...host.querySelectorAll('[data-testid="styleguide.stamps"] mk-stamp')].filter(
+      (stamp) => !stamp.closest('[data-testid="styleguide.stampSheet"]')
+    )
 
     expect(stamps.map((stamp) => stamp.getAttribute('data-code'))).toEqual(['XA', 'XB', 'ZZ', 'XB'])
     expect(stamps.map((stamp) => stamp.getAttribute('data-artwork'))).toEqual([
@@ -123,6 +125,17 @@ describe('StyleguidePage', () => {
       null,
     ])
     expect(stamps[3].hasAttribute('data-reached')).toBe(false)
+  })
+
+  it('shows a sheet of twelve generated stamps for invented places, in every shape', () => {
+    const { host } = render()
+    const sheet = [...host.querySelectorAll('[data-testid="styleguide.stampSheet"] mk-stamp')]
+
+    expect(sheet).toHaveLength(12)
+    expect(sheet.every((stamp) => !stamp.hasAttribute('data-artwork'))).toBe(true)
+    expect(new Set(sheet.map((stamp) => stamp.getAttribute('data-shape')))).toEqual(
+      new Set(['circle', 'rounded', 'octagon', 'oval'])
+    )
   })
 
   it('builds the four mock screens from the real components with synthetic data', () => {

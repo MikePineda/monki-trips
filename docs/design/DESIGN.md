@@ -47,6 +47,10 @@ colors:
   on-print-warning-2: '#4a5058'
   offline: '#4a5058'
   stamp-ink: '#2f5c8a'
+  stamp-ink-1: '#2f5c8a'
+  stamp-ink-2: '#9b2f3c'
+  stamp-ink-3: '#2c6649'
+  stamp-ink-4: '#5b3f8e'
   status-good: '#2e6b3f'
   status-warning: '#845600'
   status-serious: '#7e3418'
@@ -212,6 +216,10 @@ Roles at a glance:
 | `--on-print-warning-2`            | `#4A5058`                                                                       | Secondary line on the print banner.                                                                         |
 | `--offline`                       | `#4A5058`                                                                       | "Offline · everything saved" (= ink-2).                                                                     |
 | `--stamp-ink`                     | `#2F5C8A`                                                                       | Passport stamps (trip list, empty states). Never on data.                                                   |
+| `--stamp-ink-1`                   | `#2F5C8A`                                                                       | Generated stamps, blue ink. Never on data.                                                                  |
+| `--stamp-ink-2`                   | `#9B2F3C`                                                                       | Generated stamps, red ink. Never on data.                                                                   |
+| `--stamp-ink-3`                   | `#2C6649`                                                                       | Generated stamps, green ink. Never on data.                                                                 |
+| `--stamp-ink-4`                   | `#5B3F8E`                                                                       | Generated stamps, violet ink. Never on data.                                                                |
 | `--scrim`                         | `#1114174D`                                                                     | Backdrop behind sheets. No blur.                                                                            |
 | `--gridline`                      | `#E3E4DF`                                                                       | Chart gridlines, horizontal only.                                                                           |
 | `--baseline`                      | `#A4ACB4`                                                                       | Chart baseline / axis rule.                                                                                 |
@@ -248,6 +256,10 @@ The dark theme is not an inversion. Surfaces are a cool near-black (`#0F1113` �
 | `--on-print-warning-2`            | `#B4B9BF`                                                                       | Print banner secondary line.                                 |
 | `--offline`                       | `#B4B9BF`                                                                       | Offline status (= ink-2).                                    |
 | `--stamp-ink`                     | `#8DB3DD`                                                                       | Passport stamps.                                             |
+| `--stamp-ink-1`                   | `#8DB3DD`                                                                       | Generated stamps, blue ink. Never on data.                   |
+| `--stamp-ink-2`                   | `#EEA2A8`                                                                       | Generated stamps, red ink. Never on data.                    |
+| `--stamp-ink-3`                   | `#86C9A4`                                                                       | Generated stamps, green ink. Never on data.                  |
+| `--stamp-ink-4`                   | `#BBA6E8`                                                                       | Generated stamps, violet ink. Never on data.                 |
 | `--scrim`                         | `#000000A3`                                                                     | Backdrop behind sheets.                                      |
 | `--gridline`                      | `#25292D`                                                                       | Chart gridlines.                                             |
 | `--baseline`                      | `#525960`                                                                       | Chart baseline.                                              |
@@ -451,8 +463,12 @@ Every component lives in `apps/web/src/app/shared/ui/` with the `mk-` prefix, st
 ### Passport stamp
 
 - The reward on the trip list (from direction A): 112 px, two rings (2px and 1px) in `stamp-ink`, place name in mono caps, a short code, the date; rotated a few degrees (−8° to +8°, stable per place).
-- A place not reached yet is a dashed `ink-3` ring with "Not yet".
-- Stamps appear only on the trip list and in empty states; never on Today, money or charts. A generated fallback is used when no artwork exists for the place.
+- A place not reached yet is a dashed `ink-3` ring with "Not yet" (or "Coming up" in the passport).
+- Stamps appear only on the trip history, the passport and in empty states; never on Today, money or charts. A generated fallback is used when no artwork exists for the place.
+- **Generated stamps** (`shared/ui/stamp/stamp-generator.ts`): a place without artwork in `public/stamps/` gets a stamp drawn in code, seeded by the place name and the visit date, so it is the same on every render and offline. The seed picks the shape (circle, rounded rectangle, octagon, oval), one of four inks (`stamp-ink-1` blue, `-2` red, `-3` green, `-4` violet), the tilt (−8° to +8°), a solid or dotted inner line and two small stars. The place runs along the top arc of round stamps and straight across the others (squeezed to fit, never past the ring); the date prints day first (`02.05.2026`); the bottom line is the country code; the icon says how the travellers arrived (plane, train, boat, car; a star when unknown). Ink texture is an SVG filter on alpha only: no colour leaves the tokens.
+- Sizes: `sm` 64 px (the cover stamp of a trip row), `md` 112 px, `lg` 160 px (a country page of the passport).
+- A place coming up (a later stop or an upcoming trip) is the faded form: `ink-3`, dashed outline, no texture, "Coming up" with the planned date. Tapping a stamp in the passport says when and on which trip.
+- A newly earned stamp stamps itself in once (scale and tilt, 520 ms); never under reduced motion.
 
 ## Charts
 

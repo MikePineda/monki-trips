@@ -17,6 +17,8 @@
     "mascotIntro": "Six states at 48, 96 and 160 px, animated from one sprite sheet. Reduced motion shows the still frame.",
     "stamps": "Passport stamps",
     "stampsIntro": "Two sample countries with drawn artwork and the generated fallback.",
+    "stampSheet": "Generated stamps",
+    "stampSheetIntro": "Twelve invented places drawn by the stamp generator: the shape, ink, tilt and texture come from the place and the date, the icon from how they arrived.",
     "screens": "Screens",
     "screensIntro": "The four screens the system is tuned for, built with the components above."
   },

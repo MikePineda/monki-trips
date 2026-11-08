@@ -52,6 +52,7 @@ import { MkTextComponent, TEXT_VARIANTS } from '../../shared/ui/text/text.compon
 import { MkTicketComponent } from '../../shared/ui/ticket/ticket.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
 import { DEMO_TRIP } from './demo-trip'
+import { STAMP_SHEET } from './stamp-sheet'
 import { TOKEN_GROUPS } from './design-tokens'
 import { MockItineraryDayComponent } from './mocks/itinerary-day.mock'
 import { MockQuickExpenseComponent } from './mocks/quick-expense.mock'
@@ -687,6 +688,20 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
               <mk-stamp code="ZZ" [name]="trip.city" [date]="stampDate(trip.startDate)" />
               <mk-stamp code="XB" [name]="trip.stamps[1].name" [reached]="false" />
             </mk-row>
+            <h3 mk-text variant="heading">{{ 'styleguide.sections.stampSheet' | transloco }}</h3>
+            <p mk-text variant="caption" tone="ink-2">
+              {{ 'styleguide.sections.stampSheetIntro' | transloco }}
+            </p>
+            <mk-row gap="2" [wrap]="true" data-testid="styleguide.stampSheet">
+              @for (stamp of stampSheet; track stamp.name) {
+                <mk-stamp
+                  [code]="stamp.code"
+                  [name]="stamp.name"
+                  [isoDate]="stamp.date"
+                  [arrivedBy]="stamp.arrivedBy"
+                />
+              }
+            </mk-row>
           </mk-stack>
         </mk-section>
 
@@ -731,6 +746,7 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
 })
 export default class StyleguidePage {
   protected readonly trip = DEMO_TRIP
+  protected readonly stampSheet = STAMP_SHEET
   protected readonly tokenGroups = TOKEN_GROUPS
   protected readonly textVariants = TEXT_VARIANTS
   protected readonly icons = ICON_NAMES
