@@ -7,3 +7,7 @@ declare module 'maplibre-gl/dist/maplibre-gl-worker.mjs' {
   const url: string
   export default url
 }
+declare module 'maplibre-gl/dist/maplibre-gl.mjs' {
+  const url: string
+  export default url
+}
