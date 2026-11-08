@@ -78,6 +78,7 @@ export const SOLO_JOURNEYS = [
   'j19',
   'a11y',
   'j17',
+  'j20',
 ] as const
 
 export type SoloJourney = (typeof SOLO_JOURNEYS)[number]

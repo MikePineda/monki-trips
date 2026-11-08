@@ -44,10 +44,7 @@ export const RECAP_CARD_MAX_ROWS = 6
 
 export function recapCard(input: RecapCardInput): RecapCard {
   const includesMoney = input.includeMoney === true
-  const rows = [...input.stats, ...(includesMoney ? input.money : [])].slice(
-    0,
-    RECAP_CARD_MAX_ROWS
-  )
+  const rows = [...input.stats, ...(includesMoney ? input.money : [])].slice(0, RECAP_CARD_MAX_ROWS)
   return {
     title: input.title,
     dates: input.dates,

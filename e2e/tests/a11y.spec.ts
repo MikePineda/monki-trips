@@ -138,6 +138,14 @@ function signedInScreens(t: Arranged): Screen[] {
     },
     { name: 'today', open: go(`${trip}/today`, (p) => p.getByTestId('today.day')) },
     { name: 'summary', open: go(`${trip}/summary`, (p) => p.getByTestId('trip.summary.dates')) },
+    {
+      name: 'recap',
+      open: async (page) => {
+        await page.route(/^https:\/\/tiles\.openfreemap\.org\//, (route) => route.abort())
+        await page.goto(`${trip}/recap`)
+        await visible(page.getByTestId('recap.stats'))
+      },
+    },
     { name: 'plan days', open: go(`${trip}/plan`, (p) => p.getByTestId('plan.event')) },
     {
       name: 'event sheet',

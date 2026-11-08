@@ -1,8 +1,5 @@
 import type { RecapCard } from '../app/domain/recap-card'
-import type {
-  RecapImageOutcome,
-  RecapImageSharer,
-} from '../app/features/recap/recap-image'
+import type { RecapImageOutcome, RecapImageSharer } from '../app/features/recap/recap-image'
 
 /** A recap image sharer that keeps the cards it was asked to draw. */
 export class FakeRecapImage implements RecapImageSharer {

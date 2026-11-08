@@ -23,6 +23,7 @@ export interface TripContentSnapshotLike {
   stops: { id: string; name: string; tz: string | null }[]
   events: { id: string; kind: string; title: string; startsOn: string | null }[]
   budgetCategories: { id: string; key: string | null; budgetMinor: number | null }[]
+  travellers: { id: string; userId: string | null; displayName: string }[]
   expenses: {
     id: string
     amountMinor: number

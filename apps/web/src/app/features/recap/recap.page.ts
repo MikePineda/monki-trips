@@ -55,7 +55,11 @@ import { MkStampTileComponent } from '../../shared/ui/stamp/stamp-tile.component
 import { MkStatRowComponent } from '../../shared/ui/stat-tile/stat-row.component'
 import { MkStatTileComponent } from '../../shared/ui/stat-tile/stat-tile.component'
 import { MkSwitchComponent } from '../../shared/ui/switch/switch.component'
-import { MkTableComponent, type TableColumn, type TableRow } from '../../shared/ui/table/table.component'
+import {
+  MkTableComponent,
+  type TableColumn,
+  type TableRow,
+} from '../../shared/ui/table/table.component'
 import { MkTextComponent } from '../../shared/ui/text/text.component'
 import { ToastService } from '../../shared/ui/toast/toast.service'
 import type { MapPlace, MapRoute } from '../../shared/ui/world-map/world-map.component'
@@ -156,7 +160,9 @@ const CATEGORY_KEYS = [
           <mk-stack gap="half">
             <h2 mk-text variant="heading" data-testid="recap.tripName">{{ trip.name }}</h2>
             <p mk-text variant="caption" tone="ink-2">
-              {{ 'recap.dates' | transloco: { start: day(trip.startDate), end: day(trip.endDate) } }}
+              {{
+                'recap.dates' | transloco: { start: day(trip.startDate), end: day(trip.endDate) }
+              }}
             </p>
             <p mk-text variant="label" tone="ink-2" data-testid="recap.phase">
               {{ 'recap.phase.' + (recap()?.phase ?? 'upcoming') | transloco: phaseParams() }}
@@ -237,7 +243,8 @@ const CATEGORY_KEYS = [
                       [caption]="stamp.place"
                       [meta]="stampDay(stamp.date)"
                       [label]="
-                        'recap.stamps.stamp' | transloco: { place: stamp.place, date: stampDay(stamp.date) }
+                        'recap.stamps.stamp'
+                          | transloco: { place: stamp.place, date: stampDay(stamp.date) }
                       "
                       data-testid="recap.stamp"
                     />
@@ -629,8 +636,13 @@ export default class RecapPage {
     const recap = this.recap()
     if (!recap) return []
     const { spending } = recap
-    const rows: { id: string; icon: 'wallet' | 'globe'; title: string; meta?: string; value: string }[] =
-      []
+    const rows: {
+      id: string
+      icon: 'wallet' | 'globe'
+      title: string
+      meta?: string
+      value: string
+    }[] = []
     if (spending.biggest) {
       const expense = this.expenses().find((row) => row.id === spending.biggest!.id)
       rows.push({
@@ -784,14 +796,9 @@ export default class RecapPage {
     if (categoryId === null) return words[6]
     const category = this.categories().find((row) => row.id === categoryId)
     if (!category) return words[6]
-    const index = [
-      'accommodation',
-      'transport',
-      'food',
-      'activities',
-      'shopping',
-      'other',
-    ].indexOf(category.key ?? '')
+    const index = ['accommodation', 'transport', 'food', 'activities', 'shopping', 'other'].indexOf(
+      category.key ?? ''
+    )
     return index >= 0 ? words[index]! : (category.name ?? words[6])
   }
 

@@ -20,9 +20,9 @@ import { signIn } from '../sign-in.ts'
  * the viewport. The Notifications section of Settings (switches, quiet
  * hours, upcoming reminders) stays inside the screen too, and so do the
  * Balances segment of a split trip (long names, four-digit nets, the
- * "Mark as settled" buttons), the trip history, the passport and its map
- * with long place names, and Kiko's chat with an open proposal, its
- * composer above the tab bar.
+ * "Mark as settled" buttons), the trip history, the passport, its map and
+ * the trip recap with long place names, and Kiko's chat with an open
+ * proposal, its composer above the tab bar.
  *
  * With E2E_SCREENSHOTS=1 it also writes the 390 × 844 screenshots of the
  * Money tab and Where we sleep, light and dark, to e2e/screenshots/money/
@@ -324,6 +324,11 @@ test.describe('J05c trip screens on a narrow phone', () => {
       /fallback|loading|map/
     )
     expect(await overflowing(page), '/passport/map').toEqual([])
+    // The recap of the same trip: long places in the route, four-digit money.
+    await page.goto(`/t/${trip.tripId}/recap`)
+    await expect(page.getByTestId('recap.stats').first()).toBeVisible()
+    await expect(page.getByTestId('recap.stat.spent')).toBeVisible()
+    expect(await overflowing(page), '/recap').toEqual([])
   })
 
   test('Kiko keeps an open proposal inside the screen and the composer above the tab bar', async ({
