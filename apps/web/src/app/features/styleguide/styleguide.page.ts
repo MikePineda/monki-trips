@@ -41,6 +41,7 @@ import {
   type SegmentOption,
 } from '../../shared/ui/segmented/segmented.component'
 import { SheetService } from '../../shared/ui/sheet/sheet.service'
+import { MkShowCardComponent } from '../../shared/ui/show-card/show-card.component'
 import { MkSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component'
 import { MkStampComponent } from '../../shared/ui/stamp/stamp.component'
 import { MkStatRowComponent } from '../../shared/ui/stat-tile/stat-row.component'
@@ -111,6 +112,7 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
     MkFabComponent,
     MkConnectionStatusComponent,
     MkEmptyStateComponent,
+    MkShowCardComponent,
     MkSkeletonComponent,
     MkKeypadComponent,
     MkMascotComponent,
@@ -518,7 +520,26 @@ const MASCOT_SIZES: readonly MascotSize[] = ['sm', 'md', 'lg']
                 >
                   {{ 'styleguide.sample.showToast' | transloco }}
                 </button>
+                <button
+                  mk-button
+                  variant="secondary"
+                  type="button"
+                  data-testid="styleguide.show-card"
+                  (click)="cardShown.set(true)"
+                >
+                  {{ 'styleguide.sample.showCard' | transloco }}
+                </button>
               </mk-row>
+              @if (cardShown()) {
+                <mk-show-card
+                  lang="eo"
+                  [phrase]="'styleguide.sample.cardPhrase' | transloco"
+                  [romanization]="'styleguide.sample.cardRomanization' | transloco"
+                  [prompt]="'styleguide.sample.cardPrompt' | transloco"
+                  [screenKeptOn]="true"
+                  (closed)="cardShown.set(false)"
+                />
+              }
             </mk-section>
 
             <mk-section
@@ -720,6 +741,7 @@ export default class StyleguidePage {
   protected readonly themeStore = inject(ThemeStore)
   protected readonly still = signal(false)
   protected readonly view = signal('days')
+  protected readonly cardShown = signal(false)
   protected readonly keypadDigits = signal(DEMO_TRIP.expense.digits)
 
   protected readonly langOptions: readonly SegmentOption[] = APP_LANGS.map((lang: AppLang) => ({

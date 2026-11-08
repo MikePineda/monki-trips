@@ -69,7 +69,8 @@
       "settings": "Settings",
       "offline": "Offline",
       "members": "Members",
-      "activity": "Activity"
+      "activity": "Activity",
+      "phrases": "Phrases"
     }
   },
   "notFound": {

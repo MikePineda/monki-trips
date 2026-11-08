@@ -57,5 +57,9 @@
   "preview": {
     "loading": "Opening…",
     "none": "No preview for this file. Download it to open it."
+  },
+  "showCard": {
+    "close": "Close",
+    "keptOn": "The screen stays on while this card is open"
   }
 }

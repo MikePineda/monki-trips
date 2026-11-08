@@ -17,6 +17,8 @@ import settingsEn from '../app/features/settings/i18n/en.json'
 import settingsEs from '../app/features/settings/i18n/es.json'
 import styleguideEn from '../app/features/styleguide/i18n/en.json'
 import styleguideEs from '../app/features/styleguide/i18n/es.json'
+import phrasesEn from '../app/features/phrases/i18n/en.json'
+import phrasesEs from '../app/features/phrases/i18n/es.json'
 import planEn from '../app/features/plan/i18n/en.json'
 import planEs from '../app/features/plan/i18n/es.json'
 import eventsEn from '../app/features/plan/events/i18n/en.json'
@@ -53,6 +55,7 @@ export const SCOPE_CATALOGUES = {
   members: { en: membersEn, es: membersEs },
   money: { en: moneyEn, es: moneyEs },
   offline: { en: offlineEn, es: offlineEs },
+  phrases: { en: phrasesEn, es: phrasesEs },
   plan: { en: planEn, es: planEs },
   settings: { en: settingsEn, es: settingsEs },
   share: { en: shareEn, es: shareEs },

@@ -1,0 +1,58 @@
+{
+  "title": "Frases",
+  "intro": "Tarjetas en el idioma local, hechas una vez antes del viaje y guardadas en este teléfono. Enséñaselas a un taxista o a un mesero, incluso sin conexión.",
+  "language": "Idioma de las tarjetas",
+  "category": {
+    "greetings": "Básicas",
+    "reservation": "Reservas",
+    "lodging_address": "Dónde dormimos",
+    "food": "Comida",
+    "emergency": "Emergencias",
+    "numbers": "Números y pagos"
+  },
+  "food": {
+    "title": "Preferencias de comida",
+    "hint": "Se agregan a las tarjetas de comida. Opcional.",
+    "note": "Algo más (alergias, lo que no comes)",
+    "options": {
+      "vegetarian": "Vegetariano",
+      "vegan": "Vegano",
+      "no_pork": "Sin cerdo",
+      "no_beef": "Sin res",
+      "no_seafood": "Sin mariscos",
+      "no_peanuts": "Sin cacahuate",
+      "gluten_free": "Sin gluten",
+      "not_spicy": "Sin picante"
+    }
+  },
+  "generate": "Hacer las tarjetas",
+  "regenerate": "Hacerlas de nuevo",
+  "generating": "Kiko está escribiendo tus tarjetas…",
+  "offline": "Hacer tarjetas necesita conexión. Las que ya tienes funcionan sin conexión.",
+  "confirm": {
+    "title": "¿Hacer las tarjetas de nuevo?",
+    "body": "Las tarjetas en {{language}} se reemplazan para todos en el viaje.",
+    "action": "Reemplazarlas"
+  },
+  "empty": {
+    "title": "Aún no hay tarjetas en {{language}}",
+    "body": "Elige tus preferencias de comida y haz las tarjetas mientras tengas conexión."
+  },
+  "name": {
+    "label": "Nombre en las tarjetas de reserva",
+    "hint": "Se completa solo en este teléfono, nunca se envía."
+  },
+  "show": "Mostrar en pantalla completa",
+  "translate": "Traducir otra cosa",
+  "translateHint": "Abre Google Translate en otra pestaña (necesita conexión).",
+  "notFound": "Esta tarjeta ya no está en este teléfono.",
+  "errors": {
+    "E_LLM_QUOTA_EXCEEDED": "Usaste la cuota de IA de este mes. Se renueva el {{date}}.",
+    "E_TOO_MANY_REQUESTS": "Demasiados intentos en poco tiempo. Vuelve a intentar en {{minutes}} min.",
+    "E_CONFLICT": "Alguien ya hizo tarjetas en este idioma. Aparecerán aquí en un momento.",
+    "E_LLM_UNAVAILABLE": "El generador de tarjetas no está disponible ahora. Inténtalo más tarde.",
+    "E_LLM_BAD_OUTPUT": "Las tarjetas salieron mal. Inténtalo de nuevo.",
+    "network": "Sin conexión. Inténtalo cuando tengas internet.",
+    "unknown": "No se pudieron hacer las tarjetas. Inténtalo de nuevo."
+  }
+}
