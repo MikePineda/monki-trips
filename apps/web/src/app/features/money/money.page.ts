@@ -231,13 +231,19 @@ const WORDS = [
               } @else {
                 <mk-list>
                   @for (row of settlementRows(); track row.id) {
-                    <mk-list-row [title]="row.title" [value]="row.value" testId="money.settlement">
+                    <mk-list-row
+                      [title]="row.title"
+                      [meta]="row.meta"
+                      [value]="row.value"
+                      testId="money.settlement"
+                    >
                       <span mkRowExtra>
                         <button
                           mk-button
                           variant="secondary"
                           size="sm"
                           type="button"
+                          [disabled]="row.blocked"
                           data-testid="money.settle.mark"
                           (click)="markSettled(row)"
                         >
@@ -520,14 +526,17 @@ export default class MoneyPage {
     return view.balances.map((row) => {
       const state = row.netMinor > 0n ? 'getsBack' : row.netMinor < 0n ? 'owes' : 'settled'
       const abs = row.netMinor < 0n ? -row.netMinor : row.netMinor
+      const left = !this.travellers().some((traveller) => traveller.id === row.travellerId)
+      const note = left ? ` · ${this.transloco.translate('money.balances.leftTrip')}` : ''
       return {
         id: row.travellerId,
         name: this.travellerName(row.travellerId),
-        meta: this.transloco.translate('money.balances.row', {
-          state: this.transloco.translate(`money.balances.${state}`),
-          paid: this.money(row.paidMinor, this.base()),
-          owed: this.money(row.owedMinor, this.base()),
-        }),
+        meta:
+          this.transloco.translate('money.balances.row', {
+            state: this.transloco.translate(`money.balances.${state}`),
+            paid: this.money(row.paidMinor, this.base()),
+            owed: this.money(row.owedMinor, this.base()),
+          }) + note,
         value: this.money(abs, this.base()),
       }
     })
@@ -555,17 +564,24 @@ export default class MoneyPage {
     this.words()
     const view = this.balanceView()
     if (!view) return []
-    return view.settlements.map((transfer) => ({
-      id: `${transfer.fromTravellerId}>${transfer.toTravellerId}`,
-      from: transfer.fromTravellerId,
-      to: transfer.toTravellerId,
-      amountMinor: transfer.amountMinor,
-      title: this.transloco.translate('money.balances.pays', {
-        from: this.travellerName(transfer.fromTravellerId),
-        to: this.travellerName(transfer.toTravellerId),
-      }),
-      value: this.money(transfer.amountMinor, this.base()),
-    }))
+    const live = new Set(this.travellers().map((row) => row.id))
+    return view.settlements.map((transfer) => {
+      // Someone who left the trip can no longer pay or be paid through a share.
+      const blocked = !live.has(transfer.fromTravellerId) || !live.has(transfer.toTravellerId)
+      return {
+        id: `${transfer.fromTravellerId}>${transfer.toTravellerId}`,
+        from: transfer.fromTravellerId,
+        to: transfer.toTravellerId,
+        amountMinor: transfer.amountMinor,
+        blocked,
+        title: this.transloco.translate('money.balances.pays', {
+          from: this.travellerName(transfer.fromTravellerId),
+          to: this.travellerName(transfer.toTravellerId),
+        }),
+        meta: blocked ? this.transloco.translate('money.balances.leftTrip') : undefined,
+        value: this.money(transfer.amountMinor, this.base()),
+      }
+    })
   })
   protected readonly budgetViews = computed(() => [
     { id: 'chart', label: this.words()[3] },

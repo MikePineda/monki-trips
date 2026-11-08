@@ -150,6 +150,7 @@
     "settleDescription": "Settle up",
     "someone": "Someone who left the trip",
     "paid": "{{from}} paid {{to}}",
-    "history": "Settled"
+    "history": "Settled",
+    "leftTrip": "left the trip and cannot be settled here"
   }
 }

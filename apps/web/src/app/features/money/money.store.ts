@@ -222,55 +222,73 @@ export class MoneyStore {
   ): Promise<void> {
     const now = this.clock()
     const db = await this.database
-    await db.transaction('rw', [db.expenses, db.expenseShares, db.outbox], async () => {
-      const current = await db.expenses.get(id)
-      if (!current) {
-        throw new Error(`Expense not found on this device: ${id}`)
+    await db.transaction(
+      'rw',
+      [db.expenses, db.expenseShares, db.travellers, db.outbox],
+      async () => {
+        const current = await db.expenses.get(id)
+        if (!current) {
+          throw new Error(`Expense not found on this device: ${id}`)
+        }
+        const sent: Record<string, unknown> = { ...changes, needsDetails: false }
+        const stored = await db.expenseShares.where('expenseId').equals(id).toArray()
+        const amount = changes.amountMinor ?? current.amountMinor
+        let shares: readonly SplitShare[] | null = split?.shares ?? null
+        if (split) {
+          sent['paidByTravellerId'] = split.paidByTravellerId
+        } else if (amount !== current.amountMinor && stored.length > 0) {
+          // The split must still add up: the same people still on the trip, in proportion,
+          // the remainder on the payer (everyone on the trip equally when none of them is
+          // left; the same people when the device knows no traveller at all).
+          const live = new Set(
+            (await db.travellers.where('tripId').equals(current.tripId).toArray()).map(
+              (row) => row.id
+            )
+          )
+          const staying = stored.filter((share) => live.has(share.travellerId))
+          const base =
+            staying.length > 0
+              ? staying
+              : live.size > 0
+                ? [...live].map((travellerId) => ({ travellerId, shareMinor: 0 }))
+                : stored
+          shares = scaleShares(amount, base, current.paidByTravellerId)
+        }
+        if (shares) {
+          const rows = shareRecords(current, shares, now)
+          await db.expenseShares.bulkDelete(stored.map((share) => share.id))
+          await db.expenseShares.bulkPut(rows)
+          sent['shares'] = rows.map(wireShare)
+        }
+        if ('currency' in changes && changes.currency) {
+          sent['currency'] = changes.currency.toUpperCase()
+        }
+        const next: ExpenseRecord = { ...current, ...(sent as Partial<ExpenseRecord>) }
+        const typedRate = 'fxRate' in changes && changes.fxRate
+        const moved =
+          next.amountMinor !== current.amountMinor ||
+          next.currency !== current.currency ||
+          next.spentOn !== current.spentOn
+        if (typedRate) {
+          Object.assign(sent, { fxSource: 'manual', fxRateDate: next.spentOn })
+        } else if ('fxRate' in changes || moved) {
+          // Back to the provider's rate of the (new) day.
+          Object.assign(sent, { fxRate: null, fxSource: null, fxRateDate: null })
+        }
+        const local = withLocalBase(
+          { ...current, ...(sent as Partial<ExpenseRecord>), updatedAt: now, syncState: 'pending' },
+          baseCurrency
+        )
+        await db.expenses.put(local)
+        await this.outbox.enqueueMutation(db, current.tripId, {
+          entity: 'expense',
+          op: 'upsert',
+          id,
+          changes: sent,
+          changedAt: now,
+        })
       }
-      const sent: Record<string, unknown> = { ...changes, needsDetails: false }
-      const stored = await db.expenseShares.where('expenseId').equals(id).toArray()
-      const amount = changes.amountMinor ?? current.amountMinor
-      let shares: readonly SplitShare[] | null = split?.shares ?? null
-      if (split) {
-        sent['paidByTravellerId'] = split.paidByTravellerId
-      } else if (amount !== current.amountMinor && stored.length > 0) {
-        // The split must still add up: the same people, in proportion, the remainder on the payer.
-        shares = scaleShares(amount, stored, current.paidByTravellerId)
-      }
-      if (shares) {
-        const rows = shareRecords(current, shares, now)
-        await db.expenseShares.bulkDelete(stored.map((share) => share.id))
-        await db.expenseShares.bulkPut(rows)
-        sent['shares'] = rows.map(wireShare)
-      }
-      if ('currency' in changes && changes.currency) {
-        sent['currency'] = changes.currency.toUpperCase()
-      }
-      const next: ExpenseRecord = { ...current, ...(sent as Partial<ExpenseRecord>) }
-      const typedRate = 'fxRate' in changes && changes.fxRate
-      const moved =
-        next.amountMinor !== current.amountMinor ||
-        next.currency !== current.currency ||
-        next.spentOn !== current.spentOn
-      if (typedRate) {
-        Object.assign(sent, { fxSource: 'manual', fxRateDate: next.spentOn })
-      } else if ('fxRate' in changes || moved) {
-        // Back to the provider's rate of the (new) day.
-        Object.assign(sent, { fxRate: null, fxSource: null, fxRateDate: null })
-      }
-      const local = withLocalBase(
-        { ...current, ...(sent as Partial<ExpenseRecord>), updatedAt: now, syncState: 'pending' },
-        baseCurrency
-      )
-      await db.expenses.put(local)
-      await this.outbox.enqueueMutation(db, current.tripId, {
-        entity: 'expense',
-        op: 'upsert',
-        id,
-        changes: sent,
-        changedAt: now,
-      })
-    })
+    )
     this.sync.requestPush()
   }
 

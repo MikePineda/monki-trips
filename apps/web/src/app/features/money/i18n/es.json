@@ -150,6 +150,7 @@
     "settleDescription": "Saldar cuentas",
     "someone": "Alguien que dejó el viaje",
     "paid": "{{from}} pagó a {{to}}",
-    "history": "Saldado"
+    "history": "Saldado",
+    "leftTrip": "dejó el viaje y no se puede saldar aquí"
   }
 }
