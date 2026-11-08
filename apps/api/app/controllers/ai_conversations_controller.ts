@@ -1,20 +1,10 @@
-import { Readable } from 'node:stream'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import type {
-  AiConversation,
-  AiConversationDetail,
-  ApiEnvelope,
-  AssistantStreamEvent,
-} from '@monkitrips/shared'
+import type { AiConversation, AiConversationDetail, ApiEnvelope } from '@monkitrips/shared'
 import { AiConversations } from '#services/assistant/ai_conversations'
 import { AssistantChat } from '#services/assistant/assistant_chat'
+import { assistantEventStream } from '#services/assistant/assistant_sse'
 import { chatMessageValidator, createConversationValidator } from '#validators/assistant'
-
-/** One server-sent event: `event: <type>` and the event as JSON. */
-function sse(event: AssistantStreamEvent): string {
-  return `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`
-}
 
 /**
  * The member's own conversations with the trip assistant. Members only
@@ -53,31 +43,30 @@ export default class AiConversationsController {
 
   /**
    * One chat turn as `text/event-stream` (`text`, `proposal`, then `done`
-   * or `error`). The first event is awaited before any header goes out, so
-   * a turn refused up front (402 over the cap, 503 provider down) answers
-   * a plain JSON error with its status instead of an empty stream.
+   * or `error`). The first model call is reserved before any header goes
+   * out, so a turn refused up front (402 over the cap) answers a plain JSON
+   * error with its status; from then on the headers are sent at once and
+   * every failure arrives as an `error` event. A client that goes away
+   * aborts the turn.
    */
   async message(ctx: HttpContext) {
     const user = ctx.auth.use('web').getUserOrFail()
     const conversation = await this.conversations.find(user, ctx.trip, String(ctx.params['id']))
     const { text } = await ctx.request.validateUsing(chatMessageValidator)
-    const events = this.chat.turn({ user, trip: ctx.trip, conversation, text, i18n: ctx.i18n })
-    const first = await events.next()
-
-    async function* body() {
-      try {
-        if (!first.done) yield sse(first.value)
-        for await (const event of events) yield sse(event)
-      } finally {
-        // A client that went away stops the turn: the model stream is cancelled and settled.
-        await events.return(undefined)
-      }
-    }
+    const aborter = new AbortController()
+    const events = await this.chat.start({
+      user,
+      trip: ctx.trip,
+      conversation,
+      text,
+      i18n: ctx.i18n,
+      signal: aborter.signal,
+    })
 
     ctx.response.status(200)
     ctx.response.header('Content-Type', 'text/event-stream; charset=utf-8')
-    ctx.response.header('Cache-Control', 'no-cache, no-transform')
+    ctx.response.header('Cache-Control', 'no-cache')
     ctx.response.header('X-Accel-Buffering', 'no')
-    ctx.response.stream(Readable.from(body()))
+    ctx.response.stream(assistantEventStream(events, { aborter }))
   }
 }

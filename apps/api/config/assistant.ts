@@ -36,5 +36,8 @@ export const ASSISTANT_TOOL_RESULT_MAX_CHARS = 16_000
 export const ASSISTANT_NOTES_MAX_CHARS = 300
 export const ASSISTANT_ADDRESS_MAX_CHARS = 200
 
+/** How often the chat stream writes a `: ping` comment, so proxies keep it open. */
+export const ASSISTANT_SSE_PING_MS = 15_000
+
 /** How long a proposal waits for the member before it expires. */
 export const AI_ACTION_TTL_MS = AI_ACTION_TTL_HOURS * 60 * 60 * 1000
