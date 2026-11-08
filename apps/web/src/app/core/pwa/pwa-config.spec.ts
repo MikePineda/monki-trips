@@ -153,3 +153,97 @@ describe('custom service worker (public/sw.js)', () => {
     expect(source).toContain('target.origin !== self.location.origin')
   })
 })
+
+describe('notification tap (public/sw.js notificationclick)', () => {
+  const source = readFileSync(join(webRoot, 'public/sw.js'), 'utf8')
+  const ORIGIN = 'https://trips.example.com'
+
+  interface FakeWindowClient {
+    url: string
+    focus(): Promise<FakeWindowClient>
+    navigate(url: string): Promise<FakeWindowClient>
+  }
+
+  /** Runs sw.js against a fake `self` and taps a notification whose data carries `data`. */
+  async function tap(data: unknown, openWindows: string[] = []) {
+    const calls: string[] = []
+    const windows: FakeWindowClient[] = openWindows.map((url) => {
+      const client: FakeWindowClient = {
+        url,
+        focus: async () => {
+          calls.push(`focus ${url}`)
+          return client
+        },
+        navigate: async (target) => {
+          calls.push(`navigate ${target}`)
+          return client
+        },
+      }
+      return client
+    })
+    const listeners = new Map<string, (event: unknown) => void>()
+    const self = {
+      location: { origin: ORIGIN },
+      registration: {},
+      addEventListener: (type: string, listener: (event: unknown) => void) =>
+        listeners.set(type, listener),
+      clients: {
+        matchAll: async () => windows,
+        openWindow: async (url: string) => {
+          calls.push(`open ${url}`)
+          return null
+        },
+      },
+    }
+    // The worker is a classic script: evaluate it with our `self` and a no-op importScripts.
+    new Function('self', 'importScripts', source)(self, () => undefined)
+    let pending: Promise<unknown> = Promise.resolve()
+    listeners.get('notificationclick')!({
+      stopImmediatePropagation: () => undefined,
+      notification: { data, close: () => calls.push('close') },
+      waitUntil: (promise: Promise<unknown>) => {
+        pending = promise
+      },
+    })
+    await pending
+    return calls
+  }
+
+  it('navigates an open app window to the reminder url and focuses it', async () => {
+    expect(await tap({ url: '/t/trip-1/plan/e/event-1' }, [`${ORIGIN}/trips`])).toEqual([
+      'close',
+      `focus ${ORIGIN}/trips`,
+      `navigate ${ORIGIN}/t/trip-1/plan/e/event-1`,
+    ])
+  })
+
+  it('opens a new window on the url when no app window is open', async () => {
+    expect(await tap({ url: '/t/trip-1/today' })).toEqual([
+      'close',
+      `open ${ORIGIN}/t/trip-1/today`,
+    ])
+  })
+
+  it('ignores windows of other origins', async () => {
+    expect(await tap({ url: '/t/trip-1/more/tasks' }, ['https://other.example.org/'])).toEqual([
+      'close',
+      `open ${ORIGIN}/t/trip-1/more/tasks`,
+    ])
+  })
+
+  it('a url that is not a path of this origin opens the app root instead', async () => {
+    for (const url of [
+      'https://other.example.org/t/trip-1/today',
+      '//other.example.org/t/trip-1/today',
+      '/\\other.example.org/t',
+      'javascript:alert(1)',
+    ]) {
+      expect(await tap({ url })).toEqual(['close', `open ${ORIGIN}/`])
+    }
+  })
+
+  it('a notification without a url opens the app root', async () => {
+    expect(await tap(undefined)).toEqual(['close', `open ${ORIGIN}/`])
+    expect(await tap({ url: 42 })).toEqual(['close', `open ${ORIGIN}/`])
+  })
+})

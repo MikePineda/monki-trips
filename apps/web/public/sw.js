@@ -7,7 +7,8 @@
  *      ({ title, body, url, tag }); `push` shows it as a notification and
  *      `notificationclick` focuses an open window of the app (or opens one)
  *      on `url`. ngsw expects its own `{ notification }` shape, so both
- *      listeners stop propagation and ngsw never sees these events.
+ *      listeners stop propagation and ngsw never sees these events. Only a
+ *      path of this origin is opened; anything else opens the app root.
  *   3. Everything else is Angular's service worker (ngsw-worker.js), imported
  *      below. Our listeners register first and stop propagation for what
  *      they handle, so ngsw never sees it; ngsw ignores POST anyway.
@@ -38,15 +39,26 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.stopImmediatePropagation()
   event.notification.close()
-  const target = new URL(
-    (event.notification.data && event.notification.data.url) || '/',
-    self.location.origin
-  )
-  if (target.origin !== self.location.origin) {
-    return
-  }
-  event.waitUntil(focusOrOpen(target.href))
+  event.waitUntil(focusOrOpen(notificationTarget(event.notification.data).href))
 })
+
+/**
+ * Where a tapped notification goes: its `url` when that is a path of this
+ * origin (`/t/:tripId/today`), else the app root. A full URL, a
+ * protocol-relative `//host` or any scheme never leaves the app.
+ */
+function notificationTarget(data) {
+  const root = new URL('/', self.location.origin)
+  const url = data && typeof data.url === 'string' ? data.url : ''
+  if (!url.startsWith('/') || url.startsWith('//')) {
+    return root
+  }
+  const target = new URL(url, self.location.origin)
+  if (target.origin !== self.location.origin) {
+    return root
+  }
+  return target
+}
 
 /** The PushPayload of the message; a message without one (or with bad JSON) still shows something honest. */
 function readPushPayload(event) {
