@@ -17,6 +17,8 @@
     "mascotIntro": "Seis estados a 48, 96 y 160 px, animados desde una sola hoja de sprites. Con movimiento reducido se ve el fotograma fijo.",
     "stamps": "Sellos de pasaporte",
     "stampsIntro": "Dos países de muestra con arte dibujado y el sello generado.",
+    "stampSheet": "Sellos generados",
+    "stampSheetIntro": "Doce lugares inventados dibujados por el generador de sellos: la forma, la tinta, la inclinación y la textura salen del lugar y la fecha; el icono, de cómo se llegó.",
     "screens": "Pantallas",
     "screensIntro": "Las cuatro pantallas para las que está afinado el sistema, construidas con los componentes de arriba."
   },

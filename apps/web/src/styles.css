@@ -88,6 +88,10 @@
   --on-print-warning-2: #4a5058;
   --offline: #4a5058;
   --stamp-ink: #2f5c8a;
+  --stamp-ink-1: #2f5c8a;
+  --stamp-ink-2: #9b2f3c;
+  --stamp-ink-3: #2c6649;
+  --stamp-ink-4: #5b3f8e;
   --scrim: #1114174d;
 
   /* Chart chrome and series (never the accent) */
@@ -171,6 +175,10 @@
   --on-print-warning-2: #b4b9bf;
   --offline: #b4b9bf;
   --stamp-ink: #8db3dd;
+  --stamp-ink-1: #8db3dd;
+  --stamp-ink-2: #eea2a8;
+  --stamp-ink-3: #86c9a4;
+  --stamp-ink-4: #bba6e8;
   --scrim: #000000a3;
 
   /* Chart chrome and series (never the accent) */
@@ -231,6 +239,10 @@
     --on-print-warning-2: #b4b9bf;
     --offline: #b4b9bf;
     --stamp-ink: #8db3dd;
+    --stamp-ink-1: #8db3dd;
+    --stamp-ink-2: #eea2a8;
+    --stamp-ink-3: #86c9a4;
+    --stamp-ink-4: #bba6e8;
     --scrim: #000000a3;
 
     /* Chart chrome and series (never the accent) */
