@@ -20,7 +20,7 @@
     "@types/node": "~24.19.2",
     "@types/web-push": "^3.6.4",
     "chrome-launcher": "1.2.3",
-    "lighthouse": "13.5.0",
+    "lighthouse": "13.6.0",
     "typescript": "~6.0.3",
     "web-push": "^4.0.0"
   }
